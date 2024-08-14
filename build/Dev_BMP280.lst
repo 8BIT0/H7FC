@@ -1,0 +1,4067 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Dev_BMP280.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.DevBMP280_Compensate_Temperature,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	DevBMP280_Compensate_Temperature:
+  26              	.LVL0:
+  27              	.LFB7:
+  28              		.file 1 "Device/Dev_BMP280.c"
+   1:Device/Dev_BMP280.c **** #include "Dev_BMP280.h"
+   2:Device/Dev_BMP280.c **** #include <math.h>
+   3:Device/Dev_BMP280.c **** 
+   4:Device/Dev_BMP280.c **** #define DevBMP280_Write_Mask(x) (x & ~(1 << 7))
+   5:Device/Dev_BMP280.c **** #define DevBMP280_Read_Mask(x) (x | (1 << 7))
+   6:Device/Dev_BMP280.c **** 
+   7:Device/Dev_BMP280.c **** /* internal function */
+   8:Device/Dev_BMP280.c **** static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t *p_buf, uin
+   9:Device/Dev_BMP280.c **** static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t p_buf);
+  10:Device/Dev_BMP280.c **** static bool DevBMP280_Check_ModuleID(DevBMP280Obj_TypeDef *obj);
+  11:Device/Dev_BMP280.c **** static bool DevBMP280_SoftReset(DevBMP280Obj_TypeDef *obj);
+  12:Device/Dev_BMP280.c **** static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_TypeDef *status);
+  13:Device/Dev_BMP280.c **** static bool DevBMP280_Calibration(DevBMP280Obj_TypeDef *obj);
+  14:Device/Dev_BMP280.c **** static bool DevBMP280_Set_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_L
+  15:Device/Dev_BMP280.c **** static bool DevBMP280_Set_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSamplin
+  16:Device/Dev_BMP280.c **** static bool DevBMP280_Get_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_L
+  17:Device/Dev_BMP280.c **** static bool DevBMP280_Get_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSamplin
+  18:Device/Dev_BMP280.c **** static bool DevBMP280_Set_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List filter);
+  19:Device/Dev_BMP280.c **** static bool DevBMP_Get_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List *filter);
+  20:Device/Dev_BMP280.c **** static bool DevBMP280_Set_NormalMode(DevBMP280Obj_TypeDef *obj);
+  21:Device/Dev_BMP280.c **** 
+  22:Device/Dev_BMP280.c **** /* external function */
+  23:Device/Dev_BMP280.c **** static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj);
+  24:Device/Dev_BMP280.c **** static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj);
+  25:Device/Dev_BMP280.c **** static bool DevBMP280_Get_DataReady(DevBMP280Obj_TypeDef *obj);
+  26:Device/Dev_BMP280.c **** static DevBMP280_Data_TypeDef DevBMP280_Get_Data(DevBMP280Obj_TypeDef *obj);
+  27:Device/Dev_BMP280.c **** 
+  28:Device/Dev_BMP280.c **** DevBMP280_TypeDef DevBMP280 = {
+  29:Device/Dev_BMP280.c ****     .init =  DevBMP280_Init,
+  30:Device/Dev_BMP280.c ****     .sample = DevBMP280_Sample,
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 2
+
+
+  31:Device/Dev_BMP280.c ****     .ready = DevBMP280_Get_DataReady,
+  32:Device/Dev_BMP280.c ****     .get_data = DevBMP280_Get_Data,
+  33:Device/Dev_BMP280.c **** };
+  34:Device/Dev_BMP280.c **** 
+  35:Device/Dev_BMP280.c **** static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
+  36:Device/Dev_BMP280.c **** {
+  37:Device/Dev_BMP280.c ****     if (obj)
+  38:Device/Dev_BMP280.c ****     {
+  39:Device/Dev_BMP280.c ****         if ((obj->get_tick == NULL) || (obj->delay_ms == NULL))
+  40:Device/Dev_BMP280.c ****         {
+  41:Device/Dev_BMP280.c ****             obj->ErrorCode = DevBMP280_Init_Error;
+  42:Device/Dev_BMP280.c ****             return false;
+  43:Device/Dev_BMP280.c ****         }
+  44:Device/Dev_BMP280.c **** 
+  45:Device/Dev_BMP280.c ****         obj->ErrorCode = DevBMP280_Error_None;
+  46:Device/Dev_BMP280.c **** 
+  47:Device/Dev_BMP280.c ****         /* check id first */
+  48:Device/Dev_BMP280.c ****         if (!DevBMP280_Check_ModuleID(obj))
+  49:Device/Dev_BMP280.c ****         {
+  50:Device/Dev_BMP280.c ****             obj->ErrorCode = DevBMP280_ID_Error;
+  51:Device/Dev_BMP280.c ****             return false;
+  52:Device/Dev_BMP280.c ****         }
+  53:Device/Dev_BMP280.c **** 
+  54:Device/Dev_BMP280.c ****         /* soft reset */
+  55:Device/Dev_BMP280.c ****         if (!DevBMP280_SoftReset(obj))
+  56:Device/Dev_BMP280.c ****         {
+  57:Device/Dev_BMP280.c ****             obj->ErrorCode = DevBMP280_Reset_Error;
+  58:Device/Dev_BMP280.c ****             return false;
+  59:Device/Dev_BMP280.c ****         }
+  60:Device/Dev_BMP280.c ****         obj->delay_ms(100);
+  61:Device/Dev_BMP280.c **** 
+  62:Device/Dev_BMP280.c ****         if (!DevBMP280_Calibration(obj))
+  63:Device/Dev_BMP280.c ****         {
+  64:Device/Dev_BMP280.c ****             obj->ErrorCode = DevBMP280_Get_CalibParam_Error;
+  65:Device/Dev_BMP280.c ****             return false;
+  66:Device/Dev_BMP280.c ****         }
+  67:Device/Dev_BMP280.c ****         obj->delay_ms(20);
+  68:Device/Dev_BMP280.c **** 
+  69:Device/Dev_BMP280.c ****         /* set oversimpling */
+  70:Device/Dev_BMP280.c ****         if (!DevBMP280_Set_Pressure_OverSampling(obj, DevBMP280_OVERSAMPLING_x16))
+  71:Device/Dev_BMP280.c ****         {
+  72:Device/Dev_BMP280.c ****             obj->ErrorCode = DevBMP280_Set_Pressure_OverSampling_Error;
+  73:Device/Dev_BMP280.c ****             return false;
+  74:Device/Dev_BMP280.c ****         }
+  75:Device/Dev_BMP280.c **** 
+  76:Device/Dev_BMP280.c ****         if (!DevBMP280_Set_Temperature_OverSampling(obj, DevBMP280_OVERSAMPLING_x2))
+  77:Device/Dev_BMP280.c ****         {
+  78:Device/Dev_BMP280.c ****             obj->ErrorCode = DevBMP280_Set_Temperature_OverSampling_Error;
+  79:Device/Dev_BMP280.c ****             return false;
+  80:Device/Dev_BMP280.c ****         }
+  81:Device/Dev_BMP280.c **** 
+  82:Device/Dev_BMP280.c ****         /* set filter */
+  83:Device/Dev_BMP280.c ****         if (!DevBMP280_Set_Filter(obj, DevBMP280_FILTER_COEFF_16))
+  84:Device/Dev_BMP280.c ****         {
+  85:Device/Dev_BMP280.c ****             obj->ErrorCode = DevBMP280_Set_Filter_Error;
+  86:Device/Dev_BMP280.c ****             return false;
+  87:Device/Dev_BMP280.c ****         }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 3
+
+
+  88:Device/Dev_BMP280.c **** 
+  89:Device/Dev_BMP280.c ****         if (!DevBMP280_Set_NormalMode(obj))
+  90:Device/Dev_BMP280.c ****         {
+  91:Device/Dev_BMP280.c ****             obj->ErrorCode = DevBMP280_Set_Mode_Error;
+  92:Device/Dev_BMP280.c ****             return false;
+  93:Device/Dev_BMP280.c ****         }
+  94:Device/Dev_BMP280.c **** 
+  95:Device/Dev_BMP280.c ****         return true;
+  96:Device/Dev_BMP280.c ****     }
+  97:Device/Dev_BMP280.c **** 
+  98:Device/Dev_BMP280.c ****     return false;
+  99:Device/Dev_BMP280.c **** }
+ 100:Device/Dev_BMP280.c **** 
+ 101:Device/Dev_BMP280.c **** static bool DevBMP280_Set_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_L
+ 102:Device/Dev_BMP280.c **** {
+ 103:Device/Dev_BMP280.c ****     uint8_t cur_setting = 0;
+ 104:Device/Dev_BMP280.c ****     uint8_t setting_readout = 0;
+ 105:Device/Dev_BMP280.c **** 
+ 106:Device/Dev_BMP280.c ****     if (obj)
+ 107:Device/Dev_BMP280.c ****     {
+ 108:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &cur_setting, sizeof(cur_setting)) =
+ 109:Device/Dev_BMP280.c ****             return false;
+ 110:Device/Dev_BMP280.c ****     
+ 111:Device/Dev_BMP280.c ****         /* clear current setting */
+ 112:Device/Dev_BMP280.c ****         cur_setting &= ~(7 << 5);
+ 113:Device/Dev_BMP280.c **** 
+ 114:Device/Dev_BMP280.c ****         /* set incoming param */
+ 115:Device/Dev_BMP280.c ****         cur_setting |= (OverSampling << 5);
+ 116:Device/Dev_BMP280.c ****         
+ 117:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Write(obj, BMP280_REG_CTRL_MEAS, cur_setting) == 0)
+ 118:Device/Dev_BMP280.c ****             return false;
+ 119:Device/Dev_BMP280.c **** 
+ 120:Device/Dev_BMP280.c ****         /* after set we need to read out the setting value and check again */
+ 121:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &setting_readout, sizeof(setting_rea
+ 122:Device/Dev_BMP280.c ****             return false;
+ 123:Device/Dev_BMP280.c **** 
+ 124:Device/Dev_BMP280.c ****         if (setting_readout != cur_setting)
+ 125:Device/Dev_BMP280.c ****             return false;
+ 126:Device/Dev_BMP280.c **** 
+ 127:Device/Dev_BMP280.c ****         return true;
+ 128:Device/Dev_BMP280.c ****     }
+ 129:Device/Dev_BMP280.c **** 
+ 130:Device/Dev_BMP280.c ****     return false;
+ 131:Device/Dev_BMP280.c **** }
+ 132:Device/Dev_BMP280.c **** 
+ 133:Device/Dev_BMP280.c **** static bool DevBMP280_Get_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, uint8_t *OverSampling)
+ 134:Device/Dev_BMP280.c **** {
+ 135:Device/Dev_BMP280.c ****     if (obj && OverSampling)
+ 136:Device/Dev_BMP280.c ****     {
+ 137:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, OverSampling, sizeof(uint8_t)) == 0)
+ 138:Device/Dev_BMP280.c ****             return false;
+ 139:Device/Dev_BMP280.c **** 
+ 140:Device/Dev_BMP280.c ****         return true;
+ 141:Device/Dev_BMP280.c ****     }
+ 142:Device/Dev_BMP280.c **** 
+ 143:Device/Dev_BMP280.c ****     return false;
+ 144:Device/Dev_BMP280.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 4
+
+
+ 145:Device/Dev_BMP280.c **** 
+ 146:Device/Dev_BMP280.c **** static bool DevBMP280_Set_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSamplin
+ 147:Device/Dev_BMP280.c **** {
+ 148:Device/Dev_BMP280.c ****     uint8_t cur_setting = 0;
+ 149:Device/Dev_BMP280.c ****     uint8_t setting_readout = 0;
+ 150:Device/Dev_BMP280.c **** 
+ 151:Device/Dev_BMP280.c ****     if (obj)
+ 152:Device/Dev_BMP280.c ****     {
+ 153:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &cur_setting, sizeof(cur_setting)) =
+ 154:Device/Dev_BMP280.c ****             return false;
+ 155:Device/Dev_BMP280.c ****     
+ 156:Device/Dev_BMP280.c ****         /* clear current setting */
+ 157:Device/Dev_BMP280.c ****         cur_setting &= ~(7 << 2);
+ 158:Device/Dev_BMP280.c **** 
+ 159:Device/Dev_BMP280.c ****         /* set incoming param */
+ 160:Device/Dev_BMP280.c ****         cur_setting |= (OverSampling << 2);
+ 161:Device/Dev_BMP280.c ****         
+ 162:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Write(obj, BMP280_REG_CTRL_MEAS, cur_setting) == 0)
+ 163:Device/Dev_BMP280.c ****             return false;
+ 164:Device/Dev_BMP280.c **** 
+ 165:Device/Dev_BMP280.c ****         /* after set we need to read out the setting value and check again */
+ 166:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &setting_readout, sizeof(setting_rea
+ 167:Device/Dev_BMP280.c ****             return false;
+ 168:Device/Dev_BMP280.c **** 
+ 169:Device/Dev_BMP280.c ****         if (setting_readout != cur_setting)
+ 170:Device/Dev_BMP280.c ****             return false;
+ 171:Device/Dev_BMP280.c **** 
+ 172:Device/Dev_BMP280.c ****         return true;
+ 173:Device/Dev_BMP280.c ****     }
+ 174:Device/Dev_BMP280.c **** 
+ 175:Device/Dev_BMP280.c ****     return false;
+ 176:Device/Dev_BMP280.c **** }
+ 177:Device/Dev_BMP280.c **** 
+ 178:Device/Dev_BMP280.c **** static bool DevBMP280_Get_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, uint8_t *OverSampling
+ 179:Device/Dev_BMP280.c **** {
+ 180:Device/Dev_BMP280.c ****     if (obj && OverSampling)
+ 181:Device/Dev_BMP280.c ****     {
+ 182:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, OverSampling, sizeof(uint8_t)) == 0)
+ 183:Device/Dev_BMP280.c ****             return false;
+ 184:Device/Dev_BMP280.c ****     
+ 185:Device/Dev_BMP280.c ****         return true;
+ 186:Device/Dev_BMP280.c ****     }
+ 187:Device/Dev_BMP280.c **** 
+ 188:Device/Dev_BMP280.c ****     return false;
+ 189:Device/Dev_BMP280.c **** }
+ 190:Device/Dev_BMP280.c **** 
+ 191:Device/Dev_BMP280.c **** static bool DevBMP280_Set_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List filter)
+ 192:Device/Dev_BMP280.c **** {
+ 193:Device/Dev_BMP280.c ****     uint8_t cur_setting = 0;
+ 194:Device/Dev_BMP280.c ****     uint8_t setting_readout = 0;
+ 195:Device/Dev_BMP280.c **** 
+ 196:Device/Dev_BMP280.c ****     if (obj)
+ 197:Device/Dev_BMP280.c ****     {
+ 198:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CONFIG, &cur_setting, sizeof(cur_setting)) == 0
+ 199:Device/Dev_BMP280.c ****             return false;
+ 200:Device/Dev_BMP280.c **** 
+ 201:Device/Dev_BMP280.c ****         cur_setting &= ~(7 << 2);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 5
+
+
+ 202:Device/Dev_BMP280.c ****         cur_setting |= (filter & 0x07) << 2;
+ 203:Device/Dev_BMP280.c **** 
+ 204:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Write(obj, BMP280_REG_CONFIG, cur_setting) == 0)
+ 205:Device/Dev_BMP280.c ****             return false;
+ 206:Device/Dev_BMP280.c ****         
+ 207:Device/Dev_BMP280.c ****         /* after set we need to read out the setting value and check again */
+ 208:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CONFIG, &setting_readout, sizeof(setting_readou
+ 209:Device/Dev_BMP280.c ****             return false;
+ 210:Device/Dev_BMP280.c **** 
+ 211:Device/Dev_BMP280.c ****         if (setting_readout != cur_setting)
+ 212:Device/Dev_BMP280.c ****             return false;
+ 213:Device/Dev_BMP280.c **** 
+ 214:Device/Dev_BMP280.c ****         return true;
+ 215:Device/Dev_BMP280.c ****     }
+ 216:Device/Dev_BMP280.c **** 
+ 217:Device/Dev_BMP280.c ****     return false;
+ 218:Device/Dev_BMP280.c **** }
+ 219:Device/Dev_BMP280.c **** 
+ 220:Device/Dev_BMP280.c **** static bool DevBMP_Get_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List *filter)
+ 221:Device/Dev_BMP280.c **** {
+ 222:Device/Dev_BMP280.c ****     if (obj && filter)
+ 223:Device/Dev_BMP280.c ****     {
+ 224:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CONFIG, filter, sizeof(uint8_t)) == 0)
+ 225:Device/Dev_BMP280.c ****             return false;
+ 226:Device/Dev_BMP280.c **** 
+ 227:Device/Dev_BMP280.c ****         return true;
+ 228:Device/Dev_BMP280.c ****     }
+ 229:Device/Dev_BMP280.c **** 
+ 230:Device/Dev_BMP280.c ****     return false;
+ 231:Device/Dev_BMP280.c **** }
+ 232:Device/Dev_BMP280.c **** 
+ 233:Device/Dev_BMP280.c **** static bool DevBMP280_Compensate_Temperature(DevBMP280Obj_TypeDef *obj)
+ 234:Device/Dev_BMP280.c **** {
+  29              		.loc 1 234 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+ 235:Device/Dev_BMP280.c ****     bool state = true;
+  34              		.loc 1 235 5 view .LVU1
+ 236:Device/Dev_BMP280.c ****     float var1 = 0.0f;
+  35              		.loc 1 236 5 view .LVU2
+ 237:Device/Dev_BMP280.c ****     float var2 = 0.0f;
+  36              		.loc 1 237 5 view .LVU3
+ 238:Device/Dev_BMP280.c ****     
+ 239:Device/Dev_BMP280.c ****     if (obj)
+  37              		.loc 1 239 5 view .LVU4
+  38              		.loc 1 239 8 is_stmt 0 view .LVU5
+  39 0000 0346     		mov	r3, r0
+  40 0002 0028     		cmp	r0, #0
+  41 0004 52D0     		beq	.L7
+ 240:Device/Dev_BMP280.c ****     {
+ 241:Device/Dev_BMP280.c ****         var1 = ((float)obj->raw_temperature) / 16384.0f;
+  42              		.loc 1 241 9 is_stmt 1 view .LVU6
+  43              		.loc 1 241 27 is_stmt 0 view .LVU7
+  44 0006 90ED0D7A 		vldr.32	s14, [r0, #52]
+  45              		.loc 1 241 14 view .LVU8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 6
+
+
+  46 000a DFED296A 		vldr.32	s13, .L13
+  47 000e 67EE266A 		vmul.f32	s13, s14, s13
+  48              	.LVL1:
+ 242:Device/Dev_BMP280.c ****         var1 -= ((float)obj->calib.t1) / 1024.0f;
+  49              		.loc 1 242 9 is_stmt 1 view .LVU9
+  50              		.loc 1 242 35 is_stmt 0 view .LVU10
+  51 0012 8289     		ldrh	r2, [r0, #12]
+  52 0014 06EE102A 		vmov	s12, r2	@ int
+  53              		.loc 1 242 18 view .LVU11
+  54 0018 B8EE466A 		vcvt.f32.u32	s12, s12
+  55              		.loc 1 242 40 view .LVU12
+  56 001c DFED257A 		vldr.32	s15, .L13+4
+  57 0020 66EE277A 		vmul.f32	s15, s12, s15
+  58              		.loc 1 242 14 view .LVU13
+  59 0024 76EEE76A 		vsub.f32	s13, s13, s15
+  60              	.LVL2:
+ 243:Device/Dev_BMP280.c ****         var1 *= (float)obj->calib.t2;
+  61              		.loc 1 243 9 is_stmt 1 view .LVU14
+  62              		.loc 1 243 34 is_stmt 0 view .LVU15
+  63 0028 B0F90E20 		ldrsh	r2, [r0, #14]
+  64 002c 07EE902A 		vmov	s15, r2	@ int
+  65              		.loc 1 243 17 view .LVU16
+  66 0030 F8EEE77A 		vcvt.f32.s32	s15, s15
+  67              		.loc 1 243 14 view .LVU17
+  68 0034 67EEA66A 		vmul.f32	s13, s15, s13
+  69              	.LVL3:
+ 244:Device/Dev_BMP280.c **** 
+ 245:Device/Dev_BMP280.c ****         var2 = ((float)obj->raw_temperature) / 131072.0f - ((float)obj->calib.t1) / 8192.0f;
+  70              		.loc 1 245 9 is_stmt 1 view .LVU18
+  71              		.loc 1 245 46 is_stmt 0 view .LVU19
+  72 0038 DFED1F7A 		vldr.32	s15, .L13+8
+  73 003c 27EE277A 		vmul.f32	s14, s14, s15
+  74              		.loc 1 245 83 view .LVU20
+  75 0040 DFED1E7A 		vldr.32	s15, .L13+12
+  76 0044 66EE277A 		vmul.f32	s15, s12, s15
+  77              		.loc 1 245 14 view .LVU21
+  78 0048 77EE677A 		vsub.f32	s15, s14, s15
+  79              	.LVL4:
+ 246:Device/Dev_BMP280.c ****         var2 *= ((float)obj->raw_temperature) / 131072.0f - ((float)obj->calib.t1) / 8192.0f;
+  80              		.loc 1 246 9 is_stmt 1 view .LVU22
+  81              		.loc 1 246 14 is_stmt 0 view .LVU23
+  82 004c 67EEA77A 		vmul.f32	s15, s15, s15
+  83              	.LVL5:
+ 247:Device/Dev_BMP280.c ****         var2 *= ((float)obj->calib.t3);
+  84              		.loc 1 247 9 is_stmt 1 view .LVU24
+  85              		.loc 1 247 35 is_stmt 0 view .LVU25
+  86 0050 B0F91020 		ldrsh	r2, [r0, #16]
+  87 0054 07EE102A 		vmov	s14, r2	@ int
+  88              		.loc 1 247 18 view .LVU26
+  89 0058 B8EEC77A 		vcvt.f32.s32	s14, s14
+  90              		.loc 1 247 14 view .LVU27
+  91 005c 67EE277A 		vmul.f32	s15, s14, s15
+  92              	.LVL6:
+ 248:Device/Dev_BMP280.c **** 
+ 249:Device/Dev_BMP280.c ****         obj->calib.t_fine = (int32_t)(var1 + var2);
+  93              		.loc 1 249 9 is_stmt 1 view .LVU28
+  94              		.loc 1 249 44 is_stmt 0 view .LVU29
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 7
+
+
+  95 0060 76EEA77A 		vadd.f32	s15, s13, s15
+  96              	.LVL7:
+  97              		.loc 1 249 29 view .LVU30
+  98 0064 BDEEE77A 		vcvt.s32.f32	s14, s15
+  99              	.LVL8:
+ 100              		.loc 1 249 27 view .LVU31
+ 101 0068 83ED097A 		vstr.32	s14, [r3, #36]	@ int
+ 250:Device/Dev_BMP280.c ****         obj->raw_temperature = (var1 + var2) / 5120.0f;
+ 102              		.loc 1 250 9 is_stmt 1 view .LVU32
+ 103              		.loc 1 250 46 is_stmt 0 view .LVU33
+ 104 006c DFED146A 		vldr.32	s13, .L13+16
+ 105              	.LVL9:
+ 106              		.loc 1 250 46 view .LVU34
+ 107 0070 87EEA67A 		vdiv.f32	s14, s15, s13
+ 108              		.loc 1 250 30 view .LVU35
+ 109 0074 80ED0D7A 		vstr.32	s14, [r0, #52]
+ 110              	.LVL10:
+ 251:Device/Dev_BMP280.c ****         
+ 252:Device/Dev_BMP280.c ****         if (obj->raw_temperature < -40.0f)
+ 111              		.loc 1 252 9 is_stmt 1 view .LVU36
+ 112              		.loc 1 252 12 is_stmt 0 view .LVU37
+ 113 0078 DFED127A 		vldr.32	s15, .L13+20
+ 114 007c B4EEE77A 		vcmpe.f32	s14, s15
+ 115 0080 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 116 0084 05D5     		bpl	.L11
+ 253:Device/Dev_BMP280.c ****         {
+ 254:Device/Dev_BMP280.c ****             obj->raw_temperature = -40.0f;
+ 117              		.loc 1 254 13 is_stmt 1 view .LVU38
+ 118              		.loc 1 254 34 is_stmt 0 view .LVU39
+ 119 0086 C3ED0D7A 		vstr.32	s15, [r3, #52]
+ 255:Device/Dev_BMP280.c ****             state = false;
+ 120              		.loc 1 255 13 is_stmt 1 view .LVU40
+ 121              	.LVL11:
+ 122              		.loc 1 255 19 is_stmt 0 view .LVU41
+ 123 008a 0020     		movs	r0, #0
+ 124              	.LVL12:
+ 125              	.L5:
+ 256:Device/Dev_BMP280.c ****         }
+ 257:Device/Dev_BMP280.c ****         else if (obj->raw_temperature > 85.0f)
+ 258:Device/Dev_BMP280.c ****         {
+ 259:Device/Dev_BMP280.c ****             obj->raw_temperature = 85.0f;
+ 260:Device/Dev_BMP280.c ****             state = false;
+ 261:Device/Dev_BMP280.c ****         }
+ 262:Device/Dev_BMP280.c **** 
+ 263:Device/Dev_BMP280.c ****         obj->temperature = obj->raw_temperature;
+ 126              		.loc 1 263 9 is_stmt 1 view .LVU42
+ 127              		.loc 1 263 31 is_stmt 0 view .LVU43
+ 128 008c 5A6B     		ldr	r2, [r3, #52]	@ float
+ 129              		.loc 1 263 26 view .LVU44
+ 130 008e DA63     		str	r2, [r3, #60]	@ float
+ 264:Device/Dev_BMP280.c ****         return state;
+ 131              		.loc 1 264 9 is_stmt 1 view .LVU45
+ 132              		.loc 1 264 16 is_stmt 0 view .LVU46
+ 133 0090 7047     		bx	lr
+ 134              	.LVL13:
+ 135              	.L11:
+ 257:Device/Dev_BMP280.c ****         {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 8
+
+
+ 136              		.loc 1 257 14 is_stmt 1 view .LVU47
+ 257:Device/Dev_BMP280.c ****         {
+ 137              		.loc 1 257 17 is_stmt 0 view .LVU48
+ 138 0092 DFED0D7A 		vldr.32	s15, .L13+24
+ 139 0096 B4EEE77A 		vcmpe.f32	s14, s15
+ 140 009a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 141 009e 03DD     		ble	.L12
+ 259:Device/Dev_BMP280.c ****             state = false;
+ 142              		.loc 1 259 13 is_stmt 1 view .LVU49
+ 259:Device/Dev_BMP280.c ****             state = false;
+ 143              		.loc 1 259 34 is_stmt 0 view .LVU50
+ 144 00a0 C3ED0D7A 		vstr.32	s15, [r3, #52]
+ 260:Device/Dev_BMP280.c ****         }
+ 145              		.loc 1 260 13 is_stmt 1 view .LVU51
+ 146              	.LVL14:
+ 260:Device/Dev_BMP280.c ****         }
+ 147              		.loc 1 260 19 is_stmt 0 view .LVU52
+ 148 00a4 0020     		movs	r0, #0
+ 149              	.LVL15:
+ 260:Device/Dev_BMP280.c ****         }
+ 150              		.loc 1 260 19 view .LVU53
+ 151 00a6 F1E7     		b	.L5
+ 152              	.LVL16:
+ 153              	.L12:
+ 235:Device/Dev_BMP280.c ****     float var1 = 0.0f;
+ 154              		.loc 1 235 10 view .LVU54
+ 155 00a8 0120     		movs	r0, #1
+ 156              	.LVL17:
+ 235:Device/Dev_BMP280.c ****     float var1 = 0.0f;
+ 157              		.loc 1 235 10 view .LVU55
+ 158 00aa EFE7     		b	.L5
+ 159              	.LVL18:
+ 160              	.L7:
+ 265:Device/Dev_BMP280.c ****     }
+ 266:Device/Dev_BMP280.c **** 
+ 267:Device/Dev_BMP280.c ****     return false;
+ 161              		.loc 1 267 12 view .LVU56
+ 162 00ac 0020     		movs	r0, #0
+ 163              	.LVL19:
+ 268:Device/Dev_BMP280.c **** }
+ 164              		.loc 1 268 1 view .LVU57
+ 165 00ae 7047     		bx	lr
+ 166              	.L14:
+ 167              		.align	2
+ 168              	.L13:
+ 169 00b0 00008038 		.word	947912704
+ 170 00b4 0000803A 		.word	981467136
+ 171 00b8 00000037 		.word	922746880
+ 172 00bc 00000039 		.word	956301312
+ 173 00c0 0000A045 		.word	1168113664
+ 174 00c4 000020C2 		.word	-1038090240
+ 175 00c8 0000AA42 		.word	1118437376
+ 176              		.cfi_endproc
+ 177              	.LFE7:
+ 179              		.section	.text.DevBMP280_Compensate_Pressure,"ax",%progbits
+ 180              		.align	1
+ 181              		.syntax unified
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 9
+
+
+ 182              		.thumb
+ 183              		.thumb_func
+ 185              	DevBMP280_Compensate_Pressure:
+ 186              	.LVL20:
+ 187              	.LFB8:
+ 269:Device/Dev_BMP280.c **** 
+ 270:Device/Dev_BMP280.c **** static bool DevBMP280_Compensate_Pressure(DevBMP280Obj_TypeDef *obj)
+ 271:Device/Dev_BMP280.c **** {
+ 188              		.loc 1 271 1 is_stmt 1 view -0
+ 189              		.cfi_startproc
+ 190              		@ args = 0, pretend = 0, frame = 0
+ 191              		@ frame_needed = 0, uses_anonymous_args = 0
+ 192              		@ link register save eliminated.
+ 272:Device/Dev_BMP280.c ****     float var1 = 0.0f;
+ 193              		.loc 1 272 5 view .LVU59
+ 273:Device/Dev_BMP280.c ****     float var2 = 0.0f;
+ 194              		.loc 1 273 5 view .LVU60
+ 274:Device/Dev_BMP280.c ****     bool state = true;
+ 195              		.loc 1 274 5 view .LVU61
+ 275:Device/Dev_BMP280.c **** 
+ 276:Device/Dev_BMP280.c ****     if (obj)
+ 196              		.loc 1 276 5 view .LVU62
+ 197              		.loc 1 276 8 is_stmt 0 view .LVU63
+ 198 0000 0346     		mov	r3, r0
+ 199 0002 0028     		cmp	r0, #0
+ 200 0004 00F0C180 		beq	.L22
+ 277:Device/Dev_BMP280.c ****     {
+ 278:Device/Dev_BMP280.c ****         var1 = ((float)obj->calib.t_fine / 2.0f) - 64000.0f;
+ 201              		.loc 1 278 9 is_stmt 1 view .LVU64
+ 202              		.loc 1 278 17 is_stmt 0 view .LVU65
+ 203 0008 D0ED097A 		vldr.32	s15, [r0, #36]	@ int
+ 204 000c F8EEE75A 		vcvt.f32.s32	s11, s15
+ 205              		.loc 1 278 42 view .LVU66
+ 206 0010 F6EE007A 		vmov.f32	s15, #5.0e-1
+ 207 0014 65EEA75A 		vmul.f32	s11, s11, s15
+ 208              		.loc 1 278 14 view .LVU67
+ 209 0018 DFED5D7A 		vldr.32	s15, .L31
+ 210 001c 75EEE75A 		vsub.f32	s11, s11, s15
+ 211              	.LVL21:
+ 279:Device/Dev_BMP280.c ****         var2 = var1 * var1 * ((float)obj->calib.p6) / 32768.0f;
+ 212              		.loc 1 279 9 is_stmt 1 view .LVU68
+ 213              		.loc 1 279 21 is_stmt 0 view .LVU69
+ 214 0020 65EEA57A 		vmul.f32	s15, s11, s11
+ 215              		.loc 1 279 48 view .LVU70
+ 216 0024 B0F91C20 		ldrsh	r2, [r0, #28]
+ 217 0028 06EE902A 		vmov	s13, r2	@ int
+ 218              		.loc 1 279 31 view .LVU71
+ 219 002c F8EEE66A 		vcvt.f32.s32	s13, s13
+ 220              		.loc 1 279 28 view .LVU72
+ 221 0030 67EEA66A 		vmul.f32	s13, s15, s13
+ 222              		.loc 1 279 14 view .LVU73
+ 223 0034 9FED577A 		vldr.32	s14, .L31+4
+ 224 0038 26EE876A 		vmul.f32	s12, s13, s14
+ 225              	.LVL22:
+ 280:Device/Dev_BMP280.c ****         var2 = var2 + var1 * ((float)obj->calib.p5) * 2.0f;
+ 226              		.loc 1 280 9 is_stmt 1 view .LVU74
+ 227              		.loc 1 280 48 is_stmt 0 view .LVU75
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 10
+
+
+ 228 003c B0F91A20 		ldrsh	r2, [r0, #26]
+ 229 0040 06EE902A 		vmov	s13, r2	@ int
+ 230              		.loc 1 280 31 view .LVU76
+ 231 0044 F8EEE66A 		vcvt.f32.s32	s13, s13
+ 232              		.loc 1 280 28 view .LVU77
+ 233 0048 66EEA56A 		vmul.f32	s13, s13, s11
+ 234              		.loc 1 280 53 view .LVU78
+ 235 004c 76EEA66A 		vadd.f32	s13, s13, s13
+ 236              		.loc 1 280 14 view .LVU79
+ 237 0050 76EE866A 		vadd.f32	s13, s13, s12
+ 238              	.LVL23:
+ 281:Device/Dev_BMP280.c ****         var2 = (var2 / 4.0f) + (((float)obj->calib.p4) * 65536.0f);
+ 239              		.loc 1 281 9 is_stmt 1 view .LVU80
+ 240              		.loc 1 281 22 is_stmt 0 view .LVU81
+ 241 0054 F5EE007A 		vmov.f32	s15, #2.5e-1
+ 242 0058 66EEA76A 		vmul.f32	s13, s13, s15
+ 243              	.LVL24:
+ 244              		.loc 1 281 51 view .LVU82
+ 245 005c B0F91820 		ldrsh	r2, [r0, #24]
+ 246              	.LVL25:
+ 247              		.loc 1 281 51 view .LVU83
+ 248 0060 06EE102A 		vmov	s12, r2	@ int
+ 249              	.LVL26:
+ 250              		.loc 1 281 34 view .LVU84
+ 251 0064 B8EEC66A 		vcvt.f32.s32	s12, s12
+ 252              		.loc 1 281 56 view .LVU85
+ 253 0068 DFED4B7A 		vldr.32	s15, .L31+8
+ 254 006c 26EE276A 		vmul.f32	s12, s12, s15
+ 255              		.loc 1 281 14 view .LVU86
+ 256 0070 36EE866A 		vadd.f32	s12, s13, s12
+ 257              	.LVL27:
+ 282:Device/Dev_BMP280.c ****         var1 = (((float)obj->calib.p3) * var1 * var1 / 524288.0f + ((float)obj->calib.p2) * var1) /
+ 258              		.loc 1 282 9 is_stmt 1 view .LVU87
+ 259              		.loc 1 282 35 is_stmt 0 view .LVU88
+ 260 0074 B0F91620 		ldrsh	r2, [r0, #22]
+ 261 0078 06EE902A 		vmov	s13, r2	@ int
+ 262              		.loc 1 282 18 view .LVU89
+ 263 007c F8EEE66A 		vcvt.f32.s32	s13, s13
+ 264              		.loc 1 282 40 view .LVU90
+ 265 0080 66EEA56A 		vmul.f32	s13, s13, s11
+ 266              		.loc 1 282 47 view .LVU91
+ 267 0084 66EEA56A 		vmul.f32	s13, s13, s11
+ 268              		.loc 1 282 54 view .LVU92
+ 269 0088 9FED445A 		vldr.32	s10, .L31+12
+ 270 008c 66EE856A 		vmul.f32	s13, s13, s10
+ 271              		.loc 1 282 86 view .LVU93
+ 272 0090 B0F91420 		ldrsh	r2, [r0, #20]
+ 273 0094 07EE902A 		vmov	s15, r2	@ int
+ 274              		.loc 1 282 69 view .LVU94
+ 275 0098 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 276              		.loc 1 282 91 view .LVU95
+ 277 009c 67EEA57A 		vmul.f32	s15, s15, s11
+ 278              		.loc 1 282 66 view .LVU96
+ 279 00a0 76EEA77A 		vadd.f32	s15, s13, s15
+ 280              		.loc 1 282 14 view .LVU97
+ 281 00a4 67EE857A 		vmul.f32	s15, s15, s10
+ 282              	.LVL28:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 11
+
+
+ 283:Device/Dev_BMP280.c ****         var1 = (1.0f + var1 / 32768.0f) * ((float)obj->calib.p1);
+ 283              		.loc 1 283 9 is_stmt 1 view .LVU98
+ 284              		.loc 1 283 29 is_stmt 0 view .LVU99
+ 285 00a8 67EE877A 		vmul.f32	s15, s15, s14
+ 286              	.LVL29:
+ 287              		.loc 1 283 22 view .LVU100
+ 288 00ac B7EE007A 		vmov.f32	s14, #1.0e+0
+ 289 00b0 37EE877A 		vadd.f32	s14, s15, s14
+ 290              		.loc 1 283 61 view .LVU101
+ 291 00b4 428A     		ldrh	r2, [r0, #18]
+ 292              	.LVL30:
+ 293              		.loc 1 283 61 view .LVU102
+ 294 00b6 07EE902A 		vmov	s15, r2	@ int
+ 295              		.loc 1 283 44 view .LVU103
+ 296 00ba F8EE677A 		vcvt.f32.u32	s15, s15
+ 297              		.loc 1 283 14 view .LVU104
+ 298 00be 67EE277A 		vmul.f32	s15, s14, s15
+ 299              	.LVL31:
+ 284:Device/Dev_BMP280.c ****         obj->pressure = 0.0f;
+ 300              		.loc 1 284 9 is_stmt 1 view .LVU105
+ 301              		.loc 1 284 23 is_stmt 0 view .LVU106
+ 302 00c2 0022     		movs	r2, #0
+ 303 00c4 0264     		str	r2, [r0, #64]	@ float
+ 285:Device/Dev_BMP280.c **** 
+ 286:Device/Dev_BMP280.c ****         if ((var1 < 0.0f) || \
+ 304              		.loc 1 286 9 is_stmt 1 view .LVU107
+ 305              		.loc 1 286 12 is_stmt 0 view .LVU108
+ 306 00c6 F5EEC07A 		vcmpe.f32	s15, #0
+ 307 00ca F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 308 00ce 02D4     		bmi	.L25
+ 309 00d0 01DC     		bgt	.L25
+ 287:Device/Dev_BMP280.c ****             (var1 > 0.0f))
+ 288:Device/Dev_BMP280.c ****         {
+ 289:Device/Dev_BMP280.c ****             obj->pressure = 1048576.0f - obj->raw_pressure;
+ 290:Device/Dev_BMP280.c ****             obj->pressure = (obj->pressure - (var2 / 4096.0f)) * 6250.0f / var1;
+ 291:Device/Dev_BMP280.c ****             var1 = ((float)obj->calib.p9) * obj->pressure * obj->pressure / 2147483648.0f;
+ 292:Device/Dev_BMP280.c ****             var2 = obj->pressure * ((float)obj->calib.p8) / 32768.0f;
+ 293:Device/Dev_BMP280.c ****             obj->pressure += (var1 + var2 + ((float)obj->calib.p7)) / 16.0f;
+ 294:Device/Dev_BMP280.c ****             
+ 295:Device/Dev_BMP280.c ****             if (obj->pressure < 30000.0f)
+ 296:Device/Dev_BMP280.c ****             {
+ 297:Device/Dev_BMP280.c ****                 obj->pressure = 30000.0f;
+ 298:Device/Dev_BMP280.c ****                 state = false;
+ 299:Device/Dev_BMP280.c ****             }
+ 300:Device/Dev_BMP280.c ****             else if (obj->pressure > 110000.0f)
+ 301:Device/Dev_BMP280.c ****             {
+ 302:Device/Dev_BMP280.c ****                 obj->pressure = 110000.0f;
+ 303:Device/Dev_BMP280.c ****                 state = false;
+ 304:Device/Dev_BMP280.c ****             }
+ 305:Device/Dev_BMP280.c **** 
+ 306:Device/Dev_BMP280.c ****             return state;
+ 307:Device/Dev_BMP280.c ****         }
+ 308:Device/Dev_BMP280.c ****             
+ 309:Device/Dev_BMP280.c ****         obj->pressure = 0.0f;
+ 310:Device/Dev_BMP280.c ****     }
+ 311:Device/Dev_BMP280.c **** 
+ 312:Device/Dev_BMP280.c ****     return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 12
+
+
+ 310              		.loc 1 312 12 view .LVU109
+ 311 00d2 0020     		movs	r0, #0
+ 312              	.LVL32:
+ 313:Device/Dev_BMP280.c **** }
+ 313              		.loc 1 313 1 view .LVU110
+ 314 00d4 7047     		bx	lr
+ 315              	.LVL33:
+ 316              	.L25:
+ 289:Device/Dev_BMP280.c ****             obj->pressure = (obj->pressure - (var2 / 4096.0f)) * 6250.0f / var1;
+ 317              		.loc 1 289 13 is_stmt 1 view .LVU111
+ 289:Device/Dev_BMP280.c ****             obj->pressure = (obj->pressure - (var2 / 4096.0f)) * 6250.0f / var1;
+ 318              		.loc 1 289 45 is_stmt 0 view .LVU112
+ 319 00d6 D3ED0E6A 		vldr.32	s13, [r3, #56]
+ 289:Device/Dev_BMP280.c ****             obj->pressure = (obj->pressure - (var2 / 4096.0f)) * 6250.0f / var1;
+ 320              		.loc 1 289 40 view .LVU113
+ 321 00da 9FED317A 		vldr.32	s14, .L31+16
+ 322 00de 37EE667A 		vsub.f32	s14, s14, s13
+ 289:Device/Dev_BMP280.c ****             obj->pressure = (obj->pressure - (var2 / 4096.0f)) * 6250.0f / var1;
+ 323              		.loc 1 289 27 view .LVU114
+ 324 00e2 83ED107A 		vstr.32	s14, [r3, #64]
+ 290:Device/Dev_BMP280.c ****             var1 = ((float)obj->calib.p9) * obj->pressure * obj->pressure / 2147483648.0f;
+ 325              		.loc 1 290 13 is_stmt 1 view .LVU115
+ 290:Device/Dev_BMP280.c ****             var1 = ((float)obj->calib.p9) * obj->pressure * obj->pressure / 2147483648.0f;
+ 326              		.loc 1 290 52 is_stmt 0 view .LVU116
+ 327 00e6 DFED2F6A 		vldr.32	s13, .L31+20
+ 328 00ea 66EE266A 		vmul.f32	s13, s12, s13
+ 290:Device/Dev_BMP280.c ****             var1 = ((float)obj->calib.p9) * obj->pressure * obj->pressure / 2147483648.0f;
+ 329              		.loc 1 290 44 view .LVU117
+ 330 00ee 77EE666A 		vsub.f32	s13, s14, s13
+ 290:Device/Dev_BMP280.c ****             var1 = ((float)obj->calib.p9) * obj->pressure * obj->pressure / 2147483648.0f;
+ 331              		.loc 1 290 64 view .LVU118
+ 332 00f2 9FED2D7A 		vldr.32	s14, .L31+24
+ 333 00f6 66EE876A 		vmul.f32	s13, s13, s14
+ 290:Device/Dev_BMP280.c ****             var1 = ((float)obj->calib.p9) * obj->pressure * obj->pressure / 2147483648.0f;
+ 334              		.loc 1 290 74 view .LVU119
+ 335 00fa C6EEA75A 		vdiv.f32	s11, s13, s15
+ 290:Device/Dev_BMP280.c ****             var1 = ((float)obj->calib.p9) * obj->pressure * obj->pressure / 2147483648.0f;
+ 336              		.loc 1 290 27 view .LVU120
+ 337 00fe C3ED105A 		vstr.32	s11, [r3, #64]
+ 291:Device/Dev_BMP280.c ****             var2 = obj->pressure * ((float)obj->calib.p8) / 32768.0f;
+ 338              		.loc 1 291 13 is_stmt 1 view .LVU121
+ 291:Device/Dev_BMP280.c ****             var2 = obj->pressure * ((float)obj->calib.p8) / 32768.0f;
+ 339              		.loc 1 291 38 is_stmt 0 view .LVU122
+ 340 0102 B3F92220 		ldrsh	r2, [r3, #34]
+ 341 0106 07EE902A 		vmov	s15, r2	@ int
+ 342              	.LVL34:
+ 291:Device/Dev_BMP280.c ****             var2 = obj->pressure * ((float)obj->calib.p8) / 32768.0f;
+ 343              		.loc 1 291 21 view .LVU123
+ 344 010a F8EEE77A 		vcvt.f32.s32	s15, s15
+ 291:Device/Dev_BMP280.c ****             var2 = obj->pressure * ((float)obj->calib.p8) / 32768.0f;
+ 345              		.loc 1 291 43 view .LVU124
+ 346 010e 65EEA77A 		vmul.f32	s15, s11, s15
+ 291:Device/Dev_BMP280.c ****             var2 = obj->pressure * ((float)obj->calib.p8) / 32768.0f;
+ 347              		.loc 1 291 59 view .LVU125
+ 348 0112 65EEA77A 		vmul.f32	s15, s11, s15
+ 291:Device/Dev_BMP280.c ****             var2 = obj->pressure * ((float)obj->calib.p8) / 32768.0f;
+ 349              		.loc 1 291 18 view .LVU126
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 13
+
+
+ 350 0116 9FED257A 		vldr.32	s14, .L31+28
+ 351 011a 67EE877A 		vmul.f32	s15, s15, s14
+ 352              	.LVL35:
+ 292:Device/Dev_BMP280.c ****             obj->pressure += (var1 + var2 + ((float)obj->calib.p7)) / 16.0f;
+ 353              		.loc 1 292 13 is_stmt 1 view .LVU127
+ 292:Device/Dev_BMP280.c ****             obj->pressure += (var1 + var2 + ((float)obj->calib.p7)) / 16.0f;
+ 354              		.loc 1 292 54 is_stmt 0 view .LVU128
+ 355 011e B3F92020 		ldrsh	r2, [r3, #32]
+ 356 0122 07EE102A 		vmov	s14, r2	@ int
+ 292:Device/Dev_BMP280.c ****             obj->pressure += (var1 + var2 + ((float)obj->calib.p7)) / 16.0f;
+ 357              		.loc 1 292 37 view .LVU129
+ 358 0126 B8EEC77A 		vcvt.f32.s32	s14, s14
+ 292:Device/Dev_BMP280.c ****             obj->pressure += (var1 + var2 + ((float)obj->calib.p7)) / 16.0f;
+ 359              		.loc 1 292 34 view .LVU130
+ 360 012a 25EE877A 		vmul.f32	s14, s11, s14
+ 292:Device/Dev_BMP280.c ****             obj->pressure += (var1 + var2 + ((float)obj->calib.p7)) / 16.0f;
+ 361              		.loc 1 292 18 view .LVU131
+ 362 012e DFED196A 		vldr.32	s13, .L31+4
+ 363 0132 27EE267A 		vmul.f32	s14, s14, s13
+ 364              	.LVL36:
+ 293:Device/Dev_BMP280.c ****             
+ 365              		.loc 1 293 13 is_stmt 1 view .LVU132
+ 293:Device/Dev_BMP280.c ****             
+ 366              		.loc 1 293 36 is_stmt 0 view .LVU133
+ 367 0136 37EE877A 		vadd.f32	s14, s15, s14
+ 368              	.LVL37:
+ 293:Device/Dev_BMP280.c ****             
+ 369              		.loc 1 293 63 view .LVU134
+ 370 013a B3F91E20 		ldrsh	r2, [r3, #30]
+ 371              	.LVL38:
+ 293:Device/Dev_BMP280.c ****             
+ 372              		.loc 1 293 63 view .LVU135
+ 373 013e 07EE902A 		vmov	s15, r2	@ int
+ 374              	.LVL39:
+ 293:Device/Dev_BMP280.c ****             
+ 375              		.loc 1 293 46 view .LVU136
+ 376 0142 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 293:Device/Dev_BMP280.c ****             
+ 377              		.loc 1 293 43 view .LVU137
+ 378 0146 77EE277A 		vadd.f32	s15, s14, s15
+ 293:Device/Dev_BMP280.c ****             
+ 379              		.loc 1 293 69 view .LVU138
+ 380 014a 9FED197A 		vldr.32	s14, .L31+32
+ 381 014e 67EE877A 		vmul.f32	s15, s15, s14
+ 293:Device/Dev_BMP280.c ****             
+ 382              		.loc 1 293 27 view .LVU139
+ 383 0152 75EEA77A 		vadd.f32	s15, s11, s15
+ 384 0156 C3ED107A 		vstr.32	s15, [r3, #64]
+ 295:Device/Dev_BMP280.c ****             {
+ 385              		.loc 1 295 13 is_stmt 1 view .LVU140
+ 295:Device/Dev_BMP280.c ****             {
+ 386              		.loc 1 295 16 is_stmt 0 view .LVU141
+ 387 015a 9FED167A 		vldr.32	s14, .L31+36
+ 388 015e F4EEC77A 		vcmpe.f32	s15, s14
+ 389 0162 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 390 0166 03D5     		bpl	.L29
+ 297:Device/Dev_BMP280.c ****                 state = false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 14
+
+
+ 391              		.loc 1 297 17 is_stmt 1 view .LVU142
+ 297:Device/Dev_BMP280.c ****                 state = false;
+ 392              		.loc 1 297 31 is_stmt 0 view .LVU143
+ 393 0168 83ED107A 		vstr.32	s14, [r3, #64]
+ 298:Device/Dev_BMP280.c ****             }
+ 394              		.loc 1 298 17 is_stmt 1 view .LVU144
+ 395              	.LVL40:
+ 298:Device/Dev_BMP280.c ****             }
+ 396              		.loc 1 298 23 is_stmt 0 view .LVU145
+ 397 016c 0020     		movs	r0, #0
+ 398              	.LVL41:
+ 298:Device/Dev_BMP280.c ****             }
+ 399              		.loc 1 298 23 view .LVU146
+ 400 016e 7047     		bx	lr
+ 401              	.LVL42:
+ 402              	.L29:
+ 300:Device/Dev_BMP280.c ****             {
+ 403              		.loc 1 300 18 is_stmt 1 view .LVU147
+ 300:Device/Dev_BMP280.c ****             {
+ 404              		.loc 1 300 21 is_stmt 0 view .LVU148
+ 405 0170 9FED117A 		vldr.32	s14, .L31+40
+ 406 0174 F4EEC77A 		vcmpe.f32	s15, s14
+ 407 0178 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 408 017c 03DD     		ble	.L30
+ 302:Device/Dev_BMP280.c ****                 state = false;
+ 409              		.loc 1 302 17 is_stmt 1 view .LVU149
+ 302:Device/Dev_BMP280.c ****                 state = false;
+ 410              		.loc 1 302 31 is_stmt 0 view .LVU150
+ 411 017e 83ED107A 		vstr.32	s14, [r3, #64]
+ 303:Device/Dev_BMP280.c ****             }
+ 412              		.loc 1 303 17 is_stmt 1 view .LVU151
+ 413              	.LVL43:
+ 303:Device/Dev_BMP280.c ****             }
+ 414              		.loc 1 303 23 is_stmt 0 view .LVU152
+ 415 0182 0020     		movs	r0, #0
+ 416              	.LVL44:
+ 303:Device/Dev_BMP280.c ****             }
+ 417              		.loc 1 303 23 view .LVU153
+ 418 0184 7047     		bx	lr
+ 419              	.LVL45:
+ 420              	.L30:
+ 274:Device/Dev_BMP280.c **** 
+ 421              		.loc 1 274 10 view .LVU154
+ 422 0186 0120     		movs	r0, #1
+ 423              	.LVL46:
+ 306:Device/Dev_BMP280.c ****         }
+ 424              		.loc 1 306 13 is_stmt 1 view .LVU155
+ 306:Device/Dev_BMP280.c ****         }
+ 425              		.loc 1 306 20 is_stmt 0 view .LVU156
+ 426 0188 7047     		bx	lr
+ 427              	.LVL47:
+ 428              	.L22:
+ 312:Device/Dev_BMP280.c **** }
+ 429              		.loc 1 312 12 view .LVU157
+ 430 018a 0020     		movs	r0, #0
+ 431              	.LVL48:
+ 312:Device/Dev_BMP280.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 15
+
+
+ 432              		.loc 1 312 12 view .LVU158
+ 433 018c 7047     		bx	lr
+ 434              	.L32:
+ 435 018e 00BF     		.align	2
+ 436              	.L31:
+ 437 0190 00007A47 		.word	1199177728
+ 438 0194 00000038 		.word	939524096
+ 439 0198 00008047 		.word	1199570944
+ 440 019c 00000036 		.word	905969664
+ 441 01a0 00008049 		.word	1233125376
+ 442 01a4 00008039 		.word	964689920
+ 443 01a8 0050C345 		.word	1170427904
+ 444 01ac 00000030 		.word	805306368
+ 445 01b0 0000803D 		.word	1031798784
+ 446 01b4 0060EA46 		.word	1189765120
+ 447 01b8 00D8D647 		.word	1205262336
+ 448              		.cfi_endproc
+ 449              	.LFE8:
+ 451              		.section	.text.DevBMP280_Get_DataReady,"ax",%progbits
+ 452              		.align	1
+ 453              		.syntax unified
+ 454              		.thumb
+ 455              		.thumb_func
+ 457              	DevBMP280_Get_DataReady:
+ 458              	.LVL49:
+ 459              	.LFB10:
+ 314:Device/Dev_BMP280.c **** 
+ 315:Device/Dev_BMP280.c **** static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_TypeDef *status)
+ 316:Device/Dev_BMP280.c **** {
+ 317:Device/Dev_BMP280.c ****     if (obj && status)
+ 318:Device/Dev_BMP280.c ****     {
+ 319:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_STATUS, &(status->val), sizeof(uint8_t)) == 0)
+ 320:Device/Dev_BMP280.c ****             return false;
+ 321:Device/Dev_BMP280.c **** 
+ 322:Device/Dev_BMP280.c ****         return true;
+ 323:Device/Dev_BMP280.c ****     }
+ 324:Device/Dev_BMP280.c **** 
+ 325:Device/Dev_BMP280.c ****     return false;
+ 326:Device/Dev_BMP280.c **** }
+ 327:Device/Dev_BMP280.c **** 
+ 328:Device/Dev_BMP280.c **** static bool DevBMP280_Get_DataReady(DevBMP280Obj_TypeDef *obj)
+ 329:Device/Dev_BMP280.c **** {
+ 460              		.loc 1 329 1 is_stmt 1 view -0
+ 461              		.cfi_startproc
+ 462              		@ args = 0, pretend = 0, frame = 0
+ 463              		@ frame_needed = 0, uses_anonymous_args = 0
+ 464              		@ link register save eliminated.
+ 330:Device/Dev_BMP280.c ****     if (obj)
+ 465              		.loc 1 330 5 view .LVU160
+ 466              		.loc 1 330 8 is_stmt 0 view .LVU161
+ 467 0000 30B1     		cbz	r0, .L35
+ 331:Device/Dev_BMP280.c ****     {
+ 332:Device/Dev_BMP280.c ****         if (obj->sys_tick != obj->lst_sys_tick)
+ 468              		.loc 1 332 9 is_stmt 1 view .LVU162
+ 469              		.loc 1 332 16 is_stmt 0 view .LVU163
+ 470 0002 826A     		ldr	r2, [r0, #40]
+ 471              		.loc 1 332 33 view .LVU164
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 16
+
+
+ 472 0004 016B     		ldr	r1, [r0, #48]
+ 473              		.loc 1 332 12 view .LVU165
+ 474 0006 8A42     		cmp	r2, r1
+ 475 0008 04D0     		beq	.L36
+ 333:Device/Dev_BMP280.c ****         {
+ 334:Device/Dev_BMP280.c ****             obj->lst_sys_tick = obj->sys_tick;
+ 476              		.loc 1 334 13 is_stmt 1 view .LVU166
+ 477              		.loc 1 334 31 is_stmt 0 view .LVU167
+ 478 000a 0263     		str	r2, [r0, #48]
+ 335:Device/Dev_BMP280.c ****             return true;
+ 479              		.loc 1 335 13 is_stmt 1 view .LVU168
+ 480              		.loc 1 335 20 is_stmt 0 view .LVU169
+ 481 000c 0120     		movs	r0, #1
+ 482              	.LVL50:
+ 483              		.loc 1 335 20 view .LVU170
+ 484 000e 7047     		bx	lr
+ 485              	.LVL51:
+ 486              	.L35:
+ 336:Device/Dev_BMP280.c ****         }
+ 337:Device/Dev_BMP280.c ****     }
+ 338:Device/Dev_BMP280.c **** 
+ 339:Device/Dev_BMP280.c ****     return false;
+ 487              		.loc 1 339 12 view .LVU171
+ 488 0010 0020     		movs	r0, #0
+ 489              	.LVL52:
+ 490              		.loc 1 339 12 view .LVU172
+ 491 0012 7047     		bx	lr
+ 492              	.LVL53:
+ 493              	.L36:
+ 494              		.loc 1 339 12 view .LVU173
+ 495 0014 0020     		movs	r0, #0
+ 496              	.LVL54:
+ 340:Device/Dev_BMP280.c **** }
+ 497              		.loc 1 340 1 view .LVU174
+ 498 0016 7047     		bx	lr
+ 499              		.cfi_endproc
+ 500              	.LFE10:
+ 502              		.section	.text.DevBMP280_SoftReset,"ax",%progbits
+ 503              		.align	1
+ 504              		.syntax unified
+ 505              		.thumb
+ 506              		.thumb_func
+ 508              	DevBMP280_SoftReset:
+ 509              	.LVL55:
+ 510              	.LFB12:
+ 341:Device/Dev_BMP280.c **** 
+ 342:Device/Dev_BMP280.c **** static DevBMP280_Data_TypeDef DevBMP280_Get_Data(DevBMP280Obj_TypeDef *obj)
+ 343:Device/Dev_BMP280.c **** {
+ 344:Device/Dev_BMP280.c ****     DevBMP280_Data_TypeDef data_tmp;
+ 345:Device/Dev_BMP280.c **** 
+ 346:Device/Dev_BMP280.c ****     memset(&data_tmp, 0, sizeof(DevBMP280_Data_TypeDef ));
+ 347:Device/Dev_BMP280.c ****     if (obj)
+ 348:Device/Dev_BMP280.c ****     {
+ 349:Device/Dev_BMP280.c ****         data_tmp.scaled_press = obj->pressure;
+ 350:Device/Dev_BMP280.c ****         data_tmp.scaled_tempra = obj->temperature;
+ 351:Device/Dev_BMP280.c ****         data_tmp.time_stamp = obj->sys_tick;
+ 352:Device/Dev_BMP280.c ****         data_tmp.cyc = obj->cyc;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 17
+
+
+ 353:Device/Dev_BMP280.c ****     }
+ 354:Device/Dev_BMP280.c **** 
+ 355:Device/Dev_BMP280.c ****     return data_tmp;
+ 356:Device/Dev_BMP280.c **** }
+ 357:Device/Dev_BMP280.c **** 
+ 358:Device/Dev_BMP280.c **** static bool DevBMP280_SoftReset(DevBMP280Obj_TypeDef *obj)
+ 359:Device/Dev_BMP280.c **** {
+ 511              		.loc 1 359 1 is_stmt 1 view -0
+ 512              		.cfi_startproc
+ 513              		@ args = 0, pretend = 0, frame = 8
+ 514              		@ frame_needed = 0, uses_anonymous_args = 0
+ 515              		.loc 1 359 1 is_stmt 0 view .LVU176
+ 516 0000 30B5     		push	{r4, r5, lr}
+ 517              	.LCFI0:
+ 518              		.cfi_def_cfa_offset 12
+ 519              		.cfi_offset 4, -12
+ 520              		.cfi_offset 5, -8
+ 521              		.cfi_offset 14, -4
+ 522 0002 83B0     		sub	sp, sp, #12
+ 523              	.LCFI1:
+ 524              		.cfi_def_cfa_offset 24
+ 360:Device/Dev_BMP280.c ****     uint8_t reg = DevBMP280_Write_Mask(BMP280_REG_RESET);
+ 525              		.loc 1 360 5 is_stmt 1 view .LVU177
+ 526              		.loc 1 360 13 is_stmt 0 view .LVU178
+ 527 0004 6023     		movs	r3, #96
+ 528 0006 8DF80730 		strb	r3, [sp, #7]
+ 361:Device/Dev_BMP280.c ****     uint8_t dummy_data = 0;
+ 529              		.loc 1 361 5 is_stmt 1 view .LVU179
+ 530              		.loc 1 361 13 is_stmt 0 view .LVU180
+ 531 000a 0023     		movs	r3, #0
+ 532 000c 8DF80630 		strb	r3, [sp, #6]
+ 362:Device/Dev_BMP280.c **** 
+ 363:Device/Dev_BMP280.c ****     if (obj && obj->delay_ms)
+ 533              		.loc 1 363 5 is_stmt 1 view .LVU181
+ 534              		.loc 1 363 8 is_stmt 0 view .LVU182
+ 535 0010 D8B1     		cbz	r0, .L40
+ 536 0012 0446     		mov	r4, r0
+ 537              		.loc 1 363 19 discriminator 1 view .LVU183
+ 538 0014 8368     		ldr	r3, [r0, #8]
+ 539              		.loc 1 363 13 discriminator 1 view .LVU184
+ 540 0016 DBB1     		cbz	r3, .L41
+ 364:Device/Dev_BMP280.c ****     {
+ 365:Device/Dev_BMP280.c ****         if (obj->send)
+ 541              		.loc 1 365 9 is_stmt 1 view .LVU185
+ 542              		.loc 1 365 16 is_stmt 0 view .LVU186
+ 543 0018 036D     		ldr	r3, [r0, #80]
+ 544              		.loc 1 365 12 view .LVU187
+ 545 001a 43B1     		cbz	r3, .L39
+ 366:Device/Dev_BMP280.c ****         {
+ 367:Device/Dev_BMP280.c ****             obj->send(&reg, sizeof(reg));
+ 546              		.loc 1 367 13 is_stmt 1 view .LVU188
+ 547 001c 0121     		movs	r1, #1
+ 548 001e 0DF10700 		add	r0, sp, #7
+ 549              	.LVL56:
+ 550              		.loc 1 367 13 is_stmt 0 view .LVU189
+ 551 0022 9847     		blx	r3
+ 552              	.LVL57:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 18
+
+
+ 368:Device/Dev_BMP280.c ****             obj->delay_ms(10);
+ 553              		.loc 1 368 13 is_stmt 1 view .LVU190
+ 554              		.loc 1 368 16 is_stmt 0 view .LVU191
+ 555 0024 A368     		ldr	r3, [r4, #8]
+ 556              		.loc 1 368 13 view .LVU192
+ 557 0026 0A20     		movs	r0, #10
+ 558 0028 9847     		blx	r3
+ 559              	.LVL58:
+ 369:Device/Dev_BMP280.c ****             return true;
+ 560              		.loc 1 369 13 is_stmt 1 view .LVU193
+ 561              		.loc 1 369 20 is_stmt 0 view .LVU194
+ 562 002a 0120     		movs	r0, #1
+ 563 002c 0EE0     		b	.L38
+ 564              	.LVL59:
+ 565              	.L39:
+ 370:Device/Dev_BMP280.c ****         }
+ 371:Device/Dev_BMP280.c ****         else if (obj->bus_tx)
+ 566              		.loc 1 371 14 is_stmt 1 view .LVU195
+ 567              		.loc 1 371 21 is_stmt 0 view .LVU196
+ 568 002e 856C     		ldr	r5, [r0, #72]
+ 569              		.loc 1 371 17 view .LVU197
+ 570 0030 85B1     		cbz	r5, .L42
+ 372:Device/Dev_BMP280.c ****         {
+ 373:Device/Dev_BMP280.c ****             obj->bus_tx(obj->DevAddr, reg, &dummy_data, 1);
+ 571              		.loc 1 373 13 is_stmt 1 view .LVU198
+ 572 0032 0123     		movs	r3, #1
+ 573 0034 0DF10602 		add	r2, sp, #6
+ 574 0038 6021     		movs	r1, #96
+ 575 003a 90F84400 		ldrb	r0, [r0, #68]	@ zero_extendqisi2
+ 576              	.LVL60:
+ 577              		.loc 1 373 13 is_stmt 0 view .LVU199
+ 578 003e A847     		blx	r5
+ 579              	.LVL61:
+ 374:Device/Dev_BMP280.c ****             obj->delay_ms(10);
+ 580              		.loc 1 374 13 is_stmt 1 view .LVU200
+ 581              		.loc 1 374 16 is_stmt 0 view .LVU201
+ 582 0040 A368     		ldr	r3, [r4, #8]
+ 583              		.loc 1 374 13 view .LVU202
+ 584 0042 0A20     		movs	r0, #10
+ 585 0044 9847     		blx	r3
+ 586              	.LVL62:
+ 375:Device/Dev_BMP280.c ****             return true;
+ 587              		.loc 1 375 13 is_stmt 1 view .LVU203
+ 588              		.loc 1 375 20 is_stmt 0 view .LVU204
+ 589 0046 0120     		movs	r0, #1
+ 590 0048 00E0     		b	.L38
+ 591              	.LVL63:
+ 592              	.L40:
+ 376:Device/Dev_BMP280.c ****         }
+ 377:Device/Dev_BMP280.c ****     }
+ 378:Device/Dev_BMP280.c **** 
+ 379:Device/Dev_BMP280.c ****     return false;
+ 593              		.loc 1 379 12 view .LVU205
+ 594 004a 0020     		movs	r0, #0
+ 595              	.LVL64:
+ 596              	.L38:
+ 380:Device/Dev_BMP280.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 19
+
+
+ 597              		.loc 1 380 1 view .LVU206
+ 598 004c 03B0     		add	sp, sp, #12
+ 599              	.LCFI2:
+ 600              		.cfi_remember_state
+ 601              		.cfi_def_cfa_offset 12
+ 602              		@ sp needed
+ 603 004e 30BD     		pop	{r4, r5, pc}
+ 604              	.LVL65:
+ 605              	.L41:
+ 606              	.LCFI3:
+ 607              		.cfi_restore_state
+ 379:Device/Dev_BMP280.c **** }
+ 608              		.loc 1 379 12 view .LVU207
+ 609 0050 0020     		movs	r0, #0
+ 610              	.LVL66:
+ 379:Device/Dev_BMP280.c **** }
+ 611              		.loc 1 379 12 view .LVU208
+ 612 0052 FBE7     		b	.L38
+ 613              	.LVL67:
+ 614              	.L42:
+ 379:Device/Dev_BMP280.c **** }
+ 615              		.loc 1 379 12 view .LVU209
+ 616 0054 0020     		movs	r0, #0
+ 617              	.LVL68:
+ 379:Device/Dev_BMP280.c **** }
+ 618              		.loc 1 379 12 view .LVU210
+ 619 0056 F9E7     		b	.L38
+ 620              		.cfi_endproc
+ 621              	.LFE12:
+ 623              		.section	.text.DevBMP280_Register_Write,"ax",%progbits
+ 624              		.align	1
+ 625              		.syntax unified
+ 626              		.thumb
+ 627              		.thumb_func
+ 629              	DevBMP280_Register_Write:
+ 630              	.LVL69:
+ 631              	.LFB18:
+ 381:Device/Dev_BMP280.c **** 
+ 382:Device/Dev_BMP280.c **** static bool DevBMP280_Check_ModuleID(DevBMP280Obj_TypeDef *obj)
+ 383:Device/Dev_BMP280.c **** {
+ 384:Device/Dev_BMP280.c ****     uint8_t ID = 0;
+ 385:Device/Dev_BMP280.c **** 
+ 386:Device/Dev_BMP280.c ****     if (obj && \
+ 387:Device/Dev_BMP280.c ****         DevBMP280_Register_Read(obj, BMP280_REG_ID, &ID, 1) && \
+ 388:Device/Dev_BMP280.c ****         (ID == BMP280_DEVICE_ID))
+ 389:Device/Dev_BMP280.c ****         return true;
+ 390:Device/Dev_BMP280.c **** 
+ 391:Device/Dev_BMP280.c ****     return false;
+ 392:Device/Dev_BMP280.c **** }
+ 393:Device/Dev_BMP280.c **** 
+ 394:Device/Dev_BMP280.c **** static bool DevBMP280_Set_NormalMode(DevBMP280Obj_TypeDef *obj)
+ 395:Device/Dev_BMP280.c **** {
+ 396:Device/Dev_BMP280.c ****     uint8_t mode = 0;
+ 397:Device/Dev_BMP280.c ****     uint8_t read_mode = 0;
+ 398:Device/Dev_BMP280.c **** 
+ 399:Device/Dev_BMP280.c ****     if (obj)
+ 400:Device/Dev_BMP280.c ****     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 20
+
+
+ 401:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &mode, 1) == 0)
+ 402:Device/Dev_BMP280.c ****             return false;
+ 403:Device/Dev_BMP280.c ****         
+ 404:Device/Dev_BMP280.c ****         mode &= ~(3 << 0);
+ 405:Device/Dev_BMP280.c ****         mode |= 0x03 << 0;
+ 406:Device/Dev_BMP280.c **** 
+ 407:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Write(obj, BMP280_REG_CTRL_MEAS, mode) == 0)
+ 408:Device/Dev_BMP280.c ****             return false;
+ 409:Device/Dev_BMP280.c ****     
+ 410:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &read_mode, 1) == 0)
+ 411:Device/Dev_BMP280.c ****             return false;
+ 412:Device/Dev_BMP280.c **** 
+ 413:Device/Dev_BMP280.c ****         if (mode == read_mode)
+ 414:Device/Dev_BMP280.c ****             return true;
+ 415:Device/Dev_BMP280.c ****     }
+ 416:Device/Dev_BMP280.c **** 
+ 417:Device/Dev_BMP280.c ****     return false;
+ 418:Device/Dev_BMP280.c **** }
+ 419:Device/Dev_BMP280.c **** 
+ 420:Device/Dev_BMP280.c **** static bool DevBMP280_Calibration(DevBMP280Obj_TypeDef *obj)
+ 421:Device/Dev_BMP280.c **** {
+ 422:Device/Dev_BMP280.c ****     uint8_t rx_tmp[2] = {0};
+ 423:Device/Dev_BMP280.c ****     uint16_t state = 0;
+ 424:Device/Dev_BMP280.c **** 
+ 425:Device/Dev_BMP280.c ****     if (obj)
+ 426:Device/Dev_BMP280.c ****     {
+ 427:Device/Dev_BMP280.c ****         if (obj->trans == NULL)
+ 428:Device/Dev_BMP280.c ****             return false;
+ 429:Device/Dev_BMP280.c **** 
+ 430:Device/Dev_BMP280.c ****         /* get param t1 */
+ 431:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_T1_L, rx_tmp, sizeof(rx_tmp));
+ 432:Device/Dev_BMP280.c ****         if (state == 0)
+ 433:Device/Dev_BMP280.c ****             return false;
+ 434:Device/Dev_BMP280.c **** 
+ 435:Device/Dev_BMP280.c ****         obj->calib.t1 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 436:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 437:Device/Dev_BMP280.c **** 
+ 438:Device/Dev_BMP280.c ****         /* get param t2 */
+ 439:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_T2_L, rx_tmp, sizeof(rx_tmp));
+ 440:Device/Dev_BMP280.c ****         if (state == 0)
+ 441:Device/Dev_BMP280.c ****             return false;
+ 442:Device/Dev_BMP280.c **** 
+ 443:Device/Dev_BMP280.c ****         obj->calib.t2 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 444:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 445:Device/Dev_BMP280.c **** 
+ 446:Device/Dev_BMP280.c ****         /* get param t3 */
+ 447:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_T3_L, rx_tmp, sizeof(rx_tmp));
+ 448:Device/Dev_BMP280.c ****         if (state == 0)
+ 449:Device/Dev_BMP280.c ****             return false;
+ 450:Device/Dev_BMP280.c **** 
+ 451:Device/Dev_BMP280.c ****         obj->calib.t3 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 452:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 453:Device/Dev_BMP280.c **** 
+ 454:Device/Dev_BMP280.c ****         /* get param p1 */
+ 455:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_P1_L, rx_tmp, sizeof(rx_tmp));
+ 456:Device/Dev_BMP280.c ****         if (state == 0)
+ 457:Device/Dev_BMP280.c ****             return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 21
+
+
+ 458:Device/Dev_BMP280.c **** 
+ 459:Device/Dev_BMP280.c ****         obj->calib.p1 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 460:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 461:Device/Dev_BMP280.c ****         
+ 462:Device/Dev_BMP280.c ****         /* get param p2 */
+ 463:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_P2_L, rx_tmp, sizeof(rx_tmp));
+ 464:Device/Dev_BMP280.c ****         if (state == 0)
+ 465:Device/Dev_BMP280.c ****             return false;
+ 466:Device/Dev_BMP280.c **** 
+ 467:Device/Dev_BMP280.c ****         obj->calib.p2 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 468:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 469:Device/Dev_BMP280.c **** 
+ 470:Device/Dev_BMP280.c ****         /* get param p3 */
+ 471:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_P3_L, rx_tmp, sizeof(rx_tmp));
+ 472:Device/Dev_BMP280.c ****         if (state == 0)
+ 473:Device/Dev_BMP280.c ****             return false;
+ 474:Device/Dev_BMP280.c **** 
+ 475:Device/Dev_BMP280.c ****         obj->calib.p3 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 476:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 477:Device/Dev_BMP280.c **** 
+ 478:Device/Dev_BMP280.c ****         /* get param p4 */
+ 479:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_P4_L, rx_tmp, sizeof(rx_tmp));
+ 480:Device/Dev_BMP280.c ****         if (state == 0)
+ 481:Device/Dev_BMP280.c ****             return false;
+ 482:Device/Dev_BMP280.c **** 
+ 483:Device/Dev_BMP280.c ****         obj->calib.p4 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 484:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 485:Device/Dev_BMP280.c **** 
+ 486:Device/Dev_BMP280.c ****         /* get param p5 */
+ 487:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_P5_L, rx_tmp, sizeof(rx_tmp));
+ 488:Device/Dev_BMP280.c ****         if (state == 0)
+ 489:Device/Dev_BMP280.c ****             return false;
+ 490:Device/Dev_BMP280.c **** 
+ 491:Device/Dev_BMP280.c ****         obj->calib.p5 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 492:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 493:Device/Dev_BMP280.c **** 
+ 494:Device/Dev_BMP280.c ****         /* get param p6 */
+ 495:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_P6_L, rx_tmp, sizeof(rx_tmp));
+ 496:Device/Dev_BMP280.c ****         if (state == 0)
+ 497:Device/Dev_BMP280.c ****             return false;
+ 498:Device/Dev_BMP280.c **** 
+ 499:Device/Dev_BMP280.c ****         obj->calib.p6 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 500:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 501:Device/Dev_BMP280.c **** 
+ 502:Device/Dev_BMP280.c ****         /* get param p7 */
+ 503:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_P7_L, rx_tmp, sizeof(rx_tmp));
+ 504:Device/Dev_BMP280.c ****         if (state == 0)
+ 505:Device/Dev_BMP280.c ****             return false;
+ 506:Device/Dev_BMP280.c **** 
+ 507:Device/Dev_BMP280.c ****         obj->calib.p7 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 508:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 509:Device/Dev_BMP280.c **** 
+ 510:Device/Dev_BMP280.c ****         /* get param p8 */
+ 511:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_P8_L, rx_tmp, sizeof(rx_tmp));
+ 512:Device/Dev_BMP280.c ****         if (state == 0)
+ 513:Device/Dev_BMP280.c ****             return false;
+ 514:Device/Dev_BMP280.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 22
+
+
+ 515:Device/Dev_BMP280.c ****         obj->calib.p8 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 516:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 517:Device/Dev_BMP280.c **** 
+ 518:Device/Dev_BMP280.c ****         /* get param p9 */
+ 519:Device/Dev_BMP280.c ****         state = DevBMP280_Register_Read(obj, BMP280_REG_NVM_PAR_P9_L, rx_tmp, sizeof(rx_tmp));
+ 520:Device/Dev_BMP280.c ****         if (state == 0)
+ 521:Device/Dev_BMP280.c ****             return false;
+ 522:Device/Dev_BMP280.c **** 
+ 523:Device/Dev_BMP280.c ****         obj->calib.p9 = (uint16_t)(rx_tmp[1] << 8 | rx_tmp[0]);
+ 524:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 525:Device/Dev_BMP280.c **** 
+ 526:Device/Dev_BMP280.c ****         obj->calib.t_fine = 0;
+ 527:Device/Dev_BMP280.c **** 
+ 528:Device/Dev_BMP280.c ****         return true;
+ 529:Device/Dev_BMP280.c ****     }
+ 530:Device/Dev_BMP280.c **** 
+ 531:Device/Dev_BMP280.c ****     return false;
+ 532:Device/Dev_BMP280.c **** }
+ 533:Device/Dev_BMP280.c **** 
+ 534:Device/Dev_BMP280.c **** static bool DevBMP280_Sample(DevBMP280Obj_TypeDef *obj)
+ 535:Device/Dev_BMP280.c **** {
+ 536:Device/Dev_BMP280.c ****     uint8_t mode = 0;
+ 537:Device/Dev_BMP280.c ****     uint32_t timeout = 0;
+ 538:Device/Dev_BMP280.c ****     uint8_t buf[6] = {0};
+ 539:Device/Dev_BMP280.c ****     
+ 540:Device/Dev_BMP280.c ****     if (obj && obj->delay_ms && obj->get_tick)
+ 541:Device/Dev_BMP280.c ****     {
+ 542:Device/Dev_BMP280.c ****         if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &mode, 1) == 0)
+ 543:Device/Dev_BMP280.c ****             return false;
+ 544:Device/Dev_BMP280.c ****         
+ 545:Device/Dev_BMP280.c ****         if ((mode & 0x03) == BMP280_NORMAL_MODE)
+ 546:Device/Dev_BMP280.c ****         {
+ 547:Device/Dev_BMP280.c ****             if(DevBMP280_Register_Read(obj, BMP280_REG_PRESS_MSB, buf, sizeof(buf)) == 0)
+ 548:Device/Dev_BMP280.c ****                 return false;
+ 549:Device/Dev_BMP280.c **** 
+ 550:Device/Dev_BMP280.c ****             obj->raw_temperature = ((((uint32_t)(buf[3])) << 12) | (((uint32_t)(buf[4])) << 4) | ((
+ 551:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 552:Device/Dev_BMP280.c ****                 return false;
+ 553:Device/Dev_BMP280.c **** 
+ 554:Device/Dev_BMP280.c ****             obj->raw_pressure = ((((int32_t)(buf[0])) << 12) | (((int32_t)(buf[1])) << 4) |(((int32
+ 555:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 556:Device/Dev_BMP280.c ****                 return false;
+ 557:Device/Dev_BMP280.c ****         }
+ 558:Device/Dev_BMP280.c ****         else
+ 559:Device/Dev_BMP280.c ****         {
+ 560:Device/Dev_BMP280.c ****             /* forced mode */
+ 561:Device/Dev_BMP280.c ****             if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &mode, 1) == 0)
+ 562:Device/Dev_BMP280.c ****                 return false;
+ 563:Device/Dev_BMP280.c ****             
+ 564:Device/Dev_BMP280.c ****             mode &= ~(3 << 0);
+ 565:Device/Dev_BMP280.c ****             mode |= 0x01 << 0;
+ 566:Device/Dev_BMP280.c **** 
+ 567:Device/Dev_BMP280.c ****             if (DevBMP280_Register_Write(obj, BMP280_REG_CTRL_MEAS, mode) == 0)
+ 568:Device/Dev_BMP280.c ****                 return false;
+ 569:Device/Dev_BMP280.c **** 
+ 570:Device/Dev_BMP280.c ****             timeout = 10 * 1000;
+ 571:Device/Dev_BMP280.c ****             while (timeout != 0)
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 23
+
+
+ 572:Device/Dev_BMP280.c ****             {
+ 573:Device/Dev_BMP280.c ****                 if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, &mode, 1) == 0)
+ 574:Device/Dev_BMP280.c ****                     return false;
+ 575:Device/Dev_BMP280.c ****                 
+ 576:Device/Dev_BMP280.c ****                 if ((mode & 0x03) == 0)
+ 577:Device/Dev_BMP280.c ****                     break;
+ 578:Device/Dev_BMP280.c ****                 
+ 579:Device/Dev_BMP280.c ****                 obj->delay_ms(1);
+ 580:Device/Dev_BMP280.c ****                 timeout--;
+ 581:Device/Dev_BMP280.c **** 
+ 582:Device/Dev_BMP280.c ****                 if (timeout == 0)
+ 583:Device/Dev_BMP280.c ****                     return false;
+ 584:Device/Dev_BMP280.c ****             }
+ 585:Device/Dev_BMP280.c **** 
+ 586:Device/Dev_BMP280.c ****             if (DevBMP280_Register_Read(obj, BMP280_REG_PRESS_MSB, buf, 6) == 0)
+ 587:Device/Dev_BMP280.c ****                 return false;
+ 588:Device/Dev_BMP280.c **** 
+ 589:Device/Dev_BMP280.c ****             obj->raw_temperature = ((((uint32_t)(buf[3])) << 12) | (((uint32_t)(buf[4])) << 4) | ((
+ 590:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 591:Device/Dev_BMP280.c ****                 return false;
+ 592:Device/Dev_BMP280.c ****             
+ 593:Device/Dev_BMP280.c ****             obj->raw_pressure = ((((int32_t)(buf[0])) << 12) | (((int32_t)(buf[1])) << 4) | (((int3
+ 594:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 595:Device/Dev_BMP280.c ****                 return false;
+ 596:Device/Dev_BMP280.c ****         }
+ 597:Device/Dev_BMP280.c **** 
+ 598:Device/Dev_BMP280.c ****         obj->sys_tick = obj->get_tick();
+ 599:Device/Dev_BMP280.c ****         obj->cyc ++;
+ 600:Device/Dev_BMP280.c ****         return true;
+ 601:Device/Dev_BMP280.c ****     }
+ 602:Device/Dev_BMP280.c **** 
+ 603:Device/Dev_BMP280.c ****     return false;
+ 604:Device/Dev_BMP280.c **** }
+ 605:Device/Dev_BMP280.c **** 
+ 606:Device/Dev_BMP280.c **** static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t *p_buf, uin
+ 607:Device/Dev_BMP280.c **** {
+ 608:Device/Dev_BMP280.c ****     uint16_t state = 0;
+ 609:Device/Dev_BMP280.c **** 
+ 610:Device/Dev_BMP280.c ****     if (obj && p_buf && (len < 64))
+ 611:Device/Dev_BMP280.c ****     {
+ 612:Device/Dev_BMP280.c ****         if (obj->trans)
+ 613:Device/Dev_BMP280.c ****         {
+ 614:Device/Dev_BMP280.c ****             uint8_t tx_tmp[64] = {0};
+ 615:Device/Dev_BMP280.c ****             uint8_t rx_tmp[64] = {0};
+ 616:Device/Dev_BMP280.c **** 
+ 617:Device/Dev_BMP280.c ****             /* spi communicate */
+ 618:Device/Dev_BMP280.c ****             tx_tmp[0] = DevBMP280_Read_Mask(reg);
+ 619:Device/Dev_BMP280.c ****             state = obj->trans(tx_tmp, rx_tmp, (len + 1));
+ 620:Device/Dev_BMP280.c **** 
+ 621:Device/Dev_BMP280.c ****             memset(p_buf, 0, len);
+ 622:Device/Dev_BMP280.c ****             if (state)
+ 623:Device/Dev_BMP280.c ****                 memcpy(p_buf, &rx_tmp[1], len);
+ 624:Device/Dev_BMP280.c **** 
+ 625:Device/Dev_BMP280.c ****         }
+ 626:Device/Dev_BMP280.c ****         else if (obj->bus_rx)
+ 627:Device/Dev_BMP280.c ****             /* iic communicate */
+ 628:Device/Dev_BMP280.c ****             obj->bus_rx(obj->DevAddr, reg, p_buf, len);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 24
+
+
+ 629:Device/Dev_BMP280.c ****         
+ 630:Device/Dev_BMP280.c ****         return state;
+ 631:Device/Dev_BMP280.c ****     }
+ 632:Device/Dev_BMP280.c **** 
+ 633:Device/Dev_BMP280.c ****     return 0;
+ 634:Device/Dev_BMP280.c **** }
+ 635:Device/Dev_BMP280.c **** 
+ 636:Device/Dev_BMP280.c **** static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t p_buf)
+ 637:Device/Dev_BMP280.c **** {
+ 632              		.loc 1 637 1 is_stmt 1 view -0
+ 633              		.cfi_startproc
+ 634              		@ args = 0, pretend = 0, frame = 8
+ 635              		@ frame_needed = 0, uses_anonymous_args = 0
+ 638:Device/Dev_BMP280.c ****     uint16_t state = 0;
+ 636              		.loc 1 638 5 view .LVU212
+ 639:Device/Dev_BMP280.c ****     
+ 640:Device/Dev_BMP280.c ****     if (obj)
+ 637              		.loc 1 640 5 view .LVU213
+ 638              		.loc 1 640 8 is_stmt 0 view .LVU214
+ 639 0000 F0B1     		cbz	r0, .L48
+ 637:Device/Dev_BMP280.c ****     uint16_t state = 0;
+ 640              		.loc 1 637 1 view .LVU215
+ 641 0002 10B5     		push	{r4, lr}
+ 642              	.LCFI4:
+ 643              		.cfi_def_cfa_offset 8
+ 644              		.cfi_offset 4, -8
+ 645              		.cfi_offset 14, -4
+ 646 0004 82B0     		sub	sp, sp, #8
+ 647              	.LCFI5:
+ 648              		.cfi_def_cfa_offset 16
+ 641:Device/Dev_BMP280.c ****     {
+ 642:Device/Dev_BMP280.c ****         if (obj->trans)
+ 649              		.loc 1 642 9 is_stmt 1 view .LVU216
+ 650              		.loc 1 642 16 is_stmt 0 view .LVU217
+ 651 0006 836D     		ldr	r3, [r0, #88]
+ 652              		.loc 1 642 12 view .LVU218
+ 653 0008 83B1     		cbz	r3, .L46
+ 654              	.LBB2:
+ 643:Device/Dev_BMP280.c ****         {
+ 644:Device/Dev_BMP280.c ****             uint8_t tx_tmp[2] = {0};
+ 655              		.loc 1 644 13 is_stmt 1 view .LVU219
+ 656              		.loc 1 644 21 is_stmt 0 view .LVU220
+ 657 000a 0020     		movs	r0, #0
+ 658              	.LVL70:
+ 659              		.loc 1 644 21 view .LVU221
+ 660 000c ADF80000 		strh	r0, [sp]	@ movhi
+ 645:Device/Dev_BMP280.c ****             uint8_t rx_tmp[2] = {0};
+ 661              		.loc 1 645 13 is_stmt 1 view .LVU222
+ 662              		.loc 1 645 21 is_stmt 0 view .LVU223
+ 663 0010 ADF80400 		strh	r0, [sp, #4]	@ movhi
+ 646:Device/Dev_BMP280.c ****             
+ 647:Device/Dev_BMP280.c ****             /* spi communicate */
+ 648:Device/Dev_BMP280.c ****             tx_tmp[0] = DevBMP280_Write_Mask(reg);
+ 664              		.loc 1 648 13 is_stmt 1 view .LVU224
+ 665              		.loc 1 648 25 is_stmt 0 view .LVU225
+ 666 0014 01F07F01 		and	r1, r1, #127
+ 667              	.LVL71:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 25
+
+
+ 668              		.loc 1 648 23 view .LVU226
+ 669 0018 8DF80010 		strb	r1, [sp]
+ 649:Device/Dev_BMP280.c ****             tx_tmp[1] = p_buf;
+ 670              		.loc 1 649 13 is_stmt 1 view .LVU227
+ 671              		.loc 1 649 23 is_stmt 0 view .LVU228
+ 672 001c 8DF80120 		strb	r2, [sp, #1]
+ 650:Device/Dev_BMP280.c **** 
+ 651:Device/Dev_BMP280.c ****             state = obj->trans(tx_tmp, rx_tmp, sizeof(tx_tmp));
+ 673              		.loc 1 651 13 is_stmt 1 view .LVU229
+ 674              		.loc 1 651 21 is_stmt 0 view .LVU230
+ 675 0020 0222     		movs	r2, #2
+ 676              	.LVL72:
+ 677              		.loc 1 651 21 view .LVU231
+ 678 0022 01A9     		add	r1, sp, #4
+ 679 0024 6846     		mov	r0, sp
+ 680 0026 9847     		blx	r3
+ 681              	.LVL73:
+ 682              	.L45:
+ 683              		.loc 1 651 21 view .LVU232
+ 684              	.LBE2:
+ 652:Device/Dev_BMP280.c ****         }
+ 653:Device/Dev_BMP280.c ****         else if (obj->bus_tx)
+ 654:Device/Dev_BMP280.c ****             /* spi communicate */
+ 655:Device/Dev_BMP280.c ****             state = (uint16_t)obj->bus_tx(obj->DevAddr, reg, p_buf, 1);
+ 656:Device/Dev_BMP280.c **** 
+ 657:Device/Dev_BMP280.c ****         return state;
+ 658:Device/Dev_BMP280.c ****     }
+ 659:Device/Dev_BMP280.c **** 
+ 660:Device/Dev_BMP280.c ****     return 0;
+ 661:Device/Dev_BMP280.c **** }
+ 685              		.loc 1 661 1 view .LVU233
+ 686 0028 02B0     		add	sp, sp, #8
+ 687              	.LCFI6:
+ 688              		.cfi_remember_state
+ 689              		.cfi_def_cfa_offset 8
+ 690              		@ sp needed
+ 691 002a 10BD     		pop	{r4, pc}
+ 692              	.LVL74:
+ 693              	.L46:
+ 694              	.LCFI7:
+ 695              		.cfi_restore_state
+ 653:Device/Dev_BMP280.c ****             /* spi communicate */
+ 696              		.loc 1 653 14 is_stmt 1 view .LVU234
+ 653:Device/Dev_BMP280.c ****             /* spi communicate */
+ 697              		.loc 1 653 21 is_stmt 0 view .LVU235
+ 698 002c 846C     		ldr	r4, [r0, #72]
+ 653:Device/Dev_BMP280.c ****             /* spi communicate */
+ 699              		.loc 1 653 17 view .LVU236
+ 700 002e 2CB1     		cbz	r4, .L49
+ 655:Device/Dev_BMP280.c **** 
+ 701              		.loc 1 655 13 is_stmt 1 view .LVU237
+ 655:Device/Dev_BMP280.c **** 
+ 702              		.loc 1 655 31 is_stmt 0 view .LVU238
+ 703 0030 0123     		movs	r3, #1
+ 704 0032 90F84400 		ldrb	r0, [r0, #68]	@ zero_extendqisi2
+ 705              	.LVL75:
+ 655:Device/Dev_BMP280.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 26
+
+
+ 706              		.loc 1 655 31 view .LVU239
+ 707 0036 A047     		blx	r4
+ 708              	.LVL76:
+ 655:Device/Dev_BMP280.c **** 
+ 709              		.loc 1 655 19 view .LVU240
+ 710 0038 80B2     		uxth	r0, r0
+ 711              	.LVL77:
+ 655:Device/Dev_BMP280.c **** 
+ 712              		.loc 1 655 19 view .LVU241
+ 713 003a F5E7     		b	.L45
+ 714              	.LVL78:
+ 715              	.L49:
+ 638:Device/Dev_BMP280.c ****     
+ 716              		.loc 1 638 14 view .LVU242
+ 717 003c 0020     		movs	r0, #0
+ 718              	.LVL79:
+ 657:Device/Dev_BMP280.c ****     }
+ 719              		.loc 1 657 9 is_stmt 1 view .LVU243
+ 657:Device/Dev_BMP280.c ****     }
+ 720              		.loc 1 657 16 is_stmt 0 view .LVU244
+ 721 003e F3E7     		b	.L45
+ 722              	.LVL80:
+ 723              	.L48:
+ 724              	.LCFI8:
+ 725              		.cfi_def_cfa_offset 0
+ 726              		.cfi_restore 4
+ 727              		.cfi_restore 14
+ 660:Device/Dev_BMP280.c **** }
+ 728              		.loc 1 660 12 view .LVU245
+ 729 0040 0020     		movs	r0, #0
+ 730              	.LVL81:
+ 731              		.loc 1 661 1 view .LVU246
+ 732 0042 7047     		bx	lr
+ 733              		.cfi_endproc
+ 734              	.LFE18:
+ 736              		.section	.text.DevBMP280_Get_Data,"ax",%progbits
+ 737              		.align	1
+ 738              		.syntax unified
+ 739              		.thumb
+ 740              		.thumb_func
+ 742              	DevBMP280_Get_Data:
+ 743              	.LVL82:
+ 744              	.LFB11:
+ 343:Device/Dev_BMP280.c ****     DevBMP280_Data_TypeDef data_tmp;
+ 745              		.loc 1 343 1 is_stmt 1 view -0
+ 746              		.cfi_startproc
+ 747              		@ args = 0, pretend = 0, frame = 16
+ 748              		@ frame_needed = 0, uses_anonymous_args = 0
+ 749              		@ link register save eliminated.
+ 343:Device/Dev_BMP280.c ****     DevBMP280_Data_TypeDef data_tmp;
+ 750              		.loc 1 343 1 is_stmt 0 view .LVU248
+ 751 0000 84B0     		sub	sp, sp, #16
+ 752              	.LCFI9:
+ 753              		.cfi_def_cfa_offset 16
+ 754 0002 8446     		mov	ip, r0
+ 344:Device/Dev_BMP280.c **** 
+ 755              		.loc 1 344 5 is_stmt 1 view .LVU249
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 27
+
+
+ 346:Device/Dev_BMP280.c ****     if (obj)
+ 756              		.loc 1 346 5 view .LVU250
+ 757 0004 0023     		movs	r3, #0
+ 758 0006 0093     		str	r3, [sp]
+ 759 0008 0193     		str	r3, [sp, #4]
+ 760 000a 0293     		str	r3, [sp, #8]
+ 761 000c 0393     		str	r3, [sp, #12]
+ 347:Device/Dev_BMP280.c ****     {
+ 762              		.loc 1 347 5 view .LVU251
+ 347:Device/Dev_BMP280.c ****     {
+ 763              		.loc 1 347 8 is_stmt 0 view .LVU252
+ 764 000e 39B1     		cbz	r1, .L55
+ 349:Device/Dev_BMP280.c ****         data_tmp.scaled_tempra = obj->temperature;
+ 765              		.loc 1 349 9 is_stmt 1 view .LVU253
+ 349:Device/Dev_BMP280.c ****         data_tmp.scaled_tempra = obj->temperature;
+ 766              		.loc 1 349 36 is_stmt 0 view .LVU254
+ 767 0010 0A6C     		ldr	r2, [r1, #64]	@ float
+ 349:Device/Dev_BMP280.c ****         data_tmp.scaled_tempra = obj->temperature;
+ 768              		.loc 1 349 31 view .LVU255
+ 769 0012 0292     		str	r2, [sp, #8]	@ float
+ 350:Device/Dev_BMP280.c ****         data_tmp.time_stamp = obj->sys_tick;
+ 770              		.loc 1 350 9 is_stmt 1 view .LVU256
+ 350:Device/Dev_BMP280.c ****         data_tmp.time_stamp = obj->sys_tick;
+ 771              		.loc 1 350 37 is_stmt 0 view .LVU257
+ 772 0014 CA6B     		ldr	r2, [r1, #60]	@ float
+ 350:Device/Dev_BMP280.c ****         data_tmp.time_stamp = obj->sys_tick;
+ 773              		.loc 1 350 32 view .LVU258
+ 774 0016 0392     		str	r2, [sp, #12]	@ float
+ 351:Device/Dev_BMP280.c ****         data_tmp.cyc = obj->cyc;
+ 775              		.loc 1 351 9 is_stmt 1 view .LVU259
+ 351:Device/Dev_BMP280.c ****         data_tmp.cyc = obj->cyc;
+ 776              		.loc 1 351 34 is_stmt 0 view .LVU260
+ 777 0018 8A6A     		ldr	r2, [r1, #40]
+ 351:Device/Dev_BMP280.c ****         data_tmp.cyc = obj->cyc;
+ 778              		.loc 1 351 29 view .LVU261
+ 779 001a 0092     		str	r2, [sp]
+ 352:Device/Dev_BMP280.c ****     }
+ 780              		.loc 1 352 9 is_stmt 1 view .LVU262
+ 352:Device/Dev_BMP280.c ****     }
+ 781              		.loc 1 352 27 is_stmt 0 view .LVU263
+ 782 001c CB6A     		ldr	r3, [r1, #44]
+ 352:Device/Dev_BMP280.c ****     }
+ 783              		.loc 1 352 22 view .LVU264
+ 784 001e 0193     		str	r3, [sp, #4]
+ 785              	.L55:
+ 355:Device/Dev_BMP280.c **** }
+ 786              		.loc 1 355 5 is_stmt 1 view .LVU265
+ 355:Device/Dev_BMP280.c **** }
+ 787              		.loc 1 355 12 is_stmt 0 view .LVU266
+ 788 0020 04AB     		add	r3, sp, #16
+ 789 0022 13E90F00 		ldmdb	r3, {r0, r1, r2, r3}
+ 790              	.LVL83:
+ 355:Device/Dev_BMP280.c **** }
+ 791              		.loc 1 355 12 view .LVU267
+ 792 0026 8CE80F00 		stm	ip, {r0, r1, r2, r3}
+ 356:Device/Dev_BMP280.c **** 
+ 793              		.loc 1 356 1 view .LVU268
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 28
+
+
+ 794 002a 6046     		mov	r0, ip
+ 795 002c 04B0     		add	sp, sp, #16
+ 796              	.LCFI10:
+ 797              		.cfi_def_cfa_offset 0
+ 798              		@ sp needed
+ 799 002e 7047     		bx	lr
+ 800              		.cfi_endproc
+ 801              	.LFE11:
+ 803              		.section	.text.DevBMP280_Register_Read,"ax",%progbits
+ 804              		.align	1
+ 805              		.syntax unified
+ 806              		.thumb
+ 807              		.thumb_func
+ 809              	DevBMP280_Register_Read:
+ 810              	.LVL84:
+ 811              	.LFB17:
+ 607:Device/Dev_BMP280.c ****     uint16_t state = 0;
+ 812              		.loc 1 607 1 is_stmt 1 view -0
+ 813              		.cfi_startproc
+ 814              		@ args = 0, pretend = 0, frame = 128
+ 815              		@ frame_needed = 0, uses_anonymous_args = 0
+ 607:Device/Dev_BMP280.c ****     uint16_t state = 0;
+ 816              		.loc 1 607 1 is_stmt 0 view .LVU270
+ 817 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 818              	.LCFI11:
+ 819              		.cfi_def_cfa_offset 28
+ 820              		.cfi_offset 4, -28
+ 821              		.cfi_offset 5, -24
+ 822              		.cfi_offset 6, -20
+ 823              		.cfi_offset 7, -16
+ 824              		.cfi_offset 8, -12
+ 825              		.cfi_offset 9, -8
+ 826              		.cfi_offset 14, -4
+ 827 0004 A1B0     		sub	sp, sp, #132
+ 828              	.LCFI12:
+ 829              		.cfi_def_cfa_offset 160
+ 608:Device/Dev_BMP280.c **** 
+ 830              		.loc 1 608 5 is_stmt 1 view .LVU271
+ 831              	.LVL85:
+ 610:Device/Dev_BMP280.c ****     {
+ 832              		.loc 1 610 5 view .LVU272
+ 610:Device/Dev_BMP280.c ****     {
+ 833              		.loc 1 610 8 is_stmt 0 view .LVU273
+ 834 0006 0028     		cmp	r0, #0
+ 835 0008 40D0     		beq	.L62
+ 836 000a 0C46     		mov	r4, r1
+ 837 000c 1646     		mov	r6, r2
+ 838 000e 1D46     		mov	r5, r3
+ 610:Device/Dev_BMP280.c ****     {
+ 839              		.loc 1 610 13 discriminator 1 view .LVU274
+ 840 0010 002A     		cmp	r2, #0
+ 841 0012 3DD0     		beq	.L63
+ 610:Device/Dev_BMP280.c ****     {
+ 842              		.loc 1 610 22 discriminator 2 view .LVU275
+ 843 0014 3F2B     		cmp	r3, #63
+ 844 0016 04D9     		bls	.L67
+ 633:Device/Dev_BMP280.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 29
+
+
+ 845              		.loc 1 633 12 view .LVU276
+ 846 0018 0024     		movs	r4, #0
+ 847              	.LVL86:
+ 848              	.L58:
+ 634:Device/Dev_BMP280.c **** 
+ 849              		.loc 1 634 1 view .LVU277
+ 850 001a 2046     		mov	r0, r4
+ 851 001c 21B0     		add	sp, sp, #132
+ 852              	.LCFI13:
+ 853              		.cfi_remember_state
+ 854              		.cfi_def_cfa_offset 28
+ 855              		@ sp needed
+ 856 001e BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 857              	.LVL87:
+ 858              	.L67:
+ 859              	.LCFI14:
+ 860              		.cfi_restore_state
+ 612:Device/Dev_BMP280.c ****         {
+ 861              		.loc 1 612 9 is_stmt 1 view .LVU278
+ 612:Device/Dev_BMP280.c ****         {
+ 862              		.loc 1 612 16 is_stmt 0 view .LVU279
+ 863 0022 D0F85880 		ldr	r8, [r0, #88]
+ 612:Device/Dev_BMP280.c ****         {
+ 864              		.loc 1 612 12 view .LVU280
+ 865 0026 B8F1000F 		cmp	r8, #0
+ 866 002a 26D0     		beq	.L59
+ 867              	.LBB3:
+ 614:Device/Dev_BMP280.c ****             uint8_t rx_tmp[64] = {0};
+ 868              		.loc 1 614 13 is_stmt 1 view .LVU281
+ 614:Device/Dev_BMP280.c ****             uint8_t rx_tmp[64] = {0};
+ 869              		.loc 1 614 21 is_stmt 0 view .LVU282
+ 870 002c 0027     		movs	r7, #0
+ 871 002e 0097     		str	r7, [sp]
+ 872 0030 4FF03C09 		mov	r9, #60
+ 873 0034 4A46     		mov	r2, r9
+ 874              	.LVL88:
+ 614:Device/Dev_BMP280.c ****             uint8_t rx_tmp[64] = {0};
+ 875              		.loc 1 614 21 view .LVU283
+ 876 0036 3946     		mov	r1, r7
+ 877              	.LVL89:
+ 614:Device/Dev_BMP280.c ****             uint8_t rx_tmp[64] = {0};
+ 878              		.loc 1 614 21 view .LVU284
+ 879 0038 01A8     		add	r0, sp, #4
+ 880              	.LVL90:
+ 614:Device/Dev_BMP280.c ****             uint8_t rx_tmp[64] = {0};
+ 881              		.loc 1 614 21 view .LVU285
+ 882 003a FFF7FEFF 		bl	memset
+ 883              	.LVL91:
+ 615:Device/Dev_BMP280.c **** 
+ 884              		.loc 1 615 13 is_stmt 1 view .LVU286
+ 615:Device/Dev_BMP280.c **** 
+ 885              		.loc 1 615 21 is_stmt 0 view .LVU287
+ 886 003e 1097     		str	r7, [sp, #64]
+ 887 0040 4A46     		mov	r2, r9
+ 888 0042 3946     		mov	r1, r7
+ 889 0044 11A8     		add	r0, sp, #68
+ 890 0046 FFF7FEFF 		bl	memset
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 30
+
+
+ 891              	.LVL92:
+ 618:Device/Dev_BMP280.c ****             state = obj->trans(tx_tmp, rx_tmp, (len + 1));
+ 892              		.loc 1 618 13 is_stmt 1 view .LVU288
+ 618:Device/Dev_BMP280.c ****             state = obj->trans(tx_tmp, rx_tmp, (len + 1));
+ 893              		.loc 1 618 23 is_stmt 0 view .LVU289
+ 894 004a 64F07F01 		orn	r1, r4, #127
+ 895 004e 8DF80010 		strb	r1, [sp]
+ 619:Device/Dev_BMP280.c **** 
+ 896              		.loc 1 619 13 is_stmt 1 view .LVU290
+ 619:Device/Dev_BMP280.c **** 
+ 897              		.loc 1 619 21 is_stmt 0 view .LVU291
+ 898 0052 6A1C     		adds	r2, r5, #1
+ 899 0054 92B2     		uxth	r2, r2
+ 900 0056 10A9     		add	r1, sp, #64
+ 901 0058 6846     		mov	r0, sp
+ 902 005a C047     		blx	r8
+ 903              	.LVL93:
+ 904 005c 0446     		mov	r4, r0
+ 905              	.LVL94:
+ 621:Device/Dev_BMP280.c ****             if (state)
+ 906              		.loc 1 621 13 is_stmt 1 view .LVU292
+ 907 005e 2A46     		mov	r2, r5
+ 908 0060 3946     		mov	r1, r7
+ 909 0062 3046     		mov	r0, r6
+ 910 0064 FFF7FEFF 		bl	memset
+ 911              	.LVL95:
+ 622:Device/Dev_BMP280.c ****                 memcpy(p_buf, &rx_tmp[1], len);
+ 912              		.loc 1 622 13 view .LVU293
+ 622:Device/Dev_BMP280.c ****                 memcpy(p_buf, &rx_tmp[1], len);
+ 913              		.loc 1 622 16 is_stmt 0 view .LVU294
+ 914 0068 002C     		cmp	r4, #0
+ 915 006a D6D0     		beq	.L58
+ 623:Device/Dev_BMP280.c **** 
+ 916              		.loc 1 623 17 is_stmt 1 view .LVU295
+ 917 006c 2A46     		mov	r2, r5
+ 918 006e 0DF14101 		add	r1, sp, #65
+ 919 0072 3046     		mov	r0, r6
+ 920 0074 FFF7FEFF 		bl	memcpy
+ 921              	.LVL96:
+ 922 0078 CFE7     		b	.L58
+ 923              	.LVL97:
+ 924              	.L59:
+ 623:Device/Dev_BMP280.c **** 
+ 925              		.loc 1 623 17 is_stmt 0 view .LVU296
+ 926              	.LBE3:
+ 626:Device/Dev_BMP280.c ****             /* iic communicate */
+ 927              		.loc 1 626 14 is_stmt 1 view .LVU297
+ 626:Device/Dev_BMP280.c ****             /* iic communicate */
+ 928              		.loc 1 626 21 is_stmt 0 view .LVU298
+ 929 007a C76C     		ldr	r7, [r0, #76]
+ 626:Device/Dev_BMP280.c ****             /* iic communicate */
+ 930              		.loc 1 626 17 view .LVU299
+ 931 007c 27B1     		cbz	r7, .L65
+ 628:Device/Dev_BMP280.c ****         
+ 932              		.loc 1 628 13 is_stmt 1 view .LVU300
+ 933 007e 90F84400 		ldrb	r0, [r0, #68]	@ zero_extendqisi2
+ 934              	.LVL98:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 31
+
+
+ 628:Device/Dev_BMP280.c ****         
+ 935              		.loc 1 628 13 is_stmt 0 view .LVU301
+ 936 0082 B847     		blx	r7
+ 937              	.LVL99:
+ 608:Device/Dev_BMP280.c **** 
+ 938              		.loc 1 608 14 view .LVU302
+ 939 0084 0024     		movs	r4, #0
+ 940 0086 C8E7     		b	.L58
+ 941              	.LVL100:
+ 942              	.L65:
+ 608:Device/Dev_BMP280.c **** 
+ 943              		.loc 1 608 14 view .LVU303
+ 944 0088 0024     		movs	r4, #0
+ 630:Device/Dev_BMP280.c ****     }
+ 945              		.loc 1 630 9 is_stmt 1 view .LVU304
+ 630:Device/Dev_BMP280.c ****     }
+ 946              		.loc 1 630 16 is_stmt 0 view .LVU305
+ 947 008a C6E7     		b	.L58
+ 948              	.L62:
+ 633:Device/Dev_BMP280.c **** }
+ 949              		.loc 1 633 12 view .LVU306
+ 950 008c 0024     		movs	r4, #0
+ 951 008e C4E7     		b	.L58
+ 952              	.L63:
+ 633:Device/Dev_BMP280.c **** }
+ 953              		.loc 1 633 12 view .LVU307
+ 954 0090 0024     		movs	r4, #0
+ 955 0092 C2E7     		b	.L58
+ 956              		.cfi_endproc
+ 957              	.LFE17:
+ 959              		.section	.text.DevBMP280_Sample,"ax",%progbits
+ 960              		.align	1
+ 961              		.syntax unified
+ 962              		.thumb
+ 963              		.thumb_func
+ 965              	DevBMP280_Sample:
+ 966              	.LVL101:
+ 967              	.LFB16:
+ 535:Device/Dev_BMP280.c ****     uint8_t mode = 0;
+ 968              		.loc 1 535 1 is_stmt 1 view -0
+ 969              		.cfi_startproc
+ 970              		@ args = 0, pretend = 0, frame = 8
+ 971              		@ frame_needed = 0, uses_anonymous_args = 0
+ 535:Device/Dev_BMP280.c ****     uint8_t mode = 0;
+ 972              		.loc 1 535 1 is_stmt 0 view .LVU309
+ 973 0000 30B5     		push	{r4, r5, lr}
+ 974              	.LCFI15:
+ 975              		.cfi_def_cfa_offset 12
+ 976              		.cfi_offset 4, -12
+ 977              		.cfi_offset 5, -8
+ 978              		.cfi_offset 14, -4
+ 979 0002 83B0     		sub	sp, sp, #12
+ 980              	.LCFI16:
+ 981              		.cfi_def_cfa_offset 24
+ 536:Device/Dev_BMP280.c ****     uint32_t timeout = 0;
+ 982              		.loc 1 536 5 is_stmt 1 view .LVU310
+ 536:Device/Dev_BMP280.c ****     uint32_t timeout = 0;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 32
+
+
+ 983              		.loc 1 536 13 is_stmt 0 view .LVU311
+ 984 0004 0023     		movs	r3, #0
+ 985 0006 8DF80730 		strb	r3, [sp, #7]
+ 537:Device/Dev_BMP280.c ****     uint8_t buf[6] = {0};
+ 986              		.loc 1 537 5 is_stmt 1 view .LVU312
+ 987              	.LVL102:
+ 538:Device/Dev_BMP280.c ****     
+ 988              		.loc 1 538 5 view .LVU313
+ 538:Device/Dev_BMP280.c ****     
+ 989              		.loc 1 538 13 is_stmt 0 view .LVU314
+ 990 000a 0093     		str	r3, [sp]
+ 991 000c ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 540:Device/Dev_BMP280.c ****     {
+ 992              		.loc 1 540 5 is_stmt 1 view .LVU315
+ 540:Device/Dev_BMP280.c ****     {
+ 993              		.loc 1 540 8 is_stmt 0 view .LVU316
+ 994 0010 0028     		cmp	r0, #0
+ 995 0012 00F0BC80 		beq	.L75
+ 996 0016 0446     		mov	r4, r0
+ 540:Device/Dev_BMP280.c ****     {
+ 997              		.loc 1 540 19 discriminator 1 view .LVU317
+ 998 0018 8368     		ldr	r3, [r0, #8]
+ 540:Device/Dev_BMP280.c ****     {
+ 999              		.loc 1 540 13 discriminator 1 view .LVU318
+ 1000 001a 002B     		cmp	r3, #0
+ 1001 001c 00F0BA80 		beq	.L76
+ 540:Device/Dev_BMP280.c ****     {
+ 1002              		.loc 1 540 36 discriminator 2 view .LVU319
+ 1003 0020 4368     		ldr	r3, [r0, #4]
+ 540:Device/Dev_BMP280.c ****     {
+ 1004              		.loc 1 540 30 discriminator 2 view .LVU320
+ 1005 0022 002B     		cmp	r3, #0
+ 1006 0024 00F0B880 		beq	.L77
+ 542:Device/Dev_BMP280.c ****             return false;
+ 1007              		.loc 1 542 9 is_stmt 1 view .LVU321
+ 542:Device/Dev_BMP280.c ****             return false;
+ 1008              		.loc 1 542 13 is_stmt 0 view .LVU322
+ 1009 0028 0123     		movs	r3, #1
+ 1010 002a 0DF10702 		add	r2, sp, #7
+ 1011 002e F421     		movs	r1, #244
+ 1012 0030 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1013              	.LVL103:
+ 542:Device/Dev_BMP280.c ****             return false;
+ 1014              		.loc 1 542 12 view .LVU323
+ 1015 0034 0028     		cmp	r0, #0
+ 1016 0036 00F0B180 		beq	.L78
+ 545:Device/Dev_BMP280.c ****         {
+ 1017              		.loc 1 545 9 is_stmt 1 view .LVU324
+ 545:Device/Dev_BMP280.c ****         {
+ 1018              		.loc 1 545 19 is_stmt 0 view .LVU325
+ 1019 003a 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 545:Device/Dev_BMP280.c ****         {
+ 1020              		.loc 1 545 12 view .LVU326
+ 1021 003e 03F00303 		and	r3, r3, #3
+ 1022 0042 032B     		cmp	r3, #3
+ 1023 0044 0AD0     		beq	.L86
+ 561:Device/Dev_BMP280.c ****                 return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 33
+
+
+ 1024              		.loc 1 561 13 is_stmt 1 view .LVU327
+ 561:Device/Dev_BMP280.c ****                 return false;
+ 1025              		.loc 1 561 17 is_stmt 0 view .LVU328
+ 1026 0046 0123     		movs	r3, #1
+ 1027 0048 0DF10702 		add	r2, sp, #7
+ 1028 004c F421     		movs	r1, #244
+ 1029 004e 2046     		mov	r0, r4
+ 1030 0050 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1031              	.LVL104:
+ 561:Device/Dev_BMP280.c ****                 return false;
+ 1032              		.loc 1 561 16 view .LVU329
+ 1033 0054 0028     		cmp	r0, #0
+ 1034 0056 3ED1     		bne	.L87
+ 562:Device/Dev_BMP280.c ****             
+ 1035              		.loc 1 562 24 view .LVU330
+ 1036 0058 0020     		movs	r0, #0
+ 1037 005a 99E0     		b	.L69
+ 1038              	.L86:
+ 547:Device/Dev_BMP280.c ****                 return false;
+ 1039              		.loc 1 547 13 is_stmt 1 view .LVU331
+ 547:Device/Dev_BMP280.c ****                 return false;
+ 1040              		.loc 1 547 16 is_stmt 0 view .LVU332
+ 1041 005c 0623     		movs	r3, #6
+ 1042 005e 6A46     		mov	r2, sp
+ 1043 0060 F721     		movs	r1, #247
+ 1044 0062 2046     		mov	r0, r4
+ 1045 0064 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1046              	.LVL105:
+ 547:Device/Dev_BMP280.c ****                 return false;
+ 1047              		.loc 1 547 15 view .LVU333
+ 1048 0068 08B9     		cbnz	r0, .L88
+ 548:Device/Dev_BMP280.c **** 
+ 1049              		.loc 1 548 24 view .LVU334
+ 1050 006a 0020     		movs	r0, #0
+ 1051 006c 90E0     		b	.L69
+ 1052              	.L88:
+ 550:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1053              		.loc 1 550 13 is_stmt 1 view .LVU335
+ 550:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1054              		.loc 1 550 53 is_stmt 0 view .LVU336
+ 1055 006e 9DF80320 		ldrb	r2, [sp, #3]	@ zero_extendqisi2
+ 550:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1056              		.loc 1 550 84 view .LVU337
+ 1057 0072 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 550:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1058              		.loc 1 550 90 view .LVU338
+ 1059 0076 1B01     		lsls	r3, r3, #4
+ 550:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1060              		.loc 1 550 66 view .LVU339
+ 1061 0078 43EA0233 		orr	r3, r3, r2, lsl #12
+ 550:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1062              		.loc 1 550 112 view .LVU340
+ 1063 007c 9DF80520 		ldrb	r2, [sp, #5]	@ zero_extendqisi2
+ 550:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1064              		.loc 1 550 96 view .LVU341
+ 1065 0080 43EA1213 		orr	r3, r3, r2, lsr #4
+ 550:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 34
+
+
+ 1066              		.loc 1 550 34 view .LVU342
+ 1067 0084 07EE903A 		vmov	s15, r3	@ int
+ 1068 0088 F8EE677A 		vcvt.f32.u32	s15, s15
+ 1069 008c C4ED0D7A 		vstr.32	s15, [r4, #52]
+ 551:Device/Dev_BMP280.c ****                 return false;
+ 1070              		.loc 1 551 13 is_stmt 1 view .LVU343
+ 551:Device/Dev_BMP280.c ****                 return false;
+ 1071              		.loc 1 551 18 is_stmt 0 view .LVU344
+ 1072 0090 2046     		mov	r0, r4
+ 1073 0092 FFF7FEFF 		bl	DevBMP280_Compensate_Temperature
+ 1074              	.LVL106:
+ 551:Device/Dev_BMP280.c ****                 return false;
+ 1075              		.loc 1 551 16 view .LVU345
+ 1076 0096 0028     		cmp	r0, #0
+ 1077 0098 7AD0     		beq	.L69
+ 554:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1078              		.loc 1 554 13 is_stmt 1 view .LVU346
+ 554:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1079              		.loc 1 554 49 is_stmt 0 view .LVU347
+ 1080 009a 9DF80020 		ldrb	r2, [sp]	@ zero_extendqisi2
+ 554:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1081              		.loc 1 554 79 view .LVU348
+ 1082 009e 9DF80130 		ldrb	r3, [sp, #1]	@ zero_extendqisi2
+ 554:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1083              		.loc 1 554 85 view .LVU349
+ 1084 00a2 1B01     		lsls	r3, r3, #4
+ 554:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1085              		.loc 1 554 62 view .LVU350
+ 1086 00a4 43EA0233 		orr	r3, r3, r2, lsl #12
+ 554:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1087              		.loc 1 554 107 view .LVU351
+ 1088 00a8 9DF80220 		ldrb	r2, [sp, #2]	@ zero_extendqisi2
+ 554:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1089              		.loc 1 554 91 view .LVU352
+ 1090 00ac 43EA1213 		orr	r3, r3, r2, lsr #4
+ 554:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1091              		.loc 1 554 31 view .LVU353
+ 1092 00b0 07EE903A 		vmov	s15, r3	@ int
+ 1093 00b4 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 1094 00b8 C4ED0E7A 		vstr.32	s15, [r4, #56]
+ 555:Device/Dev_BMP280.c ****                 return false;
+ 1095              		.loc 1 555 13 is_stmt 1 view .LVU354
+ 555:Device/Dev_BMP280.c ****                 return false;
+ 1096              		.loc 1 555 18 is_stmt 0 view .LVU355
+ 1097 00bc 2046     		mov	r0, r4
+ 1098 00be FFF7FEFF 		bl	DevBMP280_Compensate_Pressure
+ 1099              	.LVL107:
+ 555:Device/Dev_BMP280.c ****                 return false;
+ 1100              		.loc 1 555 16 view .LVU356
+ 1101 00c2 0028     		cmp	r0, #0
+ 1102 00c4 64D0     		beq	.L69
+ 1103              	.LVL108:
+ 1104              	.L71:
+ 598:Device/Dev_BMP280.c ****         obj->cyc ++;
+ 1105              		.loc 1 598 9 is_stmt 1 view .LVU357
+ 598:Device/Dev_BMP280.c ****         obj->cyc ++;
+ 1106              		.loc 1 598 28 is_stmt 0 view .LVU358
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 35
+
+
+ 1107 00c6 6368     		ldr	r3, [r4, #4]
+ 598:Device/Dev_BMP280.c ****         obj->cyc ++;
+ 1108              		.loc 1 598 25 view .LVU359
+ 1109 00c8 9847     		blx	r3
+ 1110              	.LVL109:
+ 598:Device/Dev_BMP280.c ****         obj->cyc ++;
+ 1111              		.loc 1 598 23 view .LVU360
+ 1112 00ca A062     		str	r0, [r4, #40]
+ 599:Device/Dev_BMP280.c ****         return true;
+ 1113              		.loc 1 599 9 is_stmt 1 view .LVU361
+ 599:Device/Dev_BMP280.c ****         return true;
+ 1114              		.loc 1 599 12 is_stmt 0 view .LVU362
+ 1115 00cc E36A     		ldr	r3, [r4, #44]
+ 599:Device/Dev_BMP280.c ****         return true;
+ 1116              		.loc 1 599 18 view .LVU363
+ 1117 00ce 0133     		adds	r3, r3, #1
+ 1118 00d0 E362     		str	r3, [r4, #44]
+ 600:Device/Dev_BMP280.c ****     }
+ 1119              		.loc 1 600 9 is_stmt 1 view .LVU364
+ 600:Device/Dev_BMP280.c ****     }
+ 1120              		.loc 1 600 16 is_stmt 0 view .LVU365
+ 1121 00d2 0120     		movs	r0, #1
+ 1122 00d4 5CE0     		b	.L69
+ 1123              	.LVL110:
+ 1124              	.L87:
+ 564:Device/Dev_BMP280.c ****             mode |= 0x01 << 0;
+ 1125              		.loc 1 564 13 is_stmt 1 view .LVU366
+ 564:Device/Dev_BMP280.c ****             mode |= 0x01 << 0;
+ 1126              		.loc 1 564 18 is_stmt 0 view .LVU367
+ 1127 00d6 9DF80720 		ldrb	r2, [sp, #7]	@ zero_extendqisi2
+ 1128 00da 02F0FC02 		and	r2, r2, #252
+ 1129 00de 8DF80720 		strb	r2, [sp, #7]
+ 565:Device/Dev_BMP280.c **** 
+ 1130              		.loc 1 565 13 is_stmt 1 view .LVU368
+ 565:Device/Dev_BMP280.c **** 
+ 1131              		.loc 1 565 18 is_stmt 0 view .LVU369
+ 1132 00e2 42F00102 		orr	r2, r2, #1
+ 1133 00e6 8DF80720 		strb	r2, [sp, #7]
+ 567:Device/Dev_BMP280.c ****                 return false;
+ 1134              		.loc 1 567 13 is_stmt 1 view .LVU370
+ 567:Device/Dev_BMP280.c ****                 return false;
+ 1135              		.loc 1 567 17 is_stmt 0 view .LVU371
+ 1136 00ea F421     		movs	r1, #244
+ 1137 00ec 2046     		mov	r0, r4
+ 1138 00ee FFF7FEFF 		bl	DevBMP280_Register_Write
+ 1139              	.LVL111:
+ 567:Device/Dev_BMP280.c ****                 return false;
+ 1140              		.loc 1 567 16 view .LVU372
+ 1141 00f2 0028     		cmp	r0, #0
+ 1142 00f4 54D0     		beq	.L81
+ 570:Device/Dev_BMP280.c ****             while (timeout != 0)
+ 1143              		.loc 1 570 21 view .LVU373
+ 1144 00f6 42F21075 		movw	r5, #10000
+ 1145              	.LVL112:
+ 1146              	.L72:
+ 571:Device/Dev_BMP280.c ****             {
+ 1147              		.loc 1 571 19 is_stmt 1 view .LVU374
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 36
+
+
+ 1148 00fa A5B1     		cbz	r5, .L73
+ 573:Device/Dev_BMP280.c ****                     return false;
+ 1149              		.loc 1 573 17 view .LVU375
+ 573:Device/Dev_BMP280.c ****                     return false;
+ 1150              		.loc 1 573 21 is_stmt 0 view .LVU376
+ 1151 00fc 0123     		movs	r3, #1
+ 1152 00fe 0DF10702 		add	r2, sp, #7
+ 1153 0102 F421     		movs	r1, #244
+ 1154 0104 2046     		mov	r0, r4
+ 1155 0106 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1156              	.LVL113:
+ 573:Device/Dev_BMP280.c ****                     return false;
+ 1157              		.loc 1 573 20 view .LVU377
+ 1158 010a 0028     		cmp	r0, #0
+ 1159 010c 4AD0     		beq	.L82
+ 576:Device/Dev_BMP280.c ****                     break;
+ 1160              		.loc 1 576 17 is_stmt 1 view .LVU378
+ 576:Device/Dev_BMP280.c ****                     break;
+ 1161              		.loc 1 576 27 is_stmt 0 view .LVU379
+ 1162 010e 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 576:Device/Dev_BMP280.c ****                     break;
+ 1163              		.loc 1 576 20 view .LVU380
+ 1164 0112 13F0030F 		tst	r3, #3
+ 1165 0116 06D0     		beq	.L73
+ 579:Device/Dev_BMP280.c ****                 timeout--;
+ 1166              		.loc 1 579 17 is_stmt 1 view .LVU381
+ 579:Device/Dev_BMP280.c ****                 timeout--;
+ 1167              		.loc 1 579 20 is_stmt 0 view .LVU382
+ 1168 0118 A368     		ldr	r3, [r4, #8]
+ 579:Device/Dev_BMP280.c ****                 timeout--;
+ 1169              		.loc 1 579 17 view .LVU383
+ 1170 011a 0120     		movs	r0, #1
+ 1171 011c 9847     		blx	r3
+ 1172              	.LVL114:
+ 580:Device/Dev_BMP280.c **** 
+ 1173              		.loc 1 580 17 is_stmt 1 view .LVU384
+ 582:Device/Dev_BMP280.c ****                     return false;
+ 1174              		.loc 1 582 17 view .LVU385
+ 582:Device/Dev_BMP280.c ****                     return false;
+ 1175              		.loc 1 582 20 is_stmt 0 view .LVU386
+ 1176 011e 013D     		subs	r5, r5, #1
+ 1177              	.LVL115:
+ 582:Device/Dev_BMP280.c ****                     return false;
+ 1178              		.loc 1 582 20 view .LVU387
+ 1179 0120 EBD1     		bne	.L72
+ 583:Device/Dev_BMP280.c ****             }
+ 1180              		.loc 1 583 28 view .LVU388
+ 1181 0122 0020     		movs	r0, #0
+ 1182 0124 34E0     		b	.L69
+ 1183              	.L73:
+ 586:Device/Dev_BMP280.c ****                 return false;
+ 1184              		.loc 1 586 13 is_stmt 1 view .LVU389
+ 586:Device/Dev_BMP280.c ****                 return false;
+ 1185              		.loc 1 586 17 is_stmt 0 view .LVU390
+ 1186 0126 0623     		movs	r3, #6
+ 1187 0128 6A46     		mov	r2, sp
+ 1188 012a F721     		movs	r1, #247
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 37
+
+
+ 1189 012c 2046     		mov	r0, r4
+ 1190 012e FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1191              	.LVL116:
+ 586:Device/Dev_BMP280.c ****                 return false;
+ 1192              		.loc 1 586 16 view .LVU391
+ 1193 0132 08B9     		cbnz	r0, .L89
+ 587:Device/Dev_BMP280.c **** 
+ 1194              		.loc 1 587 24 view .LVU392
+ 1195 0134 0020     		movs	r0, #0
+ 1196 0136 2BE0     		b	.L69
+ 1197              	.L89:
+ 589:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1198              		.loc 1 589 13 is_stmt 1 view .LVU393
+ 589:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1199              		.loc 1 589 53 is_stmt 0 view .LVU394
+ 1200 0138 9DF80320 		ldrb	r2, [sp, #3]	@ zero_extendqisi2
+ 589:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1201              		.loc 1 589 84 view .LVU395
+ 1202 013c 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 589:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1203              		.loc 1 589 90 view .LVU396
+ 1204 0140 1B01     		lsls	r3, r3, #4
+ 589:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1205              		.loc 1 589 66 view .LVU397
+ 1206 0142 43EA0233 		orr	r3, r3, r2, lsl #12
+ 589:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1207              		.loc 1 589 112 view .LVU398
+ 1208 0146 9DF80520 		ldrb	r2, [sp, #5]	@ zero_extendqisi2
+ 589:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1209              		.loc 1 589 96 view .LVU399
+ 1210 014a 43EA1213 		orr	r3, r3, r2, lsr #4
+ 589:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Temperature(obj))
+ 1211              		.loc 1 589 34 view .LVU400
+ 1212 014e 07EE903A 		vmov	s15, r3	@ int
+ 1213 0152 F8EE677A 		vcvt.f32.u32	s15, s15
+ 1214 0156 C4ED0D7A 		vstr.32	s15, [r4, #52]
+ 590:Device/Dev_BMP280.c ****                 return false;
+ 1215              		.loc 1 590 13 is_stmt 1 view .LVU401
+ 590:Device/Dev_BMP280.c ****                 return false;
+ 1216              		.loc 1 590 18 is_stmt 0 view .LVU402
+ 1217 015a 2046     		mov	r0, r4
+ 1218 015c FFF7FEFF 		bl	DevBMP280_Compensate_Temperature
+ 1219              	.LVL117:
+ 590:Device/Dev_BMP280.c ****                 return false;
+ 1220              		.loc 1 590 16 view .LVU403
+ 1221 0160 B0B1     		cbz	r0, .L69
+ 593:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1222              		.loc 1 593 13 is_stmt 1 view .LVU404
+ 593:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1223              		.loc 1 593 49 is_stmt 0 view .LVU405
+ 1224 0162 9DF80020 		ldrb	r2, [sp]	@ zero_extendqisi2
+ 593:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1225              		.loc 1 593 79 view .LVU406
+ 1226 0166 9DF80130 		ldrb	r3, [sp, #1]	@ zero_extendqisi2
+ 593:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1227              		.loc 1 593 85 view .LVU407
+ 1228 016a 1B01     		lsls	r3, r3, #4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 38
+
+
+ 593:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1229              		.loc 1 593 62 view .LVU408
+ 1230 016c 43EA0233 		orr	r3, r3, r2, lsl #12
+ 593:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1231              		.loc 1 593 108 view .LVU409
+ 1232 0170 9DF80220 		ldrb	r2, [sp, #2]	@ zero_extendqisi2
+ 593:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1233              		.loc 1 593 91 view .LVU410
+ 1234 0174 43EA1213 		orr	r3, r3, r2, lsr #4
+ 593:Device/Dev_BMP280.c ****             if (!DevBMP280_Compensate_Pressure(obj))
+ 1235              		.loc 1 593 31 view .LVU411
+ 1236 0178 07EE903A 		vmov	s15, r3	@ int
+ 1237 017c F8EEE77A 		vcvt.f32.s32	s15, s15
+ 1238 0180 C4ED0E7A 		vstr.32	s15, [r4, #56]
+ 594:Device/Dev_BMP280.c ****                 return false;
+ 1239              		.loc 1 594 13 is_stmt 1 view .LVU412
+ 594:Device/Dev_BMP280.c ****                 return false;
+ 1240              		.loc 1 594 18 is_stmt 0 view .LVU413
+ 1241 0184 2046     		mov	r0, r4
+ 1242 0186 FFF7FEFF 		bl	DevBMP280_Compensate_Pressure
+ 1243              	.LVL118:
+ 594:Device/Dev_BMP280.c ****                 return false;
+ 1244              		.loc 1 594 16 view .LVU414
+ 1245 018a 08B1     		cbz	r0, .L69
+ 1246 018c 9BE7     		b	.L71
+ 1247              	.LVL119:
+ 1248              	.L75:
+ 603:Device/Dev_BMP280.c **** }
+ 1249              		.loc 1 603 12 view .LVU415
+ 1250 018e 0020     		movs	r0, #0
+ 1251              	.LVL120:
+ 1252              	.L69:
+ 604:Device/Dev_BMP280.c **** 
+ 1253              		.loc 1 604 1 view .LVU416
+ 1254 0190 03B0     		add	sp, sp, #12
+ 1255              	.LCFI17:
+ 1256              		.cfi_remember_state
+ 1257              		.cfi_def_cfa_offset 12
+ 1258              		@ sp needed
+ 1259 0192 30BD     		pop	{r4, r5, pc}
+ 1260              	.LVL121:
+ 1261              	.L76:
+ 1262              	.LCFI18:
+ 1263              		.cfi_restore_state
+ 603:Device/Dev_BMP280.c **** }
+ 1264              		.loc 1 603 12 view .LVU417
+ 1265 0194 0020     		movs	r0, #0
+ 1266              	.LVL122:
+ 603:Device/Dev_BMP280.c **** }
+ 1267              		.loc 1 603 12 view .LVU418
+ 1268 0196 FBE7     		b	.L69
+ 1269              	.LVL123:
+ 1270              	.L77:
+ 603:Device/Dev_BMP280.c **** }
+ 1271              		.loc 1 603 12 view .LVU419
+ 1272 0198 0020     		movs	r0, #0
+ 1273              	.LVL124:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 39
+
+
+ 603:Device/Dev_BMP280.c **** }
+ 1274              		.loc 1 603 12 view .LVU420
+ 1275 019a F9E7     		b	.L69
+ 1276              	.L78:
+ 543:Device/Dev_BMP280.c ****         
+ 1277              		.loc 1 543 20 view .LVU421
+ 1278 019c 0020     		movs	r0, #0
+ 1279 019e F7E7     		b	.L69
+ 1280              	.L81:
+ 568:Device/Dev_BMP280.c **** 
+ 1281              		.loc 1 568 24 view .LVU422
+ 1282 01a0 0020     		movs	r0, #0
+ 1283 01a2 F5E7     		b	.L69
+ 1284              	.LVL125:
+ 1285              	.L82:
+ 574:Device/Dev_BMP280.c ****                 
+ 1286              		.loc 1 574 28 view .LVU423
+ 1287 01a4 0020     		movs	r0, #0
+ 1288 01a6 F3E7     		b	.L69
+ 1289              		.cfi_endproc
+ 1290              	.LFE16:
+ 1292              		.section	.text.DevBMP280_Check_ModuleID,"ax",%progbits
+ 1293              		.align	1
+ 1294              		.syntax unified
+ 1295              		.thumb
+ 1296              		.thumb_func
+ 1298              	DevBMP280_Check_ModuleID:
+ 1299              	.LVL126:
+ 1300              	.LFB13:
+ 383:Device/Dev_BMP280.c ****     uint8_t ID = 0;
+ 1301              		.loc 1 383 1 is_stmt 1 view -0
+ 1302              		.cfi_startproc
+ 1303              		@ args = 0, pretend = 0, frame = 8
+ 1304              		@ frame_needed = 0, uses_anonymous_args = 0
+ 383:Device/Dev_BMP280.c ****     uint8_t ID = 0;
+ 1305              		.loc 1 383 1 is_stmt 0 view .LVU425
+ 1306 0000 00B5     		push	{lr}
+ 1307              	.LCFI19:
+ 1308              		.cfi_def_cfa_offset 4
+ 1309              		.cfi_offset 14, -4
+ 1310 0002 83B0     		sub	sp, sp, #12
+ 1311              	.LCFI20:
+ 1312              		.cfi_def_cfa_offset 16
+ 384:Device/Dev_BMP280.c **** 
+ 1313              		.loc 1 384 5 is_stmt 1 view .LVU426
+ 384:Device/Dev_BMP280.c **** 
+ 1314              		.loc 1 384 13 is_stmt 0 view .LVU427
+ 1315 0004 0023     		movs	r3, #0
+ 1316 0006 8DF80730 		strb	r3, [sp, #7]
+ 386:Device/Dev_BMP280.c ****         DevBMP280_Register_Read(obj, BMP280_REG_ID, &ID, 1) && \
+ 1317              		.loc 1 386 5 is_stmt 1 view .LVU428
+ 386:Device/Dev_BMP280.c ****         DevBMP280_Register_Read(obj, BMP280_REG_ID, &ID, 1) && \
+ 1318              		.loc 1 386 8 is_stmt 0 view .LVU429
+ 1319 000a 60B1     		cbz	r0, .L92
+ 387:Device/Dev_BMP280.c ****         (ID == BMP280_DEVICE_ID))
+ 1320              		.loc 1 387 9 discriminator 1 view .LVU430
+ 1321 000c 0123     		movs	r3, #1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 40
+
+
+ 1322 000e 0DF10702 		add	r2, sp, #7
+ 1323 0012 D021     		movs	r1, #208
+ 1324 0014 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1325              	.LVL127:
+ 386:Device/Dev_BMP280.c ****         DevBMP280_Register_Read(obj, BMP280_REG_ID, &ID, 1) && \
+ 1326              		.loc 1 386 13 discriminator 1 view .LVU431
+ 1327 0018 48B1     		cbz	r0, .L93
+ 388:Device/Dev_BMP280.c ****         return true;
+ 1328              		.loc 1 388 13 view .LVU432
+ 1329 001a 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 387:Device/Dev_BMP280.c ****         (ID == BMP280_DEVICE_ID))
+ 1330              		.loc 1 387 61 view .LVU433
+ 1331 001e 582B     		cmp	r3, #88
+ 1332 0020 07D0     		beq	.L94
+ 391:Device/Dev_BMP280.c **** }
+ 1333              		.loc 1 391 12 view .LVU434
+ 1334 0022 0020     		movs	r0, #0
+ 1335 0024 00E0     		b	.L91
+ 1336              	.LVL128:
+ 1337              	.L92:
+ 391:Device/Dev_BMP280.c **** }
+ 1338              		.loc 1 391 12 view .LVU435
+ 1339 0026 0020     		movs	r0, #0
+ 1340              	.LVL129:
+ 1341              	.L91:
+ 392:Device/Dev_BMP280.c **** 
+ 1342              		.loc 1 392 1 view .LVU436
+ 1343 0028 03B0     		add	sp, sp, #12
+ 1344              	.LCFI21:
+ 1345              		.cfi_remember_state
+ 1346              		.cfi_def_cfa_offset 4
+ 1347              		@ sp needed
+ 1348 002a 5DF804FB 		ldr	pc, [sp], #4
+ 1349              	.L93:
+ 1350              	.LCFI22:
+ 1351              		.cfi_restore_state
+ 391:Device/Dev_BMP280.c **** }
+ 1352              		.loc 1 391 12 view .LVU437
+ 1353 002e 0020     		movs	r0, #0
+ 1354 0030 FAE7     		b	.L91
+ 1355              	.L94:
+ 389:Device/Dev_BMP280.c **** 
+ 1356              		.loc 1 389 16 view .LVU438
+ 1357 0032 0120     		movs	r0, #1
+ 1358 0034 F8E7     		b	.L91
+ 1359              		.cfi_endproc
+ 1360              	.LFE13:
+ 1362              		.section	.text.DevBMP280_Calibration,"ax",%progbits
+ 1363              		.align	1
+ 1364              		.syntax unified
+ 1365              		.thumb
+ 1366              		.thumb_func
+ 1368              	DevBMP280_Calibration:
+ 1369              	.LVL130:
+ 1370              	.LFB15:
+ 421:Device/Dev_BMP280.c ****     uint8_t rx_tmp[2] = {0};
+ 1371              		.loc 1 421 1 is_stmt 1 view -0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 41
+
+
+ 1372              		.cfi_startproc
+ 1373              		@ args = 0, pretend = 0, frame = 8
+ 1374              		@ frame_needed = 0, uses_anonymous_args = 0
+ 421:Device/Dev_BMP280.c ****     uint8_t rx_tmp[2] = {0};
+ 1375              		.loc 1 421 1 is_stmt 0 view .LVU440
+ 1376 0000 10B5     		push	{r4, lr}
+ 1377              	.LCFI23:
+ 1378              		.cfi_def_cfa_offset 8
+ 1379              		.cfi_offset 4, -8
+ 1380              		.cfi_offset 14, -4
+ 1381 0002 82B0     		sub	sp, sp, #8
+ 1382              	.LCFI24:
+ 1383              		.cfi_def_cfa_offset 16
+ 422:Device/Dev_BMP280.c ****     uint16_t state = 0;
+ 1384              		.loc 1 422 5 is_stmt 1 view .LVU441
+ 422:Device/Dev_BMP280.c ****     uint16_t state = 0;
+ 1385              		.loc 1 422 13 is_stmt 0 view .LVU442
+ 1386 0004 0023     		movs	r3, #0
+ 1387 0006 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 423:Device/Dev_BMP280.c **** 
+ 1388              		.loc 1 423 5 is_stmt 1 view .LVU443
+ 1389              	.LVL131:
+ 425:Device/Dev_BMP280.c ****     {
+ 1390              		.loc 1 425 5 view .LVU444
+ 425:Device/Dev_BMP280.c ****     {
+ 1391              		.loc 1 425 8 is_stmt 0 view .LVU445
+ 1392 000a 0028     		cmp	r0, #0
+ 1393 000c 00F0F580 		beq	.L98
+ 1394 0010 0446     		mov	r4, r0
+ 427:Device/Dev_BMP280.c ****             return false;
+ 1395              		.loc 1 427 9 is_stmt 1 view .LVU446
+ 427:Device/Dev_BMP280.c ****             return false;
+ 1396              		.loc 1 427 16 is_stmt 0 view .LVU447
+ 1397 0012 836D     		ldr	r3, [r0, #88]
+ 427:Device/Dev_BMP280.c ****             return false;
+ 1398              		.loc 1 427 12 view .LVU448
+ 1399 0014 002B     		cmp	r3, #0
+ 1400 0016 00F0F380 		beq	.L99
+ 431:Device/Dev_BMP280.c ****         if (state == 0)
+ 1401              		.loc 1 431 9 is_stmt 1 view .LVU449
+ 431:Device/Dev_BMP280.c ****         if (state == 0)
+ 1402              		.loc 1 431 17 is_stmt 0 view .LVU450
+ 1403 001a 0223     		movs	r3, #2
+ 1404 001c 01AA     		add	r2, sp, #4
+ 1405 001e 8821     		movs	r1, #136
+ 1406 0020 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1407              	.LVL132:
+ 432:Device/Dev_BMP280.c ****             return false;
+ 1408              		.loc 1 432 9 is_stmt 1 view .LVU451
+ 432:Device/Dev_BMP280.c ****             return false;
+ 1409              		.loc 1 432 12 is_stmt 0 view .LVU452
+ 1410 0024 08B9     		cbnz	r0, .L113
+ 433:Device/Dev_BMP280.c **** 
+ 1411              		.loc 1 433 20 view .LVU453
+ 1412 0026 0020     		movs	r0, #0
+ 1413              	.LVL133:
+ 433:Device/Dev_BMP280.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 42
+
+
+ 1414              		.loc 1 433 20 view .LVU454
+ 1415 0028 E8E0     		b	.L97
+ 1416              	.LVL134:
+ 1417              	.L113:
+ 435:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1418              		.loc 1 435 9 is_stmt 1 view .LVU455
+ 435:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1419              		.loc 1 435 42 is_stmt 0 view .LVU456
+ 1420 002a 9DF80520 		ldrb	r2, [sp, #5]	@ zero_extendqisi2
+ 435:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1421              		.loc 1 435 59 view .LVU457
+ 1422 002e 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 435:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1423              		.loc 1 435 25 view .LVU458
+ 1424 0032 43EA0223 		orr	r3, r3, r2, lsl #8
+ 435:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1425              		.loc 1 435 23 view .LVU459
+ 1426 0036 A381     		strh	r3, [r4, #12]	@ movhi
+ 436:Device/Dev_BMP280.c **** 
+ 1427              		.loc 1 436 9 is_stmt 1 view .LVU460
+ 1428 0038 0023     		movs	r3, #0
+ 1429 003a ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 439:Device/Dev_BMP280.c ****         if (state == 0)
+ 1430              		.loc 1 439 9 view .LVU461
+ 439:Device/Dev_BMP280.c ****         if (state == 0)
+ 1431              		.loc 1 439 17 is_stmt 0 view .LVU462
+ 1432 003e 0223     		movs	r3, #2
+ 1433 0040 01AA     		add	r2, sp, #4
+ 1434 0042 8A21     		movs	r1, #138
+ 1435 0044 2046     		mov	r0, r4
+ 1436              	.LVL135:
+ 439:Device/Dev_BMP280.c ****         if (state == 0)
+ 1437              		.loc 1 439 17 view .LVU463
+ 1438 0046 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1439              	.LVL136:
+ 440:Device/Dev_BMP280.c ****             return false;
+ 1440              		.loc 1 440 9 is_stmt 1 view .LVU464
+ 440:Device/Dev_BMP280.c ****             return false;
+ 1441              		.loc 1 440 12 is_stmt 0 view .LVU465
+ 1442 004a 08B9     		cbnz	r0, .L114
+ 441:Device/Dev_BMP280.c **** 
+ 1443              		.loc 1 441 20 view .LVU466
+ 1444 004c 0020     		movs	r0, #0
+ 1445              	.LVL137:
+ 441:Device/Dev_BMP280.c **** 
+ 1446              		.loc 1 441 20 view .LVU467
+ 1447 004e D5E0     		b	.L97
+ 1448              	.LVL138:
+ 1449              	.L114:
+ 443:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1450              		.loc 1 443 9 is_stmt 1 view .LVU468
+ 443:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1451              		.loc 1 443 42 is_stmt 0 view .LVU469
+ 1452 0050 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 443:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1453              		.loc 1 443 46 view .LVU470
+ 1454 0054 1B02     		lsls	r3, r3, #8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 43
+
+
+ 443:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1455              		.loc 1 443 25 view .LVU471
+ 1456 0056 1BB2     		sxth	r3, r3
+ 443:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1457              		.loc 1 443 59 view .LVU472
+ 1458 0058 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ 443:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1459              		.loc 1 443 51 view .LVU473
+ 1460 005c 1343     		orrs	r3, r3, r2
+ 443:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1461              		.loc 1 443 23 view .LVU474
+ 1462 005e E381     		strh	r3, [r4, #14]	@ movhi
+ 444:Device/Dev_BMP280.c **** 
+ 1463              		.loc 1 444 9 is_stmt 1 view .LVU475
+ 1464 0060 0023     		movs	r3, #0
+ 1465 0062 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 447:Device/Dev_BMP280.c ****         if (state == 0)
+ 1466              		.loc 1 447 9 view .LVU476
+ 447:Device/Dev_BMP280.c ****         if (state == 0)
+ 1467              		.loc 1 447 17 is_stmt 0 view .LVU477
+ 1468 0066 0223     		movs	r3, #2
+ 1469 0068 01AA     		add	r2, sp, #4
+ 1470 006a 8C21     		movs	r1, #140
+ 1471 006c 2046     		mov	r0, r4
+ 1472              	.LVL139:
+ 447:Device/Dev_BMP280.c ****         if (state == 0)
+ 1473              		.loc 1 447 17 view .LVU478
+ 1474 006e FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1475              	.LVL140:
+ 448:Device/Dev_BMP280.c ****             return false;
+ 1476              		.loc 1 448 9 is_stmt 1 view .LVU479
+ 448:Device/Dev_BMP280.c ****             return false;
+ 1477              		.loc 1 448 12 is_stmt 0 view .LVU480
+ 1478 0072 08B9     		cbnz	r0, .L115
+ 449:Device/Dev_BMP280.c **** 
+ 1479              		.loc 1 449 20 view .LVU481
+ 1480 0074 0020     		movs	r0, #0
+ 1481              	.LVL141:
+ 449:Device/Dev_BMP280.c **** 
+ 1482              		.loc 1 449 20 view .LVU482
+ 1483 0076 C1E0     		b	.L97
+ 1484              	.LVL142:
+ 1485              	.L115:
+ 451:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1486              		.loc 1 451 9 is_stmt 1 view .LVU483
+ 451:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1487              		.loc 1 451 42 is_stmt 0 view .LVU484
+ 1488 0078 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 451:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1489              		.loc 1 451 46 view .LVU485
+ 1490 007c 1B02     		lsls	r3, r3, #8
+ 451:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1491              		.loc 1 451 25 view .LVU486
+ 1492 007e 1BB2     		sxth	r3, r3
+ 451:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1493              		.loc 1 451 59 view .LVU487
+ 1494 0080 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 44
+
+
+ 451:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1495              		.loc 1 451 51 view .LVU488
+ 1496 0084 1343     		orrs	r3, r3, r2
+ 451:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1497              		.loc 1 451 23 view .LVU489
+ 1498 0086 2382     		strh	r3, [r4, #16]	@ movhi
+ 452:Device/Dev_BMP280.c **** 
+ 1499              		.loc 1 452 9 is_stmt 1 view .LVU490
+ 1500 0088 0023     		movs	r3, #0
+ 1501 008a ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 455:Device/Dev_BMP280.c ****         if (state == 0)
+ 1502              		.loc 1 455 9 view .LVU491
+ 455:Device/Dev_BMP280.c ****         if (state == 0)
+ 1503              		.loc 1 455 17 is_stmt 0 view .LVU492
+ 1504 008e 0223     		movs	r3, #2
+ 1505 0090 01AA     		add	r2, sp, #4
+ 1506 0092 8E21     		movs	r1, #142
+ 1507 0094 2046     		mov	r0, r4
+ 1508              	.LVL143:
+ 455:Device/Dev_BMP280.c ****         if (state == 0)
+ 1509              		.loc 1 455 17 view .LVU493
+ 1510 0096 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1511              	.LVL144:
+ 456:Device/Dev_BMP280.c ****             return false;
+ 1512              		.loc 1 456 9 is_stmt 1 view .LVU494
+ 456:Device/Dev_BMP280.c ****             return false;
+ 1513              		.loc 1 456 12 is_stmt 0 view .LVU495
+ 1514 009a 08B9     		cbnz	r0, .L116
+ 457:Device/Dev_BMP280.c **** 
+ 1515              		.loc 1 457 20 view .LVU496
+ 1516 009c 0020     		movs	r0, #0
+ 1517              	.LVL145:
+ 457:Device/Dev_BMP280.c **** 
+ 1518              		.loc 1 457 20 view .LVU497
+ 1519 009e ADE0     		b	.L97
+ 1520              	.LVL146:
+ 1521              	.L116:
+ 459:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1522              		.loc 1 459 9 is_stmt 1 view .LVU498
+ 459:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1523              		.loc 1 459 42 is_stmt 0 view .LVU499
+ 1524 00a0 9DF80520 		ldrb	r2, [sp, #5]	@ zero_extendqisi2
+ 459:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1525              		.loc 1 459 59 view .LVU500
+ 1526 00a4 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 459:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1527              		.loc 1 459 25 view .LVU501
+ 1528 00a8 43EA0223 		orr	r3, r3, r2, lsl #8
+ 459:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1529              		.loc 1 459 23 view .LVU502
+ 1530 00ac 6382     		strh	r3, [r4, #18]	@ movhi
+ 460:Device/Dev_BMP280.c ****         
+ 1531              		.loc 1 460 9 is_stmt 1 view .LVU503
+ 1532 00ae 0023     		movs	r3, #0
+ 1533 00b0 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 463:Device/Dev_BMP280.c ****         if (state == 0)
+ 1534              		.loc 1 463 9 view .LVU504
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 45
+
+
+ 463:Device/Dev_BMP280.c ****         if (state == 0)
+ 1535              		.loc 1 463 17 is_stmt 0 view .LVU505
+ 1536 00b4 0223     		movs	r3, #2
+ 1537 00b6 01AA     		add	r2, sp, #4
+ 1538 00b8 9021     		movs	r1, #144
+ 1539 00ba 2046     		mov	r0, r4
+ 1540              	.LVL147:
+ 463:Device/Dev_BMP280.c ****         if (state == 0)
+ 1541              		.loc 1 463 17 view .LVU506
+ 1542 00bc FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1543              	.LVL148:
+ 464:Device/Dev_BMP280.c ****             return false;
+ 1544              		.loc 1 464 9 is_stmt 1 view .LVU507
+ 464:Device/Dev_BMP280.c ****             return false;
+ 1545              		.loc 1 464 12 is_stmt 0 view .LVU508
+ 1546 00c0 08B9     		cbnz	r0, .L117
+ 465:Device/Dev_BMP280.c **** 
+ 1547              		.loc 1 465 20 view .LVU509
+ 1548 00c2 0020     		movs	r0, #0
+ 1549              	.LVL149:
+ 465:Device/Dev_BMP280.c **** 
+ 1550              		.loc 1 465 20 view .LVU510
+ 1551 00c4 9AE0     		b	.L97
+ 1552              	.LVL150:
+ 1553              	.L117:
+ 467:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1554              		.loc 1 467 9 is_stmt 1 view .LVU511
+ 467:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1555              		.loc 1 467 42 is_stmt 0 view .LVU512
+ 1556 00c6 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 467:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1557              		.loc 1 467 46 view .LVU513
+ 1558 00ca 1B02     		lsls	r3, r3, #8
+ 467:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1559              		.loc 1 467 25 view .LVU514
+ 1560 00cc 1BB2     		sxth	r3, r3
+ 467:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1561              		.loc 1 467 59 view .LVU515
+ 1562 00ce 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ 467:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1563              		.loc 1 467 51 view .LVU516
+ 1564 00d2 1343     		orrs	r3, r3, r2
+ 467:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1565              		.loc 1 467 23 view .LVU517
+ 1566 00d4 A382     		strh	r3, [r4, #20]	@ movhi
+ 468:Device/Dev_BMP280.c **** 
+ 1567              		.loc 1 468 9 is_stmt 1 view .LVU518
+ 1568 00d6 0023     		movs	r3, #0
+ 1569 00d8 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 471:Device/Dev_BMP280.c ****         if (state == 0)
+ 1570              		.loc 1 471 9 view .LVU519
+ 471:Device/Dev_BMP280.c ****         if (state == 0)
+ 1571              		.loc 1 471 17 is_stmt 0 view .LVU520
+ 1572 00dc 0223     		movs	r3, #2
+ 1573 00de 01AA     		add	r2, sp, #4
+ 1574 00e0 9221     		movs	r1, #146
+ 1575 00e2 2046     		mov	r0, r4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 46
+
+
+ 1576              	.LVL151:
+ 471:Device/Dev_BMP280.c ****         if (state == 0)
+ 1577              		.loc 1 471 17 view .LVU521
+ 1578 00e4 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1579              	.LVL152:
+ 472:Device/Dev_BMP280.c ****             return false;
+ 1580              		.loc 1 472 9 is_stmt 1 view .LVU522
+ 472:Device/Dev_BMP280.c ****             return false;
+ 1581              		.loc 1 472 12 is_stmt 0 view .LVU523
+ 1582 00e8 08B9     		cbnz	r0, .L118
+ 473:Device/Dev_BMP280.c **** 
+ 1583              		.loc 1 473 20 view .LVU524
+ 1584 00ea 0020     		movs	r0, #0
+ 1585              	.LVL153:
+ 473:Device/Dev_BMP280.c **** 
+ 1586              		.loc 1 473 20 view .LVU525
+ 1587 00ec 86E0     		b	.L97
+ 1588              	.LVL154:
+ 1589              	.L118:
+ 475:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1590              		.loc 1 475 9 is_stmt 1 view .LVU526
+ 475:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1591              		.loc 1 475 42 is_stmt 0 view .LVU527
+ 1592 00ee 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 475:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1593              		.loc 1 475 46 view .LVU528
+ 1594 00f2 1B02     		lsls	r3, r3, #8
+ 475:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1595              		.loc 1 475 25 view .LVU529
+ 1596 00f4 1BB2     		sxth	r3, r3
+ 475:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1597              		.loc 1 475 59 view .LVU530
+ 1598 00f6 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ 475:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1599              		.loc 1 475 51 view .LVU531
+ 1600 00fa 1343     		orrs	r3, r3, r2
+ 475:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1601              		.loc 1 475 23 view .LVU532
+ 1602 00fc E382     		strh	r3, [r4, #22]	@ movhi
+ 476:Device/Dev_BMP280.c **** 
+ 1603              		.loc 1 476 9 is_stmt 1 view .LVU533
+ 1604 00fe 0023     		movs	r3, #0
+ 1605 0100 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 479:Device/Dev_BMP280.c ****         if (state == 0)
+ 1606              		.loc 1 479 9 view .LVU534
+ 479:Device/Dev_BMP280.c ****         if (state == 0)
+ 1607              		.loc 1 479 17 is_stmt 0 view .LVU535
+ 1608 0104 0223     		movs	r3, #2
+ 1609 0106 01AA     		add	r2, sp, #4
+ 1610 0108 9421     		movs	r1, #148
+ 1611 010a 2046     		mov	r0, r4
+ 1612              	.LVL155:
+ 479:Device/Dev_BMP280.c ****         if (state == 0)
+ 1613              		.loc 1 479 17 view .LVU536
+ 1614 010c FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1615              	.LVL156:
+ 480:Device/Dev_BMP280.c ****             return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 47
+
+
+ 1616              		.loc 1 480 9 is_stmt 1 view .LVU537
+ 480:Device/Dev_BMP280.c ****             return false;
+ 1617              		.loc 1 480 12 is_stmt 0 view .LVU538
+ 1618 0110 08B9     		cbnz	r0, .L119
+ 481:Device/Dev_BMP280.c **** 
+ 1619              		.loc 1 481 20 view .LVU539
+ 1620 0112 0020     		movs	r0, #0
+ 1621              	.LVL157:
+ 481:Device/Dev_BMP280.c **** 
+ 1622              		.loc 1 481 20 view .LVU540
+ 1623 0114 72E0     		b	.L97
+ 1624              	.LVL158:
+ 1625              	.L119:
+ 483:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1626              		.loc 1 483 9 is_stmt 1 view .LVU541
+ 483:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1627              		.loc 1 483 42 is_stmt 0 view .LVU542
+ 1628 0116 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 483:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1629              		.loc 1 483 46 view .LVU543
+ 1630 011a 1B02     		lsls	r3, r3, #8
+ 483:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1631              		.loc 1 483 25 view .LVU544
+ 1632 011c 1BB2     		sxth	r3, r3
+ 483:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1633              		.loc 1 483 59 view .LVU545
+ 1634 011e 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ 483:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1635              		.loc 1 483 51 view .LVU546
+ 1636 0122 1343     		orrs	r3, r3, r2
+ 483:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1637              		.loc 1 483 23 view .LVU547
+ 1638 0124 2383     		strh	r3, [r4, #24]	@ movhi
+ 484:Device/Dev_BMP280.c **** 
+ 1639              		.loc 1 484 9 is_stmt 1 view .LVU548
+ 1640 0126 0023     		movs	r3, #0
+ 1641 0128 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 487:Device/Dev_BMP280.c ****         if (state == 0)
+ 1642              		.loc 1 487 9 view .LVU549
+ 487:Device/Dev_BMP280.c ****         if (state == 0)
+ 1643              		.loc 1 487 17 is_stmt 0 view .LVU550
+ 1644 012c 0223     		movs	r3, #2
+ 1645 012e 01AA     		add	r2, sp, #4
+ 1646 0130 9621     		movs	r1, #150
+ 1647 0132 2046     		mov	r0, r4
+ 1648              	.LVL159:
+ 487:Device/Dev_BMP280.c ****         if (state == 0)
+ 1649              		.loc 1 487 17 view .LVU551
+ 1650 0134 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1651              	.LVL160:
+ 488:Device/Dev_BMP280.c ****             return false;
+ 1652              		.loc 1 488 9 is_stmt 1 view .LVU552
+ 488:Device/Dev_BMP280.c ****             return false;
+ 1653              		.loc 1 488 12 is_stmt 0 view .LVU553
+ 1654 0138 08B9     		cbnz	r0, .L120
+ 489:Device/Dev_BMP280.c **** 
+ 1655              		.loc 1 489 20 view .LVU554
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 48
+
+
+ 1656 013a 0020     		movs	r0, #0
+ 1657              	.LVL161:
+ 489:Device/Dev_BMP280.c **** 
+ 1658              		.loc 1 489 20 view .LVU555
+ 1659 013c 5EE0     		b	.L97
+ 1660              	.LVL162:
+ 1661              	.L120:
+ 491:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1662              		.loc 1 491 9 is_stmt 1 view .LVU556
+ 491:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1663              		.loc 1 491 42 is_stmt 0 view .LVU557
+ 1664 013e 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 491:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1665              		.loc 1 491 46 view .LVU558
+ 1666 0142 1B02     		lsls	r3, r3, #8
+ 491:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1667              		.loc 1 491 25 view .LVU559
+ 1668 0144 1BB2     		sxth	r3, r3
+ 491:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1669              		.loc 1 491 59 view .LVU560
+ 1670 0146 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ 491:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1671              		.loc 1 491 51 view .LVU561
+ 1672 014a 1343     		orrs	r3, r3, r2
+ 491:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1673              		.loc 1 491 23 view .LVU562
+ 1674 014c 6383     		strh	r3, [r4, #26]	@ movhi
+ 492:Device/Dev_BMP280.c **** 
+ 1675              		.loc 1 492 9 is_stmt 1 view .LVU563
+ 1676 014e 0023     		movs	r3, #0
+ 1677 0150 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 495:Device/Dev_BMP280.c ****         if (state == 0)
+ 1678              		.loc 1 495 9 view .LVU564
+ 495:Device/Dev_BMP280.c ****         if (state == 0)
+ 1679              		.loc 1 495 17 is_stmt 0 view .LVU565
+ 1680 0154 0223     		movs	r3, #2
+ 1681 0156 01AA     		add	r2, sp, #4
+ 1682 0158 9821     		movs	r1, #152
+ 1683 015a 2046     		mov	r0, r4
+ 1684              	.LVL163:
+ 495:Device/Dev_BMP280.c ****         if (state == 0)
+ 1685              		.loc 1 495 17 view .LVU566
+ 1686 015c FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1687              	.LVL164:
+ 496:Device/Dev_BMP280.c ****             return false;
+ 1688              		.loc 1 496 9 is_stmt 1 view .LVU567
+ 496:Device/Dev_BMP280.c ****             return false;
+ 1689              		.loc 1 496 12 is_stmt 0 view .LVU568
+ 1690 0160 08B9     		cbnz	r0, .L121
+ 497:Device/Dev_BMP280.c **** 
+ 1691              		.loc 1 497 20 view .LVU569
+ 1692 0162 0020     		movs	r0, #0
+ 1693              	.LVL165:
+ 497:Device/Dev_BMP280.c **** 
+ 1694              		.loc 1 497 20 view .LVU570
+ 1695 0164 4AE0     		b	.L97
+ 1696              	.LVL166:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 49
+
+
+ 1697              	.L121:
+ 499:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1698              		.loc 1 499 9 is_stmt 1 view .LVU571
+ 499:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1699              		.loc 1 499 42 is_stmt 0 view .LVU572
+ 1700 0166 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 499:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1701              		.loc 1 499 46 view .LVU573
+ 1702 016a 1B02     		lsls	r3, r3, #8
+ 499:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1703              		.loc 1 499 25 view .LVU574
+ 1704 016c 1BB2     		sxth	r3, r3
+ 499:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1705              		.loc 1 499 59 view .LVU575
+ 1706 016e 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ 499:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1707              		.loc 1 499 51 view .LVU576
+ 1708 0172 1343     		orrs	r3, r3, r2
+ 499:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1709              		.loc 1 499 23 view .LVU577
+ 1710 0174 A383     		strh	r3, [r4, #28]	@ movhi
+ 500:Device/Dev_BMP280.c **** 
+ 1711              		.loc 1 500 9 is_stmt 1 view .LVU578
+ 1712 0176 0023     		movs	r3, #0
+ 1713 0178 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 503:Device/Dev_BMP280.c ****         if (state == 0)
+ 1714              		.loc 1 503 9 view .LVU579
+ 503:Device/Dev_BMP280.c ****         if (state == 0)
+ 1715              		.loc 1 503 17 is_stmt 0 view .LVU580
+ 1716 017c 0223     		movs	r3, #2
+ 1717 017e 01AA     		add	r2, sp, #4
+ 1718 0180 9A21     		movs	r1, #154
+ 1719 0182 2046     		mov	r0, r4
+ 1720              	.LVL167:
+ 503:Device/Dev_BMP280.c ****         if (state == 0)
+ 1721              		.loc 1 503 17 view .LVU581
+ 1722 0184 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1723              	.LVL168:
+ 504:Device/Dev_BMP280.c ****             return false;
+ 1724              		.loc 1 504 9 is_stmt 1 view .LVU582
+ 504:Device/Dev_BMP280.c ****             return false;
+ 1725              		.loc 1 504 12 is_stmt 0 view .LVU583
+ 1726 0188 08B9     		cbnz	r0, .L122
+ 505:Device/Dev_BMP280.c **** 
+ 1727              		.loc 1 505 20 view .LVU584
+ 1728 018a 0020     		movs	r0, #0
+ 1729              	.LVL169:
+ 505:Device/Dev_BMP280.c **** 
+ 1730              		.loc 1 505 20 view .LVU585
+ 1731 018c 36E0     		b	.L97
+ 1732              	.LVL170:
+ 1733              	.L122:
+ 507:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1734              		.loc 1 507 9 is_stmt 1 view .LVU586
+ 507:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1735              		.loc 1 507 42 is_stmt 0 view .LVU587
+ 1736 018e 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 50
+
+
+ 507:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1737              		.loc 1 507 46 view .LVU588
+ 1738 0192 1B02     		lsls	r3, r3, #8
+ 507:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1739              		.loc 1 507 25 view .LVU589
+ 1740 0194 1BB2     		sxth	r3, r3
+ 507:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1741              		.loc 1 507 59 view .LVU590
+ 1742 0196 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ 507:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1743              		.loc 1 507 51 view .LVU591
+ 1744 019a 1343     		orrs	r3, r3, r2
+ 507:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1745              		.loc 1 507 23 view .LVU592
+ 1746 019c E383     		strh	r3, [r4, #30]	@ movhi
+ 508:Device/Dev_BMP280.c **** 
+ 1747              		.loc 1 508 9 is_stmt 1 view .LVU593
+ 1748 019e 0023     		movs	r3, #0
+ 1749 01a0 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 511:Device/Dev_BMP280.c ****         if (state == 0)
+ 1750              		.loc 1 511 9 view .LVU594
+ 511:Device/Dev_BMP280.c ****         if (state == 0)
+ 1751              		.loc 1 511 17 is_stmt 0 view .LVU595
+ 1752 01a4 0223     		movs	r3, #2
+ 1753 01a6 01AA     		add	r2, sp, #4
+ 1754 01a8 9C21     		movs	r1, #156
+ 1755 01aa 2046     		mov	r0, r4
+ 1756              	.LVL171:
+ 511:Device/Dev_BMP280.c ****         if (state == 0)
+ 1757              		.loc 1 511 17 view .LVU596
+ 1758 01ac FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1759              	.LVL172:
+ 512:Device/Dev_BMP280.c ****             return false;
+ 1760              		.loc 1 512 9 is_stmt 1 view .LVU597
+ 512:Device/Dev_BMP280.c ****             return false;
+ 1761              		.loc 1 512 12 is_stmt 0 view .LVU598
+ 1762 01b0 08B9     		cbnz	r0, .L123
+ 513:Device/Dev_BMP280.c **** 
+ 1763              		.loc 1 513 20 view .LVU599
+ 1764 01b2 0020     		movs	r0, #0
+ 1765              	.LVL173:
+ 513:Device/Dev_BMP280.c **** 
+ 1766              		.loc 1 513 20 view .LVU600
+ 1767 01b4 22E0     		b	.L97
+ 1768              	.LVL174:
+ 1769              	.L123:
+ 515:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1770              		.loc 1 515 9 is_stmt 1 view .LVU601
+ 515:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1771              		.loc 1 515 42 is_stmt 0 view .LVU602
+ 1772 01b6 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 515:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1773              		.loc 1 515 46 view .LVU603
+ 1774 01ba 1B02     		lsls	r3, r3, #8
+ 515:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1775              		.loc 1 515 25 view .LVU604
+ 1776 01bc 1BB2     		sxth	r3, r3
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 51
+
+
+ 515:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1777              		.loc 1 515 59 view .LVU605
+ 1778 01be 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ 515:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1779              		.loc 1 515 51 view .LVU606
+ 1780 01c2 1343     		orrs	r3, r3, r2
+ 515:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1781              		.loc 1 515 23 view .LVU607
+ 1782 01c4 2384     		strh	r3, [r4, #32]	@ movhi
+ 516:Device/Dev_BMP280.c **** 
+ 1783              		.loc 1 516 9 is_stmt 1 view .LVU608
+ 1784 01c6 0023     		movs	r3, #0
+ 1785 01c8 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 519:Device/Dev_BMP280.c ****         if (state == 0)
+ 1786              		.loc 1 519 9 view .LVU609
+ 519:Device/Dev_BMP280.c ****         if (state == 0)
+ 1787              		.loc 1 519 17 is_stmt 0 view .LVU610
+ 1788 01cc 0223     		movs	r3, #2
+ 1789 01ce 01AA     		add	r2, sp, #4
+ 1790 01d0 9E21     		movs	r1, #158
+ 1791 01d2 2046     		mov	r0, r4
+ 1792              	.LVL175:
+ 519:Device/Dev_BMP280.c ****         if (state == 0)
+ 1793              		.loc 1 519 17 view .LVU611
+ 1794 01d4 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1795              	.LVL176:
+ 520:Device/Dev_BMP280.c ****             return false;
+ 1796              		.loc 1 520 9 is_stmt 1 view .LVU612
+ 520:Device/Dev_BMP280.c ****             return false;
+ 1797              		.loc 1 520 12 is_stmt 0 view .LVU613
+ 1798 01d8 08B9     		cbnz	r0, .L124
+ 521:Device/Dev_BMP280.c **** 
+ 1799              		.loc 1 521 20 view .LVU614
+ 1800 01da 0020     		movs	r0, #0
+ 1801              	.LVL177:
+ 521:Device/Dev_BMP280.c **** 
+ 1802              		.loc 1 521 20 view .LVU615
+ 1803 01dc 0EE0     		b	.L97
+ 1804              	.LVL178:
+ 1805              	.L124:
+ 523:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1806              		.loc 1 523 9 is_stmt 1 view .LVU616
+ 523:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1807              		.loc 1 523 42 is_stmt 0 view .LVU617
+ 1808 01de 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 523:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1809              		.loc 1 523 46 view .LVU618
+ 1810 01e2 1B02     		lsls	r3, r3, #8
+ 523:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1811              		.loc 1 523 25 view .LVU619
+ 1812 01e4 1BB2     		sxth	r3, r3
+ 523:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1813              		.loc 1 523 59 view .LVU620
+ 1814 01e6 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+ 523:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1815              		.loc 1 523 51 view .LVU621
+ 1816 01ea 1343     		orrs	r3, r3, r2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 52
+
+
+ 523:Device/Dev_BMP280.c ****         memset(rx_tmp, 0, sizeof(rx_tmp));
+ 1817              		.loc 1 523 23 view .LVU622
+ 1818 01ec 6384     		strh	r3, [r4, #34]	@ movhi
+ 524:Device/Dev_BMP280.c **** 
+ 1819              		.loc 1 524 9 is_stmt 1 view .LVU623
+ 1820 01ee 0023     		movs	r3, #0
+ 1821 01f0 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 526:Device/Dev_BMP280.c **** 
+ 1822              		.loc 1 526 9 view .LVU624
+ 526:Device/Dev_BMP280.c **** 
+ 1823              		.loc 1 526 27 is_stmt 0 view .LVU625
+ 1824 01f4 6362     		str	r3, [r4, #36]
+ 528:Device/Dev_BMP280.c ****     }
+ 1825              		.loc 1 528 9 is_stmt 1 view .LVU626
+ 528:Device/Dev_BMP280.c ****     }
+ 1826              		.loc 1 528 16 is_stmt 0 view .LVU627
+ 1827 01f6 0120     		movs	r0, #1
+ 1828              	.LVL179:
+ 528:Device/Dev_BMP280.c ****     }
+ 1829              		.loc 1 528 16 view .LVU628
+ 1830 01f8 00E0     		b	.L97
+ 1831              	.LVL180:
+ 1832              	.L98:
+ 531:Device/Dev_BMP280.c **** }
+ 1833              		.loc 1 531 12 view .LVU629
+ 1834 01fa 0020     		movs	r0, #0
+ 1835              	.LVL181:
+ 1836              	.L97:
+ 532:Device/Dev_BMP280.c **** 
+ 1837              		.loc 1 532 1 view .LVU630
+ 1838 01fc 02B0     		add	sp, sp, #8
+ 1839              	.LCFI25:
+ 1840              		.cfi_remember_state
+ 1841              		.cfi_def_cfa_offset 8
+ 1842              		@ sp needed
+ 1843 01fe 10BD     		pop	{r4, pc}
+ 1844              	.LVL182:
+ 1845              	.L99:
+ 1846              	.LCFI26:
+ 1847              		.cfi_restore_state
+ 428:Device/Dev_BMP280.c **** 
+ 1848              		.loc 1 428 20 view .LVU631
+ 1849 0200 0020     		movs	r0, #0
+ 1850              	.LVL183:
+ 428:Device/Dev_BMP280.c **** 
+ 1851              		.loc 1 428 20 view .LVU632
+ 1852 0202 FBE7     		b	.L97
+ 1853              		.cfi_endproc
+ 1854              	.LFE15:
+ 1856              		.section	.text.DevBMP280_Set_Pressure_OverSampling,"ax",%progbits
+ 1857              		.align	1
+ 1858              		.syntax unified
+ 1859              		.thumb
+ 1860              		.thumb_func
+ 1862              	DevBMP280_Set_Pressure_OverSampling:
+ 1863              	.LVL184:
+ 1864              	.LFB1:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 53
+
+
+ 102:Device/Dev_BMP280.c ****     uint8_t cur_setting = 0;
+ 1865              		.loc 1 102 1 is_stmt 1 view -0
+ 1866              		.cfi_startproc
+ 1867              		@ args = 0, pretend = 0, frame = 8
+ 1868              		@ frame_needed = 0, uses_anonymous_args = 0
+ 102:Device/Dev_BMP280.c ****     uint8_t cur_setting = 0;
+ 1869              		.loc 1 102 1 is_stmt 0 view .LVU634
+ 1870 0000 30B5     		push	{r4, r5, lr}
+ 1871              	.LCFI27:
+ 1872              		.cfi_def_cfa_offset 12
+ 1873              		.cfi_offset 4, -12
+ 1874              		.cfi_offset 5, -8
+ 1875              		.cfi_offset 14, -4
+ 1876 0002 83B0     		sub	sp, sp, #12
+ 1877              	.LCFI28:
+ 1878              		.cfi_def_cfa_offset 24
+ 103:Device/Dev_BMP280.c ****     uint8_t setting_readout = 0;
+ 1879              		.loc 1 103 5 is_stmt 1 view .LVU635
+ 103:Device/Dev_BMP280.c ****     uint8_t setting_readout = 0;
+ 1880              		.loc 1 103 13 is_stmt 0 view .LVU636
+ 1881 0004 0023     		movs	r3, #0
+ 1882 0006 8DF80730 		strb	r3, [sp, #7]
+ 104:Device/Dev_BMP280.c **** 
+ 1883              		.loc 1 104 5 is_stmt 1 view .LVU637
+ 104:Device/Dev_BMP280.c **** 
+ 1884              		.loc 1 104 13 is_stmt 0 view .LVU638
+ 1885 000a 8DF80630 		strb	r3, [sp, #6]
+ 106:Device/Dev_BMP280.c ****     {
+ 1886              		.loc 1 106 5 is_stmt 1 view .LVU639
+ 106:Device/Dev_BMP280.c ****     {
+ 1887              		.loc 1 106 8 is_stmt 0 view .LVU640
+ 1888 000e 60B3     		cbz	r0, .L127
+ 1889 0010 0C46     		mov	r4, r1
+ 1890 0012 0546     		mov	r5, r0
+ 108:Device/Dev_BMP280.c ****             return false;
+ 1891              		.loc 1 108 9 is_stmt 1 view .LVU641
+ 108:Device/Dev_BMP280.c ****             return false;
+ 1892              		.loc 1 108 13 is_stmt 0 view .LVU642
+ 1893 0014 0123     		movs	r3, #1
+ 1894 0016 0DF10702 		add	r2, sp, #7
+ 1895 001a F421     		movs	r1, #244
+ 1896              	.LVL185:
+ 108:Device/Dev_BMP280.c ****             return false;
+ 1897              		.loc 1 108 13 view .LVU643
+ 1898 001c FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1899              	.LVL186:
+ 108:Device/Dev_BMP280.c ****             return false;
+ 1900              		.loc 1 108 12 view .LVU644
+ 1901 0020 08B9     		cbnz	r0, .L133
+ 109:Device/Dev_BMP280.c ****     
+ 1902              		.loc 1 109 20 view .LVU645
+ 1903 0022 0020     		movs	r0, #0
+ 1904 0024 22E0     		b	.L126
+ 1905              	.L133:
+ 112:Device/Dev_BMP280.c **** 
+ 1906              		.loc 1 112 9 is_stmt 1 view .LVU646
+ 112:Device/Dev_BMP280.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 54
+
+
+ 1907              		.loc 1 112 21 is_stmt 0 view .LVU647
+ 1908 0026 9DF80720 		ldrb	r2, [sp, #7]	@ zero_extendqisi2
+ 1909 002a 02F01F02 		and	r2, r2, #31
+ 1910 002e 8DF80720 		strb	r2, [sp, #7]
+ 115:Device/Dev_BMP280.c ****         
+ 1911              		.loc 1 115 9 is_stmt 1 view .LVU648
+ 115:Device/Dev_BMP280.c ****         
+ 1912              		.loc 1 115 21 is_stmt 0 view .LVU649
+ 1913 0032 42EA4412 		orr	r2, r2, r4, lsl #5
+ 1914 0036 D2B2     		uxtb	r2, r2
+ 1915 0038 8DF80720 		strb	r2, [sp, #7]
+ 117:Device/Dev_BMP280.c ****             return false;
+ 1916              		.loc 1 117 9 is_stmt 1 view .LVU650
+ 117:Device/Dev_BMP280.c ****             return false;
+ 1917              		.loc 1 117 13 is_stmt 0 view .LVU651
+ 1918 003c F421     		movs	r1, #244
+ 1919 003e 2846     		mov	r0, r5
+ 1920 0040 FFF7FEFF 		bl	DevBMP280_Register_Write
+ 1921              	.LVL187:
+ 117:Device/Dev_BMP280.c ****             return false;
+ 1922              		.loc 1 117 12 view .LVU652
+ 1923 0044 08B9     		cbnz	r0, .L134
+ 118:Device/Dev_BMP280.c **** 
+ 1924              		.loc 1 118 20 view .LVU653
+ 1925 0046 0020     		movs	r0, #0
+ 1926 0048 10E0     		b	.L126
+ 1927              	.L134:
+ 121:Device/Dev_BMP280.c ****             return false;
+ 1928              		.loc 1 121 9 is_stmt 1 view .LVU654
+ 121:Device/Dev_BMP280.c ****             return false;
+ 1929              		.loc 1 121 13 is_stmt 0 view .LVU655
+ 1930 004a 0123     		movs	r3, #1
+ 1931 004c 0DF10602 		add	r2, sp, #6
+ 1932 0050 F421     		movs	r1, #244
+ 1933 0052 2846     		mov	r0, r5
+ 1934 0054 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 1935              	.LVL188:
+ 121:Device/Dev_BMP280.c ****             return false;
+ 1936              		.loc 1 121 12 view .LVU656
+ 1937 0058 50B1     		cbz	r0, .L130
+ 124:Device/Dev_BMP280.c ****             return false;
+ 1938              		.loc 1 124 9 is_stmt 1 view .LVU657
+ 124:Device/Dev_BMP280.c ****             return false;
+ 1939              		.loc 1 124 29 is_stmt 0 view .LVU658
+ 1940 005a 9DF80620 		ldrb	r2, [sp, #6]	@ zero_extendqisi2
+ 1941 005e 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 124:Device/Dev_BMP280.c ****             return false;
+ 1942              		.loc 1 124 12 view .LVU659
+ 1943 0062 9A42     		cmp	r2, r3
+ 1944 0064 06D0     		beq	.L131
+ 125:Device/Dev_BMP280.c **** 
+ 1945              		.loc 1 125 20 view .LVU660
+ 1946 0066 0020     		movs	r0, #0
+ 1947 0068 00E0     		b	.L126
+ 1948              	.LVL189:
+ 1949              	.L127:
+ 130:Device/Dev_BMP280.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 55
+
+
+ 1950              		.loc 1 130 12 view .LVU661
+ 1951 006a 0020     		movs	r0, #0
+ 1952              	.LVL190:
+ 1953              	.L126:
+ 131:Device/Dev_BMP280.c **** 
+ 1954              		.loc 1 131 1 view .LVU662
+ 1955 006c 03B0     		add	sp, sp, #12
+ 1956              	.LCFI29:
+ 1957              		.cfi_remember_state
+ 1958              		.cfi_def_cfa_offset 12
+ 1959              		@ sp needed
+ 1960 006e 30BD     		pop	{r4, r5, pc}
+ 1961              	.LVL191:
+ 1962              	.L130:
+ 1963              	.LCFI30:
+ 1964              		.cfi_restore_state
+ 122:Device/Dev_BMP280.c **** 
+ 1965              		.loc 1 122 20 view .LVU663
+ 1966 0070 0020     		movs	r0, #0
+ 1967 0072 FBE7     		b	.L126
+ 1968              	.L131:
+ 127:Device/Dev_BMP280.c ****     }
+ 1969              		.loc 1 127 16 view .LVU664
+ 1970 0074 0120     		movs	r0, #1
+ 1971 0076 F9E7     		b	.L126
+ 1972              		.cfi_endproc
+ 1973              	.LFE1:
+ 1975              		.section	.text.DevBMP280_Set_Temperature_OverSampling,"ax",%progbits
+ 1976              		.align	1
+ 1977              		.syntax unified
+ 1978              		.thumb
+ 1979              		.thumb_func
+ 1981              	DevBMP280_Set_Temperature_OverSampling:
+ 1982              	.LVL192:
+ 1983              	.LFB3:
+ 147:Device/Dev_BMP280.c ****     uint8_t cur_setting = 0;
+ 1984              		.loc 1 147 1 is_stmt 1 view -0
+ 1985              		.cfi_startproc
+ 1986              		@ args = 0, pretend = 0, frame = 8
+ 1987              		@ frame_needed = 0, uses_anonymous_args = 0
+ 147:Device/Dev_BMP280.c ****     uint8_t cur_setting = 0;
+ 1988              		.loc 1 147 1 is_stmt 0 view .LVU666
+ 1989 0000 30B5     		push	{r4, r5, lr}
+ 1990              	.LCFI31:
+ 1991              		.cfi_def_cfa_offset 12
+ 1992              		.cfi_offset 4, -12
+ 1993              		.cfi_offset 5, -8
+ 1994              		.cfi_offset 14, -4
+ 1995 0002 83B0     		sub	sp, sp, #12
+ 1996              	.LCFI32:
+ 1997              		.cfi_def_cfa_offset 24
+ 148:Device/Dev_BMP280.c ****     uint8_t setting_readout = 0;
+ 1998              		.loc 1 148 5 is_stmt 1 view .LVU667
+ 148:Device/Dev_BMP280.c ****     uint8_t setting_readout = 0;
+ 1999              		.loc 1 148 13 is_stmt 0 view .LVU668
+ 2000 0004 0023     		movs	r3, #0
+ 2001 0006 8DF80730 		strb	r3, [sp, #7]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 56
+
+
+ 149:Device/Dev_BMP280.c **** 
+ 2002              		.loc 1 149 5 is_stmt 1 view .LVU669
+ 149:Device/Dev_BMP280.c **** 
+ 2003              		.loc 1 149 13 is_stmt 0 view .LVU670
+ 2004 000a 8DF80630 		strb	r3, [sp, #6]
+ 151:Device/Dev_BMP280.c ****     {
+ 2005              		.loc 1 151 5 is_stmt 1 view .LVU671
+ 151:Device/Dev_BMP280.c ****     {
+ 2006              		.loc 1 151 8 is_stmt 0 view .LVU672
+ 2007 000e 60B3     		cbz	r0, .L137
+ 2008 0010 0C46     		mov	r4, r1
+ 2009 0012 0546     		mov	r5, r0
+ 153:Device/Dev_BMP280.c ****             return false;
+ 2010              		.loc 1 153 9 is_stmt 1 view .LVU673
+ 153:Device/Dev_BMP280.c ****             return false;
+ 2011              		.loc 1 153 13 is_stmt 0 view .LVU674
+ 2012 0014 0123     		movs	r3, #1
+ 2013 0016 0DF10702 		add	r2, sp, #7
+ 2014 001a F421     		movs	r1, #244
+ 2015              	.LVL193:
+ 153:Device/Dev_BMP280.c ****             return false;
+ 2016              		.loc 1 153 13 view .LVU675
+ 2017 001c FFF7FEFF 		bl	DevBMP280_Register_Read
+ 2018              	.LVL194:
+ 153:Device/Dev_BMP280.c ****             return false;
+ 2019              		.loc 1 153 12 view .LVU676
+ 2020 0020 08B9     		cbnz	r0, .L143
+ 154:Device/Dev_BMP280.c ****     
+ 2021              		.loc 1 154 20 view .LVU677
+ 2022 0022 0020     		movs	r0, #0
+ 2023 0024 22E0     		b	.L136
+ 2024              	.L143:
+ 157:Device/Dev_BMP280.c **** 
+ 2025              		.loc 1 157 9 is_stmt 1 view .LVU678
+ 157:Device/Dev_BMP280.c **** 
+ 2026              		.loc 1 157 21 is_stmt 0 view .LVU679
+ 2027 0026 9DF80720 		ldrb	r2, [sp, #7]	@ zero_extendqisi2
+ 2028 002a 02F0E302 		and	r2, r2, #227
+ 2029 002e 8DF80720 		strb	r2, [sp, #7]
+ 160:Device/Dev_BMP280.c ****         
+ 2030              		.loc 1 160 9 is_stmt 1 view .LVU680
+ 160:Device/Dev_BMP280.c ****         
+ 2031              		.loc 1 160 21 is_stmt 0 view .LVU681
+ 2032 0032 42EA8402 		orr	r2, r2, r4, lsl #2
+ 2033 0036 D2B2     		uxtb	r2, r2
+ 2034 0038 8DF80720 		strb	r2, [sp, #7]
+ 162:Device/Dev_BMP280.c ****             return false;
+ 2035              		.loc 1 162 9 is_stmt 1 view .LVU682
+ 162:Device/Dev_BMP280.c ****             return false;
+ 2036              		.loc 1 162 13 is_stmt 0 view .LVU683
+ 2037 003c F421     		movs	r1, #244
+ 2038 003e 2846     		mov	r0, r5
+ 2039 0040 FFF7FEFF 		bl	DevBMP280_Register_Write
+ 2040              	.LVL195:
+ 162:Device/Dev_BMP280.c ****             return false;
+ 2041              		.loc 1 162 12 view .LVU684
+ 2042 0044 08B9     		cbnz	r0, .L144
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 57
+
+
+ 163:Device/Dev_BMP280.c **** 
+ 2043              		.loc 1 163 20 view .LVU685
+ 2044 0046 0020     		movs	r0, #0
+ 2045 0048 10E0     		b	.L136
+ 2046              	.L144:
+ 166:Device/Dev_BMP280.c ****             return false;
+ 2047              		.loc 1 166 9 is_stmt 1 view .LVU686
+ 166:Device/Dev_BMP280.c ****             return false;
+ 2048              		.loc 1 166 13 is_stmt 0 view .LVU687
+ 2049 004a 0123     		movs	r3, #1
+ 2050 004c 0DF10602 		add	r2, sp, #6
+ 2051 0050 F421     		movs	r1, #244
+ 2052 0052 2846     		mov	r0, r5
+ 2053 0054 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 2054              	.LVL196:
+ 166:Device/Dev_BMP280.c ****             return false;
+ 2055              		.loc 1 166 12 view .LVU688
+ 2056 0058 50B1     		cbz	r0, .L140
+ 169:Device/Dev_BMP280.c ****             return false;
+ 2057              		.loc 1 169 9 is_stmt 1 view .LVU689
+ 169:Device/Dev_BMP280.c ****             return false;
+ 2058              		.loc 1 169 29 is_stmt 0 view .LVU690
+ 2059 005a 9DF80620 		ldrb	r2, [sp, #6]	@ zero_extendqisi2
+ 2060 005e 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 169:Device/Dev_BMP280.c ****             return false;
+ 2061              		.loc 1 169 12 view .LVU691
+ 2062 0062 9A42     		cmp	r2, r3
+ 2063 0064 06D0     		beq	.L141
+ 170:Device/Dev_BMP280.c **** 
+ 2064              		.loc 1 170 20 view .LVU692
+ 2065 0066 0020     		movs	r0, #0
+ 2066 0068 00E0     		b	.L136
+ 2067              	.LVL197:
+ 2068              	.L137:
+ 175:Device/Dev_BMP280.c **** }
+ 2069              		.loc 1 175 12 view .LVU693
+ 2070 006a 0020     		movs	r0, #0
+ 2071              	.LVL198:
+ 2072              	.L136:
+ 176:Device/Dev_BMP280.c **** 
+ 2073              		.loc 1 176 1 view .LVU694
+ 2074 006c 03B0     		add	sp, sp, #12
+ 2075              	.LCFI33:
+ 2076              		.cfi_remember_state
+ 2077              		.cfi_def_cfa_offset 12
+ 2078              		@ sp needed
+ 2079 006e 30BD     		pop	{r4, r5, pc}
+ 2080              	.LVL199:
+ 2081              	.L140:
+ 2082              	.LCFI34:
+ 2083              		.cfi_restore_state
+ 167:Device/Dev_BMP280.c **** 
+ 2084              		.loc 1 167 20 view .LVU695
+ 2085 0070 0020     		movs	r0, #0
+ 2086 0072 FBE7     		b	.L136
+ 2087              	.L141:
+ 172:Device/Dev_BMP280.c ****     }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 58
+
+
+ 2088              		.loc 1 172 16 view .LVU696
+ 2089 0074 0120     		movs	r0, #1
+ 2090 0076 F9E7     		b	.L136
+ 2091              		.cfi_endproc
+ 2092              	.LFE3:
+ 2094              		.section	.text.DevBMP280_Set_Filter,"ax",%progbits
+ 2095              		.align	1
+ 2096              		.syntax unified
+ 2097              		.thumb
+ 2098              		.thumb_func
+ 2100              	DevBMP280_Set_Filter:
+ 2101              	.LVL200:
+ 2102              	.LFB5:
+ 192:Device/Dev_BMP280.c ****     uint8_t cur_setting = 0;
+ 2103              		.loc 1 192 1 is_stmt 1 view -0
+ 2104              		.cfi_startproc
+ 2105              		@ args = 0, pretend = 0, frame = 8
+ 2106              		@ frame_needed = 0, uses_anonymous_args = 0
+ 192:Device/Dev_BMP280.c ****     uint8_t cur_setting = 0;
+ 2107              		.loc 1 192 1 is_stmt 0 view .LVU698
+ 2108 0000 30B5     		push	{r4, r5, lr}
+ 2109              	.LCFI35:
+ 2110              		.cfi_def_cfa_offset 12
+ 2111              		.cfi_offset 4, -12
+ 2112              		.cfi_offset 5, -8
+ 2113              		.cfi_offset 14, -4
+ 2114 0002 83B0     		sub	sp, sp, #12
+ 2115              	.LCFI36:
+ 2116              		.cfi_def_cfa_offset 24
+ 193:Device/Dev_BMP280.c ****     uint8_t setting_readout = 0;
+ 2117              		.loc 1 193 5 is_stmt 1 view .LVU699
+ 193:Device/Dev_BMP280.c ****     uint8_t setting_readout = 0;
+ 2118              		.loc 1 193 13 is_stmt 0 view .LVU700
+ 2119 0004 0023     		movs	r3, #0
+ 2120 0006 8DF80730 		strb	r3, [sp, #7]
+ 194:Device/Dev_BMP280.c **** 
+ 2121              		.loc 1 194 5 is_stmt 1 view .LVU701
+ 194:Device/Dev_BMP280.c **** 
+ 2122              		.loc 1 194 13 is_stmt 0 view .LVU702
+ 2123 000a 8DF80630 		strb	r3, [sp, #6]
+ 196:Device/Dev_BMP280.c ****     {
+ 2124              		.loc 1 196 5 is_stmt 1 view .LVU703
+ 196:Device/Dev_BMP280.c ****     {
+ 2125              		.loc 1 196 8 is_stmt 0 view .LVU704
+ 2126 000e 68B3     		cbz	r0, .L147
+ 2127 0010 0C46     		mov	r4, r1
+ 2128 0012 0546     		mov	r5, r0
+ 198:Device/Dev_BMP280.c ****             return false;
+ 2129              		.loc 1 198 9 is_stmt 1 view .LVU705
+ 198:Device/Dev_BMP280.c ****             return false;
+ 2130              		.loc 1 198 13 is_stmt 0 view .LVU706
+ 2131 0014 0123     		movs	r3, #1
+ 2132 0016 0DF10702 		add	r2, sp, #7
+ 2133 001a F521     		movs	r1, #245
+ 2134              	.LVL201:
+ 198:Device/Dev_BMP280.c ****             return false;
+ 2135              		.loc 1 198 13 view .LVU707
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 59
+
+
+ 2136 001c FFF7FEFF 		bl	DevBMP280_Register_Read
+ 2137              	.LVL202:
+ 198:Device/Dev_BMP280.c ****             return false;
+ 2138              		.loc 1 198 12 view .LVU708
+ 2139 0020 08B9     		cbnz	r0, .L153
+ 199:Device/Dev_BMP280.c **** 
+ 2140              		.loc 1 199 20 view .LVU709
+ 2141 0022 0020     		movs	r0, #0
+ 2142 0024 23E0     		b	.L146
+ 2143              	.L153:
+ 201:Device/Dev_BMP280.c ****         cur_setting |= (filter & 0x07) << 2;
+ 2144              		.loc 1 201 9 is_stmt 1 view .LVU710
+ 201:Device/Dev_BMP280.c ****         cur_setting |= (filter & 0x07) << 2;
+ 2145              		.loc 1 201 21 is_stmt 0 view .LVU711
+ 2146 0026 9DF80720 		ldrb	r2, [sp, #7]	@ zero_extendqisi2
+ 2147 002a 02F0E301 		and	r1, r2, #227
+ 2148 002e 8DF80710 		strb	r1, [sp, #7]
+ 202:Device/Dev_BMP280.c **** 
+ 2149              		.loc 1 202 9 is_stmt 1 view .LVU712
+ 202:Device/Dev_BMP280.c **** 
+ 2150              		.loc 1 202 40 is_stmt 0 view .LVU713
+ 2151 0032 A200     		lsls	r2, r4, #2
+ 2152 0034 02F01C02 		and	r2, r2, #28
+ 202:Device/Dev_BMP280.c **** 
+ 2153              		.loc 1 202 21 view .LVU714
+ 2154 0038 0A43     		orrs	r2, r2, r1
+ 2155 003a 8DF80720 		strb	r2, [sp, #7]
+ 204:Device/Dev_BMP280.c ****             return false;
+ 2156              		.loc 1 204 9 is_stmt 1 view .LVU715
+ 204:Device/Dev_BMP280.c ****             return false;
+ 2157              		.loc 1 204 13 is_stmt 0 view .LVU716
+ 2158 003e F521     		movs	r1, #245
+ 2159 0040 2846     		mov	r0, r5
+ 2160 0042 FFF7FEFF 		bl	DevBMP280_Register_Write
+ 2161              	.LVL203:
+ 204:Device/Dev_BMP280.c ****             return false;
+ 2162              		.loc 1 204 12 view .LVU717
+ 2163 0046 08B9     		cbnz	r0, .L154
+ 205:Device/Dev_BMP280.c ****         
+ 2164              		.loc 1 205 20 view .LVU718
+ 2165 0048 0020     		movs	r0, #0
+ 2166 004a 10E0     		b	.L146
+ 2167              	.L154:
+ 208:Device/Dev_BMP280.c ****             return false;
+ 2168              		.loc 1 208 9 is_stmt 1 view .LVU719
+ 208:Device/Dev_BMP280.c ****             return false;
+ 2169              		.loc 1 208 13 is_stmt 0 view .LVU720
+ 2170 004c 0123     		movs	r3, #1
+ 2171 004e 0DF10602 		add	r2, sp, #6
+ 2172 0052 F521     		movs	r1, #245
+ 2173 0054 2846     		mov	r0, r5
+ 2174 0056 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 2175              	.LVL204:
+ 208:Device/Dev_BMP280.c ****             return false;
+ 2176              		.loc 1 208 12 view .LVU721
+ 2177 005a 50B1     		cbz	r0, .L150
+ 211:Device/Dev_BMP280.c ****             return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 60
+
+
+ 2178              		.loc 1 211 9 is_stmt 1 view .LVU722
+ 211:Device/Dev_BMP280.c ****             return false;
+ 2179              		.loc 1 211 29 is_stmt 0 view .LVU723
+ 2180 005c 9DF80620 		ldrb	r2, [sp, #6]	@ zero_extendqisi2
+ 2181 0060 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 211:Device/Dev_BMP280.c ****             return false;
+ 2182              		.loc 1 211 12 view .LVU724
+ 2183 0064 9A42     		cmp	r2, r3
+ 2184 0066 06D0     		beq	.L151
+ 212:Device/Dev_BMP280.c **** 
+ 2185              		.loc 1 212 20 view .LVU725
+ 2186 0068 0020     		movs	r0, #0
+ 2187 006a 00E0     		b	.L146
+ 2188              	.LVL205:
+ 2189              	.L147:
+ 217:Device/Dev_BMP280.c **** }
+ 2190              		.loc 1 217 12 view .LVU726
+ 2191 006c 0020     		movs	r0, #0
+ 2192              	.LVL206:
+ 2193              	.L146:
+ 218:Device/Dev_BMP280.c **** 
+ 2194              		.loc 1 218 1 view .LVU727
+ 2195 006e 03B0     		add	sp, sp, #12
+ 2196              	.LCFI37:
+ 2197              		.cfi_remember_state
+ 2198              		.cfi_def_cfa_offset 12
+ 2199              		@ sp needed
+ 2200 0070 30BD     		pop	{r4, r5, pc}
+ 2201              	.LVL207:
+ 2202              	.L150:
+ 2203              	.LCFI38:
+ 2204              		.cfi_restore_state
+ 209:Device/Dev_BMP280.c **** 
+ 2205              		.loc 1 209 20 view .LVU728
+ 2206 0072 0020     		movs	r0, #0
+ 2207 0074 FBE7     		b	.L146
+ 2208              	.L151:
+ 214:Device/Dev_BMP280.c ****     }
+ 2209              		.loc 1 214 16 view .LVU729
+ 2210 0076 0120     		movs	r0, #1
+ 2211 0078 F9E7     		b	.L146
+ 2212              		.cfi_endproc
+ 2213              	.LFE5:
+ 2215              		.section	.text.DevBMP280_Set_NormalMode,"ax",%progbits
+ 2216              		.align	1
+ 2217              		.syntax unified
+ 2218              		.thumb
+ 2219              		.thumb_func
+ 2221              	DevBMP280_Set_NormalMode:
+ 2222              	.LVL208:
+ 2223              	.LFB14:
+ 395:Device/Dev_BMP280.c ****     uint8_t mode = 0;
+ 2224              		.loc 1 395 1 is_stmt 1 view -0
+ 2225              		.cfi_startproc
+ 2226              		@ args = 0, pretend = 0, frame = 8
+ 2227              		@ frame_needed = 0, uses_anonymous_args = 0
+ 395:Device/Dev_BMP280.c ****     uint8_t mode = 0;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 61
+
+
+ 2228              		.loc 1 395 1 is_stmt 0 view .LVU731
+ 2229 0000 10B5     		push	{r4, lr}
+ 2230              	.LCFI39:
+ 2231              		.cfi_def_cfa_offset 8
+ 2232              		.cfi_offset 4, -8
+ 2233              		.cfi_offset 14, -4
+ 2234 0002 82B0     		sub	sp, sp, #8
+ 2235              	.LCFI40:
+ 2236              		.cfi_def_cfa_offset 16
+ 396:Device/Dev_BMP280.c ****     uint8_t read_mode = 0;
+ 2237              		.loc 1 396 5 is_stmt 1 view .LVU732
+ 396:Device/Dev_BMP280.c ****     uint8_t read_mode = 0;
+ 2238              		.loc 1 396 13 is_stmt 0 view .LVU733
+ 2239 0004 0023     		movs	r3, #0
+ 2240 0006 8DF80730 		strb	r3, [sp, #7]
+ 397:Device/Dev_BMP280.c **** 
+ 2241              		.loc 1 397 5 is_stmt 1 view .LVU734
+ 397:Device/Dev_BMP280.c **** 
+ 2242              		.loc 1 397 13 is_stmt 0 view .LVU735
+ 2243 000a 8DF80630 		strb	r3, [sp, #6]
+ 399:Device/Dev_BMP280.c ****     {
+ 2244              		.loc 1 399 5 is_stmt 1 view .LVU736
+ 399:Device/Dev_BMP280.c ****     {
+ 2245              		.loc 1 399 8 is_stmt 0 view .LVU737
+ 2246 000e 50B3     		cbz	r0, .L157
+ 2247 0010 0446     		mov	r4, r0
+ 401:Device/Dev_BMP280.c ****             return false;
+ 2248              		.loc 1 401 9 is_stmt 1 view .LVU738
+ 401:Device/Dev_BMP280.c ****             return false;
+ 2249              		.loc 1 401 13 is_stmt 0 view .LVU739
+ 2250 0012 0123     		movs	r3, #1
+ 2251 0014 0DF10702 		add	r2, sp, #7
+ 2252 0018 F421     		movs	r1, #244
+ 2253 001a FFF7FEFF 		bl	DevBMP280_Register_Read
+ 2254              	.LVL209:
+ 401:Device/Dev_BMP280.c ****             return false;
+ 2255              		.loc 1 401 12 view .LVU740
+ 2256 001e 08B9     		cbnz	r0, .L163
+ 402:Device/Dev_BMP280.c ****         
+ 2257              		.loc 1 402 20 view .LVU741
+ 2258 0020 0020     		movs	r0, #0
+ 2259 0022 21E0     		b	.L156
+ 2260              	.L163:
+ 404:Device/Dev_BMP280.c ****         mode |= 0x03 << 0;
+ 2261              		.loc 1 404 9 is_stmt 1 view .LVU742
+ 404:Device/Dev_BMP280.c ****         mode |= 0x03 << 0;
+ 2262              		.loc 1 404 14 is_stmt 0 view .LVU743
+ 2263 0024 9DF80720 		ldrb	r2, [sp, #7]	@ zero_extendqisi2
+ 2264 0028 02F0FC02 		and	r2, r2, #252
+ 2265 002c 8DF80720 		strb	r2, [sp, #7]
+ 405:Device/Dev_BMP280.c **** 
+ 2266              		.loc 1 405 9 is_stmt 1 view .LVU744
+ 405:Device/Dev_BMP280.c **** 
+ 2267              		.loc 1 405 14 is_stmt 0 view .LVU745
+ 2268 0030 42F00302 		orr	r2, r2, #3
+ 2269 0034 8DF80720 		strb	r2, [sp, #7]
+ 407:Device/Dev_BMP280.c ****             return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 62
+
+
+ 2270              		.loc 1 407 9 is_stmt 1 view .LVU746
+ 407:Device/Dev_BMP280.c ****             return false;
+ 2271              		.loc 1 407 13 is_stmt 0 view .LVU747
+ 2272 0038 F421     		movs	r1, #244
+ 2273 003a 2046     		mov	r0, r4
+ 2274 003c FFF7FEFF 		bl	DevBMP280_Register_Write
+ 2275              	.LVL210:
+ 407:Device/Dev_BMP280.c ****             return false;
+ 2276              		.loc 1 407 12 view .LVU748
+ 2277 0040 08B9     		cbnz	r0, .L164
+ 408:Device/Dev_BMP280.c ****     
+ 2278              		.loc 1 408 20 view .LVU749
+ 2279 0042 0020     		movs	r0, #0
+ 2280 0044 10E0     		b	.L156
+ 2281              	.L164:
+ 410:Device/Dev_BMP280.c ****             return false;
+ 2282              		.loc 1 410 9 is_stmt 1 view .LVU750
+ 410:Device/Dev_BMP280.c ****             return false;
+ 2283              		.loc 1 410 13 is_stmt 0 view .LVU751
+ 2284 0046 0123     		movs	r3, #1
+ 2285 0048 0DF10602 		add	r2, sp, #6
+ 2286 004c F421     		movs	r1, #244
+ 2287 004e 2046     		mov	r0, r4
+ 2288 0050 FFF7FEFF 		bl	DevBMP280_Register_Read
+ 2289              	.LVL211:
+ 410:Device/Dev_BMP280.c ****             return false;
+ 2290              		.loc 1 410 12 view .LVU752
+ 2291 0054 50B1     		cbz	r0, .L160
+ 413:Device/Dev_BMP280.c ****             return true;
+ 2292              		.loc 1 413 9 is_stmt 1 view .LVU753
+ 413:Device/Dev_BMP280.c ****             return true;
+ 2293              		.loc 1 413 18 is_stmt 0 view .LVU754
+ 2294 0056 9DF80720 		ldrb	r2, [sp, #7]	@ zero_extendqisi2
+ 2295 005a 9DF80630 		ldrb	r3, [sp, #6]	@ zero_extendqisi2
+ 413:Device/Dev_BMP280.c ****             return true;
+ 2296              		.loc 1 413 12 view .LVU755
+ 2297 005e 9A42     		cmp	r2, r3
+ 2298 0060 06D0     		beq	.L161
+ 417:Device/Dev_BMP280.c **** }
+ 2299              		.loc 1 417 12 view .LVU756
+ 2300 0062 0020     		movs	r0, #0
+ 2301 0064 00E0     		b	.L156
+ 2302              	.LVL212:
+ 2303              	.L157:
+ 417:Device/Dev_BMP280.c **** }
+ 2304              		.loc 1 417 12 view .LVU757
+ 2305 0066 0020     		movs	r0, #0
+ 2306              	.LVL213:
+ 2307              	.L156:
+ 418:Device/Dev_BMP280.c **** 
+ 2308              		.loc 1 418 1 view .LVU758
+ 2309 0068 02B0     		add	sp, sp, #8
+ 2310              	.LCFI41:
+ 2311              		.cfi_remember_state
+ 2312              		.cfi_def_cfa_offset 8
+ 2313              		@ sp needed
+ 2314 006a 10BD     		pop	{r4, pc}
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 63
+
+
+ 2315              	.LVL214:
+ 2316              	.L160:
+ 2317              	.LCFI42:
+ 2318              		.cfi_restore_state
+ 411:Device/Dev_BMP280.c **** 
+ 2319              		.loc 1 411 20 view .LVU759
+ 2320 006c 0020     		movs	r0, #0
+ 2321 006e FBE7     		b	.L156
+ 2322              	.L161:
+ 414:Device/Dev_BMP280.c ****     }
+ 2323              		.loc 1 414 20 view .LVU760
+ 2324 0070 0120     		movs	r0, #1
+ 2325 0072 F9E7     		b	.L156
+ 2326              		.cfi_endproc
+ 2327              	.LFE14:
+ 2329              		.section	.text.DevBMP280_Init,"ax",%progbits
+ 2330              		.align	1
+ 2331              		.syntax unified
+ 2332              		.thumb
+ 2333              		.thumb_func
+ 2335              	DevBMP280_Init:
+ 2336              	.LVL215:
+ 2337              	.LFB0:
+  36:Device/Dev_BMP280.c ****     if (obj)
+ 2338              		.loc 1 36 1 is_stmt 1 view -0
+ 2339              		.cfi_startproc
+ 2340              		@ args = 0, pretend = 0, frame = 0
+ 2341              		@ frame_needed = 0, uses_anonymous_args = 0
+  37:Device/Dev_BMP280.c ****     {
+ 2342              		.loc 1 37 5 view .LVU762
+  37:Device/Dev_BMP280.c ****     {
+ 2343              		.loc 1 37 8 is_stmt 0 view .LVU763
+ 2344 0000 0028     		cmp	r0, #0
+ 2345 0002 45D0     		beq	.L175
+  36:Device/Dev_BMP280.c ****     if (obj)
+ 2346              		.loc 1 36 1 view .LVU764
+ 2347 0004 10B5     		push	{r4, lr}
+ 2348              	.LCFI43:
+ 2349              		.cfi_def_cfa_offset 8
+ 2350              		.cfi_offset 4, -8
+ 2351              		.cfi_offset 14, -4
+ 2352 0006 0446     		mov	r4, r0
+  39:Device/Dev_BMP280.c ****         {
+ 2353              		.loc 1 39 9 is_stmt 1 view .LVU765
+  39:Device/Dev_BMP280.c ****         {
+ 2354              		.loc 1 39 17 is_stmt 0 view .LVU766
+ 2355 0008 4368     		ldr	r3, [r0, #4]
+  39:Device/Dev_BMP280.c ****         {
+ 2356              		.loc 1 39 12 view .LVU767
+ 2357 000a 4BB1     		cbz	r3, .L167
+  39:Device/Dev_BMP280.c ****         {
+ 2358              		.loc 1 39 44 discriminator 1 view .LVU768
+ 2359 000c 8368     		ldr	r3, [r0, #8]
+  39:Device/Dev_BMP280.c ****         {
+ 2360              		.loc 1 39 37 discriminator 1 view .LVU769
+ 2361 000e 3BB1     		cbz	r3, .L167
+  45:Device/Dev_BMP280.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 64
+
+
+ 2362              		.loc 1 45 9 is_stmt 1 view .LVU770
+  45:Device/Dev_BMP280.c **** 
+ 2363              		.loc 1 45 24 is_stmt 0 view .LVU771
+ 2364 0010 0023     		movs	r3, #0
+ 2365 0012 0370     		strb	r3, [r0]
+  48:Device/Dev_BMP280.c ****         {
+ 2366              		.loc 1 48 9 is_stmt 1 view .LVU772
+  48:Device/Dev_BMP280.c ****         {
+ 2367              		.loc 1 48 14 is_stmt 0 view .LVU773
+ 2368 0014 FFF7FEFF 		bl	DevBMP280_Check_ModuleID
+ 2369              	.LVL216:
+  48:Device/Dev_BMP280.c ****         {
+ 2370              		.loc 1 48 12 view .LVU774
+ 2371 0018 30B9     		cbnz	r0, .L169
+  50:Device/Dev_BMP280.c ****             return false;
+ 2372              		.loc 1 50 13 is_stmt 1 view .LVU775
+  50:Device/Dev_BMP280.c ****             return false;
+ 2373              		.loc 1 50 28 is_stmt 0 view .LVU776
+ 2374 001a 0923     		movs	r3, #9
+ 2375 001c 2370     		strb	r3, [r4]
+  51:Device/Dev_BMP280.c ****         }
+ 2376              		.loc 1 51 13 is_stmt 1 view .LVU777
+  51:Device/Dev_BMP280.c ****         }
+ 2377              		.loc 1 51 20 is_stmt 0 view .LVU778
+ 2378 001e 02E0     		b	.L166
+ 2379              	.LVL217:
+ 2380              	.L167:
+  41:Device/Dev_BMP280.c ****             return false;
+ 2381              		.loc 1 41 13 is_stmt 1 view .LVU779
+  41:Device/Dev_BMP280.c ****             return false;
+ 2382              		.loc 1 41 28 is_stmt 0 view .LVU780
+ 2383 0020 0223     		movs	r3, #2
+ 2384 0022 2370     		strb	r3, [r4]
+  42:Device/Dev_BMP280.c ****         }
+ 2385              		.loc 1 42 13 is_stmt 1 view .LVU781
+  42:Device/Dev_BMP280.c ****         }
+ 2386              		.loc 1 42 20 is_stmt 0 view .LVU782
+ 2387 0024 0020     		movs	r0, #0
+ 2388              	.LVL218:
+ 2389              	.L166:
+  99:Device/Dev_BMP280.c **** 
+ 2390              		.loc 1 99 1 view .LVU783
+ 2391 0026 10BD     		pop	{r4, pc}
+ 2392              	.LVL219:
+ 2393              	.L169:
+  55:Device/Dev_BMP280.c ****         {
+ 2394              		.loc 1 55 9 is_stmt 1 view .LVU784
+  55:Device/Dev_BMP280.c ****         {
+ 2395              		.loc 1 55 14 is_stmt 0 view .LVU785
+ 2396 0028 2046     		mov	r0, r4
+ 2397 002a FFF7FEFF 		bl	DevBMP280_SoftReset
+ 2398              	.LVL220:
+  55:Device/Dev_BMP280.c ****         {
+ 2399              		.loc 1 55 12 view .LVU786
+ 2400 002e 88B1     		cbz	r0, .L180
+  60:Device/Dev_BMP280.c **** 
+ 2401              		.loc 1 60 9 is_stmt 1 view .LVU787
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 65
+
+
+  60:Device/Dev_BMP280.c **** 
+ 2402              		.loc 1 60 12 is_stmt 0 view .LVU788
+ 2403 0030 A368     		ldr	r3, [r4, #8]
+  60:Device/Dev_BMP280.c **** 
+ 2404              		.loc 1 60 9 view .LVU789
+ 2405 0032 6420     		movs	r0, #100
+ 2406 0034 9847     		blx	r3
+ 2407              	.LVL221:
+  62:Device/Dev_BMP280.c ****         {
+ 2408              		.loc 1 62 9 is_stmt 1 view .LVU790
+  62:Device/Dev_BMP280.c ****         {
+ 2409              		.loc 1 62 14 is_stmt 0 view .LVU791
+ 2410 0036 2046     		mov	r0, r4
+ 2411 0038 FFF7FEFF 		bl	DevBMP280_Calibration
+ 2412              	.LVL222:
+  62:Device/Dev_BMP280.c ****         {
+ 2413              		.loc 1 62 12 view .LVU792
+ 2414 003c 68B1     		cbz	r0, .L181
+  67:Device/Dev_BMP280.c **** 
+ 2415              		.loc 1 67 9 is_stmt 1 view .LVU793
+  67:Device/Dev_BMP280.c **** 
+ 2416              		.loc 1 67 12 is_stmt 0 view .LVU794
+ 2417 003e A368     		ldr	r3, [r4, #8]
+  67:Device/Dev_BMP280.c **** 
+ 2418              		.loc 1 67 9 view .LVU795
+ 2419 0040 1420     		movs	r0, #20
+ 2420 0042 9847     		blx	r3
+ 2421              	.LVL223:
+  70:Device/Dev_BMP280.c ****         {
+ 2422              		.loc 1 70 9 is_stmt 1 view .LVU796
+  70:Device/Dev_BMP280.c ****         {
+ 2423              		.loc 1 70 14 is_stmt 0 view .LVU797
+ 2424 0044 0521     		movs	r1, #5
+ 2425 0046 2046     		mov	r0, r4
+ 2426 0048 FFF7FEFF 		bl	DevBMP280_Set_Pressure_OverSampling
+ 2427              	.LVL224:
+  70:Device/Dev_BMP280.c ****         {
+ 2428              		.loc 1 70 12 view .LVU798
+ 2429 004c 40B9     		cbnz	r0, .L172
+  72:Device/Dev_BMP280.c ****             return false;
+ 2430              		.loc 1 72 13 is_stmt 1 view .LVU799
+  72:Device/Dev_BMP280.c ****             return false;
+ 2431              		.loc 1 72 28 is_stmt 0 view .LVU800
+ 2432 004e 0723     		movs	r3, #7
+ 2433 0050 2370     		strb	r3, [r4]
+  73:Device/Dev_BMP280.c ****         }
+ 2434              		.loc 1 73 13 is_stmt 1 view .LVU801
+  73:Device/Dev_BMP280.c ****         }
+ 2435              		.loc 1 73 20 is_stmt 0 view .LVU802
+ 2436 0052 E8E7     		b	.L166
+ 2437              	.L180:
+  57:Device/Dev_BMP280.c ****             return false;
+ 2438              		.loc 1 57 13 is_stmt 1 view .LVU803
+  57:Device/Dev_BMP280.c ****             return false;
+ 2439              		.loc 1 57 28 is_stmt 0 view .LVU804
+ 2440 0054 0323     		movs	r3, #3
+ 2441 0056 2370     		strb	r3, [r4]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 66
+
+
+  58:Device/Dev_BMP280.c ****         }
+ 2442              		.loc 1 58 13 is_stmt 1 view .LVU805
+  58:Device/Dev_BMP280.c ****         }
+ 2443              		.loc 1 58 20 is_stmt 0 view .LVU806
+ 2444 0058 E5E7     		b	.L166
+ 2445              	.L181:
+  64:Device/Dev_BMP280.c ****             return false;
+ 2446              		.loc 1 64 13 is_stmt 1 view .LVU807
+  64:Device/Dev_BMP280.c ****             return false;
+ 2447              		.loc 1 64 28 is_stmt 0 view .LVU808
+ 2448 005a 0523     		movs	r3, #5
+ 2449 005c 2370     		strb	r3, [r4]
+  65:Device/Dev_BMP280.c ****         }
+ 2450              		.loc 1 65 13 is_stmt 1 view .LVU809
+  65:Device/Dev_BMP280.c ****         }
+ 2451              		.loc 1 65 20 is_stmt 0 view .LVU810
+ 2452 005e E2E7     		b	.L166
+ 2453              	.L172:
+  76:Device/Dev_BMP280.c ****         {
+ 2454              		.loc 1 76 9 is_stmt 1 view .LVU811
+  76:Device/Dev_BMP280.c ****         {
+ 2455              		.loc 1 76 14 is_stmt 0 view .LVU812
+ 2456 0060 0221     		movs	r1, #2
+ 2457 0062 2046     		mov	r0, r4
+ 2458 0064 FFF7FEFF 		bl	DevBMP280_Set_Temperature_OverSampling
+ 2459              	.LVL225:
+  76:Device/Dev_BMP280.c ****         {
+ 2460              		.loc 1 76 12 view .LVU813
+ 2461 0068 10B9     		cbnz	r0, .L173
+  78:Device/Dev_BMP280.c ****             return false;
+ 2462              		.loc 1 78 13 is_stmt 1 view .LVU814
+  78:Device/Dev_BMP280.c ****             return false;
+ 2463              		.loc 1 78 28 is_stmt 0 view .LVU815
+ 2464 006a 0623     		movs	r3, #6
+ 2465 006c 2370     		strb	r3, [r4]
+  79:Device/Dev_BMP280.c ****         }
+ 2466              		.loc 1 79 13 is_stmt 1 view .LVU816
+  79:Device/Dev_BMP280.c ****         }
+ 2467              		.loc 1 79 20 is_stmt 0 view .LVU817
+ 2468 006e DAE7     		b	.L166
+ 2469              	.L173:
+  83:Device/Dev_BMP280.c ****         {
+ 2470              		.loc 1 83 9 is_stmt 1 view .LVU818
+  83:Device/Dev_BMP280.c ****         {
+ 2471              		.loc 1 83 14 is_stmt 0 view .LVU819
+ 2472 0070 0421     		movs	r1, #4
+ 2473 0072 2046     		mov	r0, r4
+ 2474 0074 FFF7FEFF 		bl	DevBMP280_Set_Filter
+ 2475              	.LVL226:
+  83:Device/Dev_BMP280.c ****         {
+ 2476              		.loc 1 83 12 view .LVU820
+ 2477 0078 10B9     		cbnz	r0, .L174
+  85:Device/Dev_BMP280.c ****             return false;
+ 2478              		.loc 1 85 13 is_stmt 1 view .LVU821
+  85:Device/Dev_BMP280.c ****             return false;
+ 2479              		.loc 1 85 28 is_stmt 0 view .LVU822
+ 2480 007a 0823     		movs	r3, #8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 67
+
+
+ 2481 007c 2370     		strb	r3, [r4]
+  86:Device/Dev_BMP280.c ****         }
+ 2482              		.loc 1 86 13 is_stmt 1 view .LVU823
+  86:Device/Dev_BMP280.c ****         }
+ 2483              		.loc 1 86 20 is_stmt 0 view .LVU824
+ 2484 007e D2E7     		b	.L166
+ 2485              	.L174:
+  89:Device/Dev_BMP280.c ****         {
+ 2486              		.loc 1 89 9 is_stmt 1 view .LVU825
+  89:Device/Dev_BMP280.c ****         {
+ 2487              		.loc 1 89 14 is_stmt 0 view .LVU826
+ 2488 0080 2046     		mov	r0, r4
+ 2489 0082 FFF7FEFF 		bl	DevBMP280_Set_NormalMode
+ 2490              	.LVL227:
+  89:Device/Dev_BMP280.c ****         {
+ 2491              		.loc 1 89 12 view .LVU827
+ 2492 0086 0028     		cmp	r0, #0
+ 2493 0088 CDD1     		bne	.L166
+  91:Device/Dev_BMP280.c ****             return false;
+ 2494              		.loc 1 91 13 is_stmt 1 view .LVU828
+  91:Device/Dev_BMP280.c ****             return false;
+ 2495              		.loc 1 91 28 is_stmt 0 view .LVU829
+ 2496 008a 0423     		movs	r3, #4
+ 2497 008c 2370     		strb	r3, [r4]
+  92:Device/Dev_BMP280.c ****         }
+ 2498              		.loc 1 92 13 is_stmt 1 view .LVU830
+  92:Device/Dev_BMP280.c ****         }
+ 2499              		.loc 1 92 20 is_stmt 0 view .LVU831
+ 2500 008e CAE7     		b	.L166
+ 2501              	.LVL228:
+ 2502              	.L175:
+ 2503              	.LCFI44:
+ 2504              		.cfi_def_cfa_offset 0
+ 2505              		.cfi_restore 4
+ 2506              		.cfi_restore 14
+  98:Device/Dev_BMP280.c **** }
+ 2507              		.loc 1 98 12 view .LVU832
+ 2508 0090 0020     		movs	r0, #0
+ 2509              	.LVL229:
+  99:Device/Dev_BMP280.c **** 
+ 2510              		.loc 1 99 1 view .LVU833
+ 2511 0092 7047     		bx	lr
+ 2512              		.cfi_endproc
+ 2513              	.LFE0:
+ 2515              		.global	DevBMP280
+ 2516              		.section	.data.DevBMP280,"aw"
+ 2517              		.align	2
+ 2520              	DevBMP280:
+ 2521 0000 00000000 		.word	DevBMP280_Init
+ 2522 0004 00000000 		.word	DevBMP280_Sample
+ 2523 0008 00000000 		.word	DevBMP280_Get_DataReady
+ 2524 000c 00000000 		.word	DevBMP280_Get_Data
+ 2525              		.text
+ 2526              	.Letext0:
+ 2527              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 2528              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 2529              		.file 4 "Device/Dev_BMP280.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 68
+
+
+ 2530              		.file 5 "<built-in>"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s 			page 69
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Dev_BMP280.c
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:20     .text.DevBMP280_Compensate_Temperature:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:25     .text.DevBMP280_Compensate_Temperature:00000000 DevBMP280_Compensate_Temperature
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:169    .text.DevBMP280_Compensate_Temperature:000000b0 $d
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:180    .text.DevBMP280_Compensate_Pressure:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:185    .text.DevBMP280_Compensate_Pressure:00000000 DevBMP280_Compensate_Pressure
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:437    .text.DevBMP280_Compensate_Pressure:00000190 $d
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:452    .text.DevBMP280_Get_DataReady:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:457    .text.DevBMP280_Get_DataReady:00000000 DevBMP280_Get_DataReady
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:503    .text.DevBMP280_SoftReset:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:508    .text.DevBMP280_SoftReset:00000000 DevBMP280_SoftReset
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:624    .text.DevBMP280_Register_Write:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:629    .text.DevBMP280_Register_Write:00000000 DevBMP280_Register_Write
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:737    .text.DevBMP280_Get_Data:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:742    .text.DevBMP280_Get_Data:00000000 DevBMP280_Get_Data
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:804    .text.DevBMP280_Register_Read:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:809    .text.DevBMP280_Register_Read:00000000 DevBMP280_Register_Read
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:960    .text.DevBMP280_Sample:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:965    .text.DevBMP280_Sample:00000000 DevBMP280_Sample
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:1293   .text.DevBMP280_Check_ModuleID:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:1298   .text.DevBMP280_Check_ModuleID:00000000 DevBMP280_Check_ModuleID
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:1363   .text.DevBMP280_Calibration:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:1368   .text.DevBMP280_Calibration:00000000 DevBMP280_Calibration
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:1857   .text.DevBMP280_Set_Pressure_OverSampling:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:1862   .text.DevBMP280_Set_Pressure_OverSampling:00000000 DevBMP280_Set_Pressure_OverSampling
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:1976   .text.DevBMP280_Set_Temperature_OverSampling:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:1981   .text.DevBMP280_Set_Temperature_OverSampling:00000000 DevBMP280_Set_Temperature_OverSampling
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:2095   .text.DevBMP280_Set_Filter:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:2100   .text.DevBMP280_Set_Filter:00000000 DevBMP280_Set_Filter
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:2216   .text.DevBMP280_Set_NormalMode:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:2221   .text.DevBMP280_Set_NormalMode:00000000 DevBMP280_Set_NormalMode
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:2330   .text.DevBMP280_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:2335   .text.DevBMP280_Init:00000000 DevBMP280_Init
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:2520   .data.DevBMP280:00000000 DevBMP280
+C:\Users\8bit\AppData\Local\Temp\ccqUfQp7.s:2517   .data.DevBMP280:00000000 $d
+
+UNDEFINED SYMBOLS
+memset
+memcpy

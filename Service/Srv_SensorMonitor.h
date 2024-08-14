@@ -91,6 +91,10 @@ typedef struct
     uint32_t err_cnt;
     uint32_t detect_period;
     uint32_t set_period;
+
+    uint8_t sensor_type;
+    uint8_t bus_type;
+    int8_t error_code;
 }SrvSensorMonitor_Statistic_TypeDef;
 
 /* bit field on init_state_reg set 1 represent error triggerd on */

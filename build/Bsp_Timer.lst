@@ -1,0 +1,2445 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Bsp_Timer.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.BspTimer_Get_DMA_MuxSeq,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	BspTimer_Get_DMA_MuxSeq:
+  26              	.LVL0:
+  27              	.LFB134:
+  28              		.file 1 "HW_Lib/AT32F435/bsp/Bsp_Timer.c"
+   1:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** #include "Bsp_Timer.h"
+   2:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** #include "Bsp_DMA.h"
+   3:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** #include "Bsp_GPIO.h"
+   4:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** #include "at32f435_437_crm.h"
+   5:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** #include "at32f435_437_tmr.h"
+   6:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+   7:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** #define To_Timer_Instance(x) ((tmr_type *)x)
+   8:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+   9:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** typedef struct
+  10:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+  11:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_type *list[32];
+  12:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     uint8_t init_cnt;
+  13:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     bool monitor_init;
+  14:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** } BspTIM_PWMInitMonitor_TypeDef;
+  15:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+  16:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** BspTIM_PWMInitMonitor_TypeDef monitor = {
+  17:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     .monitor_init = false,
+  18:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** };
+  19:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+  20:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** /* internal function */
+  21:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static void BspTimer_DMA_TransCplt_Callback(void *arg);
+  22:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+  23:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** /* external function */
+  24:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static bool BspTimer_PWM_DeInit(BspTimerPWMObj_TypeDef *obj);
+  25:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
+  26:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               void *instance,
+  27:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               uint32_t ch,
+  28:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               BspGPIO_Obj_TypeDef pin,
+  29:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               uint8_t dma,
+  30:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               uint8_t stream,
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 2
+
+
+  31:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               uint32_t buf_aadr,
+  32:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               uint32_t buf_size);
+  33:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale);
+  34:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload);
+  35:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj);
+  36:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj);
+  37:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj);
+  38:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+  39:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** BspTimerPWM_TypeDef BspTimer_PWM = {
+  40:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     .init = BspTimer_PWM_Init,
+  41:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     .de_init = BspTimer_PWM_DeInit,
+  42:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     .set_prescaler = BspTimer_SetPreScale,
+  43:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     .set_autoreload = BspTimer_SetAutoReload,
+  44:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     .start_pwm = BspTimer_PWM_Start,
+  45:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     .dma_trans = BspTimer_DMA_Start,
+  46:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     .get_clock_freq = BspTimer_Get_Clock_Freq,
+  47:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** };
+  48:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+  49:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static bool BspTimer_Clock_EnableCtl(void *instance, confirm_state state)
+  50:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+  51:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (To_Timer_Instance(instance) == TMR2)
+  52:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+  53:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         crm_periph_clock_enable(CRM_TMR2_PERIPH_CLOCK, state);
+  54:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+  55:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+  56:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     else if (To_Timer_Instance(instance) == TMR3)
+  57:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+  58:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         crm_periph_clock_enable(CRM_TMR3_PERIPH_CLOCK, state);
+  59:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+  60:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+  61:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     else if (To_Timer_Instance(instance) == TMR8)
+  62:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+  63:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         crm_periph_clock_enable(CRM_TMR8_PERIPH_CLOCK, state);
+  64:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+  65:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+  66:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     else if (To_Timer_Instance(instance) == TMR4)
+  67:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+  68:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         crm_periph_clock_enable(CRM_TMR4_PERIPH_CLOCK, state);
+  69:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+  70:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+  71:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+  72:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     return false;
+  73:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+  74:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+  75:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef *obj)
+  76:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+  29              		.loc 1 76 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  77:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj)
+  34              		.loc 1 77 5 view .LVU1
+  35              		.loc 1 77 8 is_stmt 0 view .LVU2
+  36 0000 0028     		cmp	r0, #0
+  37 0002 56D0     		beq	.L28
+  78:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 3
+
+
+  79:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         switch((uint32_t)obj->instance)
+  38              		.loc 1 79 9 is_stmt 1 view .LVU3
+  39              		.loc 1 79 29 is_stmt 0 view .LVU4
+  40 0004 0368     		ldr	r3, [r0]
+  41              		.loc 1 79 9 view .LVU5
+  42 0006 3049     		ldr	r1, .L35
+  43 0008 8B42     		cmp	r3, r1
+  44 000a 39D0     		beq	.L3
+  45 000c 11D8     		bhi	.L4
+  46 000e B3F1804F 		cmp	r3, #1073741824
+  47 0012 1CD0     		beq	.L5
+  48 0014 A1F58061 		sub	r1, r1, #1024
+  49 0018 8B42     		cmp	r3, r1
+  50 001a 08D1     		bne	.L33
+  80:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+  81:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             case (uint32_t)TMR2:
+  82:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 switch(obj->tim_channel)
+  83:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+  84:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR2_CH1;
+  85:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR2_CH2;
+  86:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR2_CH3;
+  87:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR2_CH4;
+  88:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+  89:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+  90:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 
+  91:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             case (uint32_t)TMR3:
+  92:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 switch(obj->tim_channel)
+  51              		.loc 1 92 17 is_stmt 1 view .LVU6
+  52              		.loc 1 92 27 is_stmt 0 view .LVU7
+  53 001c 4368     		ldr	r3, [r0, #4]
+  54              		.loc 1 92 17 view .LVU8
+  55 001e 062B     		cmp	r3, #6
+  56 0020 2CD8     		bhi	.L13
+  57 0022 DFE803F0 		tbb	[pc, r3]
+  58              	.L15:
+  59 0026 25       		.byte	(.L17-.L15)/2
+  60 0027 2B       		.byte	(.L13-.L15)/2
+  61 0028 4A       		.byte	(.L30-.L15)/2
+  62 0029 2B       		.byte	(.L13-.L15)/2
+  63 002a 27       		.byte	(.L16-.L15)/2
+  64 002b 2B       		.byte	(.L13-.L15)/2
+  65 002c 29       		.byte	(.L14-.L15)/2
+  66 002d 00       		.p2align 1
+  67              	.L33:
+  79:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+  68              		.loc 1 79 9 view .LVU9
+  69 002e 0020     		movs	r0, #0
+  70              	.LVL1:
+  79:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+  71              		.loc 1 79 9 view .LVU10
+  72 0030 7047     		bx	lr
+  73              	.LVL2:
+  74              	.L4:
+  79:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+  75              		.loc 1 79 9 view .LVU11
+  76 0032 2649     		ldr	r1, .L35+4
+  77 0034 8B42     		cmp	r3, r1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 4
+
+
+  78 0036 08D1     		bne	.L34
+  93:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+  94:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR3_CH1;
+  95:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR3_CH2;
+  96:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR3_CH3;
+  97:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR3_CH4;
+  98:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+  99:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 100:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 
+ 101:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             case (uint32_t)TMR4:
+ 102:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 switch(obj->tim_channel)
+ 103:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 104:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR4_CH1;
+ 105:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR4_CH2;
+ 106:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR4_CH3;
+ 107:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR4_CH4;
+ 108:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+ 109:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 110:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 111:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             case (uint32_t)TMR8:
+ 112:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 switch(obj->tim_channel)
+  79              		.loc 1 112 17 is_stmt 1 view .LVU12
+  80              		.loc 1 112 27 is_stmt 0 view .LVU13
+  81 0038 4368     		ldr	r3, [r0, #4]
+  82              		.loc 1 112 17 view .LVU14
+  83 003a 062B     		cmp	r3, #6
+  84 003c 37D8     		bhi	.L23
+  85 003e DFE803F0 		tbb	[pc, r3]
+  86              	.L25:
+  87 0042 30       		.byte	(.L27-.L25)/2
+  88 0043 36       		.byte	(.L23-.L25)/2
+  89 0044 40       		.byte	(.L32-.L25)/2
+  90 0045 36       		.byte	(.L23-.L25)/2
+  91 0046 32       		.byte	(.L26-.L25)/2
+  92 0047 36       		.byte	(.L23-.L25)/2
+  93 0048 34       		.byte	(.L24-.L25)/2
+  94 0049 00       		.p2align 1
+  95              	.L34:
+  79:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+  96              		.loc 1 79 9 view .LVU15
+  97 004a 0020     		movs	r0, #0
+  98              	.LVL3:
+  79:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+  99              		.loc 1 79 9 view .LVU16
+ 100 004c 7047     		bx	lr
+ 101              	.LVL4:
+ 102              	.L5:
+  82:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 103              		.loc 1 82 17 is_stmt 1 view .LVU17
+  82:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 104              		.loc 1 82 27 is_stmt 0 view .LVU18
+ 105 004e 4368     		ldr	r3, [r0, #4]
+  82:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 106              		.loc 1 82 17 view .LVU19
+ 107 0050 062B     		cmp	r3, #6
+ 108 0052 0BD8     		bhi	.L8
+ 109 0054 DFE803F0 		tbb	[pc, r3]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 5
+
+
+ 110              	.L10:
+ 111 0058 04       		.byte	(.L12-.L10)/2
+ 112 0059 0A       		.byte	(.L8-.L10)/2
+ 113 005a 2F       		.byte	(.L29-.L10)/2
+ 114 005b 0A       		.byte	(.L8-.L10)/2
+ 115 005c 06       		.byte	(.L11-.L10)/2
+ 116 005d 0A       		.byte	(.L8-.L10)/2
+ 117 005e 08       		.byte	(.L9-.L10)/2
+ 118 005f 00       		.p2align 1
+ 119              	.L12:
+ 120 0060 3820     		movs	r0, #56
+ 121              	.LVL5:
+  82:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 122              		.loc 1 82 17 view .LVU20
+ 123 0062 7047     		bx	lr
+ 124              	.LVL6:
+ 125              	.L11:
+  86:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR2_CH4;
+ 126              		.loc 1 86 48 is_stmt 1 view .LVU21
+  86:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR2_CH4;
+ 127              		.loc 1 86 55 is_stmt 0 view .LVU22
+ 128 0064 3A20     		movs	r0, #58
+ 129              	.LVL7:
+  86:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR2_CH4;
+ 130              		.loc 1 86 55 view .LVU23
+ 131 0066 7047     		bx	lr
+ 132              	.LVL8:
+ 133              	.L9:
+  87:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+ 134              		.loc 1 87 48 is_stmt 1 view .LVU24
+  87:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+ 135              		.loc 1 87 55 is_stmt 0 view .LVU25
+ 136 0068 3B20     		movs	r0, #59
+ 137              	.LVL9:
+  87:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+ 138              		.loc 1 87 55 view .LVU26
+ 139 006a 7047     		bx	lr
+ 140              	.LVL10:
+ 141              	.L8:
+  88:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 142              		.loc 1 88 30 is_stmt 1 view .LVU27
+  88:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 143              		.loc 1 88 37 is_stmt 0 view .LVU28
+ 144 006c 0020     		movs	r0, #0
+ 145              	.LVL11:
+  88:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 146              		.loc 1 88 37 view .LVU29
+ 147 006e 7047     		bx	lr
+ 148              	.LVL12:
+ 149              	.L17:
+  92:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 150              		.loc 1 92 17 view .LVU30
+ 151 0070 3D20     		movs	r0, #61
+ 152              	.LVL13:
+  92:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 153              		.loc 1 92 17 view .LVU31
+ 154 0072 7047     		bx	lr
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 6
+
+
+ 155              	.LVL14:
+ 156              	.L16:
+  96:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR3_CH4;
+ 157              		.loc 1 96 48 is_stmt 1 view .LVU32
+  96:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR3_CH4;
+ 158              		.loc 1 96 55 is_stmt 0 view .LVU33
+ 159 0074 3F20     		movs	r0, #63
+ 160              	.LVL15:
+  96:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR3_CH4;
+ 161              		.loc 1 96 55 view .LVU34
+ 162 0076 7047     		bx	lr
+ 163              	.LVL16:
+ 164              	.L14:
+  97:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+ 165              		.loc 1 97 48 is_stmt 1 view .LVU35
+  97:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+ 166              		.loc 1 97 55 is_stmt 0 view .LVU36
+ 167 0078 4020     		movs	r0, #64
+ 168              	.LVL17:
+  97:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+ 169              		.loc 1 97 55 view .LVU37
+ 170 007a 7047     		bx	lr
+ 171              	.LVL18:
+ 172              	.L13:
+  98:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 173              		.loc 1 98 30 is_stmt 1 view .LVU38
+  98:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 174              		.loc 1 98 37 is_stmt 0 view .LVU39
+ 175 007c 0020     		movs	r0, #0
+ 176              	.LVL19:
+  98:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 177              		.loc 1 98 37 view .LVU40
+ 178 007e 7047     		bx	lr
+ 179              	.LVL20:
+ 180              	.L3:
+ 102:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 181              		.loc 1 102 17 is_stmt 1 view .LVU41
+ 102:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 182              		.loc 1 102 27 is_stmt 0 view .LVU42
+ 183 0080 4368     		ldr	r3, [r0, #4]
+ 102:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 184              		.loc 1 102 17 view .LVU43
+ 185 0082 062B     		cmp	r3, #6
+ 186 0084 0BD8     		bhi	.L18
+ 187 0086 DFE803F0 		tbb	[pc, r3]
+ 188              	.L20:
+ 189 008a 04       		.byte	(.L22-.L20)/2
+ 190 008b 0A       		.byte	(.L18-.L20)/2
+ 191 008c 1A       		.byte	(.L31-.L20)/2
+ 192 008d 0A       		.byte	(.L18-.L20)/2
+ 193 008e 06       		.byte	(.L21-.L20)/2
+ 194 008f 0A       		.byte	(.L18-.L20)/2
+ 195 0090 08       		.byte	(.L19-.L20)/2
+ 196 0091 00       		.p2align 1
+ 197              	.L22:
+ 198 0092 4320     		movs	r0, #67
+ 199              	.LVL21:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 7
+
+
+ 102:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 200              		.loc 1 102 17 view .LVU44
+ 201 0094 7047     		bx	lr
+ 202              	.LVL22:
+ 203              	.L21:
+ 106:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR4_CH4;
+ 204              		.loc 1 106 48 is_stmt 1 view .LVU45
+ 106:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR4_CH4;
+ 205              		.loc 1 106 55 is_stmt 0 view .LVU46
+ 206 0096 4520     		movs	r0, #69
+ 207              	.LVL23:
+ 106:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR4_CH4;
+ 208              		.loc 1 106 55 view .LVU47
+ 209 0098 7047     		bx	lr
+ 210              	.LVL24:
+ 211              	.L19:
+ 107:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+ 212              		.loc 1 107 48 is_stmt 1 view .LVU48
+ 107:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+ 213              		.loc 1 107 55 is_stmt 0 view .LVU49
+ 214 009a 4620     		movs	r0, #70
+ 215              	.LVL25:
+ 107:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+ 216              		.loc 1 107 55 view .LVU50
+ 217 009c 7047     		bx	lr
+ 218              	.LVL26:
+ 219              	.L18:
+ 108:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 220              		.loc 1 108 30 is_stmt 1 view .LVU51
+ 108:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 221              		.loc 1 108 37 is_stmt 0 view .LVU52
+ 222 009e 0020     		movs	r0, #0
+ 223              	.LVL27:
+ 108:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 224              		.loc 1 108 37 view .LVU53
+ 225 00a0 7047     		bx	lr
+ 226              	.LVL28:
+ 227              	.L27:
+ 228              		.loc 1 112 17 view .LVU54
+ 229 00a2 3120     		movs	r0, #49
+ 230              	.LVL29:
+ 231              		.loc 1 112 17 view .LVU55
+ 232 00a4 7047     		bx	lr
+ 233              	.LVL30:
+ 234              	.L26:
+ 113:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 {
+ 114:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR8_CH1;
+ 115:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR8_CH2;
+ 116:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR8_CH3;
+ 235              		.loc 1 116 48 is_stmt 1 view .LVU56
+ 236              		.loc 1 116 55 is_stmt 0 view .LVU57
+ 237 00a6 3320     		movs	r0, #51
+ 238              	.LVL31:
+ 239              		.loc 1 116 55 view .LVU58
+ 240 00a8 7047     		bx	lr
+ 241              	.LVL32:
+ 242              	.L24:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 8
+
+
+ 117:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR8_CH4;
+ 243              		.loc 1 117 48 is_stmt 1 view .LVU59
+ 244              		.loc 1 117 55 is_stmt 0 view .LVU60
+ 245 00aa 3420     		movs	r0, #52
+ 246              	.LVL33:
+ 247              		.loc 1 117 55 view .LVU61
+ 248 00ac 7047     		bx	lr
+ 249              	.LVL34:
+ 250              	.L23:
+ 118:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     default: return 0;
+ 251              		.loc 1 118 30 is_stmt 1 view .LVU62
+ 252              		.loc 1 118 37 is_stmt 0 view .LVU63
+ 253 00ae 0020     		movs	r0, #0
+ 254              	.LVL35:
+ 255              		.loc 1 118 37 view .LVU64
+ 256 00b0 7047     		bx	lr
+ 257              	.LVL36:
+ 258              	.L28:
+ 119:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 }
+ 120:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 
+ 121:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             default:
+ 122:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 return 0;
+ 123:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         }
+ 124:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 125:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 126:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     return 0;   
+ 259              		.loc 1 126 12 view .LVU65
+ 260 00b2 0020     		movs	r0, #0
+ 261              	.LVL37:
+ 262              		.loc 1 126 12 view .LVU66
+ 263 00b4 7047     		bx	lr
+ 264              	.LVL38:
+ 265              	.L29:
+  85:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR2_CH3;
+ 266              		.loc 1 85 55 view .LVU67
+ 267 00b6 3920     		movs	r0, #57
+ 268              	.LVL39:
+  85:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR2_CH3;
+ 269              		.loc 1 85 55 view .LVU68
+ 270 00b8 7047     		bx	lr
+ 271              	.LVL40:
+ 272              	.L30:
+  95:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR3_CH3;
+ 273              		.loc 1 95 55 view .LVU69
+ 274 00ba 3E20     		movs	r0, #62
+ 275              	.LVL41:
+  95:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR3_CH3;
+ 276              		.loc 1 95 55 view .LVU70
+ 277 00bc 7047     		bx	lr
+ 278              	.LVL42:
+ 279              	.L31:
+ 105:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR4_CH3;
+ 280              		.loc 1 105 55 view .LVU71
+ 281 00be 4420     		movs	r0, #68
+ 282              	.LVL43:
+ 105:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR4_CH3;
+ 283              		.loc 1 105 55 view .LVU72
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 9
+
+
+ 284 00c0 7047     		bx	lr
+ 285              	.LVL44:
+ 286              	.L32:
+ 115:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                     case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR8_CH3;
+ 287              		.loc 1 115 55 view .LVU73
+ 288 00c2 3220     		movs	r0, #50
+ 289              	.LVL45:
+ 127:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 290              		.loc 1 127 1 view .LVU74
+ 291 00c4 7047     		bx	lr
+ 292              	.L36:
+ 293 00c6 00BF     		.align	2
+ 294              	.L35:
+ 295 00c8 00080040 		.word	1073743872
+ 296 00cc 00040140 		.word	1073808384
+ 297              		.cfi_endproc
+ 298              	.LFE134:
+ 300              		.section	.text.BspTimer_Get_PrtiphAddr,"ax",%progbits
+ 301              		.align	1
+ 302              		.syntax unified
+ 303              		.thumb
+ 304              		.thumb_func
+ 306              	BspTimer_Get_PrtiphAddr:
+ 307              	.LVL46:
+ 308              	.LFB135:
+ 128:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 129:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static uint32_t BspTimer_Get_PrtiphAddr(BspTimerPWMObj_TypeDef *obj)
+ 130:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+ 309              		.loc 1 130 1 is_stmt 1 view -0
+ 310              		.cfi_startproc
+ 311              		@ args = 0, pretend = 0, frame = 0
+ 312              		@ frame_needed = 0, uses_anonymous_args = 0
+ 313              		@ link register save eliminated.
+ 131:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance && obj->tim_channel)
+ 314              		.loc 1 131 5 view .LVU76
+ 315              		.loc 1 131 8 is_stmt 0 view .LVU77
+ 316 0000 B8B1     		cbz	r0, .L44
+ 317              		.loc 1 131 19 discriminator 1 view .LVU78
+ 318 0002 0268     		ldr	r2, [r0]
+ 319              		.loc 1 131 13 discriminator 1 view .LVU79
+ 320 0004 BAB1     		cbz	r2, .L45
+ 321              		.loc 1 131 36 discriminator 2 view .LVU80
+ 322 0006 4068     		ldr	r0, [r0, #4]
+ 323              	.LVL47:
+ 324              		.loc 1 131 30 discriminator 2 view .LVU81
+ 325 0008 C0B1     		cbz	r0, .L37
+ 132:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 133:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         switch(obj->tim_channel)
+ 326              		.loc 1 133 9 is_stmt 1 view .LVU82
+ 327 000a 0628     		cmp	r0, #6
+ 328 000c 15D8     		bhi	.L46
+ 329 000e DFE800F0 		tbb	[pc, r0]
+ 330              	.L40:
+ 331 0012 04       		.byte	(.L43-.L40)/2
+ 332 0013 14       		.byte	(.L46-.L40)/2
+ 333 0014 07       		.byte	(.L42-.L40)/2
+ 334 0015 14       		.byte	(.L46-.L40)/2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 10
+
+
+ 335 0016 0A       		.byte	(.L41-.L40)/2
+ 336 0017 14       		.byte	(.L46-.L40)/2
+ 337 0018 0D       		.byte	(.L39-.L40)/2
+ 338 0019 00       		.p2align 1
+ 339              	.L43:
+ 134:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+ 135:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             case TMR_SELECT_CHANNEL_1:
+ 136:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 return (uint32_t)&(To_Timer_Instance(obj->instance)->c1dt);
+ 340              		.loc 1 136 17 view .LVU83
+ 341              		.loc 1 136 34 is_stmt 0 view .LVU84
+ 342 001a 02F13400 		add	r0, r2, #52
+ 343              		.loc 1 136 24 view .LVU85
+ 344 001e 7047     		bx	lr
+ 345              	.L42:
+ 137:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 138:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             case TMR_SELECT_CHANNEL_2:
+ 139:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 return (uint32_t)&(To_Timer_Instance(obj->instance)->c2dt);
+ 346              		.loc 1 139 17 is_stmt 1 view .LVU86
+ 347              		.loc 1 139 34 is_stmt 0 view .LVU87
+ 348 0020 02F13800 		add	r0, r2, #56
+ 349              		.loc 1 139 24 view .LVU88
+ 350 0024 7047     		bx	lr
+ 351              	.L41:
+ 140:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 141:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             case TMR_SELECT_CHANNEL_3:
+ 142:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 return (uint32_t)&(To_Timer_Instance(obj->instance)->c3dt);
+ 352              		.loc 1 142 17 is_stmt 1 view .LVU89
+ 353              		.loc 1 142 34 is_stmt 0 view .LVU90
+ 354 0026 02F13C00 		add	r0, r2, #60
+ 355              		.loc 1 142 24 view .LVU91
+ 356 002a 7047     		bx	lr
+ 357              	.L39:
+ 143:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 144:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             case TMR_SELECT_CHANNEL_4:
+ 145:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 return (uint32_t)&(To_Timer_Instance(obj->instance)->c4dt);
+ 358              		.loc 1 145 17 is_stmt 1 view .LVU92
+ 359              		.loc 1 145 34 is_stmt 0 view .LVU93
+ 360 002c 02F14000 		add	r0, r2, #64
+ 361              		.loc 1 145 24 view .LVU94
+ 362 0030 7047     		bx	lr
+ 363              	.LVL48:
+ 364              	.L44:
+ 146:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             
+ 147:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             default:
+ 148:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                 break;
+ 149:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         }
+ 150:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 151:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 152:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     return 0;
+ 365              		.loc 1 152 12 view .LVU95
+ 366 0032 0020     		movs	r0, #0
+ 367              	.LVL49:
+ 368              		.loc 1 152 12 view .LVU96
+ 369 0034 7047     		bx	lr
+ 370              	.LVL50:
+ 371              	.L45:
+ 372              		.loc 1 152 12 view .LVU97
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 11
+
+
+ 373 0036 0020     		movs	r0, #0
+ 374              	.LVL51:
+ 375              		.loc 1 152 12 view .LVU98
+ 376 0038 7047     		bx	lr
+ 377              	.L46:
+ 133:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+ 378              		.loc 1 133 9 view .LVU99
+ 379 003a 0020     		movs	r0, #0
+ 380              	.L37:
+ 153:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 381              		.loc 1 153 1 view .LVU100
+ 382 003c 7047     		bx	lr
+ 383              		.cfi_endproc
+ 384              	.LFE135:
+ 386              		.section	.text.BspTimer_Get_Clock_Freq,"ax",%progbits
+ 387              		.align	1
+ 388              		.syntax unified
+ 389              		.thumb
+ 390              		.thumb_func
+ 392              	BspTimer_Get_Clock_Freq:
+ 393              	.LVL52:
+ 394              	.LFB139:
+ 154:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 155:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
+ 156:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+ 157:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     dma_init_type dma_init_struct;
+ 158:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     dmamux_requst_id_sel_type dma_req_id = 0;
+ 159:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     dmamux_channel_type *dmamux_ch = NULL;
+ 160:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->dma_hdl = BspDMA.get_instance(obj->dma, obj->stream);
+ 161:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 162:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     switch((uint32_t)obj->dma_hdl)
+ 163:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 164:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL1: dmamux_ch = DMA1MUX_CHANNEL1; break;
+ 165:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL2: dmamux_ch = DMA1MUX_CHANNEL2; break;
+ 166:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL3: dmamux_ch = DMA1MUX_CHANNEL3; break;
+ 167:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL4: dmamux_ch = DMA1MUX_CHANNEL4; break;
+ 168:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL5: dmamux_ch = DMA1MUX_CHANNEL5; break;
+ 169:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL6: dmamux_ch = DMA1MUX_CHANNEL6; break;
+ 170:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL7: dmamux_ch = DMA1MUX_CHANNEL7; break;
+ 171:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL1: dmamux_ch = DMA2MUX_CHANNEL1; break;
+ 172:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL2: dmamux_ch = DMA2MUX_CHANNEL2; break;
+ 173:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL3: dmamux_ch = DMA2MUX_CHANNEL3; break;
+ 174:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL4: dmamux_ch = DMA2MUX_CHANNEL4; break;
+ 175:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL5: dmamux_ch = DMA2MUX_CHANNEL5; break;
+ 176:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL6: dmamux_ch = DMA2MUX_CHANNEL6; break;
+ 177:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL7: dmamux_ch = DMA2MUX_CHANNEL7; break;
+ 178:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         default: return false;
+ 179:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 180:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 181:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if ((obj == NULL) || \
+ 182:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->instance == NULL) || \
+ 183:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->buffer_addr == 0) || \
+ 184:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->dma_hdl == NULL) || \
+ 185:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (dmamux_ch == NULL) || \
+ 186:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->buffer_size == 0))
+ 187:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 188:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 12
+
+
+ 189:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_dma_request_enable(obj->instance, TMR_OVERFLOW_DMA_REQUEST, TRUE);
+ 190:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     dma_req_id = BspTimer_Get_DMA_MuxSeq(obj);
+ 191:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 192:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (dma_req_id)
+ 193:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 194:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         /* enable timer output dma request */
+ 195:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_reset(obj->dma_hdl);
+ 196:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.buffer_size = obj->buffer_size;
+ 197:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.direction = DMA_DIR_MEMORY_TO_PERIPHERAL;
+ 198:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.memory_base_addr = (uint32_t)obj->buffer_addr;
+ 199:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.memory_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
+ 200:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.memory_inc_enable = TRUE;
+ 201:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.peripheral_base_addr = BspTimer_Get_PrtiphAddr(obj);
+ 202:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
+ 203:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.peripheral_inc_enable = FALSE;
+ 204:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.priority = DMA_PRIORITY_HIGH;
+ 205:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.loop_mode_enable = FALSE;
+ 206:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init(obj->dma_hdl, &dma_init_struct);
+ 207:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dmamux_init(dmamux_ch, dma_req_id);
+ 208:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_channel_enable(obj->dma_hdl, TRUE);
+ 209:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 210:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 211:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 212:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 213:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     return false;
+ 214:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 215:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 216:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static bool BspTimer_PWM_DeInit(BspTimerPWMObj_TypeDef *obj)
+ 217:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+ 218:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance)
+ 219:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 220:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         if (!BspTimer_Clock_EnableCtl(obj->instance, FALSE) || \
+ 221:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             !BspDMA.disable_irq(obj->dma, obj->stream))
+ 222:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             return false;
+ 223:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     
+ 224:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 225:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 226:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 227:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     return false;
+ 228:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 229:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 230:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
+ 231:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               void *instance,
+ 232:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               uint32_t ch,
+ 233:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               BspGPIO_Obj_TypeDef pin,
+ 234:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               uint8_t dma,
+ 235:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               uint8_t stream,
+ 236:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               uint32_t buf_aadr,
+ 237:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****                               uint32_t buf_size)
+ 238:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+ 239:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_config_type tmr_output_struct;
+ 240:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 241:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     memset(&tmr_output_struct, 0, sizeof(tmr_output_config_type));
+ 242:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 243:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (!monitor.monitor_init)
+ 244:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 245:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         memset(monitor.list, 0, sizeof(monitor.list));
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 13
+
+
+ 246:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.init_cnt = 0;
+ 247:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.monitor_init = true;
+ 248:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 249:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 250:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if ((obj == NULL) || \
+ 251:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (instance == NULL) || \
+ 252:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (buf_aadr == 0) || \
+ 253:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (buf_size == 0))
+ 254:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 255:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 256:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (!BspTimer_Clock_EnableCtl(instance, TRUE))
+ 257:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 258:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 259:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->dma = dma;
+ 260:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->stream = stream;
+ 261:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->buffer_addr = buf_aadr;
+ 262:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->buffer_size = buf_size;
+ 263:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->instance = instance;
+ 264:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->tim_channel = ch;
+ 265:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 266:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     /* init pin */
+ 267:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (!BspGPIO.alt_init(pin, 0))
+ 268:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 269:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 270:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     /* init pwm output */
+ 271:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_cnt_dir_set(obj->instance, TMR_COUNT_UP);
+ 272:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_default_para_init(&tmr_output_struct);
+ 273:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.oc_mode = TMR_OUTPUT_CONTROL_PWM_MODE_A;
+ 274:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.oc_output_state = TRUE;
+ 275:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
+ 276:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.oc_idle_state = TRUE;
+ 277:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.occ_output_state = TRUE;
+ 278:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_HIGH;
+ 279:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.occ_idle_state = FALSE;
+ 280:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
+ 281:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 282:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (BspTimer_DMA_Init(obj))
+ 283:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 284:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         if (obj->dma_callback_obj)
+ 285:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+ 286:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->cus_data = (void *)obj;
+ 287:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->BspDMA_Irq_Callback_Func = BspTimer_D
+ 288:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         }
+ 289:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 290:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         BspDMA.enable_irq(dma, stream, 5, 0, BspTimer_Get_DMA_MuxSeq(obj), obj->dma_callback_obj);
+ 291:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 292:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.list[monitor.init_cnt] = obj->instance;
+ 293:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.init_cnt ++;
+ 294:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 295:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
+ 296:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
+ 297:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+ 298:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_output_enable(To_Timer_Instance(obj->instance), FALSE);
+ 299:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 300:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 301:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 302:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 14
+
+
+ 303:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 304:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 305:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj)
+ 306:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+ 395              		.loc 1 306 1 is_stmt 1 view -0
+ 396              		.cfi_startproc
+ 397              		@ args = 0, pretend = 0, frame = 16
+ 398              		@ frame_needed = 0, uses_anonymous_args = 0
+ 399              		.loc 1 306 1 is_stmt 0 view .LVU102
+ 400 0000 00B5     		push	{lr}
+ 401              	.LCFI0:
+ 402              		.cfi_def_cfa_offset 4
+ 403              		.cfi_offset 14, -4
+ 404 0002 85B0     		sub	sp, sp, #20
+ 405              	.LCFI1:
+ 406              		.cfi_def_cfa_offset 24
+ 307:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     crm_clocks_freq_type crm_clocks_freq_struct;
+ 407              		.loc 1 307 5 is_stmt 1 view .LVU103
+ 308:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     UNUSED(obj);
+ 408              		.loc 1 308 5 view .LVU104
+ 309:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 310:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     memset(&crm_clocks_freq_struct, 0, sizeof(crm_clocks_freq_type));
+ 409              		.loc 1 310 5 view .LVU105
+ 410 0004 0023     		movs	r3, #0
+ 411 0006 0093     		str	r3, [sp]
+ 412 0008 0193     		str	r3, [sp, #4]
+ 413 000a 0293     		str	r3, [sp, #8]
+ 414 000c 0393     		str	r3, [sp, #12]
+ 311:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     crm_clocks_freq_get(&crm_clocks_freq_struct);
+ 415              		.loc 1 311 5 view .LVU106
+ 416 000e 6846     		mov	r0, sp
+ 417              	.LVL53:
+ 418              		.loc 1 311 5 is_stmt 0 view .LVU107
+ 419 0010 FFF7FEFF 		bl	crm_clocks_freq_get
+ 420              	.LVL54:
+ 312:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     return (crm_clocks_freq_struct.apb2_freq * 2);
+ 421              		.loc 1 312 5 is_stmt 1 view .LVU108
+ 313:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 422              		.loc 1 313 1 is_stmt 0 view .LVU109
+ 423 0014 0298     		ldr	r0, [sp, #8]
+ 424 0016 4000     		lsls	r0, r0, #1
+ 425 0018 05B0     		add	sp, sp, #20
+ 426              	.LCFI2:
+ 427              		.cfi_def_cfa_offset 4
+ 428              		@ sp needed
+ 429 001a 5DF804FB 		ldr	pc, [sp], #4
+ 430              		.cfi_endproc
+ 431              	.LFE139:
+ 433              		.section	.text.BspTimer_DMA_Start,"ax",%progbits
+ 434              		.align	1
+ 435              		.syntax unified
+ 436              		.thumb
+ 437              		.thumb_func
+ 439              	BspTimer_DMA_Start:
+ 440              	.LVL55:
+ 441              	.LFB143:
+ 314:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 15
+
+
+ 315:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
+ 316:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+ 317:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance)
+ 318:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 319:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         obj->prescale = prescale;
+ 320:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_base_init(obj->instance, obj->auto_reload, prescale);
+ 321:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 322:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 323:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 324:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload)
+ 325:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+ 326:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance && obj->tim_channel)
+ 327:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 328:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         obj->auto_reload = auto_reload;
+ 329:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_base_init(obj->instance, auto_reload, obj->prescale);
+ 330:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 331:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 332:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 333:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
+ 334:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+ 335:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance)
+ 336:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 337:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+ 338:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_base_init(obj->instance, obj->auto_reload - 1, obj->prescale);
+ 339:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 340:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 341:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 342:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
+ 343:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+ 442              		.loc 1 343 1 is_stmt 1 view -0
+ 443              		.cfi_startproc
+ 444              		@ args = 0, pretend = 0, frame = 0
+ 445              		@ frame_needed = 0, uses_anonymous_args = 0
+ 344:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->dma_hdl)
+ 446              		.loc 1 344 5 view .LVU111
+ 447              		.loc 1 344 8 is_stmt 0 view .LVU112
+ 448 0000 F8B1     		cbz	r0, .L52
+ 343:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->dma_hdl)
+ 449              		.loc 1 343 1 discriminator 1 view .LVU113
+ 450 0002 10B5     		push	{r4, lr}
+ 451              	.LCFI3:
+ 452              		.cfi_def_cfa_offset 8
+ 453              		.cfi_offset 4, -8
+ 454              		.cfi_offset 14, -4
+ 455 0004 0446     		mov	r4, r0
+ 456              		.loc 1 344 19 discriminator 1 view .LVU114
+ 457 0006 C368     		ldr	r3, [r0, #12]
+ 458              		.loc 1 344 13 discriminator 1 view .LVU115
+ 459 0008 D3B1     		cbz	r3, .L49
+ 345:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 346:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
+ 460              		.loc 1 346 9 is_stmt 1 view .LVU116
+ 461              		.loc 1 346 53 is_stmt 0 view .LVU117
+ 462 000a 426A     		ldr	r2, [r0, #36]
+ 463              		.loc 1 346 48 view .LVU118
+ 464 000c DA60     		str	r2, [r3, #12]
+ 347:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * sizeof(uint16_t);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 16
+
+
+ 465              		.loc 1 347 9 is_stmt 1 view .LVU119
+ 466              		.loc 1 347 53 is_stmt 0 view .LVU120
+ 467 000e 836A     		ldr	r3, [r0, #40]
+ 468              		.loc 1 347 9 view .LVU121
+ 469 0010 C268     		ldr	r2, [r0, #12]
+ 470              		.loc 1 347 67 view .LVU122
+ 471 0012 5B00     		lsls	r3, r3, #1
+ 472              		.loc 1 347 48 view .LVU123
+ 473 0014 5360     		str	r3, [r2, #4]
+ 348:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         
+ 349:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
+ 474              		.loc 1 349 9 is_stmt 1 view .LVU124
+ 475 0016 0021     		movs	r1, #0
+ 476 0018 0068     		ldr	r0, [r0]
+ 477              	.LVL56:
+ 478              		.loc 1 349 9 is_stmt 0 view .LVU125
+ 479 001a FFF7FEFF 		bl	tmr_counter_enable
+ 480              	.LVL57:
+ 350:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_channel_value_set(To_Timer_Instance(obj->instance), obj->tim_channel, 0);
+ 481              		.loc 1 350 9 is_stmt 1 view .LVU126
+ 482 001e 0022     		movs	r2, #0
+ 483 0020 2179     		ldrb	r1, [r4, #4]	@ zero_extendqisi2
+ 484 0022 2068     		ldr	r0, [r4]
+ 485 0024 FFF7FEFF 		bl	tmr_channel_value_set
+ 486              	.LVL58:
+ 351:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
+ 487              		.loc 1 351 9 view .LVU127
+ 488 0028 0121     		movs	r1, #1
+ 489 002a 2068     		ldr	r0, [r4]
+ 490 002c FFF7FEFF 		bl	tmr_counter_enable
+ 491              	.LVL59:
+ 352:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         
+ 353:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
+ 492              		.loc 1 353 9 view .LVU128
+ 493 0030 0121     		movs	r1, #1
+ 494 0032 E068     		ldr	r0, [r4, #12]
+ 495 0034 FFF7FEFF 		bl	dma_channel_enable
+ 496              	.LVL60:
+ 354:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_output_enable(To_Timer_Instance(obj->instance), TRUE);
+ 497              		.loc 1 354 9 view .LVU129
+ 498 0038 0121     		movs	r1, #1
+ 499 003a 2068     		ldr	r0, [r4]
+ 500 003c FFF7FEFF 		bl	tmr_output_enable
+ 501              	.LVL61:
+ 502              	.L49:
+ 355:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 356:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 503              		.loc 1 356 1 is_stmt 0 view .LVU130
+ 504 0040 10BD     		pop	{r4, pc}
+ 505              	.LVL62:
+ 506              	.L52:
+ 507              	.LCFI4:
+ 508              		.cfi_def_cfa_offset 0
+ 509              		.cfi_restore 4
+ 510              		.cfi_restore 14
+ 511              		.loc 1 356 1 view .LVU131
+ 512 0042 7047     		bx	lr
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 17
+
+
+ 513              		.cfi_endproc
+ 514              	.LFE143:
+ 516              		.section	.text.BspTimer_DMA_TransCplt_Callback,"ax",%progbits
+ 517              		.align	1
+ 518              		.syntax unified
+ 519              		.thumb
+ 520              		.thumb_func
+ 522              	BspTimer_DMA_TransCplt_Callback:
+ 523              	.LVL63:
+ 524              	.LFB144:
+ 357:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 358:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** static void BspTimer_DMA_TransCplt_Callback(void *arg)
+ 359:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** {
+ 525              		.loc 1 359 1 is_stmt 1 view -0
+ 526              		.cfi_startproc
+ 527              		@ args = 0, pretend = 0, frame = 0
+ 528              		@ frame_needed = 0, uses_anonymous_args = 0
+ 360:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     BspTimerPWMObj_TypeDef *obj = NULL;
+ 529              		.loc 1 360 5 view .LVU133
+ 361:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 362:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (arg && To_TimerPWMObj_Ptr(arg)->dma_hdl)
+ 530              		.loc 1 362 5 view .LVU134
+ 531              		.loc 1 362 8 is_stmt 0 view .LVU135
+ 532 0000 70B1     		cbz	r0, .L58
+ 359:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     BspTimerPWMObj_TypeDef *obj = NULL;
+ 533              		.loc 1 359 1 discriminator 1 view .LVU136
+ 534 0002 10B5     		push	{r4, lr}
+ 535              	.LCFI5:
+ 536              		.cfi_def_cfa_offset 8
+ 537              		.cfi_offset 4, -8
+ 538              		.cfi_offset 14, -4
+ 539 0004 0446     		mov	r4, r0
+ 540              		.loc 1 362 39 discriminator 1 view .LVU137
+ 541 0006 C068     		ldr	r0, [r0, #12]
+ 542              	.LVL64:
+ 543              		.loc 1 362 13 discriminator 1 view .LVU138
+ 544 0008 48B1     		cbz	r0, .L55
+ 363:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 364:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         obj = To_TimerPWMObj_Ptr(arg);
+ 545              		.loc 1 364 9 is_stmt 1 view .LVU139
+ 546              	.LVL65:
+ 365:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
+ 547              		.loc 1 365 9 view .LVU140
+ 548 000a 0021     		movs	r1, #0
+ 549 000c FFF7FEFF 		bl	dma_channel_enable
+ 550              	.LVL66:
+ 366:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_output_enable(To_Timer_Instance(obj->instance), FALSE);
+ 551              		.loc 1 366 9 view .LVU141
+ 552 0010 0021     		movs	r1, #0
+ 553 0012 2068     		ldr	r0, [r4]
+ 554 0014 FFF7FEFF 		bl	tmr_output_enable
+ 555              	.LVL67:
+ 367:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 368:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         if (obj->send_callback)
+ 556              		.loc 1 368 9 view .LVU142
+ 557              		.loc 1 368 16 is_stmt 0 view .LVU143
+ 558 0018 E36A     		ldr	r3, [r4, #44]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 18
+
+
+ 559              		.loc 1 368 12 view .LVU144
+ 560 001a 03B1     		cbz	r3, .L55
+ 369:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             obj->send_callback();
+ 561              		.loc 1 369 13 is_stmt 1 view .LVU145
+ 562 001c 9847     		blx	r3
+ 563              	.LVL68:
+ 564              	.L55:
+ 370:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 371:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 565              		.loc 1 371 1 is_stmt 0 view .LVU146
+ 566 001e 10BD     		pop	{r4, pc}
+ 567              	.LVL69:
+ 568              	.L58:
+ 569              	.LCFI6:
+ 570              		.cfi_def_cfa_offset 0
+ 571              		.cfi_restore 4
+ 572              		.cfi_restore 14
+ 573              		.loc 1 371 1 view .LVU147
+ 574 0020 7047     		bx	lr
+ 575              		.cfi_endproc
+ 576              	.LFE144:
+ 578              		.section	.text.BspTimer_PWM_Start,"ax",%progbits
+ 579              		.align	1
+ 580              		.syntax unified
+ 581              		.thumb
+ 582              		.thumb_func
+ 584              	BspTimer_PWM_Start:
+ 585              	.LVL70:
+ 586              	.LFB142:
+ 334:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance)
+ 587              		.loc 1 334 1 is_stmt 1 view -0
+ 588              		.cfi_startproc
+ 589              		@ args = 0, pretend = 0, frame = 0
+ 590              		@ frame_needed = 0, uses_anonymous_args = 0
+ 335:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 591              		.loc 1 335 5 view .LVU149
+ 335:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 592              		.loc 1 335 8 is_stmt 0 view .LVU150
+ 593 0000 68B1     		cbz	r0, .L64
+ 334:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance)
+ 594              		.loc 1 334 1 discriminator 1 view .LVU151
+ 595 0002 10B5     		push	{r4, lr}
+ 596              	.LCFI7:
+ 597              		.cfi_def_cfa_offset 8
+ 598              		.cfi_offset 4, -8
+ 599              		.cfi_offset 14, -4
+ 600 0004 0446     		mov	r4, r0
+ 335:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 601              		.loc 1 335 19 discriminator 1 view .LVU152
+ 602 0006 0068     		ldr	r0, [r0]
+ 603              	.LVL71:
+ 335:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 604              		.loc 1 335 13 discriminator 1 view .LVU153
+ 605 0008 40B1     		cbz	r0, .L61
+ 337:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_base_init(obj->instance, obj->auto_reload - 1, obj->prescale);
+ 606              		.loc 1 337 9 is_stmt 1 view .LVU154
+ 607 000a 0021     		movs	r1, #0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 19
+
+
+ 608 000c FFF7FEFF 		bl	tmr_counter_value_set
+ 609              	.LVL72:
+ 338:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 610              		.loc 1 338 9 view .LVU155
+ 338:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 611              		.loc 1 338 41 is_stmt 0 view .LVU156
+ 612 0010 A169     		ldr	r1, [r4, #24]
+ 338:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 613              		.loc 1 338 9 view .LVU157
+ 614 0012 6269     		ldr	r2, [r4, #20]
+ 615 0014 0139     		subs	r1, r1, #1
+ 616 0016 2068     		ldr	r0, [r4]
+ 617 0018 FFF7FEFF 		bl	tmr_base_init
+ 618              	.LVL73:
+ 619              	.L61:
+ 340:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 620              		.loc 1 340 1 view .LVU158
+ 621 001c 10BD     		pop	{r4, pc}
+ 622              	.LVL74:
+ 623              	.L64:
+ 624              	.LCFI8:
+ 625              		.cfi_def_cfa_offset 0
+ 626              		.cfi_restore 4
+ 627              		.cfi_restore 14
+ 340:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 628              		.loc 1 340 1 view .LVU159
+ 629 001e 7047     		bx	lr
+ 630              		.cfi_endproc
+ 631              	.LFE142:
+ 633              		.section	.text.BspTimer_SetAutoReload,"ax",%progbits
+ 634              		.align	1
+ 635              		.syntax unified
+ 636              		.thumb
+ 637              		.thumb_func
+ 639              	BspTimer_SetAutoReload:
+ 640              	.LVL75:
+ 641              	.LFB141:
+ 325:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance && obj->tim_channel)
+ 642              		.loc 1 325 1 is_stmt 1 view -0
+ 643              		.cfi_startproc
+ 644              		@ args = 0, pretend = 0, frame = 0
+ 645              		@ frame_needed = 0, uses_anonymous_args = 0
+ 326:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 646              		.loc 1 326 5 view .LVU161
+ 326:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 647              		.loc 1 326 8 is_stmt 0 view .LVU162
+ 648 0000 58B1     		cbz	r0, .L70
+ 325:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance && obj->tim_channel)
+ 649              		.loc 1 325 1 discriminator 1 view .LVU163
+ 650 0002 08B5     		push	{r3, lr}
+ 651              	.LCFI9:
+ 652              		.cfi_def_cfa_offset 8
+ 653              		.cfi_offset 3, -8
+ 654              		.cfi_offset 14, -4
+ 655 0004 0346     		mov	r3, r0
+ 326:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 656              		.loc 1 326 19 discriminator 1 view .LVU164
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 20
+
+
+ 657 0006 0068     		ldr	r0, [r0]
+ 658              	.LVL76:
+ 326:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 659              		.loc 1 326 13 discriminator 1 view .LVU165
+ 660 0008 08B1     		cbz	r0, .L67
+ 326:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 661              		.loc 1 326 36 discriminator 2 view .LVU166
+ 662 000a 5A68     		ldr	r2, [r3, #4]
+ 326:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 663              		.loc 1 326 30 discriminator 2 view .LVU167
+ 664 000c 02B9     		cbnz	r2, .L73
+ 665              	.LVL77:
+ 666              	.L67:
+ 331:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 667              		.loc 1 331 1 view .LVU168
+ 668 000e 08BD     		pop	{r3, pc}
+ 669              	.LVL78:
+ 670              	.L73:
+ 328:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_base_init(obj->instance, auto_reload, obj->prescale);
+ 671              		.loc 1 328 9 is_stmt 1 view .LVU169
+ 328:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_base_init(obj->instance, auto_reload, obj->prescale);
+ 672              		.loc 1 328 26 is_stmt 0 view .LVU170
+ 673 0010 9961     		str	r1, [r3, #24]
+ 329:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 674              		.loc 1 329 9 is_stmt 1 view .LVU171
+ 675 0012 5A69     		ldr	r2, [r3, #20]
+ 676 0014 FFF7FEFF 		bl	tmr_base_init
+ 677              	.LVL79:
+ 331:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 678              		.loc 1 331 1 is_stmt 0 view .LVU172
+ 679 0018 F9E7     		b	.L67
+ 680              	.LVL80:
+ 681              	.L70:
+ 682              	.LCFI10:
+ 683              		.cfi_def_cfa_offset 0
+ 684              		.cfi_restore 3
+ 685              		.cfi_restore 14
+ 331:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 686              		.loc 1 331 1 view .LVU173
+ 687 001a 7047     		bx	lr
+ 688              		.cfi_endproc
+ 689              	.LFE141:
+ 691              		.section	.text.BspTimer_SetPreScale,"ax",%progbits
+ 692              		.align	1
+ 693              		.syntax unified
+ 694              		.thumb
+ 695              		.thumb_func
+ 697              	BspTimer_SetPreScale:
+ 698              	.LVL81:
+ 699              	.LFB140:
+ 316:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance)
+ 700              		.loc 1 316 1 is_stmt 1 view -0
+ 701              		.cfi_startproc
+ 702              		@ args = 0, pretend = 0, frame = 0
+ 703              		@ frame_needed = 0, uses_anonymous_args = 0
+ 317:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 704              		.loc 1 317 5 view .LVU175
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 21
+
+
+ 317:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 705              		.loc 1 317 8 is_stmt 0 view .LVU176
+ 706 0000 48B1     		cbz	r0, .L77
+ 316:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance)
+ 707              		.loc 1 316 1 discriminator 1 view .LVU177
+ 708 0002 08B5     		push	{r3, lr}
+ 709              	.LCFI11:
+ 710              		.cfi_def_cfa_offset 8
+ 711              		.cfi_offset 3, -8
+ 712              		.cfi_offset 14, -4
+ 713 0004 0346     		mov	r3, r0
+ 317:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 714              		.loc 1 317 19 discriminator 1 view .LVU178
+ 715 0006 0068     		ldr	r0, [r0]
+ 716              	.LVL82:
+ 317:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 717              		.loc 1 317 13 discriminator 1 view .LVU179
+ 718 0008 20B1     		cbz	r0, .L74
+ 319:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_base_init(obj->instance, obj->auto_reload, prescale);
+ 719              		.loc 1 319 9 is_stmt 1 view .LVU180
+ 319:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_base_init(obj->instance, obj->auto_reload, prescale);
+ 720              		.loc 1 319 23 is_stmt 0 view .LVU181
+ 721 000a 5961     		str	r1, [r3, #20]
+ 320:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 722              		.loc 1 320 9 is_stmt 1 view .LVU182
+ 723 000c 0A46     		mov	r2, r1
+ 724 000e 9969     		ldr	r1, [r3, #24]
+ 725              	.LVL83:
+ 320:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 726              		.loc 1 320 9 is_stmt 0 view .LVU183
+ 727 0010 FFF7FEFF 		bl	tmr_base_init
+ 728              	.LVL84:
+ 729              	.L74:
+ 322:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 730              		.loc 1 322 1 view .LVU184
+ 731 0014 08BD     		pop	{r3, pc}
+ 732              	.LVL85:
+ 733              	.L77:
+ 734              	.LCFI12:
+ 735              		.cfi_def_cfa_offset 0
+ 736              		.cfi_restore 3
+ 737              		.cfi_restore 14
+ 322:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 738              		.loc 1 322 1 view .LVU185
+ 739 0016 7047     		bx	lr
+ 740              		.cfi_endproc
+ 741              	.LFE140:
+ 743              		.section	.text.BspTimer_Clock_EnableCtl,"ax",%progbits
+ 744              		.align	1
+ 745              		.syntax unified
+ 746              		.thumb
+ 747              		.thumb_func
+ 749              	BspTimer_Clock_EnableCtl:
+ 750              	.LVL86:
+ 751              	.LFB133:
+  50:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (To_Timer_Instance(instance) == TMR2)
+ 752              		.loc 1 50 1 is_stmt 1 view -0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 22
+
+
+ 753              		.cfi_startproc
+ 754              		@ args = 0, pretend = 0, frame = 0
+ 755              		@ frame_needed = 0, uses_anonymous_args = 0
+  50:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (To_Timer_Instance(instance) == TMR2)
+ 756              		.loc 1 50 1 is_stmt 0 view .LVU187
+ 757 0000 08B5     		push	{r3, lr}
+ 758              	.LCFI13:
+ 759              		.cfi_def_cfa_offset 8
+ 760              		.cfi_offset 3, -8
+ 761              		.cfi_offset 14, -4
+  51:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 762              		.loc 1 51 5 is_stmt 1 view .LVU188
+  51:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 763              		.loc 1 51 8 is_stmt 0 view .LVU189
+ 764 0002 B0F1804F 		cmp	r0, #1073741824
+ 765 0006 0AD0     		beq	.L87
+  56:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 766              		.loc 1 56 10 is_stmt 1 view .LVU190
+  56:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 767              		.loc 1 56 13 is_stmt 0 view .LVU191
+ 768 0008 0F4B     		ldr	r3, .L91
+ 769 000a 9842     		cmp	r0, r3
+ 770 000c 0DD0     		beq	.L88
+  61:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 771              		.loc 1 61 10 is_stmt 1 view .LVU192
+  61:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 772              		.loc 1 61 13 is_stmt 0 view .LVU193
+ 773 000e 0F4B     		ldr	r3, .L91+4
+ 774 0010 9842     		cmp	r0, r3
+ 775 0012 0FD0     		beq	.L89
+  66:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 776              		.loc 1 66 10 is_stmt 1 view .LVU194
+  66:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 777              		.loc 1 66 13 is_stmt 0 view .LVU195
+ 778 0014 0E4B     		ldr	r3, .L91+8
+ 779 0016 9842     		cmp	r0, r3
+ 780 0018 11D0     		beq	.L90
+  72:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 781              		.loc 1 72 12 view .LVU196
+ 782 001a 0020     		movs	r0, #0
+ 783              	.LVL87:
+ 784              	.L82:
+  73:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 785              		.loc 1 73 1 view .LVU197
+ 786 001c 08BD     		pop	{r3, pc}
+ 787              	.LVL88:
+ 788              	.L87:
+  53:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 789              		.loc 1 53 9 is_stmt 1 view .LVU198
+ 790 001e 4FF48000 		mov	r0, #4194304
+ 791              	.LVL89:
+  53:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 792              		.loc 1 53 9 is_stmt 0 view .LVU199
+ 793 0022 FFF7FEFF 		bl	crm_periph_clock_enable
+ 794              	.LVL90:
+  54:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 795              		.loc 1 54 9 is_stmt 1 view .LVU200
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 23
+
+
+  54:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 796              		.loc 1 54 16 is_stmt 0 view .LVU201
+ 797 0026 0120     		movs	r0, #1
+ 798 0028 F8E7     		b	.L82
+ 799              	.LVL91:
+ 800              	.L88:
+  58:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 801              		.loc 1 58 9 is_stmt 1 view .LVU202
+ 802 002a 0A48     		ldr	r0, .L91+12
+ 803              	.LVL92:
+  58:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 804              		.loc 1 58 9 is_stmt 0 view .LVU203
+ 805 002c FFF7FEFF 		bl	crm_periph_clock_enable
+ 806              	.LVL93:
+  59:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 807              		.loc 1 59 9 is_stmt 1 view .LVU204
+  59:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 808              		.loc 1 59 16 is_stmt 0 view .LVU205
+ 809 0030 0120     		movs	r0, #1
+ 810 0032 F3E7     		b	.L82
+ 811              	.LVL94:
+ 812              	.L89:
+  63:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 813              		.loc 1 63 9 is_stmt 1 view .LVU206
+ 814 0034 0848     		ldr	r0, .L91+16
+ 815              	.LVL95:
+  63:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 816              		.loc 1 63 9 is_stmt 0 view .LVU207
+ 817 0036 FFF7FEFF 		bl	crm_periph_clock_enable
+ 818              	.LVL96:
+  64:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 819              		.loc 1 64 9 is_stmt 1 view .LVU208
+  64:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 820              		.loc 1 64 16 is_stmt 0 view .LVU209
+ 821 003a 0120     		movs	r0, #1
+ 822 003c EEE7     		b	.L82
+ 823              	.LVL97:
+ 824              	.L90:
+  68:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 825              		.loc 1 68 9 is_stmt 1 view .LVU210
+ 826 003e 0748     		ldr	r0, .L91+20
+ 827              	.LVL98:
+  68:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 828              		.loc 1 68 9 is_stmt 0 view .LVU211
+ 829 0040 FFF7FEFF 		bl	crm_periph_clock_enable
+ 830              	.LVL99:
+  69:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 831              		.loc 1 69 9 is_stmt 1 view .LVU212
+  69:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 832              		.loc 1 69 16 is_stmt 0 view .LVU213
+ 833 0044 0120     		movs	r0, #1
+ 834 0046 E9E7     		b	.L82
+ 835              	.L92:
+ 836              		.align	2
+ 837              	.L91:
+ 838 0048 00040040 		.word	1073742848
+ 839 004c 00040140 		.word	1073808384
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 24
+
+
+ 840 0050 00080040 		.word	1073743872
+ 841 0054 01004000 		.word	4194305
+ 842 0058 01004400 		.word	4456449
+ 843 005c 02004000 		.word	4194306
+ 844              		.cfi_endproc
+ 845              	.LFE133:
+ 847              		.section	.text.BspTimer_PWM_DeInit,"ax",%progbits
+ 848              		.align	1
+ 849              		.syntax unified
+ 850              		.thumb
+ 851              		.thumb_func
+ 853              	BspTimer_PWM_DeInit:
+ 854              	.LVL100:
+ 855              	.LFB137:
+ 217:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance)
+ 856              		.loc 1 217 1 is_stmt 1 view -0
+ 857              		.cfi_startproc
+ 858              		@ args = 0, pretend = 0, frame = 0
+ 859              		@ frame_needed = 0, uses_anonymous_args = 0
+ 218:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 860              		.loc 1 218 5 view .LVU215
+ 218:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 861              		.loc 1 218 8 is_stmt 0 view .LVU216
+ 862 0000 88B1     		cbz	r0, .L96
+ 217:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     if (obj && obj->instance)
+ 863              		.loc 1 217 1 discriminator 1 view .LVU217
+ 864 0002 10B5     		push	{r4, lr}
+ 865              	.LCFI14:
+ 866              		.cfi_def_cfa_offset 8
+ 867              		.cfi_offset 4, -8
+ 868              		.cfi_offset 14, -4
+ 869 0004 0446     		mov	r4, r0
+ 218:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 870              		.loc 1 218 19 discriminator 1 view .LVU218
+ 871 0006 0068     		ldr	r0, [r0]
+ 872              	.LVL101:
+ 218:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 873              		.loc 1 218 13 discriminator 1 view .LVU219
+ 874 0008 78B1     		cbz	r0, .L97
+ 220:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             !BspDMA.disable_irq(obj->dma, obj->stream))
+ 875              		.loc 1 220 9 is_stmt 1 view .LVU220
+ 220:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             !BspDMA.disable_irq(obj->dma, obj->stream))
+ 876              		.loc 1 220 14 is_stmt 0 view .LVU221
+ 877 000a 0021     		movs	r1, #0
+ 878 000c FFF7FEFF 		bl	BspTimer_Clock_EnableCtl
+ 879              	.LVL102:
+ 220:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             !BspDMA.disable_irq(obj->dma, obj->stream))
+ 880              		.loc 1 220 12 view .LVU222
+ 881 0010 38B1     		cbz	r0, .L95
+ 221:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             return false;
+ 882              		.loc 1 221 20 discriminator 1 view .LVU223
+ 883 0012 074B     		ldr	r3, .L102
+ 884 0014 9B69     		ldr	r3, [r3, #24]
+ 221:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             return false;
+ 885              		.loc 1 221 14 discriminator 1 view .LVU224
+ 886 0016 94F90910 		ldrsb	r1, [r4, #9]
+ 887 001a 94F90800 		ldrsb	r0, [r4, #8]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 25
+
+
+ 888 001e 9847     		blx	r3
+ 889              	.LVL103:
+ 220:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             !BspDMA.disable_irq(obj->dma, obj->stream))
+ 890              		.loc 1 220 61 discriminator 1 view .LVU225
+ 891 0020 20B9     		cbnz	r0, .L94
+ 892              	.L95:
+ 222:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     
+ 893              		.loc 1 222 13 is_stmt 1 view .LVU226
+ 222:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     
+ 894              		.loc 1 222 20 is_stmt 0 view .LVU227
+ 895 0022 0020     		movs	r0, #0
+ 896 0024 02E0     		b	.L94
+ 897              	.LVL104:
+ 898              	.L96:
+ 899              	.LCFI15:
+ 900              		.cfi_def_cfa_offset 0
+ 901              		.cfi_restore 4
+ 902              		.cfi_restore 14
+ 227:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 903              		.loc 1 227 12 view .LVU228
+ 904 0026 0020     		movs	r0, #0
+ 905              	.LVL105:
+ 228:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 906              		.loc 1 228 1 view .LVU229
+ 907 0028 7047     		bx	lr
+ 908              	.LVL106:
+ 909              	.L97:
+ 910              	.LCFI16:
+ 911              		.cfi_def_cfa_offset 8
+ 912              		.cfi_offset 4, -8
+ 913              		.cfi_offset 14, -4
+ 227:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 914              		.loc 1 227 12 view .LVU230
+ 915 002a 0020     		movs	r0, #0
+ 916              	.L94:
+ 228:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 917              		.loc 1 228 1 view .LVU231
+ 918 002c 10BD     		pop	{r4, pc}
+ 919              	.LVL107:
+ 920              	.L103:
+ 228:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 921              		.loc 1 228 1 view .LVU232
+ 922 002e 00BF     		.align	2
+ 923              	.L102:
+ 924 0030 00000000 		.word	BspDMA
+ 925              		.cfi_endproc
+ 926              	.LFE137:
+ 928              		.section	.text.BspTimer_DMA_Init,"ax",%progbits
+ 929              		.align	1
+ 930              		.syntax unified
+ 931              		.thumb
+ 932              		.thumb_func
+ 934              	BspTimer_DMA_Init:
+ 935              	.LVL108:
+ 936              	.LFB136:
+ 156:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     dma_init_type dma_init_struct;
+ 937              		.loc 1 156 1 is_stmt 1 view -0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 26
+
+
+ 938              		.cfi_startproc
+ 939              		@ args = 0, pretend = 0, frame = 24
+ 940              		@ frame_needed = 0, uses_anonymous_args = 0
+ 156:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     dma_init_type dma_init_struct;
+ 941              		.loc 1 156 1 is_stmt 0 view .LVU234
+ 942 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 943              	.LCFI17:
+ 944              		.cfi_def_cfa_offset 20
+ 945              		.cfi_offset 4, -20
+ 946              		.cfi_offset 5, -16
+ 947              		.cfi_offset 6, -12
+ 948              		.cfi_offset 7, -8
+ 949              		.cfi_offset 14, -4
+ 950 0002 87B0     		sub	sp, sp, #28
+ 951              	.LCFI18:
+ 952              		.cfi_def_cfa_offset 48
+ 953 0004 0546     		mov	r5, r0
+ 157:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     dmamux_requst_id_sel_type dma_req_id = 0;
+ 954              		.loc 1 157 5 is_stmt 1 view .LVU235
+ 158:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     dmamux_channel_type *dmamux_ch = NULL;
+ 955              		.loc 1 158 5 view .LVU236
+ 956              	.LVL109:
+ 159:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->dma_hdl = BspDMA.get_instance(obj->dma, obj->stream);
+ 957              		.loc 1 159 5 view .LVU237
+ 160:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 958              		.loc 1 160 5 view .LVU238
+ 160:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 959              		.loc 1 160 26 is_stmt 0 view .LVU239
+ 960 0006 564B     		ldr	r3, .L142
+ 961 0008 1B69     		ldr	r3, [r3, #16]
+ 160:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 962              		.loc 1 160 20 view .LVU240
+ 963 000a 90F90910 		ldrsb	r1, [r0, #9]
+ 964 000e 90F90800 		ldrsb	r0, [r0, #8]
+ 965              	.LVL110:
+ 160:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 966              		.loc 1 160 20 view .LVU241
+ 967 0012 9847     		blx	r3
+ 968              	.LVL111:
+ 969 0014 0346     		mov	r3, r0
+ 160:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 970              		.loc 1 160 18 view .LVU242
+ 971 0016 E860     		str	r0, [r5, #12]
+ 162:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 972              		.loc 1 162 5 is_stmt 1 view .LVU243
+ 973 0018 524A     		ldr	r2, .L142+4
+ 974 001a 9042     		cmp	r0, r2
+ 975 001c 4DD0     		beq	.L110
+ 976 001e 22D8     		bhi	.L106
+ 977 0020 A2F5E272 		sub	r2, r2, #452
+ 978 0024 9042     		cmp	r0, r2
+ 979 0026 4AD0     		beq	.L111
+ 980 0028 07D9     		bls	.L132
+ 981 002a 4F4A     		ldr	r2, .L142+8
+ 982 002c 9042     		cmp	r0, r2
+ 983 002e 4AD0     		beq	.L115
+ 984 0030 1432     		adds	r2, r2, #20
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 27
+
+
+ 985 0032 9042     		cmp	r0, r2
+ 986 0034 10D1     		bne	.L133
+ 170:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL1: dmamux_ch = DMA2MUX_CHANNEL1; break;
+ 987              		.loc 1 170 49 is_stmt 0 view .LVU244
+ 988 0036 4D4C     		ldr	r4, .L142+12
+ 989 0038 20E0     		b	.L105
+ 990              	.L132:
+ 162:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 991              		.loc 1 162 5 view .LVU245
+ 992 003a 283A     		subs	r2, r2, #40
+ 993 003c 9042     		cmp	r0, r2
+ 994 003e 40D0     		beq	.L112
+ 995 0040 1432     		adds	r2, r2, #20
+ 996 0042 9042     		cmp	r0, r2
+ 997 0044 01D1     		bne	.L134
+ 166:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL4: dmamux_ch = DMA1MUX_CHANNEL4; break;
+ 998              		.loc 1 166 49 view .LVU246
+ 999 0046 4A4C     		ldr	r4, .L142+16
+ 1000 0048 18E0     		b	.L105
+ 1001              	.L134:
+ 162:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1002              		.loc 1 162 5 view .LVU247
+ 1003 004a 283A     		subs	r2, r2, #40
+ 1004 004c 9042     		cmp	r0, r2
+ 1005 004e 01D1     		bne	.L135
+ 1006 0050 484C     		ldr	r4, .L142+20
+ 1007 0052 13E0     		b	.L105
+ 1008              	.L135:
+ 1009 0054 0020     		movs	r0, #0
+ 1010 0056 7DE0     		b	.L108
+ 1011              	.L133:
+ 1012 0058 283A     		subs	r2, r2, #40
+ 1013 005a 9042     		cmp	r0, r2
+ 1014 005c 01D1     		bne	.L136
+ 168:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL6: dmamux_ch = DMA1MUX_CHANNEL6; break;
+ 1015              		.loc 1 168 49 view .LVU248
+ 1016 005e 464C     		ldr	r4, .L142+24
+ 1017 0060 0CE0     		b	.L105
+ 1018              	.L136:
+ 162:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1019              		.loc 1 162 5 view .LVU249
+ 1020 0062 0020     		movs	r0, #0
+ 1021 0064 76E0     		b	.L108
+ 1022              	.L106:
+ 1023 0066 454A     		ldr	r2, .L142+28
+ 1024 0068 9042     		cmp	r0, r2
+ 1025 006a 2ED0     		beq	.L118
+ 1026 006c 16D9     		bls	.L137
+ 1027 006e 444A     		ldr	r2, .L142+32
+ 1028 0070 9042     		cmp	r0, r2
+ 1029 0072 2ED0     		beq	.L122
+ 1030 0074 1432     		adds	r2, r2, #20
+ 1031 0076 9042     		cmp	r0, r2
+ 1032 0078 65D1     		bne	.L123
+ 177:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         default: return false;
+ 1033              		.loc 1 177 49 view .LVU250
+ 1034 007a 424C     		ldr	r4, .L142+36
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 28
+
+
+ 1035              	.L105:
+ 1036              	.LVL112:
+ 181:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->instance == NULL) || \
+ 1037              		.loc 1 181 5 is_stmt 1 view .LVU251
+ 181:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->instance == NULL) || \
+ 1038              		.loc 1 181 8 is_stmt 0 view .LVU252
+ 1039 007c 002D     		cmp	r5, #0
+ 1040 007e 64D0     		beq	.L124
+ 182:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->buffer_addr == 0) || \
+ 1041              		.loc 1 182 13 discriminator 1 view .LVU253
+ 1042 0080 2868     		ldr	r0, [r5]
+ 181:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->instance == NULL) || \
+ 1043              		.loc 1 181 23 discriminator 1 view .LVU254
+ 1044 0082 0028     		cmp	r0, #0
+ 1045 0084 63D0     		beq	.L125
+ 183:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->dma_hdl == NULL) || \
+ 1046              		.loc 1 183 13 view .LVU255
+ 1047 0086 6A6A     		ldr	r2, [r5, #36]
+ 182:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->buffer_addr == 0) || \
+ 1048              		.loc 1 182 33 view .LVU256
+ 1049 0088 002A     		cmp	r2, #0
+ 1050 008a 62D0     		beq	.L126
+ 183:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->dma_hdl == NULL) || \
+ 1051              		.loc 1 183 33 view .LVU257
+ 1052 008c 002B     		cmp	r3, #0
+ 1053 008e 63D0     		beq	.L127
+ 184:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (dmamux_ch == NULL) || \
+ 1054              		.loc 1 184 32 view .LVU258
+ 1055 0090 002C     		cmp	r4, #0
+ 1056 0092 63D0     		beq	.L128
+ 186:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 1057              		.loc 1 186 13 view .LVU259
+ 1058 0094 AB6A     		ldr	r3, [r5, #40]
+ 185:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (obj->buffer_size == 0))
+ 1059              		.loc 1 185 29 view .LVU260
+ 1060 0096 F3B9     		cbnz	r3, .L138
+ 187:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1061              		.loc 1 187 16 view .LVU261
+ 1062 0098 0020     		movs	r0, #0
+ 1063 009a 5BE0     		b	.L108
+ 1064              	.LVL113:
+ 1065              	.L137:
+ 162:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1066              		.loc 1 162 5 view .LVU262
+ 1067 009c 283A     		subs	r2, r2, #40
+ 1068 009e 9042     		cmp	r0, r2
+ 1069 00a0 15D0     		beq	.L119
+ 1070 00a2 1432     		adds	r2, r2, #20
+ 1071 00a4 9042     		cmp	r0, r2
+ 1072 00a6 01D1     		bne	.L139
+ 174:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL5: dmamux_ch = DMA2MUX_CHANNEL5; break;
+ 1073              		.loc 1 174 49 view .LVU263
+ 1074 00a8 374C     		ldr	r4, .L142+40
+ 1075 00aa E7E7     		b	.L105
+ 1076              	.L139:
+ 162:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1077              		.loc 1 162 5 view .LVU264
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 29
+
+
+ 1078 00ac 283A     		subs	r2, r2, #40
+ 1079 00ae 9042     		cmp	r0, r2
+ 1080 00b0 01D1     		bne	.L140
+ 172:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL3: dmamux_ch = DMA2MUX_CHANNEL3; break;
+ 1081              		.loc 1 172 49 view .LVU265
+ 1082 00b2 364C     		ldr	r4, .L142+44
+ 1083 00b4 E2E7     		b	.L105
+ 1084              	.L140:
+ 162:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1085              		.loc 1 162 5 view .LVU266
+ 1086 00b6 0020     		movs	r0, #0
+ 1087 00b8 4CE0     		b	.L108
+ 1088              	.L110:
+ 171:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL2: dmamux_ch = DMA2MUX_CHANNEL2; break;
+ 1089              		.loc 1 171 49 view .LVU267
+ 1090 00ba 354C     		ldr	r4, .L142+48
+ 1091 00bc DEE7     		b	.L105
+ 1092              	.L111:
+ 167:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL5: dmamux_ch = DMA1MUX_CHANNEL5; break;
+ 1093              		.loc 1 167 49 view .LVU268
+ 1094 00be 354C     		ldr	r4, .L142+52
+ 1095 00c0 DCE7     		b	.L105
+ 1096              	.L112:
+ 165:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL3: dmamux_ch = DMA1MUX_CHANNEL3; break;
+ 1097              		.loc 1 165 49 view .LVU269
+ 1098 00c2 354C     		ldr	r4, .L142+56
+ 1099 00c4 DAE7     		b	.L105
+ 1100              	.L115:
+ 169:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA1_CHANNEL7: dmamux_ch = DMA1MUX_CHANNEL7; break;
+ 1101              		.loc 1 169 49 view .LVU270
+ 1102 00c6 354C     		ldr	r4, .L142+60
+ 1103 00c8 D8E7     		b	.L105
+ 1104              	.L118:
+ 175:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL6: dmamux_ch = DMA2MUX_CHANNEL6; break;
+ 1105              		.loc 1 175 49 view .LVU271
+ 1106 00ca 354C     		ldr	r4, .L142+64
+ 1107 00cc D6E7     		b	.L105
+ 1108              	.L119:
+ 173:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL4: dmamux_ch = DMA2MUX_CHANNEL4; break;
+ 1109              		.loc 1 173 49 view .LVU272
+ 1110 00ce 354C     		ldr	r4, .L142+68
+ 1111 00d0 D4E7     		b	.L105
+ 1112              	.L122:
+ 176:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         case (uint32_t)DMA2_CHANNEL7: dmamux_ch = DMA2MUX_CHANNEL7; break;
+ 1113              		.loc 1 176 49 view .LVU273
+ 1114 00d2 354C     		ldr	r4, .L142+72
+ 1115 00d4 D2E7     		b	.L105
+ 1116              	.LVL114:
+ 1117              	.L138:
+ 189:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     dma_req_id = BspTimer_Get_DMA_MuxSeq(obj);
+ 1118              		.loc 1 189 5 is_stmt 1 view .LVU274
+ 1119 00d6 0122     		movs	r2, #1
+ 1120 00d8 4FF48071 		mov	r1, #256
+ 1121 00dc FFF7FEFF 		bl	tmr_dma_request_enable
+ 1122              	.LVL115:
+ 190:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1123              		.loc 1 190 5 view .LVU275
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 30
+
+
+ 190:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1124              		.loc 1 190 18 is_stmt 0 view .LVU276
+ 1125 00e0 2846     		mov	r0, r5
+ 1126 00e2 FFF7FEFF 		bl	BspTimer_Get_DMA_MuxSeq
+ 1127              	.LVL116:
+ 192:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1128              		.loc 1 192 5 is_stmt 1 view .LVU277
+ 192:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1129              		.loc 1 192 8 is_stmt 0 view .LVU278
+ 1130 00e6 0746     		mov	r7, r0
+ 1131 00e8 08B9     		cbnz	r0, .L141
+ 213:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 1132              		.loc 1 213 12 view .LVU279
+ 1133 00ea 0020     		movs	r0, #0
+ 1134              	.LVL117:
+ 213:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** }
+ 1135              		.loc 1 213 12 view .LVU280
+ 1136 00ec 32E0     		b	.L108
+ 1137              	.LVL118:
+ 1138              	.L141:
+ 195:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.buffer_size = obj->buffer_size;
+ 1139              		.loc 1 195 9 is_stmt 1 view .LVU281
+ 1140 00ee E868     		ldr	r0, [r5, #12]
+ 1141              	.LVL119:
+ 195:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.buffer_size = obj->buffer_size;
+ 1142              		.loc 1 195 9 is_stmt 0 view .LVU282
+ 1143 00f0 FFF7FEFF 		bl	dma_reset
+ 1144              	.LVL120:
+ 196:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.direction = DMA_DIR_MEMORY_TO_PERIPHERAL;
+ 1145              		.loc 1 196 9 is_stmt 1 view .LVU283
+ 196:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.direction = DMA_DIR_MEMORY_TO_PERIPHERAL;
+ 1146              		.loc 1 196 42 is_stmt 0 view .LVU284
+ 1147 00f4 AB6A     		ldr	r3, [r5, #40]
+ 196:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.direction = DMA_DIR_MEMORY_TO_PERIPHERAL;
+ 1148              		.loc 1 196 37 view .LVU285
+ 1149 00f6 ADF80E30 		strh	r3, [sp, #14]	@ movhi
+ 197:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.memory_base_addr = (uint32_t)obj->buffer_addr;
+ 1150              		.loc 1 197 9 is_stmt 1 view .LVU286
+ 197:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.memory_base_addr = (uint32_t)obj->buffer_addr;
+ 1151              		.loc 1 197 35 is_stmt 0 view .LVU287
+ 1152 00fa 1023     		movs	r3, #16
+ 1153 00fc ADF80C30 		strh	r3, [sp, #12]	@ movhi
+ 198:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.memory_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
+ 1154              		.loc 1 198 9 is_stmt 1 view .LVU288
+ 198:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.memory_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
+ 1155              		.loc 1 198 57 is_stmt 0 view .LVU289
+ 1156 0100 6B6A     		ldr	r3, [r5, #36]
+ 198:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.memory_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
+ 1157              		.loc 1 198 42 view .LVU290
+ 1158 0102 0293     		str	r3, [sp, #8]
+ 199:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.memory_inc_enable = TRUE;
+ 1159              		.loc 1 199 9 is_stmt 1 view .LVU291
+ 199:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.memory_inc_enable = TRUE;
+ 1160              		.loc 1 199 43 is_stmt 0 view .LVU292
+ 1161 0104 0126     		movs	r6, #1
+ 1162 0106 8DF81360 		strb	r6, [sp, #19]
+ 200:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.peripheral_base_addr = BspTimer_Get_PrtiphAddr(obj);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 31
+
+
+ 1163              		.loc 1 200 9 is_stmt 1 view .LVU293
+ 200:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.peripheral_base_addr = BspTimer_Get_PrtiphAddr(obj);
+ 1164              		.loc 1 200 43 is_stmt 0 view .LVU294
+ 1165 010a 8DF81160 		strb	r6, [sp, #17]
+ 201:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
+ 1166              		.loc 1 201 9 is_stmt 1 view .LVU295
+ 201:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
+ 1167              		.loc 1 201 48 is_stmt 0 view .LVU296
+ 1168 010e 2846     		mov	r0, r5
+ 1169 0110 FFF7FEFF 		bl	BspTimer_Get_PrtiphAddr
+ 1170              	.LVL121:
+ 201:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.peripheral_data_width = DMA_PERIPHERAL_DATA_WIDTH_HALFWORD;
+ 1171              		.loc 1 201 46 view .LVU297
+ 1172 0114 0190     		str	r0, [sp, #4]
+ 202:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.peripheral_inc_enable = FALSE;
+ 1173              		.loc 1 202 9 is_stmt 1 view .LVU298
+ 202:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.peripheral_inc_enable = FALSE;
+ 1174              		.loc 1 202 47 is_stmt 0 view .LVU299
+ 1175 0116 8DF81260 		strb	r6, [sp, #18]
+ 203:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.priority = DMA_PRIORITY_HIGH;
+ 1176              		.loc 1 203 9 is_stmt 1 view .LVU300
+ 203:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.priority = DMA_PRIORITY_HIGH;
+ 1177              		.loc 1 203 47 is_stmt 0 view .LVU301
+ 1178 011a 0023     		movs	r3, #0
+ 1179 011c 8DF81030 		strb	r3, [sp, #16]
+ 204:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.loop_mode_enable = FALSE;
+ 1180              		.loc 1 204 9 is_stmt 1 view .LVU302
+ 204:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init_struct.loop_mode_enable = FALSE;
+ 1181              		.loc 1 204 34 is_stmt 0 view .LVU303
+ 1182 0120 0222     		movs	r2, #2
+ 1183 0122 8DF81520 		strb	r2, [sp, #21]
+ 205:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init(obj->dma_hdl, &dma_init_struct);
+ 1184              		.loc 1 205 9 is_stmt 1 view .LVU304
+ 205:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_init(obj->dma_hdl, &dma_init_struct);
+ 1185              		.loc 1 205 42 is_stmt 0 view .LVU305
+ 1186 0126 8DF81430 		strb	r3, [sp, #20]
+ 206:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dmamux_init(dmamux_ch, dma_req_id);
+ 1187              		.loc 1 206 9 is_stmt 1 view .LVU306
+ 1188 012a 01A9     		add	r1, sp, #4
+ 1189 012c E868     		ldr	r0, [r5, #12]
+ 1190 012e FFF7FEFF 		bl	dma_init
+ 1191              	.LVL122:
+ 207:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         dma_channel_enable(obj->dma_hdl, TRUE);
+ 1192              		.loc 1 207 9 view .LVU307
+ 1193 0132 3946     		mov	r1, r7
+ 1194 0134 2046     		mov	r0, r4
+ 1195 0136 FFF7FEFF 		bl	dmamux_init
+ 1196              	.LVL123:
+ 208:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1197              		.loc 1 208 9 view .LVU308
+ 1198 013a 3146     		mov	r1, r6
+ 1199 013c E868     		ldr	r0, [r5, #12]
+ 1200 013e FFF7FEFF 		bl	dma_channel_enable
+ 1201              	.LVL124:
+ 210:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 1202              		.loc 1 210 9 view .LVU309
+ 210:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 32
+
+
+ 1203              		.loc 1 210 16 is_stmt 0 view .LVU310
+ 1204 0142 3046     		mov	r0, r6
+ 1205 0144 06E0     		b	.L108
+ 1206              	.LVL125:
+ 1207              	.L123:
+ 162:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1208              		.loc 1 162 5 view .LVU311
+ 1209 0146 0020     		movs	r0, #0
+ 1210 0148 04E0     		b	.L108
+ 1211              	.LVL126:
+ 1212              	.L124:
+ 187:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1213              		.loc 1 187 16 view .LVU312
+ 1214 014a 0020     		movs	r0, #0
+ 1215 014c 02E0     		b	.L108
+ 1216              	.L125:
+ 187:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1217              		.loc 1 187 16 view .LVU313
+ 1218 014e 0020     		movs	r0, #0
+ 1219 0150 00E0     		b	.L108
+ 1220              	.L126:
+ 1221 0152 0020     		movs	r0, #0
+ 1222              	.LVL127:
+ 1223              	.L108:
+ 214:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1224              		.loc 1 214 1 view .LVU314
+ 1225 0154 07B0     		add	sp, sp, #28
+ 1226              	.LCFI19:
+ 1227              		.cfi_remember_state
+ 1228              		.cfi_def_cfa_offset 20
+ 1229              		@ sp needed
+ 1230 0156 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 1231              	.LVL128:
+ 1232              	.L127:
+ 1233              	.LCFI20:
+ 1234              		.cfi_restore_state
+ 187:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1235              		.loc 1 187 16 view .LVU315
+ 1236 0158 0020     		movs	r0, #0
+ 1237 015a FBE7     		b	.L108
+ 1238              	.L128:
+ 1239 015c 0020     		movs	r0, #0
+ 1240 015e F9E7     		b	.L108
+ 1241              	.L143:
+ 1242              		.align	2
+ 1243              	.L142:
+ 1244 0160 00000000 		.word	BspDMA
+ 1245 0164 08660240 		.word	1073899016
+ 1246 0168 6C640240 		.word	1073898604
+ 1247 016c 1C650240 		.word	1073898780
+ 1248 0170 0C650240 		.word	1073898764
+ 1249 0174 04650240 		.word	1073898756
+ 1250 0178 14650240 		.word	1073898772
+ 1251 017c 58660240 		.word	1073899096
+ 1252 0180 6C660240 		.word	1073899116
+ 1253 0184 1C670240 		.word	1073899292
+ 1254 0188 10670240 		.word	1073899280
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 33
+
+
+ 1255 018c 08670240 		.word	1073899272
+ 1256 0190 04670240 		.word	1073899268
+ 1257 0194 10650240 		.word	1073898768
+ 1258 0198 08650240 		.word	1073898760
+ 1259 019c 18650240 		.word	1073898776
+ 1260 01a0 14670240 		.word	1073899284
+ 1261 01a4 0C670240 		.word	1073899276
+ 1262 01a8 18670240 		.word	1073899288
+ 1263              		.cfi_endproc
+ 1264              	.LFE136:
+ 1266              		.section	.text.BspTimer_PWM_Init,"ax",%progbits
+ 1267              		.align	1
+ 1268              		.syntax unified
+ 1269              		.thumb
+ 1270              		.thumb_func
+ 1272              	BspTimer_PWM_Init:
+ 1273              	.LVL129:
+ 1274              	.LFB138:
+ 238:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_config_type tmr_output_struct;
+ 1275              		.loc 1 238 1 is_stmt 1 view -0
+ 1276              		.cfi_startproc
+ 1277              		@ args = 32, pretend = 8, frame = 8
+ 1278              		@ frame_needed = 0, uses_anonymous_args = 0
+ 238:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_config_type tmr_output_struct;
+ 1279              		.loc 1 238 1 is_stmt 0 view .LVU317
+ 1280 0000 82B0     		sub	sp, sp, #8
+ 1281              	.LCFI21:
+ 1282              		.cfi_def_cfa_offset 8
+ 1283 0002 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 1284              	.LCFI22:
+ 1285              		.cfi_def_cfa_offset 36
+ 1286              		.cfi_offset 4, -36
+ 1287              		.cfi_offset 5, -32
+ 1288              		.cfi_offset 6, -28
+ 1289              		.cfi_offset 7, -24
+ 1290              		.cfi_offset 8, -20
+ 1291              		.cfi_offset 9, -16
+ 1292              		.cfi_offset 14, -12
+ 1293 0006 85B0     		sub	sp, sp, #20
+ 1294              	.LCFI23:
+ 1295              		.cfi_def_cfa_offset 56
+ 1296 0008 0446     		mov	r4, r0
+ 1297 000a 0D46     		mov	r5, r1
+ 1298 000c 1646     		mov	r6, r2
+ 1299 000e 0D93     		str	r3, [sp, #52]
+ 1300 0010 9DF84080 		ldrb	r8, [sp, #64]	@ zero_extendqisi2
+ 1301 0014 9DF84490 		ldrb	r9, [sp, #68]	@ zero_extendqisi2
+ 239:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1302              		.loc 1 239 5 is_stmt 1 view .LVU318
+ 241:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1303              		.loc 1 241 5 view .LVU319
+ 1304 0018 0023     		movs	r3, #0
+ 1305 001a 0293     		str	r3, [sp, #8]
+ 1306 001c CDF80B30 		str	r3, [sp, #11]	@ unaligned
+ 243:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1307              		.loc 1 243 5 view .LVU320
+ 243:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 34
+
+
+ 1308              		.loc 1 243 17 is_stmt 0 view .LVU321
+ 1309 0020 4A4B     		ldr	r3, .L155
+ 1310 0022 93F88130 		ldrb	r3, [r3, #129]	@ zero_extendqisi2
+ 243:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1311              		.loc 1 243 8 view .LVU322
+ 1312 0026 6BB1     		cbz	r3, .L153
+ 1313              	.LVL130:
+ 1314              	.L145:
+ 250:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (instance == NULL) || \
+ 1315              		.loc 1 250 5 is_stmt 1 view .LVU323
+ 250:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (instance == NULL) || \
+ 1316              		.loc 1 250 8 is_stmt 0 view .LVU324
+ 1317 0028 002C     		cmp	r4, #0
+ 1318 002a 00F08480 		beq	.L148
+ 250:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (instance == NULL) || \
+ 1319              		.loc 1 250 23 discriminator 1 view .LVU325
+ 1320 002e 002D     		cmp	r5, #0
+ 1321 0030 00F08380 		beq	.L149
+ 251:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (buf_aadr == 0) || \
+ 1322              		.loc 1 251 28 view .LVU326
+ 1323 0034 129B     		ldr	r3, [sp, #72]
+ 1324 0036 002B     		cmp	r3, #0
+ 1325 0038 00F08180 		beq	.L150
+ 252:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         (buf_size == 0))
+ 1326              		.loc 1 252 25 view .LVU327
+ 1327 003c 139B     		ldr	r3, [sp, #76]
+ 1328 003e 73B9     		cbnz	r3, .L154
+ 254:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1329              		.loc 1 254 16 view .LVU328
+ 1330 0040 0027     		movs	r7, #0
+ 1331 0042 7DE0     		b	.L146
+ 1332              	.LVL131:
+ 1333              	.L153:
+ 245:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.init_cnt = 0;
+ 1334              		.loc 1 245 9 is_stmt 1 view .LVU329
+ 1335 0044 414F     		ldr	r7, .L155
+ 1336 0046 8022     		movs	r2, #128
+ 1337              	.LVL132:
+ 245:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.init_cnt = 0;
+ 1338              		.loc 1 245 9 is_stmt 0 view .LVU330
+ 1339 0048 0021     		movs	r1, #0
+ 1340              	.LVL133:
+ 245:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.init_cnt = 0;
+ 1341              		.loc 1 245 9 view .LVU331
+ 1342 004a 3846     		mov	r0, r7
+ 1343              	.LVL134:
+ 245:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.init_cnt = 0;
+ 1344              		.loc 1 245 9 view .LVU332
+ 1345 004c FFF7FEFF 		bl	memset
+ 1346              	.LVL135:
+ 246:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.monitor_init = true;
+ 1347              		.loc 1 246 9 is_stmt 1 view .LVU333
+ 246:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.monitor_init = true;
+ 1348              		.loc 1 246 26 is_stmt 0 view .LVU334
+ 1349 0050 0023     		movs	r3, #0
+ 1350 0052 87F88030 		strb	r3, [r7, #128]
+ 247:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 35
+
+
+ 1351              		.loc 1 247 9 is_stmt 1 view .LVU335
+ 247:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 1352              		.loc 1 247 30 is_stmt 0 view .LVU336
+ 1353 0056 0123     		movs	r3, #1
+ 1354 0058 87F88130 		strb	r3, [r7, #129]
+ 1355 005c E4E7     		b	.L145
+ 1356              	.L154:
+ 256:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 1357              		.loc 1 256 5 is_stmt 1 view .LVU337
+ 256:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 1358              		.loc 1 256 10 is_stmt 0 view .LVU338
+ 1359 005e 0121     		movs	r1, #1
+ 1360 0060 2846     		mov	r0, r5
+ 1361 0062 FFF7FEFF 		bl	BspTimer_Clock_EnableCtl
+ 1362              	.LVL136:
+ 256:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 1363              		.loc 1 256 8 view .LVU339
+ 1364 0066 0746     		mov	r7, r0
+ 1365 0068 0028     		cmp	r0, #0
+ 1366 006a 69D0     		beq	.L146
+ 259:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->stream = stream;
+ 1367              		.loc 1 259 5 is_stmt 1 view .LVU340
+ 259:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->stream = stream;
+ 1368              		.loc 1 259 14 is_stmt 0 view .LVU341
+ 1369 006c 84F80880 		strb	r8, [r4, #8]
+ 260:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->buffer_addr = buf_aadr;
+ 1370              		.loc 1 260 5 is_stmt 1 view .LVU342
+ 260:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->buffer_addr = buf_aadr;
+ 1371              		.loc 1 260 17 is_stmt 0 view .LVU343
+ 1372 0070 84F80990 		strb	r9, [r4, #9]
+ 261:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->buffer_size = buf_size;
+ 1373              		.loc 1 261 5 is_stmt 1 view .LVU344
+ 261:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->buffer_size = buf_size;
+ 1374              		.loc 1 261 22 is_stmt 0 view .LVU345
+ 1375 0074 129B     		ldr	r3, [sp, #72]
+ 1376 0076 6362     		str	r3, [r4, #36]
+ 262:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->instance = instance;
+ 1377              		.loc 1 262 5 is_stmt 1 view .LVU346
+ 262:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->instance = instance;
+ 1378              		.loc 1 262 22 is_stmt 0 view .LVU347
+ 1379 0078 139B     		ldr	r3, [sp, #76]
+ 1380 007a A362     		str	r3, [r4, #40]
+ 263:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->tim_channel = ch;
+ 1381              		.loc 1 263 5 is_stmt 1 view .LVU348
+ 263:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     obj->tim_channel = ch;
+ 1382              		.loc 1 263 19 is_stmt 0 view .LVU349
+ 1383 007c 2560     		str	r5, [r4]
+ 264:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1384              		.loc 1 264 5 is_stmt 1 view .LVU350
+ 264:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1385              		.loc 1 264 22 is_stmt 0 view .LVU351
+ 1386 007e 6660     		str	r6, [r4, #4]
+ 267:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 1387              		.loc 1 267 5 is_stmt 1 view .LVU352
+ 267:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 1388              		.loc 1 267 17 is_stmt 0 view .LVU353
+ 1389 0080 334B     		ldr	r3, .L155+4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 36
+
+
+ 1390 0082 DD68     		ldr	r5, [r3, #12]
+ 1391              	.LVL137:
+ 267:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 1392              		.loc 1 267 10 view .LVU354
+ 1393 0084 0023     		movs	r3, #0
+ 1394 0086 0DAA     		add	r2, sp, #52
+ 1395 0088 07CA     		ldm	r2, {r0, r1, r2}
+ 1396 008a A847     		blx	r5
+ 1397              	.LVL138:
+ 267:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return false;
+ 1398              		.loc 1 267 8 view .LVU355
+ 1399 008c 0746     		mov	r7, r0
+ 1400 008e 0028     		cmp	r0, #0
+ 1401 0090 56D0     		beq	.L146
+ 271:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_default_para_init(&tmr_output_struct);
+ 1402              		.loc 1 271 5 is_stmt 1 view .LVU356
+ 1403 0092 0021     		movs	r1, #0
+ 1404 0094 2068     		ldr	r0, [r4]
+ 1405 0096 FFF7FEFF 		bl	tmr_cnt_dir_set
+ 1406              	.LVL139:
+ 272:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.oc_mode = TMR_OUTPUT_CONTROL_PWM_MODE_A;
+ 1407              		.loc 1 272 5 view .LVU357
+ 1408 009a 02A8     		add	r0, sp, #8
+ 1409 009c FFF7FEFF 		bl	tmr_output_default_para_init
+ 1410              	.LVL140:
+ 273:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.oc_output_state = TRUE;
+ 1411              		.loc 1 273 5 view .LVU358
+ 273:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.oc_output_state = TRUE;
+ 1412              		.loc 1 273 31 is_stmt 0 view .LVU359
+ 1413 00a0 0623     		movs	r3, #6
+ 1414 00a2 8DF80830 		strb	r3, [sp, #8]
+ 274:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
+ 1415              		.loc 1 274 5 is_stmt 1 view .LVU360
+ 274:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
+ 1416              		.loc 1 274 39 is_stmt 0 view .LVU361
+ 1417 00a6 0122     		movs	r2, #1
+ 1418 00a8 8DF80D20 		strb	r2, [sp, #13]
+ 275:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.oc_idle_state = TRUE;
+ 1419              		.loc 1 275 5 is_stmt 1 view .LVU362
+ 275:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.oc_idle_state = TRUE;
+ 1420              		.loc 1 275 35 is_stmt 0 view .LVU363
+ 1421 00ac 0023     		movs	r3, #0
+ 1422 00ae 8DF80B30 		strb	r3, [sp, #11]
+ 276:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.occ_output_state = TRUE;
+ 1423              		.loc 1 276 5 is_stmt 1 view .LVU364
+ 276:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.occ_output_state = TRUE;
+ 1424              		.loc 1 276 37 is_stmt 0 view .LVU365
+ 1425 00b2 8DF80920 		strb	r2, [sp, #9]
+ 277:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_HIGH;
+ 1426              		.loc 1 277 5 is_stmt 1 view .LVU366
+ 277:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_HIGH;
+ 1427              		.loc 1 277 40 is_stmt 0 view .LVU367
+ 1428 00b6 8DF80E20 		strb	r2, [sp, #14]
+ 278:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.occ_idle_state = FALSE;
+ 1429              		.loc 1 278 5 is_stmt 1 view .LVU368
+ 278:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_struct.occ_idle_state = FALSE;
+ 1430              		.loc 1 278 36 is_stmt 0 view .LVU369
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 37
+
+
+ 1431 00ba 8DF80C30 		strb	r3, [sp, #12]
+ 279:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
+ 1432              		.loc 1 279 5 is_stmt 1 view .LVU370
+ 279:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
+ 1433              		.loc 1 279 38 is_stmt 0 view .LVU371
+ 1434 00be 8DF80A30 		strb	r3, [sp, #10]
+ 280:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1435              		.loc 1 280 5 is_stmt 1 view .LVU372
+ 1436 00c2 02AA     		add	r2, sp, #8
+ 1437 00c4 2179     		ldrb	r1, [r4, #4]	@ zero_extendqisi2
+ 1438 00c6 2068     		ldr	r0, [r4]
+ 1439 00c8 FFF7FEFF 		bl	tmr_output_channel_config
+ 1440              	.LVL141:
+ 282:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1441              		.loc 1 282 5 view .LVU373
+ 282:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1442              		.loc 1 282 9 is_stmt 0 view .LVU374
+ 1443 00cc 2046     		mov	r0, r4
+ 1444 00ce FFF7FEFF 		bl	BspTimer_DMA_Init
+ 1445              	.LVL142:
+ 282:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     {
+ 1446              		.loc 1 282 8 view .LVU375
+ 1447 00d2 0746     		mov	r7, r0
+ 1448 00d4 0028     		cmp	r0, #0
+ 1449 00d6 33D0     		beq	.L146
+ 284:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+ 1450              		.loc 1 284 9 is_stmt 1 view .LVU376
+ 284:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+ 1451              		.loc 1 284 16 is_stmt 0 view .LVU377
+ 1452 00d8 236B     		ldr	r3, [r4, #48]
+ 284:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         {
+ 1453              		.loc 1 284 12 view .LVU378
+ 1454 00da 1BB1     		cbz	r3, .L147
+ 286:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->BspDMA_Irq_Callback_Func = BspTimer_D
+ 1455              		.loc 1 286 13 is_stmt 1 view .LVU379
+ 286:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****             To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->BspDMA_Irq_Callback_Func = BspTimer_D
+ 1456              		.loc 1 286 72 is_stmt 0 view .LVU380
+ 1457 00dc 5C60     		str	r4, [r3, #4]
+ 287:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         }
+ 1458              		.loc 1 287 13 is_stmt 1 view .LVU381
+ 1459 00de 236B     		ldr	r3, [r4, #48]
+ 287:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         }
+ 1460              		.loc 1 287 88 is_stmt 0 view .LVU382
+ 1461 00e0 1C4A     		ldr	r2, .L155+8
+ 1462 00e2 1A60     		str	r2, [r3]
+ 1463              	.L147:
+ 290:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1464              		.loc 1 290 9 is_stmt 1 view .LVU383
+ 290:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1465              		.loc 1 290 15 is_stmt 0 view .LVU384
+ 1466 00e4 1C4B     		ldr	r3, .L155+12
+ 1467 00e6 5D69     		ldr	r5, [r3, #20]
+ 290:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1468              		.loc 1 290 46 view .LVU385
+ 1469 00e8 2046     		mov	r0, r4
+ 1470 00ea FFF7FEFF 		bl	BspTimer_Get_DMA_MuxSeq
+ 1471              	.LVL143:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 38
+
+
+ 290:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1472              		.loc 1 290 9 view .LVU386
+ 1473 00ee 236B     		ldr	r3, [r4, #48]
+ 1474 00f0 0193     		str	r3, [sp, #4]
+ 1475 00f2 0090     		str	r0, [sp]
+ 1476 00f4 0023     		movs	r3, #0
+ 1477 00f6 0522     		movs	r2, #5
+ 1478 00f8 4FFA89F1 		sxtb	r1, r9
+ 1479 00fc 4FFA88F0 		sxtb	r0, r8
+ 1480 0100 A847     		blx	r5
+ 1481              	.LVL144:
+ 292:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.init_cnt ++;
+ 1482              		.loc 1 292 9 is_stmt 1 view .LVU387
+ 292:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.init_cnt ++;
+ 1483              		.loc 1 292 29 is_stmt 0 view .LVU388
+ 1484 0102 124A     		ldr	r2, .L155
+ 1485 0104 92F88030 		ldrb	r3, [r2, #128]	@ zero_extendqisi2
+ 292:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.init_cnt ++;
+ 1486              		.loc 1 292 45 view .LVU389
+ 1487 0108 2168     		ldr	r1, [r4]
+ 292:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         monitor.init_cnt ++;
+ 1488              		.loc 1 292 40 view .LVU390
+ 1489 010a 42F82310 		str	r1, [r2, r3, lsl #2]
+ 293:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1490              		.loc 1 293 9 is_stmt 1 view .LVU391
+ 293:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1491              		.loc 1 293 26 is_stmt 0 view .LVU392
+ 1492 010e 0133     		adds	r3, r3, #1
+ 1493 0110 82F88030 		strb	r3, [r2, #128]
+ 295:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
+ 1494              		.loc 1 295 9 is_stmt 1 view .LVU393
+ 1495 0114 0021     		movs	r1, #0
+ 1496 0116 E068     		ldr	r0, [r4, #12]
+ 1497 0118 FFF7FEFF 		bl	dma_channel_enable
+ 1498              	.LVL145:
+ 296:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+ 1499              		.loc 1 296 9 view .LVU394
+ 1500 011c 0021     		movs	r1, #0
+ 1501 011e 2068     		ldr	r0, [r4]
+ 1502 0120 FFF7FEFF 		bl	tmr_counter_enable
+ 1503              	.LVL146:
+ 297:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         tmr_output_enable(To_Timer_Instance(obj->instance), FALSE);
+ 1504              		.loc 1 297 9 view .LVU395
+ 1505 0124 0021     		movs	r1, #0
+ 1506 0126 2068     		ldr	r0, [r4]
+ 1507 0128 FFF7FEFF 		bl	tmr_counter_value_set
+ 1508              	.LVL147:
+ 298:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****         return true;
+ 1509              		.loc 1 298 9 view .LVU396
+ 1510 012c 0021     		movs	r1, #0
+ 1511 012e 2068     		ldr	r0, [r4]
+ 1512 0130 FFF7FEFF 		bl	tmr_output_enable
+ 1513              	.LVL148:
+ 299:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 1514              		.loc 1 299 9 view .LVU397
+ 299:HW_Lib/AT32F435/bsp/Bsp_Timer.c ****     }
+ 1515              		.loc 1 299 16 is_stmt 0 view .LVU398
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 39
+
+
+ 1516 0134 04E0     		b	.L146
+ 1517              	.LVL149:
+ 1518              	.L148:
+ 254:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1519              		.loc 1 254 16 view .LVU399
+ 1520 0136 0027     		movs	r7, #0
+ 1521 0138 02E0     		b	.L146
+ 1522              	.L149:
+ 1523 013a 0027     		movs	r7, #0
+ 1524 013c 00E0     		b	.L146
+ 1525              	.L150:
+ 1526 013e 0027     		movs	r7, #0
+ 1527              	.LVL150:
+ 1528              	.L146:
+ 303:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1529              		.loc 1 303 1 view .LVU400
+ 1530 0140 3846     		mov	r0, r7
+ 1531 0142 05B0     		add	sp, sp, #20
+ 1532              	.LCFI24:
+ 1533              		.cfi_def_cfa_offset 36
+ 1534              		@ sp needed
+ 1535 0144 BDE8F043 		pop	{r4, r5, r6, r7, r8, r9, lr}
+ 1536              	.LCFI25:
+ 1537              		.cfi_restore 14
+ 1538              		.cfi_restore 9
+ 1539              		.cfi_restore 8
+ 1540              		.cfi_restore 7
+ 1541              		.cfi_restore 6
+ 1542              		.cfi_restore 5
+ 1543              		.cfi_restore 4
+ 1544              		.cfi_def_cfa_offset 8
+ 1545              	.LVL151:
+ 303:HW_Lib/AT32F435/bsp/Bsp_Timer.c **** 
+ 1546              		.loc 1 303 1 view .LVU401
+ 1547 0148 02B0     		add	sp, sp, #8
+ 1548              	.LCFI26:
+ 1549              		.cfi_def_cfa_offset 0
+ 1550 014a 7047     		bx	lr
+ 1551              	.L156:
+ 1552              		.align	2
+ 1553              	.L155:
+ 1554 014c 00000000 		.word	.LANCHOR0
+ 1555 0150 00000000 		.word	BspGPIO
+ 1556 0154 00000000 		.word	BspTimer_DMA_TransCplt_Callback
+ 1557 0158 00000000 		.word	BspDMA
+ 1558              		.cfi_endproc
+ 1559              	.LFE138:
+ 1561              		.global	BspTimer_PWM
+ 1562              		.global	monitor
+ 1563              		.section	.bss.monitor,"aw",%nobits
+ 1564              		.align	2
+ 1565              		.set	.LANCHOR0,. + 0
+ 1568              	monitor:
+ 1569 0000 00000000 		.space	132
+ 1569      00000000 
+ 1569      00000000 
+ 1569      00000000 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 40
+
+
+ 1569      00000000 
+ 1570              		.section	.data.BspTimer_PWM,"aw"
+ 1571              		.align	2
+ 1574              	BspTimer_PWM:
+ 1575 0000 00000000 		.word	BspTimer_PWM_Init
+ 1576 0004 00000000 		.word	BspTimer_PWM_DeInit
+ 1577 0008 00000000 		.word	BspTimer_SetPreScale
+ 1578 000c 00000000 		.word	BspTimer_SetAutoReload
+ 1579 0010 00000000 		.word	BspTimer_PWM_Start
+ 1580 0014 00000000 		.word	BspTimer_DMA_Start
+ 1581 0018 00000000 		.word	BspTimer_Get_Clock_Freq
+ 1582              		.text
+ 1583              	.Letext0:
+ 1584              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1585              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1586              		.file 4 "HW_Lib/Port_Def/Bsp_GPIO_Port_Def.h"
+ 1587              		.file 5 "HW_Lib/Port_Def/Bsp_Timer_Port_Def.h"
+ 1588              		.file 6 "HW_Lib/Port_Def/Bsp_DMA_Port_Def.h"
+ 1589              		.file 7 "HW_Lib/AT32F435/device_support/at32f435_437.h"
+ 1590              		.file 8 "HW_Lib/AT32F435/drivers/inc/at32f435_437_crm.h"
+ 1591              		.file 9 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 1592              		.file 10 "HW_Lib/AT32F435/drivers/inc/at32f435_437_dma.h"
+ 1593              		.file 11 "HW_Lib/AT32F435/bsp/Bsp_DMA.h"
+ 1594              		.file 12 "HW_Lib/AT32F435/bsp/Bsp_Timer.h"
+ 1595              		.file 13 "HW_Lib/AT32F435/bsp/Bsp_GPIO.h"
+ 1596              		.file 14 "<built-in>"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 41
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Bsp_Timer.c
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:20     .text.BspTimer_Get_DMA_MuxSeq:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:25     .text.BspTimer_Get_DMA_MuxSeq:00000000 BspTimer_Get_DMA_MuxSeq
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:59     .text.BspTimer_Get_DMA_MuxSeq:00000026 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:87     .text.BspTimer_Get_DMA_MuxSeq:00000042 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:111    .text.BspTimer_Get_DMA_MuxSeq:00000058 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:189    .text.BspTimer_Get_DMA_MuxSeq:0000008a $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:295    .text.BspTimer_Get_DMA_MuxSeq:000000c8 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:301    .text.BspTimer_Get_PrtiphAddr:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:306    .text.BspTimer_Get_PrtiphAddr:00000000 BspTimer_Get_PrtiphAddr
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:331    .text.BspTimer_Get_PrtiphAddr:00000012 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:387    .text.BspTimer_Get_Clock_Freq:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:392    .text.BspTimer_Get_Clock_Freq:00000000 BspTimer_Get_Clock_Freq
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:434    .text.BspTimer_DMA_Start:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:439    .text.BspTimer_DMA_Start:00000000 BspTimer_DMA_Start
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:517    .text.BspTimer_DMA_TransCplt_Callback:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:522    .text.BspTimer_DMA_TransCplt_Callback:00000000 BspTimer_DMA_TransCplt_Callback
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:579    .text.BspTimer_PWM_Start:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:584    .text.BspTimer_PWM_Start:00000000 BspTimer_PWM_Start
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:634    .text.BspTimer_SetAutoReload:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:639    .text.BspTimer_SetAutoReload:00000000 BspTimer_SetAutoReload
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:692    .text.BspTimer_SetPreScale:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:697    .text.BspTimer_SetPreScale:00000000 BspTimer_SetPreScale
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:744    .text.BspTimer_Clock_EnableCtl:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:749    .text.BspTimer_Clock_EnableCtl:00000000 BspTimer_Clock_EnableCtl
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:838    .text.BspTimer_Clock_EnableCtl:00000048 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:848    .text.BspTimer_PWM_DeInit:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:853    .text.BspTimer_PWM_DeInit:00000000 BspTimer_PWM_DeInit
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:924    .text.BspTimer_PWM_DeInit:00000030 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:929    .text.BspTimer_DMA_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:934    .text.BspTimer_DMA_Init:00000000 BspTimer_DMA_Init
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:1244   .text.BspTimer_DMA_Init:00000160 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:1267   .text.BspTimer_PWM_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:1272   .text.BspTimer_PWM_Init:00000000 BspTimer_PWM_Init
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:1554   .text.BspTimer_PWM_Init:0000014c $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:1574   .data.BspTimer_PWM:00000000 BspTimer_PWM
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:1568   .bss.monitor:00000000 monitor
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:1564   .bss.monitor:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:1571   .data.BspTimer_PWM:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:66     .text.BspTimer_Get_DMA_MuxSeq:0000002d $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:66     .text.BspTimer_Get_DMA_MuxSeq:0000002e $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:94     .text.BspTimer_Get_DMA_MuxSeq:00000049 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:94     .text.BspTimer_Get_DMA_MuxSeq:0000004a $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:118    .text.BspTimer_Get_DMA_MuxSeq:0000005f $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:118    .text.BspTimer_Get_DMA_MuxSeq:00000060 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:196    .text.BspTimer_Get_DMA_MuxSeq:00000091 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:196    .text.BspTimer_Get_DMA_MuxSeq:00000092 $t
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:338    .text.BspTimer_Get_PrtiphAddr:00000019 $d
+C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s:338    .text.BspTimer_Get_PrtiphAddr:0000001a $t
+
+UNDEFINED SYMBOLS
+crm_clocks_freq_get
+tmr_counter_enable
+tmr_channel_value_set
+dma_channel_enable
+tmr_output_enable
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMBHClJ.s 			page 42
+
+
+tmr_counter_value_set
+tmr_base_init
+crm_periph_clock_enable
+BspDMA
+tmr_dma_request_enable
+dma_reset
+dma_init
+dmamux_init
+memset
+tmr_cnt_dir_set
+tmr_output_default_para_init
+tmr_output_channel_config
+BspGPIO

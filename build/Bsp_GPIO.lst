@@ -1,0 +1,2540 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Bsp_GPIO.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.BspGPIO_Get_IRQn,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	BspGPIO_Get_IRQn:
+  26              	.LVL0:
+  27              	.LFB134:
+  28              		.file 1 "HW_Lib/AT32F435/bsp/Bsp_GPIO.c"
+   1:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** #include "Bsp_GPIO.h"
+   2:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** #include "at32f435_437.h"
+   3:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+   4:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** #define To_GPIO_Port(x) ((BspGPIO_Port_TypeDef *)x)
+   5:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** #define To_ExtiGPIO_Port(x) ((BspGPIO_EXTI_Port_TypeDef *)x)
+   6:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+   7:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static EXTI_Callback EXTI_CallBack_List[GPIO_EXTI_SUM] = {NULL};
+   8:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+   9:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** /* internal function */
+  10:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static uint8_t BspGPIO_Get_PinSource(uint16_t pin);
+  11:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static uint32_t BsPGPIO_Get_EXTI_Line(uint16_t pin);
+  12:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static uint8_t BspGPIO_EXTILine_To_PinSource(uint32_t exti_line);
+  13:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** uint8_t BspGPIO_Get_Bit_Index(uint16_t val);
+  14:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static IRQn_Type BspGPIO_Get_IRQn(uint32_t pin);
+  15:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  16:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** /* external function */
+  17:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Out_Init(BspGPIO_Obj_TypeDef IO_Obj);
+  18:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static void BspGPIO_De_Init(BspGPIO_Obj_TypeDef IO_Obj);
+  19:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_In_Init(BspGPIO_Obj_TypeDef IO_Obj);
+  20:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Exti_Init(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
+  21:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Altnate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode);
+  22:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Read(BspGPIO_Obj_TypeDef IO_Obj);
+  23:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Set_Exti_Callback(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback);
+  24:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Set_Exti_Mode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode);
+  25:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static void BspGPIO_Write(BspGPIO_Obj_TypeDef IO_Obj, bool state);
+  26:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  27:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** BspGPIO_TypeDef BspGPIO = {
+  28:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     .exti_init = BspGPIO_Exti_Init,
+  29:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     .out_init = BspGPIO_Out_Init,
+  30:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     .in_init = BspGPIO_In_Init,
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 2
+
+
+  31:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     .alt_init = BspGPIO_Altnate_Init,
+  32:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     .de_init = BspGPIO_De_Init,
+  33:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     .read = BspGPIO_Read,
+  34:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     .set_exti_callback = BspGPIO_Set_Exti_Callback,
+  35:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     .set_exti_mode = BspGPIO_Set_Exti_Mode,
+  36:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     .write = BspGPIO_Write,
+  37:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** };
+  38:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  39:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** uint8_t BspGPIO_Get_Bit_Index(uint16_t val)
+  40:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+  41:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	float f_val = (float)val;
+  42:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	uint32_t u32_val = 0;
+  43:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	uint8_t bit = 0;
+  44:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	
+  45:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	u32_val = *((unsigned long*)(&f_val));
+  46:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	
+  47:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	bit = (u32_val >> 23) & 0xFF;
+  48:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	bit -= 127;
+  49:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	
+  50:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return bit;
+  51:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+  52:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  53:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static IRQn_Type BspGPIO_Get_IRQn(uint32_t pin)
+  54:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+  29              		.loc 1 54 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  55:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     switch(pin)
+  34              		.loc 1 55 5 view .LVU1
+  35 0000 2028     		cmp	r0, #32
+  36 0002 1BD8     		bhi	.L2
+  37 0004 0028     		cmp	r0, #0
+  38 0006 48D0     		beq	.L14
+  39 0008 0138     		subs	r0, r0, #1
+  40              	.LVL1:
+  41              		.loc 1 55 5 is_stmt 0 view .LVU2
+  42 000a 1F28     		cmp	r0, #31
+  43 000c 13D8     		bhi	.L4
+  44 000e DFE800F0 		tbb	[pc, r0]
+  45              	.L6:
+  46 0012 10       		.byte	(.L10-.L6)/2
+  47 0013 47       		.byte	(.L15-.L6)/2
+  48 0014 12       		.byte	(.L4-.L6)/2
+  49 0015 3C       		.byte	(.L9-.L6)/2
+  50 0016 12       		.byte	(.L4-.L6)/2
+  51 0017 12       		.byte	(.L4-.L6)/2
+  52 0018 12       		.byte	(.L4-.L6)/2
+  53 0019 3E       		.byte	(.L8-.L6)/2
+  54 001a 12       		.byte	(.L4-.L6)/2
+  55 001b 12       		.byte	(.L4-.L6)/2
+  56 001c 12       		.byte	(.L4-.L6)/2
+  57 001d 12       		.byte	(.L4-.L6)/2
+  58 001e 12       		.byte	(.L4-.L6)/2
+  59 001f 12       		.byte	(.L4-.L6)/2
+  60 0020 12       		.byte	(.L4-.L6)/2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 3
+
+
+  61 0021 40       		.byte	(.L7-.L6)/2
+  62 0022 12       		.byte	(.L4-.L6)/2
+  63 0023 12       		.byte	(.L4-.L6)/2
+  64 0024 12       		.byte	(.L4-.L6)/2
+  65 0025 12       		.byte	(.L4-.L6)/2
+  66 0026 12       		.byte	(.L4-.L6)/2
+  67 0027 12       		.byte	(.L4-.L6)/2
+  68 0028 12       		.byte	(.L4-.L6)/2
+  69 0029 12       		.byte	(.L4-.L6)/2
+  70 002a 12       		.byte	(.L4-.L6)/2
+  71 002b 12       		.byte	(.L4-.L6)/2
+  72 002c 12       		.byte	(.L4-.L6)/2
+  73 002d 12       		.byte	(.L4-.L6)/2
+  74 002e 12       		.byte	(.L4-.L6)/2
+  75 002f 12       		.byte	(.L4-.L6)/2
+  76 0030 12       		.byte	(.L4-.L6)/2
+  77 0031 42       		.byte	(.L5-.L6)/2
+  78              		.p2align 1
+  79              	.L10:
+  80 0032 0620     		movs	r0, #6
+  81              	.LVL2:
+  82              		.loc 1 55 5 view .LVU3
+  83 0034 7047     		bx	lr
+  84              	.L4:
+  56:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+  57:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_0:
+  58:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return EXINT0_IRQn;
+  59:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  60:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_1:
+  61:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return EXINT1_IRQn;
+  62:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  63:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_2:
+  64:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return EXINT2_IRQn;
+  65:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  66:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_3:
+  67:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return EXINT3_IRQn;
+  68:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  69:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_4:
+  70:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return EXINT4_IRQn;
+  71:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  72:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_5:
+  73:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_6:
+  74:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_7:
+  75:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_8:
+  76:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_9:
+  77:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return EXINT9_5_IRQn;
+  78:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  79:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_10:
+  80:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_11:
+  81:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_12:
+  82:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_13:
+  83:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_14:
+  84:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_PINS_15:
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return EXINT15_10_IRQn;
+  86:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  87:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         default:
+  88:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return -16;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 4
+
+
+  85              		.loc 1 88 20 view .LVU4
+  86 0036 6FF00F00 		mvn	r0, #15
+  87 003a 7047     		bx	lr
+  88              	.LVL3:
+  89              	.L2:
+  55:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     switch(pin)
+  90              		.loc 1 55 5 view .LVU5
+  91 003c B0F5806F 		cmp	r0, #1024
+  92 0040 30D0     		beq	.L16
+  93 0042 0BD9     		bls	.L26
+  94 0044 B0F5005F 		cmp	r0, #8192
+  95 0048 38D0     		beq	.L21
+  96 004a 16D9     		bls	.L27
+  97 004c B0F5804F 		cmp	r0, #16384
+  98 0050 3BD0     		beq	.L24
+  99 0052 B0F5004F 		cmp	r0, #32768
+ 100 0056 3AD1     		bne	.L25
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 101              		.loc 1 85 20 view .LVU6
+ 102 0058 2820     		movs	r0, #40
+ 103              	.LVL4:
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 104              		.loc 1 85 20 view .LVU7
+ 105 005a 7047     		bx	lr
+ 106              	.LVL5:
+ 107              	.L26:
+  55:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     switch(pin)
+ 108              		.loc 1 55 5 view .LVU8
+ 109 005c B0F5807F 		cmp	r0, #256
+ 110 0060 22D0     		beq	.L17
+ 111 0062 04D9     		bls	.L28
+ 112 0064 B0F5007F 		cmp	r0, #512
+ 113 0068 25D1     		bne	.L20
+  77:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 114              		.loc 1 77 20 view .LVU9
+ 115 006a 1720     		movs	r0, #23
+ 116              	.LVL6:
+  77:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 117              		.loc 1 77 20 view .LVU10
+ 118 006c 7047     		bx	lr
+ 119              	.LVL7:
+ 120              	.L28:
+  55:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 121              		.loc 1 55 5 view .LVU11
+ 122 006e 4028     		cmp	r0, #64
+ 123 0070 1CD0     		beq	.L18
+ 124 0072 8028     		cmp	r0, #128
+ 125 0074 1CD1     		bne	.L19
+  77:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 126              		.loc 1 77 20 view .LVU12
+ 127 0076 1720     		movs	r0, #23
+ 128              	.LVL8:
+  77:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 129              		.loc 1 77 20 view .LVU13
+ 130 0078 7047     		bx	lr
+ 131              	.LVL9:
+ 132              	.L27:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 5
+
+
+  55:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 133              		.loc 1 55 5 view .LVU14
+ 134 007a B0F5006F 		cmp	r0, #2048
+ 135 007e 1FD0     		beq	.L22
+ 136 0080 B0F5805F 		cmp	r0, #4096
+ 137 0084 1ED1     		bne	.L23
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 138              		.loc 1 85 20 view .LVU15
+ 139 0086 2820     		movs	r0, #40
+ 140              	.LVL10:
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 141              		.loc 1 85 20 view .LVU16
+ 142 0088 7047     		bx	lr
+ 143              	.LVL11:
+ 144              	.L9:
+  64:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 145              		.loc 1 64 13 is_stmt 1 view .LVU17
+  64:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 146              		.loc 1 64 20 is_stmt 0 view .LVU18
+ 147 008a 0820     		movs	r0, #8
+ 148              	.LVL12:
+  64:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 149              		.loc 1 64 20 view .LVU19
+ 150 008c 7047     		bx	lr
+ 151              	.L8:
+  67:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 152              		.loc 1 67 13 is_stmt 1 view .LVU20
+  67:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 153              		.loc 1 67 20 is_stmt 0 view .LVU21
+ 154 008e 0920     		movs	r0, #9
+ 155 0090 7047     		bx	lr
+ 156              	.L7:
+  70:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 157              		.loc 1 70 13 is_stmt 1 view .LVU22
+  70:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 158              		.loc 1 70 20 is_stmt 0 view .LVU23
+ 159 0092 0A20     		movs	r0, #10
+ 160 0094 7047     		bx	lr
+ 161              	.L5:
+  77:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 162              		.loc 1 77 20 view .LVU24
+ 163 0096 1720     		movs	r0, #23
+ 164 0098 7047     		bx	lr
+ 165              	.LVL13:
+ 166              	.L14:
+ 167              		.loc 1 88 20 view .LVU25
+ 168 009a 6FF00F00 		mvn	r0, #15
+ 169              	.LVL14:
+ 170              		.loc 1 88 20 view .LVU26
+ 171 009e 7047     		bx	lr
+ 172              	.L15:
+  61:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 173              		.loc 1 61 20 view .LVU27
+ 174 00a0 0720     		movs	r0, #7
+ 175 00a2 7047     		bx	lr
+ 176              	.LVL15:
+ 177              	.L16:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 6
+
+
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 178              		.loc 1 85 20 view .LVU28
+ 179 00a4 2820     		movs	r0, #40
+ 180              	.LVL16:
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 181              		.loc 1 85 20 view .LVU29
+ 182 00a6 7047     		bx	lr
+ 183              	.LVL17:
+ 184              	.L17:
+  77:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 185              		.loc 1 77 20 view .LVU30
+ 186 00a8 1720     		movs	r0, #23
+ 187              	.LVL18:
+  77:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 188              		.loc 1 77 20 view .LVU31
+ 189 00aa 7047     		bx	lr
+ 190              	.LVL19:
+ 191              	.L18:
+  77:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 192              		.loc 1 77 20 view .LVU32
+ 193 00ac 1720     		movs	r0, #23
+ 194              	.LVL20:
+  77:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 195              		.loc 1 77 20 view .LVU33
+ 196 00ae 7047     		bx	lr
+ 197              	.LVL21:
+ 198              	.L19:
+ 199              		.loc 1 88 20 view .LVU34
+ 200 00b0 6FF00F00 		mvn	r0, #15
+ 201              	.LVL22:
+ 202              		.loc 1 88 20 view .LVU35
+ 203 00b4 7047     		bx	lr
+ 204              	.LVL23:
+ 205              	.L20:
+ 206              		.loc 1 88 20 view .LVU36
+ 207 00b6 6FF00F00 		mvn	r0, #15
+ 208              	.LVL24:
+ 209              		.loc 1 88 20 view .LVU37
+ 210 00ba 7047     		bx	lr
+ 211              	.LVL25:
+ 212              	.L21:
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 213              		.loc 1 85 20 view .LVU38
+ 214 00bc 2820     		movs	r0, #40
+ 215              	.LVL26:
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 216              		.loc 1 85 20 view .LVU39
+ 217 00be 7047     		bx	lr
+ 218              	.LVL27:
+ 219              	.L22:
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 220              		.loc 1 85 20 view .LVU40
+ 221 00c0 2820     		movs	r0, #40
+ 222              	.LVL28:
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 223              		.loc 1 85 20 view .LVU41
+ 224 00c2 7047     		bx	lr
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 7
+
+
+ 225              	.LVL29:
+ 226              	.L23:
+ 227              		.loc 1 88 20 view .LVU42
+ 228 00c4 6FF00F00 		mvn	r0, #15
+ 229              	.LVL30:
+ 230              		.loc 1 88 20 view .LVU43
+ 231 00c8 7047     		bx	lr
+ 232              	.LVL31:
+ 233              	.L24:
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 234              		.loc 1 85 20 view .LVU44
+ 235 00ca 2820     		movs	r0, #40
+ 236              	.LVL32:
+  85:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 237              		.loc 1 85 20 view .LVU45
+ 238 00cc 7047     		bx	lr
+ 239              	.LVL33:
+ 240              	.L25:
+ 241              		.loc 1 88 20 view .LVU46
+ 242 00ce 6FF00F00 		mvn	r0, #15
+ 243              	.LVL34:
+  89:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     }
+  90:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 244              		.loc 1 90 1 view .LVU47
+ 245 00d2 7047     		bx	lr
+ 246              		.cfi_endproc
+ 247              	.LFE134:
+ 249              		.section	.text.BsPGPIO_Get_EXTI_Line,"ax",%progbits
+ 250              		.align	1
+ 251              		.syntax unified
+ 252              		.thumb
+ 253              		.thumb_func
+ 255              	BsPGPIO_Get_EXTI_Line:
+ 256              	.LVL35:
+ 257              	.LFB136:
+  91:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  92:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static uint8_t BspGPIO_Get_PinSource(uint16_t pin)
+  93:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+  94:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(pin > GPIO_PINS_15)
+  95:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return 16;
+  96:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+  97:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return BspGPIO_Get_Bit_Index(pin);
+  98:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+  99:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 100:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static uint32_t BsPGPIO_Get_EXTI_Line(uint16_t pin)
+ 101:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 258              		.loc 1 101 1 is_stmt 1 view -0
+ 259              		.cfi_startproc
+ 260              		@ args = 0, pretend = 0, frame = 0
+ 261              		@ frame_needed = 0, uses_anonymous_args = 0
+ 262              		@ link register save eliminated.
+ 102:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if (pin > GPIO_PINS_15)
+ 263              		.loc 1 102 5 view .LVU49
+ 264              		.loc 1 102 8 is_stmt 0 view .LVU50
+ 265 0000 B0F5004F 		cmp	r0, #32768
+ 266 0004 00D8     		bhi	.L32
+ 267              	.LVL36:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 8
+
+
+ 268              	.L29:
+ 103:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return 0;
+ 104:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 105:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return (uint32_t)pin;
+ 106:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 269              		.loc 1 106 1 view .LVU51
+ 270 0006 7047     		bx	lr
+ 271              	.LVL37:
+ 272              	.L32:
+ 103:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return 0;
+ 273              		.loc 1 103 16 view .LVU52
+ 274 0008 0020     		movs	r0, #0
+ 275              	.LVL38:
+ 103:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return 0;
+ 276              		.loc 1 103 16 view .LVU53
+ 277 000a FCE7     		b	.L29
+ 278              		.cfi_endproc
+ 279              	.LFE136:
+ 281              		.section	.text.BspGPIO_Get_ExtiCLK,"ax",%progbits
+ 282              		.align	1
+ 283              		.syntax unified
+ 284              		.thumb
+ 285              		.thumb_func
+ 287              	BspGPIO_Get_ExtiCLK:
+ 288              	.LVL39:
+ 289              	.LFB138:
+ 107:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 108:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static uint8_t BspGPIO_EXTILine_To_PinSource(uint32_t exti_line)
+ 109:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 110:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint16_t index = 0;
+ 111:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 112:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(exti_line > EXINT_LINE_15)
+ 113:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return 0;
+ 114:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 115:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     index = (uint16_t)exti_line;
+ 116:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return BspGPIO_Get_Bit_Index(index);
+ 117:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 118:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 119:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static crm_periph_clock_type BspGPIO_Get_ExtiCLK(scfg_port_source_type exti_src)
+ 120:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 290              		.loc 1 120 1 is_stmt 1 view -0
+ 291              		.cfi_startproc
+ 292              		@ args = 0, pretend = 0, frame = 0
+ 293              		@ frame_needed = 0, uses_anonymous_args = 0
+ 294              		@ link register save eliminated.
+ 121:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     switch((uint8_t) exti_src)
+ 295              		.loc 1 121 5 view .LVU55
+ 296 0000 0728     		cmp	r0, #7
+ 297 0002 14D8     		bhi	.L34
+ 298 0004 DFE800F0 		tbb	[pc, r0]
+ 299              	.L36:
+ 300 0008 04       		.byte	(.L43-.L36)/2
+ 301 0009 15       		.byte	(.L44-.L36)/2
+ 302 000a 07       		.byte	(.L41-.L36)/2
+ 303 000b 09       		.byte	(.L40-.L36)/2
+ 304 000c 0B       		.byte	(.L39-.L36)/2
+ 305 000d 0D       		.byte	(.L38-.L36)/2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 9
+
+
+ 306 000e 0F       		.byte	(.L37-.L36)/2
+ 307 000f 11       		.byte	(.L35-.L36)/2
+ 308              		.p2align 1
+ 309              	.L43:
+ 310 0010 4FF44010 		mov	r0, #3145728
+ 311              	.LVL40:
+ 312              		.loc 1 121 5 is_stmt 0 view .LVU56
+ 313 0014 7047     		bx	lr
+ 314              	.LVL41:
+ 315              	.L41:
+ 122:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 123:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case SCFG_PORT_SOURCE_GPIOA:
+ 124:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return CRM_GPIOA_PERIPH_CLOCK;
+ 125:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 126:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case SCFG_PORT_SOURCE_GPIOB:
+ 127:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return CRM_GPIOB_PERIPH_CLOCK;
+ 128:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 129:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case SCFG_PORT_SOURCE_GPIOC:
+ 130:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return CRM_GPIOC_PERIPH_CLOCK;
+ 316              		.loc 1 130 13 is_stmt 1 view .LVU57
+ 317              		.loc 1 130 20 is_stmt 0 view .LVU58
+ 318 0016 0848     		ldr	r0, .L45
+ 319              	.LVL42:
+ 320              		.loc 1 130 20 view .LVU59
+ 321 0018 7047     		bx	lr
+ 322              	.LVL43:
+ 323              	.L40:
+ 131:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 132:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case SCFG_PORT_SOURCE_GPIOD:
+ 133:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return CRM_GPIOD_PERIPH_CLOCK;
+ 324              		.loc 1 133 13 is_stmt 1 view .LVU60
+ 325              		.loc 1 133 20 is_stmt 0 view .LVU61
+ 326 001a 0848     		ldr	r0, .L45+4
+ 327              	.LVL44:
+ 328              		.loc 1 133 20 view .LVU62
+ 329 001c 7047     		bx	lr
+ 330              	.LVL45:
+ 331              	.L39:
+ 134:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 135:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case SCFG_PORT_SOURCE_GPIOE:
+ 136:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return CRM_GPIOE_PERIPH_CLOCK;
+ 332              		.loc 1 136 13 is_stmt 1 view .LVU63
+ 333              		.loc 1 136 20 is_stmt 0 view .LVU64
+ 334 001e 0848     		ldr	r0, .L45+8
+ 335              	.LVL46:
+ 336              		.loc 1 136 20 view .LVU65
+ 337 0020 7047     		bx	lr
+ 338              	.LVL47:
+ 339              	.L38:
+ 137:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 138:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case SCFG_PORT_SOURCE_GPIOF:
+ 139:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return CRM_GPIOF_PERIPH_CLOCK;
+ 340              		.loc 1 139 13 is_stmt 1 view .LVU66
+ 341              		.loc 1 139 20 is_stmt 0 view .LVU67
+ 342 0022 0848     		ldr	r0, .L45+12
+ 343              	.LVL48:
+ 344              		.loc 1 139 20 view .LVU68
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 10
+
+
+ 345 0024 7047     		bx	lr
+ 346              	.LVL49:
+ 347              	.L37:
+ 140:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 141:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case SCFG_PORT_SOURCE_GPIOG:
+ 142:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return CRM_GPIOG_PERIPH_CLOCK;
+ 348              		.loc 1 142 13 is_stmt 1 view .LVU69
+ 349              		.loc 1 142 20 is_stmt 0 view .LVU70
+ 350 0026 0848     		ldr	r0, .L45+16
+ 351              	.LVL50:
+ 352              		.loc 1 142 20 view .LVU71
+ 353 0028 7047     		bx	lr
+ 354              	.LVL51:
+ 355              	.L35:
+ 143:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 144:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case SCFG_PORT_SOURCE_GPIOH:
+ 145:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return CRM_GPIOH_PERIPH_CLOCK;
+ 356              		.loc 1 145 13 is_stmt 1 view .LVU72
+ 357              		.loc 1 145 20 is_stmt 0 view .LVU73
+ 358 002a 0848     		ldr	r0, .L45+20
+ 359              	.LVL52:
+ 360              		.loc 1 145 20 view .LVU74
+ 361 002c 7047     		bx	lr
+ 362              	.LVL53:
+ 363              	.L34:
+ 146:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 147:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         default:
+ 148:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return 0;
+ 364              		.loc 1 148 13 is_stmt 1 view .LVU75
+ 365              		.loc 1 148 20 is_stmt 0 view .LVU76
+ 366 002e 0020     		movs	r0, #0
+ 367              	.LVL54:
+ 368              		.loc 1 148 20 view .LVU77
+ 369 0030 7047     		bx	lr
+ 370              	.LVL55:
+ 371              	.L44:
+ 127:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 372              		.loc 1 127 20 view .LVU78
+ 373 0032 0748     		ldr	r0, .L45+24
+ 374              	.LVL56:
+ 149:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     }
+ 150:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 375              		.loc 1 150 1 view .LVU79
+ 376 0034 7047     		bx	lr
+ 377              	.L46:
+ 378 0036 00BF     		.align	2
+ 379              	.L45:
+ 380 0038 02003000 		.word	3145730
+ 381 003c 03003000 		.word	3145731
+ 382 0040 04003000 		.word	3145732
+ 383 0044 05003000 		.word	3145733
+ 384 0048 06003000 		.word	3145734
+ 385 004c 07003000 		.word	3145735
+ 386 0050 01003000 		.word	3145729
+ 387              		.cfi_endproc
+ 388              	.LFE138:
+ 390              		.section	.text.BspGPIO_Get_CLK,"ax",%progbits
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 11
+
+
+ 391              		.align	1
+ 392              		.syntax unified
+ 393              		.thumb
+ 394              		.thumb_func
+ 396              	BspGPIO_Get_CLK:
+ 397              	.LVL57:
+ 398              	.LFB139:
+ 151:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 152:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static crm_periph_clock_type BspGPIO_Get_CLK(gpio_type *port)
+ 153:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 399              		.loc 1 153 1 is_stmt 1 view -0
+ 400              		.cfi_startproc
+ 401              		@ args = 0, pretend = 0, frame = 0
+ 402              		@ frame_needed = 0, uses_anonymous_args = 0
+ 403              		@ link register save eliminated.
+ 154:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(port == NULL)
+ 404              		.loc 1 154 5 view .LVU81
+ 405              		.loc 1 154 7 is_stmt 0 view .LVU82
+ 406 0000 00B3     		cbz	r0, .L49
+ 155:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return 0;
+ 156:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 157:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(port == GPIOA)
+ 407              		.loc 1 157 5 is_stmt 1 view .LVU83
+ 408              		.loc 1 157 7 is_stmt 0 view .LVU84
+ 409 0002 1A4A     		ldr	r2, .L58
+ 410 0004 9042     		cmp	r0, r2
+ 411 0006 1FD0     		beq	.L50
+ 158:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return CRM_GPIOA_PERIPH_CLOCK;
+ 159:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 160:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(port == GPIOB)
+ 412              		.loc 1 160 5 is_stmt 1 view .LVU85
+ 413              		.loc 1 160 7 is_stmt 0 view .LVU86
+ 414 0008 02F58062 		add	r2, r2, #1024
+ 415 000c 9042     		cmp	r0, r2
+ 416 000e 1ED0     		beq	.L51
+ 161:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return CRM_GPIOB_PERIPH_CLOCK;
+ 162:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 163:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(port == GPIOC)
+ 417              		.loc 1 163 5 is_stmt 1 view .LVU87
+ 418              		.loc 1 163 7 is_stmt 0 view .LVU88
+ 419 0010 02F58062 		add	r2, r2, #1024
+ 420 0014 9042     		cmp	r0, r2
+ 421 0016 1CD0     		beq	.L52
+ 164:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return CRM_GPIOC_PERIPH_CLOCK;
+ 165:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 166:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(port == GPIOD)
+ 422              		.loc 1 166 5 is_stmt 1 view .LVU89
+ 423              		.loc 1 166 7 is_stmt 0 view .LVU90
+ 424 0018 02F58062 		add	r2, r2, #1024
+ 425 001c 9042     		cmp	r0, r2
+ 426 001e 1AD0     		beq	.L53
+ 167:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return CRM_GPIOD_PERIPH_CLOCK;
+ 168:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 169:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(port == GPIOE)
+ 427              		.loc 1 169 5 is_stmt 1 view .LVU91
+ 428              		.loc 1 169 7 is_stmt 0 view .LVU92
+ 429 0020 02F58062 		add	r2, r2, #1024
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 12
+
+
+ 430 0024 9042     		cmp	r0, r2
+ 431 0026 18D0     		beq	.L54
+ 170:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return CRM_GPIOE_PERIPH_CLOCK;
+ 171:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 172:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(port == GPIOF)
+ 432              		.loc 1 172 5 is_stmt 1 view .LVU93
+ 433              		.loc 1 172 7 is_stmt 0 view .LVU94
+ 434 0028 02F58062 		add	r2, r2, #1024
+ 435 002c 9042     		cmp	r0, r2
+ 436 002e 16D0     		beq	.L55
+ 173:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return CRM_GPIOF_PERIPH_CLOCK;
+ 174:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 175:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(port == GPIOG)
+ 437              		.loc 1 175 5 is_stmt 1 view .LVU95
+ 438              		.loc 1 175 7 is_stmt 0 view .LVU96
+ 439 0030 02F58062 		add	r2, r2, #1024
+ 440 0034 9042     		cmp	r0, r2
+ 441 0036 14D0     		beq	.L56
+ 176:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return CRM_GPIOG_PERIPH_CLOCK;
+ 177:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 178:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(port == GPIOH)
+ 442              		.loc 1 178 5 is_stmt 1 view .LVU97
+ 443              		.loc 1 178 7 is_stmt 0 view .LVU98
+ 444 0038 02F58062 		add	r2, r2, #1024
+ 445 003c 9042     		cmp	r0, r2
+ 446 003e 12D0     		beq	.L57
+ 179:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return CRM_GPIOH_PERIPH_CLOCK;
+ 180:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 181:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return 0;
+ 447              		.loc 1 181 12 view .LVU99
+ 448 0040 0020     		movs	r0, #0
+ 449              	.LVL58:
+ 450              		.loc 1 181 12 view .LVU100
+ 451 0042 7047     		bx	lr
+ 452              	.LVL59:
+ 453              	.L49:
+ 155:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 454              		.loc 1 155 16 view .LVU101
+ 455 0044 0020     		movs	r0, #0
+ 456              	.LVL60:
+ 155:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 457              		.loc 1 155 16 view .LVU102
+ 458 0046 7047     		bx	lr
+ 459              	.LVL61:
+ 460              	.L50:
+ 158:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 461              		.loc 1 158 16 view .LVU103
+ 462 0048 4FF44010 		mov	r0, #3145728
+ 463              	.LVL62:
+ 158:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 464              		.loc 1 158 16 view .LVU104
+ 465 004c 7047     		bx	lr
+ 466              	.LVL63:
+ 467              	.L51:
+ 161:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 468              		.loc 1 161 16 view .LVU105
+ 469 004e 0848     		ldr	r0, .L58+4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 13
+
+
+ 470              	.LVL64:
+ 161:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 471              		.loc 1 161 16 view .LVU106
+ 472 0050 7047     		bx	lr
+ 473              	.LVL65:
+ 474              	.L52:
+ 164:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 475              		.loc 1 164 16 view .LVU107
+ 476 0052 0848     		ldr	r0, .L58+8
+ 477              	.LVL66:
+ 164:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 478              		.loc 1 164 16 view .LVU108
+ 479 0054 7047     		bx	lr
+ 480              	.LVL67:
+ 481              	.L53:
+ 167:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 482              		.loc 1 167 16 view .LVU109
+ 483 0056 0848     		ldr	r0, .L58+12
+ 484              	.LVL68:
+ 167:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 485              		.loc 1 167 16 view .LVU110
+ 486 0058 7047     		bx	lr
+ 487              	.LVL69:
+ 488              	.L54:
+ 170:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 489              		.loc 1 170 16 view .LVU111
+ 490 005a 0848     		ldr	r0, .L58+16
+ 491              	.LVL70:
+ 170:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 492              		.loc 1 170 16 view .LVU112
+ 493 005c 7047     		bx	lr
+ 494              	.LVL71:
+ 495              	.L55:
+ 173:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 496              		.loc 1 173 16 view .LVU113
+ 497 005e 0848     		ldr	r0, .L58+20
+ 498              	.LVL72:
+ 173:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 499              		.loc 1 173 16 view .LVU114
+ 500 0060 7047     		bx	lr
+ 501              	.LVL73:
+ 502              	.L56:
+ 176:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 503              		.loc 1 176 16 view .LVU115
+ 504 0062 0848     		ldr	r0, .L58+24
+ 505              	.LVL74:
+ 176:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 506              		.loc 1 176 16 view .LVU116
+ 507 0064 7047     		bx	lr
+ 508              	.LVL75:
+ 509              	.L57:
+ 179:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 510              		.loc 1 179 16 view .LVU117
+ 511 0066 0848     		ldr	r0, .L58+28
+ 512              	.LVL76:
+ 182:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 513              		.loc 1 182 1 view .LVU118
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 14
+
+
+ 514 0068 7047     		bx	lr
+ 515              	.L59:
+ 516 006a 00BF     		.align	2
+ 517              	.L58:
+ 518 006c 00000240 		.word	1073872896
+ 519 0070 01003000 		.word	3145729
+ 520 0074 02003000 		.word	3145730
+ 521 0078 03003000 		.word	3145731
+ 522 007c 04003000 		.word	3145732
+ 523 0080 05003000 		.word	3145733
+ 524 0084 06003000 		.word	3145734
+ 525 0088 07003000 		.word	3145735
+ 526              		.cfi_endproc
+ 527              	.LFE139:
+ 529              		.section	.text.BspGPIO_Write,"ax",%progbits
+ 530              		.align	1
+ 531              		.syntax unified
+ 532              		.thumb
+ 533              		.thumb_func
+ 535              	BspGPIO_Write:
+ 536              	.LVL77:
+ 537              	.LFB147:
+ 183:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 184:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Out_Init(BspGPIO_Obj_TypeDef IO_Obj)
+ 185:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 186:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_type gpio_init_struct;
+ 187:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_type clk = 0;
+ 188:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 189:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     clk = BspGPIO_Get_CLK(To_GPIO_Port(IO_Obj.port)->port);
+ 190:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 191:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 192:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 193:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     /* enable the clock */
+ 194:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_enable(clk, TRUE);
+ 195:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 196:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     /* set default parameter */
+ 197:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_default_para_init(&gpio_init_struct);
+ 198:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 199:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     /* configure the led gpio */
+ 200:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
+ 201:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_out_type  = GPIO_OUTPUT_PUSH_PULL;
+ 202:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_mode = GPIO_MODE_OUTPUT;
+ 203:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pins = IO_Obj.pin;
+ 204:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pull = IO_Obj.init_state;
+ 205:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_init_struct);
+ 206:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****   
+ 207:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return true;
+ 208:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }   
+ 209:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 210:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_In_Init(BspGPIO_Obj_TypeDef IO_Obj)
+ 211:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 212:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_type gpio_init_struct;
+ 213:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_type clk = 0;
+ 214:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 215:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     clk = BspGPIO_Get_CLK(To_GPIO_Port(IO_Obj.port)->port);
+ 216:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 217:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 15
+
+
+ 218:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 219:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     /* enable the led clock */
+ 220:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_enable(clk, TRUE);
+ 221:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 222:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     /* set default parameter */
+ 223:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_default_para_init(&gpio_init_struct);
+ 224:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 225:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     /* configure the led gpio */
+ 226:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
+ 227:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_out_type  = GPIO_OUTPUT_PUSH_PULL;
+ 228:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_mode = GPIO_MODE_INPUT;
+ 229:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pins = IO_Obj.pin;
+ 230:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pull = IO_Obj.init_state;
+ 231:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_init_struct);
+ 232:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 233:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return true;
+ 234:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 235:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 236:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Exti_Init(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback)
+ 237:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 238:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_type exint_init_struct;
+ 239:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t exti_line = 0;
+ 240:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t pin_source = 0;
+ 241:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_type clk = 0;
+ 242:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 243:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     clk = BspGPIO_Get_ExtiCLK(To_ExtiGPIO_Port(IO_Obj.port)->port);
+ 244:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 245:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 246:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 247:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_enable(CRM_SCFG_PERIPH_CLOCK, TRUE);
+ 248:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_enable(clk, TRUE);
+ 249:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 250:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exti_line = BsPGPIO_Get_EXTI_Line(IO_Obj.pin);
+ 251:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     pin_source = BspGPIO_Get_PinSource(IO_Obj.pin);
+ 252:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 253:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if( (exti_line == 0) || \
+ 254:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (pin_source > SCFG_PINS_SOURCE15) || \
+ 255:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (IO_Obj.init_state > EXINT_TRIGGER_BOTH_EDGE))
+ 256:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 257:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 258:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     scfg_exint_line_config(To_ExtiGPIO_Port(IO_Obj.port)->port, pin_source);
+ 259:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 260:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_default_para_init(&exint_init_struct);
+ 261:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_enable = TRUE;
+ 262:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_mode = EXINT_LINE_INTERRUPUT;
+ 263:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_select = exti_line;
+ 264:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_polarity = IO_Obj.init_state;
+ 265:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init(&exint_init_struct);
+ 266:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 267:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     nvic_priority_group_config(NVIC_PRIORITY_GROUP_4);
+ 268:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     nvic_irq_enable(BspGPIO_Get_IRQn(IO_Obj.pin), 5, 0);
+ 269:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 270:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     /* set default exti irq callback */
+ 271:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     EXTI_CallBack_List[pin_source] = callback;
+ 272:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 273:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return true;
+ 274:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 16
+
+
+ 275:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 276:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Altnate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode)
+ 277:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 278:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_type gpio_initstructure;
+ 279:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t pin_source = 0;
+ 280:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_type clk = 0;
+ 281:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 282:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     UNUSED(af_mode);
+ 283:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 284:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     clk = BspGPIO_Get_CLK(To_GPIO_Port(IO_Obj.port)->port);
+ 285:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 286:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 287:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 288:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_enable(clk, TRUE);
+ 289:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_default_para_init(&gpio_initstructure);
+ 290:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 291:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     pin_source = BspGPIO_Get_PinSource(IO_Obj.pin);
+ 292:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 293:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(pin_source == 16)
+ 294:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 295:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 296:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_initstructure.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
+ 297:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_initstructure.gpio_pull = GPIO_PULL_UP;
+ 298:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_initstructure.gpio_mode = GPIO_MODE_MUX;
+ 299:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_initstructure.gpio_pins = IO_Obj.pin;
+ 300:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if (IO_Obj.open_drain)
+ 301:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         gpio_initstructure.gpio_out_type = GPIO_OUTPUT_OPEN_DRAIN;
+ 302:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_initstructure);
+ 303:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 304:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_pin_mux_config(To_GPIO_Port(IO_Obj.port)->port, pin_source, IO_Obj.alternate);
+ 305:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 306:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return true;
+ 307:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 308:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 309:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Read(BspGPIO_Obj_TypeDef IO_Obj)
+ 310:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 311:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(gpio_input_data_bit_read(To_GPIO_Port(IO_Obj.port)->port, IO_Obj.pin))
+ 312:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return true;
+ 313:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 314:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return false;
+ 315:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 316:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 317:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Set_Exti_Callback(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback)
+ 318:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 319:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t pin_source = 0;
+ 320:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     pin_source = BspGPIO_Get_PinSource(IO_Obj.pin);
+ 321:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(pin_source > SCFG_PINS_SOURCE15)
+ 322:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 323:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 324:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     EXTI_CallBack_List[pin_source] = callback;
+ 325:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 326:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return true;
+ 327:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 328:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 329:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static bool BspGPIO_Set_Exti_Mode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode)
+ 330:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 331:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_type exint_init_struct;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 17
+
+
+ 332:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_polarity_config_type polarity = EXINT_TRIGGER_BOTH_EDGE;
+ 333:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t exti_line = 0;
+ 334:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t pin_source = 0;
+ 335:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_type clk = 0;
+ 336:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 337:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     clk = BspGPIO_Get_CLK(To_GPIO_Port(IO_Obj.port)->port);
+ 338:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 339:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 340:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 341:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     /* disable irq first */
+ 342:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     nvic_irq_disable(BspGPIO_Get_IRQn(IO_Obj.pin));
+ 343:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 344:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_enable(clk, TRUE);
+ 345:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 346:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exti_line = BsPGPIO_Get_EXTI_Line(IO_Obj.pin);
+ 347:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     pin_source = BspGPIO_Get_PinSource(IO_Obj.pin);
+ 348:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 349:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if( (exti_line == 0) || \
+ 350:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (pin_source > SCFG_PINS_SOURCE15) || \
+ 351:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (IO_Obj.init_state > EXINT_TRIGGER_BOTH_EDGE))
+ 352:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 353:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 354:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     switch((uint8_t)mode)
+ 355:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 356:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_Exti_Rasing:
+ 357:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             polarity = EXINT_TRIGGER_RISING_EDGE;
+ 358:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             break;
+ 359:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 360:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_Exti_Falling:
+ 361:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             polarity = EXINT_TRIGGER_FALLING_EDGE;
+ 362:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             break;
+ 363:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 364:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         case GPIO_Exti_TwoEdge:
+ 365:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             break;
+ 366:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 367:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         default:
+ 368:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             return false;
+ 369:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     }
+ 370:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 371:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     scfg_exint_line_config(To_ExtiGPIO_Port(IO_Obj.port)->port, pin_source);
+ 372:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 373:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_default_para_init(&exint_init_struct);
+ 374:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_enable = TRUE;
+ 375:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_mode = EXINT_LINE_INTERRUPUT;
+ 376:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_select = exti_line;
+ 377:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_polarity = polarity;
+ 378:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init(&exint_init_struct);
+ 379:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 380:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     nvic_priority_group_config(NVIC_PRIORITY_GROUP_4);
+ 381:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     nvic_irq_enable(BspGPIO_Get_IRQn(IO_Obj.pin), 5, 0);
+ 382:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 383:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return false;
+ 384:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 385:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 386:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static void BspGPIO_Write(BspGPIO_Obj_TypeDef IO_Obj, bool state)
+ 387:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 538              		.loc 1 387 1 is_stmt 1 view -0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 18
+
+
+ 539              		.cfi_startproc
+ 540              		@ args = 0, pretend = 0, frame = 16
+ 541              		@ frame_needed = 0, uses_anonymous_args = 0
+ 542              		@ link register save eliminated.
+ 543              		.loc 1 387 1 is_stmt 0 view .LVU120
+ 544 0000 84B0     		sub	sp, sp, #16
+ 545              	.LCFI0:
+ 546              		.cfi_def_cfa_offset 16
+ 547 0002 0DF1100C 		add	ip, sp, #16
+ 548 0006 0CE90700 		stmdb	ip, {r0, r1, r2}
+ 388:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(state)
+ 549              		.loc 1 388 5 is_stmt 1 view .LVU121
+ 550              		.loc 1 388 7 is_stmt 0 view .LVU122
+ 551 000a 2BB1     		cbz	r3, .L61
+ 389:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 390:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         To_GPIO_Port(IO_Obj.port)->port->scr = IO_Obj.pin;
+ 552              		.loc 1 390 9 is_stmt 1 view .LVU123
+ 553              		.loc 1 390 34 is_stmt 0 view .LVU124
+ 554 000c 0368     		ldr	r3, [r0]
+ 555              	.LVL78:
+ 556              		.loc 1 390 54 view .LVU125
+ 557 000e BDF80820 		ldrh	r2, [sp, #8]
+ 558              		.loc 1 390 46 view .LVU126
+ 559 0012 9A61     		str	r2, [r3, #24]
+ 560              	.L60:
+ 391:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     }
+ 392:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     else
+ 393:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 394:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         To_GPIO_Port(IO_Obj.port)->port->clr = IO_Obj.pin;
+ 395:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     }
+ 396:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 561              		.loc 1 396 1 view .LVU127
+ 562 0014 04B0     		add	sp, sp, #16
+ 563              	.LCFI1:
+ 564              		.cfi_remember_state
+ 565              		.cfi_def_cfa_offset 0
+ 566              		@ sp needed
+ 567 0016 7047     		bx	lr
+ 568              	.LVL79:
+ 569              	.L61:
+ 570              	.LCFI2:
+ 571              		.cfi_restore_state
+ 394:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     }
+ 572              		.loc 1 394 9 is_stmt 1 view .LVU128
+ 573 0018 019B     		ldr	r3, [sp, #4]
+ 574              	.LVL80:
+ 394:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     }
+ 575              		.loc 1 394 34 is_stmt 0 view .LVU129
+ 576 001a 1B68     		ldr	r3, [r3]
+ 394:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     }
+ 577              		.loc 1 394 54 view .LVU130
+ 578 001c BDF80820 		ldrh	r2, [sp, #8]
+ 394:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     }
+ 579              		.loc 1 394 46 view .LVU131
+ 580 0020 9A62     		str	r2, [r3, #40]
+ 581              		.loc 1 396 1 view .LVU132
+ 582 0022 F7E7     		b	.L60
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 19
+
+
+ 583              		.cfi_endproc
+ 584              	.LFE147:
+ 586              		.section	.text.BspGPIO_De_Init,"ax",%progbits
+ 587              		.align	1
+ 588              		.syntax unified
+ 589              		.thumb
+ 590              		.thumb_func
+ 592              	BspGPIO_De_Init:
+ 593              	.LFB149:
+ 397:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 398:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** void BspGPIO_IRQ_Polling(uint32_t exti_line)
+ 399:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 400:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint8_t index = 0;
+ 401:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 402:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(exint_flag_get(exti_line) != RESET)
+ 403:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 404:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         index = BspGPIO_EXTILine_To_PinSource(exti_line);
+ 405:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 406:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         if((index <= SCFG_PINS_SOURCE15) && (EXTI_CallBack_List[index] != NULL))
+ 407:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             EXTI_CallBack_List[index]();
+ 408:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 409:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         exint_flag_clear(exti_line);
+ 410:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     }
+ 411:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 412:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 413:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** static void BspGPIO_De_Init(BspGPIO_Obj_TypeDef IO_Obj)
+ 414:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** {
+ 594              		.loc 1 414 1 is_stmt 1 view -0
+ 595              		.cfi_startproc
+ 596              		@ args = 0, pretend = 0, frame = 16
+ 597              		@ frame_needed = 0, uses_anonymous_args = 0
+ 598 0000 00B5     		push	{lr}
+ 599              	.LCFI3:
+ 600              		.cfi_def_cfa_offset 4
+ 601              		.cfi_offset 14, -4
+ 602 0002 85B0     		sub	sp, sp, #20
+ 603              	.LCFI4:
+ 604              		.cfi_def_cfa_offset 24
+ 605 0004 04AB     		add	r3, sp, #16
+ 606 0006 03E90700 		stmdb	r3, {r0, r1, r2}
+ 415:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if (IO_Obj.port && To_GPIO_Port(IO_Obj.port)->port)
+ 607              		.loc 1 415 5 view .LVU134
+ 608              		.loc 1 415 8 is_stmt 0 view .LVU135
+ 609 000a 18B1     		cbz	r0, .L64
+ 610              		.loc 1 415 49 discriminator 1 view .LVU136
+ 611 000c 0068     		ldr	r0, [r0]
+ 612              		.loc 1 415 21 discriminator 1 view .LVU137
+ 613 000e 08B1     		cbz	r0, .L64
+ 416:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         gpio_reset(To_GPIO_Port(IO_Obj.port)->port);
+ 614              		.loc 1 416 9 is_stmt 1 view .LVU138
+ 615 0010 FFF7FEFF 		bl	gpio_reset
+ 616              	.LVL81:
+ 617              	.L64:
+ 417:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 618              		.loc 1 417 1 is_stmt 0 view .LVU139
+ 619 0014 05B0     		add	sp, sp, #20
+ 620              	.LCFI5:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 20
+
+
+ 621              		.cfi_def_cfa_offset 4
+ 622              		@ sp needed
+ 623 0016 5DF804FB 		ldr	pc, [sp], #4
+ 624              		.cfi_endproc
+ 625              	.LFE149:
+ 627              		.section	.text.BspGPIO_Read,"ax",%progbits
+ 628              		.align	1
+ 629              		.syntax unified
+ 630              		.thumb
+ 631              		.thumb_func
+ 633              	BspGPIO_Read:
+ 634              	.LFB144:
+ 310:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(gpio_input_data_bit_read(To_GPIO_Port(IO_Obj.port)->port, IO_Obj.pin))
+ 635              		.loc 1 310 1 is_stmt 1 view -0
+ 636              		.cfi_startproc
+ 637              		@ args = 0, pretend = 0, frame = 16
+ 638              		@ frame_needed = 0, uses_anonymous_args = 0
+ 639 0000 00B5     		push	{lr}
+ 640              	.LCFI6:
+ 641              		.cfi_def_cfa_offset 4
+ 642              		.cfi_offset 14, -4
+ 643 0002 85B0     		sub	sp, sp, #20
+ 644              	.LCFI7:
+ 645              		.cfi_def_cfa_offset 24
+ 646 0004 04AB     		add	r3, sp, #16
+ 647 0006 03E90700 		stmdb	r3, {r0, r1, r2}
+ 311:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return true;
+ 648              		.loc 1 311 5 view .LVU141
+ 311:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return true;
+ 649              		.loc 1 311 8 is_stmt 0 view .LVU142
+ 650 000a BDF80810 		ldrh	r1, [sp, #8]
+ 651 000e 0068     		ldr	r0, [r0]
+ 652 0010 FFF7FEFF 		bl	gpio_input_data_bit_read
+ 653              	.LVL82:
+ 311:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return true;
+ 654              		.loc 1 311 7 view .LVU143
+ 655 0014 10B9     		cbnz	r0, .L71
+ 656              	.L68:
+ 315:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 657              		.loc 1 315 1 view .LVU144
+ 658 0016 05B0     		add	sp, sp, #20
+ 659              	.LCFI8:
+ 660              		.cfi_remember_state
+ 661              		.cfi_def_cfa_offset 4
+ 662              		@ sp needed
+ 663 0018 5DF804FB 		ldr	pc, [sp], #4
+ 664              	.L71:
+ 665              	.LCFI9:
+ 666              		.cfi_restore_state
+ 312:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 667              		.loc 1 312 16 view .LVU145
+ 668 001c 0120     		movs	r0, #1
+ 669 001e FAE7     		b	.L68
+ 670              		.cfi_endproc
+ 671              	.LFE144:
+ 673              		.section	.text.BspGPIO_In_Init,"ax",%progbits
+ 674              		.align	1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 21
+
+
+ 675              		.syntax unified
+ 676              		.thumb
+ 677              		.thumb_func
+ 679              	BspGPIO_In_Init:
+ 680              	.LFB141:
+ 211:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_type gpio_init_struct;
+ 681              		.loc 1 211 1 is_stmt 1 view -0
+ 682              		.cfi_startproc
+ 683              		@ args = 0, pretend = 0, frame = 24
+ 684              		@ frame_needed = 0, uses_anonymous_args = 0
+ 685 0000 30B5     		push	{r4, r5, lr}
+ 686              	.LCFI10:
+ 687              		.cfi_def_cfa_offset 12
+ 688              		.cfi_offset 4, -12
+ 689              		.cfi_offset 5, -8
+ 690              		.cfi_offset 14, -4
+ 691 0002 87B0     		sub	sp, sp, #28
+ 692              	.LCFI11:
+ 693              		.cfi_def_cfa_offset 40
+ 694 0004 01AB     		add	r3, sp, #4
+ 695 0006 83E80700 		stm	r3, {r0, r1, r2}
+ 212:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_type clk = 0;
+ 696              		.loc 1 212 5 view .LVU147
+ 213:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 697              		.loc 1 213 5 view .LVU148
+ 698              	.LVL83:
+ 215:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 699              		.loc 1 215 5 view .LVU149
+ 215:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 700              		.loc 1 215 27 is_stmt 0 view .LVU150
+ 701 000a 0546     		mov	r5, r0
+ 215:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 702              		.loc 1 215 11 view .LVU151
+ 703 000c 0068     		ldr	r0, [r0]
+ 704 000e FFF7FEFF 		bl	BspGPIO_Get_CLK
+ 705              	.LVL84:
+ 216:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 706              		.loc 1 216 5 is_stmt 1 view .LVU152
+ 216:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 707              		.loc 1 216 7 is_stmt 0 view .LVU153
+ 708 0012 10B9     		cbnz	r0, .L76
+ 217:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 709              		.loc 1 217 16 view .LVU154
+ 710 0014 0020     		movs	r0, #0
+ 711              	.LVL85:
+ 712              	.L73:
+ 234:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 713              		.loc 1 234 1 view .LVU155
+ 714 0016 07B0     		add	sp, sp, #28
+ 715              	.LCFI12:
+ 716              		.cfi_remember_state
+ 717              		.cfi_def_cfa_offset 12
+ 718              		@ sp needed
+ 719 0018 30BD     		pop	{r4, r5, pc}
+ 720              	.LVL86:
+ 721              	.L76:
+ 722              	.LCFI13:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 22
+
+
+ 723              		.cfi_restore_state
+ 220:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 724              		.loc 1 220 5 is_stmt 1 view .LVU156
+ 725 001a 0121     		movs	r1, #1
+ 726 001c FFF7FEFF 		bl	crm_periph_clock_enable
+ 727              	.LVL87:
+ 223:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 728              		.loc 1 223 5 view .LVU157
+ 729 0020 04A8     		add	r0, sp, #16
+ 730 0022 FFF7FEFF 		bl	gpio_default_para_init
+ 731              	.LVL88:
+ 226:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_out_type  = GPIO_OUTPUT_PUSH_PULL;
+ 732              		.loc 1 226 5 view .LVU158
+ 226:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_out_type  = GPIO_OUTPUT_PUSH_PULL;
+ 733              		.loc 1 226 42 is_stmt 0 view .LVU159
+ 734 0026 0124     		movs	r4, #1
+ 735 0028 8DF81740 		strb	r4, [sp, #23]
+ 227:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_mode = GPIO_MODE_INPUT;
+ 736              		.loc 1 227 5 is_stmt 1 view .LVU160
+ 227:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_mode = GPIO_MODE_INPUT;
+ 737              		.loc 1 227 37 is_stmt 0 view .LVU161
+ 738 002c 0023     		movs	r3, #0
+ 739 002e 8DF81430 		strb	r3, [sp, #20]
+ 228:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pins = IO_Obj.pin;
+ 740              		.loc 1 228 5 is_stmt 1 view .LVU162
+ 228:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pins = IO_Obj.pin;
+ 741              		.loc 1 228 32 is_stmt 0 view .LVU163
+ 742 0032 8DF81630 		strb	r3, [sp, #22]
+ 229:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pull = IO_Obj.init_state;
+ 743              		.loc 1 229 5 is_stmt 1 view .LVU164
+ 229:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pull = IO_Obj.init_state;
+ 744              		.loc 1 229 40 is_stmt 0 view .LVU165
+ 745 0036 BDF80830 		ldrh	r3, [sp, #8]
+ 229:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pull = IO_Obj.init_state;
+ 746              		.loc 1 229 32 view .LVU166
+ 747 003a 0493     		str	r3, [sp, #16]
+ 230:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_init_struct);
+ 748              		.loc 1 230 5 is_stmt 1 view .LVU167
+ 230:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_init_struct);
+ 749              		.loc 1 230 40 is_stmt 0 view .LVU168
+ 750 003c 9DF80A30 		ldrb	r3, [sp, #10]	@ zero_extendqisi2
+ 230:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_init_struct);
+ 751              		.loc 1 230 32 view .LVU169
+ 752 0040 8DF81530 		strb	r3, [sp, #21]
+ 231:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 753              		.loc 1 231 5 is_stmt 1 view .LVU170
+ 754 0044 04A9     		add	r1, sp, #16
+ 755 0046 2868     		ldr	r0, [r5]
+ 756 0048 FFF7FEFF 		bl	gpio_init
+ 757              	.LVL89:
+ 233:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 758              		.loc 1 233 5 view .LVU171
+ 233:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 759              		.loc 1 233 12 is_stmt 0 view .LVU172
+ 760 004c 2046     		mov	r0, r4
+ 761 004e E2E7     		b	.L73
+ 762              		.cfi_endproc
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 23
+
+
+ 763              	.LFE141:
+ 765              		.section	.text.BspGPIO_Out_Init,"ax",%progbits
+ 766              		.align	1
+ 767              		.syntax unified
+ 768              		.thumb
+ 769              		.thumb_func
+ 771              	BspGPIO_Out_Init:
+ 772              	.LFB140:
+ 185:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_type gpio_init_struct;
+ 773              		.loc 1 185 1 is_stmt 1 view -0
+ 774              		.cfi_startproc
+ 775              		@ args = 0, pretend = 0, frame = 24
+ 776              		@ frame_needed = 0, uses_anonymous_args = 0
+ 777 0000 30B5     		push	{r4, r5, lr}
+ 778              	.LCFI14:
+ 779              		.cfi_def_cfa_offset 12
+ 780              		.cfi_offset 4, -12
+ 781              		.cfi_offset 5, -8
+ 782              		.cfi_offset 14, -4
+ 783 0002 87B0     		sub	sp, sp, #28
+ 784              	.LCFI15:
+ 785              		.cfi_def_cfa_offset 40
+ 786 0004 01AB     		add	r3, sp, #4
+ 787 0006 83E80700 		stm	r3, {r0, r1, r2}
+ 186:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_type clk = 0;
+ 788              		.loc 1 186 5 view .LVU174
+ 187:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 789              		.loc 1 187 5 view .LVU175
+ 790              	.LVL90:
+ 189:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 791              		.loc 1 189 5 view .LVU176
+ 189:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 792              		.loc 1 189 27 is_stmt 0 view .LVU177
+ 793 000a 0546     		mov	r5, r0
+ 189:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 794              		.loc 1 189 11 view .LVU178
+ 795 000c 0068     		ldr	r0, [r0]
+ 796 000e FFF7FEFF 		bl	BspGPIO_Get_CLK
+ 797              	.LVL91:
+ 190:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 798              		.loc 1 190 5 is_stmt 1 view .LVU179
+ 190:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 799              		.loc 1 190 7 is_stmt 0 view .LVU180
+ 800 0012 10B9     		cbnz	r0, .L81
+ 191:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 801              		.loc 1 191 16 view .LVU181
+ 802 0014 0020     		movs	r0, #0
+ 803              	.LVL92:
+ 804              	.L78:
+ 208:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 805              		.loc 1 208 1 view .LVU182
+ 806 0016 07B0     		add	sp, sp, #28
+ 807              	.LCFI16:
+ 808              		.cfi_remember_state
+ 809              		.cfi_def_cfa_offset 12
+ 810              		@ sp needed
+ 811 0018 30BD     		pop	{r4, r5, pc}
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 24
+
+
+ 812              	.LVL93:
+ 813              	.L81:
+ 814              	.LCFI17:
+ 815              		.cfi_restore_state
+ 194:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 816              		.loc 1 194 5 is_stmt 1 view .LVU183
+ 817 001a 0121     		movs	r1, #1
+ 818 001c FFF7FEFF 		bl	crm_periph_clock_enable
+ 819              	.LVL94:
+ 197:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 820              		.loc 1 197 5 view .LVU184
+ 821 0020 04A8     		add	r0, sp, #16
+ 822 0022 FFF7FEFF 		bl	gpio_default_para_init
+ 823              	.LVL95:
+ 200:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_out_type  = GPIO_OUTPUT_PUSH_PULL;
+ 824              		.loc 1 200 5 view .LVU185
+ 200:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_out_type  = GPIO_OUTPUT_PUSH_PULL;
+ 825              		.loc 1 200 42 is_stmt 0 view .LVU186
+ 826 0026 0124     		movs	r4, #1
+ 827 0028 8DF81740 		strb	r4, [sp, #23]
+ 201:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_mode = GPIO_MODE_OUTPUT;
+ 828              		.loc 1 201 5 is_stmt 1 view .LVU187
+ 201:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_mode = GPIO_MODE_OUTPUT;
+ 829              		.loc 1 201 37 is_stmt 0 view .LVU188
+ 830 002c 0023     		movs	r3, #0
+ 831 002e 8DF81430 		strb	r3, [sp, #20]
+ 202:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pins = IO_Obj.pin;
+ 832              		.loc 1 202 5 is_stmt 1 view .LVU189
+ 202:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pins = IO_Obj.pin;
+ 833              		.loc 1 202 32 is_stmt 0 view .LVU190
+ 834 0032 8DF81640 		strb	r4, [sp, #22]
+ 203:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pull = IO_Obj.init_state;
+ 835              		.loc 1 203 5 is_stmt 1 view .LVU191
+ 203:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pull = IO_Obj.init_state;
+ 836              		.loc 1 203 40 is_stmt 0 view .LVU192
+ 837 0036 BDF80830 		ldrh	r3, [sp, #8]
+ 203:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_struct.gpio_pull = IO_Obj.init_state;
+ 838              		.loc 1 203 32 view .LVU193
+ 839 003a 0493     		str	r3, [sp, #16]
+ 204:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_init_struct);
+ 840              		.loc 1 204 5 is_stmt 1 view .LVU194
+ 204:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_init_struct);
+ 841              		.loc 1 204 40 is_stmt 0 view .LVU195
+ 842 003c 9DF80A30 		ldrb	r3, [sp, #10]	@ zero_extendqisi2
+ 204:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_init_struct);
+ 843              		.loc 1 204 32 view .LVU196
+ 844 0040 8DF81530 		strb	r3, [sp, #21]
+ 205:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****   
+ 845              		.loc 1 205 5 is_stmt 1 view .LVU197
+ 846 0044 04A9     		add	r1, sp, #16
+ 847 0046 2868     		ldr	r0, [r5]
+ 848 0048 FFF7FEFF 		bl	gpio_init
+ 849              	.LVL96:
+ 207:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }   
+ 850              		.loc 1 207 5 view .LVU198
+ 207:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }   
+ 851              		.loc 1 207 12 is_stmt 0 view .LVU199
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 25
+
+
+ 852 004c 2046     		mov	r0, r4
+ 853 004e E2E7     		b	.L78
+ 854              		.cfi_endproc
+ 855              	.LFE140:
+ 857              		.section	.text.BspGPIO_Get_Bit_Index,"ax",%progbits
+ 858              		.align	1
+ 859              		.global	BspGPIO_Get_Bit_Index
+ 860              		.syntax unified
+ 861              		.thumb
+ 862              		.thumb_func
+ 864              	BspGPIO_Get_Bit_Index:
+ 865              	.LVL97:
+ 866              	.LFB133:
+  40:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	float f_val = (float)val;
+ 867              		.loc 1 40 1 is_stmt 1 view -0
+ 868              		.cfi_startproc
+ 869              		@ args = 0, pretend = 0, frame = 0
+ 870              		@ frame_needed = 0, uses_anonymous_args = 0
+ 871              		@ link register save eliminated.
+  40:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	float f_val = (float)val;
+ 872              		.loc 1 40 1 is_stmt 0 view .LVU201
+ 873 0000 07EE900A 		vmov	s15, r0	@ int
+  41:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	uint32_t u32_val = 0;
+ 874              		.loc 1 41 2 is_stmt 1 view .LVU202
+ 875              	.LVL98:
+  42:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	uint8_t bit = 0;
+ 876              		.loc 1 42 2 view .LVU203
+  43:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	
+ 877              		.loc 1 43 2 view .LVU204
+  45:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	
+ 878              		.loc 1 45 2 view .LVU205
+  45:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	
+ 879              		.loc 1 45 10 is_stmt 0 view .LVU206
+ 880 0004 F8EE677A 		vcvt.f32.u32	s15, s15
+ 881              	.LVL99:
+  45:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	
+ 882              		.loc 1 45 10 view .LVU207
+ 883 0008 17EE900A 		vmov	r0, s15
+ 884              	.LVL100:
+  47:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	bit -= 127;
+ 885              		.loc 1 47 2 is_stmt 1 view .LVU208
+  47:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	bit -= 127;
+ 886              		.loc 1 47 6 is_stmt 0 view .LVU209
+ 887 000c C0F3C750 		ubfx	r0, r0, #23, #8
+ 888              	.LVL101:
+  48:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	
+ 889              		.loc 1 48 2 is_stmt 1 view .LVU210
+  48:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 	
+ 890              		.loc 1 48 6 is_stmt 0 view .LVU211
+ 891 0010 7F38     		subs	r0, r0, #127
+ 892              	.LVL102:
+  50:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 893              		.loc 1 50 5 is_stmt 1 view .LVU212
+  51:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 894              		.loc 1 51 1 is_stmt 0 view .LVU213
+ 895 0012 C0B2     		uxtb	r0, r0
+  51:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 26
+
+
+ 896              		.loc 1 51 1 view .LVU214
+ 897 0014 7047     		bx	lr
+ 898              		.cfi_endproc
+ 899              	.LFE133:
+ 901              		.section	.text.BspGPIO_Get_PinSource,"ax",%progbits
+ 902              		.align	1
+ 903              		.syntax unified
+ 904              		.thumb
+ 905              		.thumb_func
+ 907              	BspGPIO_Get_PinSource:
+ 908              	.LVL103:
+ 909              	.LFB135:
+  93:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(pin > GPIO_PINS_15)
+ 910              		.loc 1 93 1 is_stmt 1 view -0
+ 911              		.cfi_startproc
+ 912              		@ args = 0, pretend = 0, frame = 0
+ 913              		@ frame_needed = 0, uses_anonymous_args = 0
+  94:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return 16;
+ 914              		.loc 1 94 5 view .LVU216
+  94:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return 16;
+ 915              		.loc 1 94 7 is_stmt 0 view .LVU217
+ 916 0000 B0F5004F 		cmp	r0, #32768
+ 917 0004 03D8     		bhi	.L85
+  93:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(pin > GPIO_PINS_15)
+ 918              		.loc 1 93 1 view .LVU218
+ 919 0006 08B5     		push	{r3, lr}
+ 920              	.LCFI18:
+ 921              		.cfi_def_cfa_offset 8
+ 922              		.cfi_offset 3, -8
+ 923              		.cfi_offset 14, -4
+  97:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 924              		.loc 1 97 5 is_stmt 1 view .LVU219
+  97:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 925              		.loc 1 97 12 is_stmt 0 view .LVU220
+ 926 0008 FFF7FEFF 		bl	BspGPIO_Get_Bit_Index
+ 927              	.LVL104:
+  98:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 928              		.loc 1 98 1 view .LVU221
+ 929 000c 08BD     		pop	{r3, pc}
+ 930              	.LVL105:
+ 931              	.L85:
+ 932              	.LCFI19:
+ 933              		.cfi_def_cfa_offset 0
+ 934              		.cfi_restore 3
+ 935              		.cfi_restore 14
+  95:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 936              		.loc 1 95 16 view .LVU222
+ 937 000e 1020     		movs	r0, #16
+ 938              	.LVL106:
+  98:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 939              		.loc 1 98 1 view .LVU223
+ 940 0010 7047     		bx	lr
+ 941              		.cfi_endproc
+ 942              	.LFE135:
+ 944              		.section	.text.BspGPIO_Set_Exti_Mode,"ax",%progbits
+ 945              		.align	1
+ 946              		.syntax unified
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 27
+
+
+ 947              		.thumb
+ 948              		.thumb_func
+ 950              	BspGPIO_Set_Exti_Mode:
+ 951              	.LVL107:
+ 952              	.LFB146:
+ 330:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_type exint_init_struct;
+ 953              		.loc 1 330 1 is_stmt 1 view -0
+ 954              		.cfi_startproc
+ 955              		@ args = 0, pretend = 0, frame = 32
+ 956              		@ frame_needed = 0, uses_anonymous_args = 0
+ 330:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_type exint_init_struct;
+ 957              		.loc 1 330 1 is_stmt 0 view .LVU225
+ 958 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 959              	.LCFI20:
+ 960              		.cfi_def_cfa_offset 24
+ 961              		.cfi_offset 4, -24
+ 962              		.cfi_offset 5, -20
+ 963              		.cfi_offset 6, -16
+ 964              		.cfi_offset 7, -12
+ 965              		.cfi_offset 8, -8
+ 966              		.cfi_offset 14, -4
+ 967 0004 88B0     		sub	sp, sp, #32
+ 968              	.LCFI21:
+ 969              		.cfi_def_cfa_offset 56
+ 970 0006 0DF1040C 		add	ip, sp, #4
+ 971 000a 8CE80700 		stm	ip, {r0, r1, r2}
+ 972 000e 1E46     		mov	r6, r3
+ 331:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_polarity_config_type polarity = EXINT_TRIGGER_BOTH_EDGE;
+ 973              		.loc 1 331 5 is_stmt 1 view .LVU226
+ 332:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t exti_line = 0;
+ 974              		.loc 1 332 5 view .LVU227
+ 975              	.LVL108:
+ 333:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t pin_source = 0;
+ 976              		.loc 1 333 5 view .LVU228
+ 334:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_type clk = 0;
+ 977              		.loc 1 334 5 view .LVU229
+ 335:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 978              		.loc 1 335 5 view .LVU230
+ 337:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 979              		.loc 1 337 5 view .LVU231
+ 337:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 980              		.loc 1 337 27 is_stmt 0 view .LVU232
+ 981 0010 0446     		mov	r4, r0
+ 337:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 982              		.loc 1 337 11 view .LVU233
+ 983 0012 0068     		ldr	r0, [r0]
+ 984 0014 FFF7FEFF 		bl	BspGPIO_Get_CLK
+ 985              	.LVL109:
+ 338:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 986              		.loc 1 338 5 is_stmt 1 view .LVU234
+ 338:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 987              		.loc 1 338 7 is_stmt 0 view .LVU235
+ 988 0018 18B9     		cbnz	r0, .L96
+ 989              	.LVL110:
+ 990              	.L91:
+ 384:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 991              		.loc 1 384 1 view .LVU236
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 28
+
+
+ 992 001a 0020     		movs	r0, #0
+ 993 001c 08B0     		add	sp, sp, #32
+ 994              	.LCFI22:
+ 995              		.cfi_remember_state
+ 996              		.cfi_def_cfa_offset 24
+ 997              		@ sp needed
+ 998 001e BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 999              	.LVL111:
+ 1000              	.L96:
+ 1001              	.LCFI23:
+ 1002              		.cfi_restore_state
+ 384:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1003              		.loc 1 384 1 view .LVU237
+ 1004 0022 0546     		mov	r5, r0
+ 342:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1005              		.loc 1 342 5 is_stmt 1 view .LVU238
+ 342:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1006              		.loc 1 342 45 is_stmt 0 view .LVU239
+ 1007 0024 BDF80870 		ldrh	r7, [sp, #8]
+ 342:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1008              		.loc 1 342 5 view .LVU240
+ 1009 0028 3846     		mov	r0, r7
+ 1010              	.LVL112:
+ 342:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1011              		.loc 1 342 5 view .LVU241
+ 1012 002a FFF7FEFF 		bl	BspGPIO_Get_IRQn
+ 1013              	.LVL113:
+ 1014 002e 8046     		mov	r8, r0
+ 1015 0030 FFF7FEFF 		bl	nvic_irq_disable
+ 1016              	.LVL114:
+ 344:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1017              		.loc 1 344 5 is_stmt 1 view .LVU242
+ 1018 0034 0121     		movs	r1, #1
+ 1019 0036 2846     		mov	r0, r5
+ 1020 0038 FFF7FEFF 		bl	crm_periph_clock_enable
+ 1021              	.LVL115:
+ 346:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     pin_source = BspGPIO_Get_PinSource(IO_Obj.pin);
+ 1022              		.loc 1 346 5 view .LVU243
+ 346:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     pin_source = BspGPIO_Get_PinSource(IO_Obj.pin);
+ 1023              		.loc 1 346 17 is_stmt 0 view .LVU244
+ 1024 003c 3846     		mov	r0, r7
+ 1025 003e FFF7FEFF 		bl	BsPGPIO_Get_EXTI_Line
+ 1026              	.LVL116:
+ 1027 0042 0546     		mov	r5, r0
+ 1028              	.LVL117:
+ 347:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1029              		.loc 1 347 5 is_stmt 1 view .LVU245
+ 347:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1030              		.loc 1 347 18 is_stmt 0 view .LVU246
+ 1031 0044 3846     		mov	r0, r7
+ 1032              	.LVL118:
+ 347:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1033              		.loc 1 347 18 view .LVU247
+ 1034 0046 FFF7FEFF 		bl	BspGPIO_Get_PinSource
+ 1035              	.LVL119:
+ 349:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (pin_source > SCFG_PINS_SOURCE15) || \
+ 1036              		.loc 1 349 5 is_stmt 1 view .LVU248
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 29
+
+
+ 349:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (pin_source > SCFG_PINS_SOURCE15) || \
+ 1037              		.loc 1 349 7 is_stmt 0 view .LVU249
+ 1038 004a 002D     		cmp	r5, #0
+ 1039 004c E5D0     		beq	.L91
+ 349:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (pin_source > SCFG_PINS_SOURCE15) || \
+ 1040              		.loc 1 349 26 discriminator 1 view .LVU250
+ 1041 004e 0F28     		cmp	r0, #15
+ 1042 0050 E3D8     		bhi	.L91
+ 351:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 1043              		.loc 1 351 16 view .LVU251
+ 1044 0052 9DF80A30 		ldrb	r3, [sp, #10]	@ zero_extendqisi2
+ 350:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (IO_Obj.init_state > EXINT_TRIGGER_BOTH_EDGE))
+ 1045              		.loc 1 350 43 view .LVU252
+ 1046 0056 022B     		cmp	r3, #2
+ 1047 0058 DFD8     		bhi	.L91
+ 354:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 1048              		.loc 1 354 5 is_stmt 1 view .LVU253
+ 1049 005a 022E     		cmp	r6, #2
+ 1050 005c 20D0     		beq	.L93
+ 1051 005e 032E     		cmp	r6, #3
+ 1052 0060 20D0     		beq	.L94
+ 1053 0062 012E     		cmp	r6, #1
+ 1054 0064 D9D1     		bne	.L91
+ 357:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             break;
+ 1055              		.loc 1 357 22 is_stmt 0 view .LVU254
+ 1056 0066 0026     		movs	r6, #0
+ 1057              	.L92:
+ 1058              	.LVL120:
+ 371:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 1059              		.loc 1 371 5 is_stmt 1 view .LVU255
+ 1060 0068 0146     		mov	r1, r0
+ 1061 006a 2078     		ldrb	r0, [r4]	@ zero_extendqisi2
+ 1062              	.LVL121:
+ 371:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 1063              		.loc 1 371 5 is_stmt 0 view .LVU256
+ 1064 006c FFF7FEFF 		bl	scfg_exint_line_config
+ 1065              	.LVL122:
+ 373:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_enable = TRUE;
+ 1066              		.loc 1 373 5 is_stmt 1 view .LVU257
+ 1067 0070 05A8     		add	r0, sp, #20
+ 1068 0072 FFF7FEFF 		bl	exint_default_para_init
+ 1069              	.LVL123:
+ 374:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_mode = EXINT_LINE_INTERRUPUT;
+ 1070              		.loc 1 374 5 view .LVU258
+ 374:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_mode = EXINT_LINE_INTERRUPUT;
+ 1071              		.loc 1 374 35 is_stmt 0 view .LVU259
+ 1072 0076 0123     		movs	r3, #1
+ 1073 0078 8DF81D30 		strb	r3, [sp, #29]
+ 375:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_select = exti_line;
+ 1074              		.loc 1 375 5 is_stmt 1 view .LVU260
+ 375:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_select = exti_line;
+ 1075              		.loc 1 375 33 is_stmt 0 view .LVU261
+ 1076 007c 0024     		movs	r4, #0
+ 1077 007e 8DF81440 		strb	r4, [sp, #20]
+ 376:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_polarity = polarity;
+ 1078              		.loc 1 376 5 is_stmt 1 view .LVU262
+ 376:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_polarity = polarity;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 30
+
+
+ 1079              		.loc 1 376 35 is_stmt 0 view .LVU263
+ 1080 0082 0695     		str	r5, [sp, #24]
+ 377:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init(&exint_init_struct);
+ 1081              		.loc 1 377 5 is_stmt 1 view .LVU264
+ 377:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init(&exint_init_struct);
+ 1082              		.loc 1 377 37 is_stmt 0 view .LVU265
+ 1083 0084 8DF81C60 		strb	r6, [sp, #28]
+ 378:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1084              		.loc 1 378 5 is_stmt 1 view .LVU266
+ 1085 0088 05A8     		add	r0, sp, #20
+ 1086 008a FFF7FEFF 		bl	exint_init
+ 1087              	.LVL124:
+ 380:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     nvic_irq_enable(BspGPIO_Get_IRQn(IO_Obj.pin), 5, 0);
+ 1088              		.loc 1 380 5 view .LVU267
+ 1089 008e 0320     		movs	r0, #3
+ 1090 0090 FFF7FEFF 		bl	nvic_priority_group_config
+ 1091              	.LVL125:
+ 381:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1092              		.loc 1 381 5 view .LVU268
+ 1093 0094 2246     		mov	r2, r4
+ 1094 0096 0521     		movs	r1, #5
+ 1095 0098 4046     		mov	r0, r8
+ 1096 009a FFF7FEFF 		bl	nvic_irq_enable
+ 1097              	.LVL126:
+ 383:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 1098              		.loc 1 383 5 view .LVU269
+ 383:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 1099              		.loc 1 383 12 is_stmt 0 view .LVU270
+ 1100 009e BCE7     		b	.L91
+ 1101              	.LVL127:
+ 1102              	.L93:
+ 361:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             break;
+ 1103              		.loc 1 361 22 view .LVU271
+ 1104 00a0 0126     		movs	r6, #1
+ 1105 00a2 E1E7     		b	.L92
+ 1106              	.L94:
+ 354:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 1107              		.loc 1 354 5 view .LVU272
+ 1108 00a4 0226     		movs	r6, #2
+ 1109 00a6 DFE7     		b	.L92
+ 1110              		.cfi_endproc
+ 1111              	.LFE146:
+ 1113              		.section	.text.BspGPIO_Set_Exti_Callback,"ax",%progbits
+ 1114              		.align	1
+ 1115              		.syntax unified
+ 1116              		.thumb
+ 1117              		.thumb_func
+ 1119              	BspGPIO_Set_Exti_Callback:
+ 1120              	.LVL128:
+ 1121              	.LFB145:
+ 318:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t pin_source = 0;
+ 1122              		.loc 1 318 1 is_stmt 1 view -0
+ 1123              		.cfi_startproc
+ 1124              		@ args = 0, pretend = 0, frame = 16
+ 1125              		@ frame_needed = 0, uses_anonymous_args = 0
+ 318:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t pin_source = 0;
+ 1126              		.loc 1 318 1 is_stmt 0 view .LVU274
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 31
+
+
+ 1127 0000 10B5     		push	{r4, lr}
+ 1128              	.LCFI24:
+ 1129              		.cfi_def_cfa_offset 8
+ 1130              		.cfi_offset 4, -8
+ 1131              		.cfi_offset 14, -4
+ 1132 0002 84B0     		sub	sp, sp, #16
+ 1133              	.LCFI25:
+ 1134              		.cfi_def_cfa_offset 24
+ 1135 0004 04AC     		add	r4, sp, #16
+ 1136 0006 04E90700 		stmdb	r4, {r0, r1, r2}
+ 1137 000a 1C46     		mov	r4, r3
+ 319:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     pin_source = BspGPIO_Get_PinSource(IO_Obj.pin);
+ 1138              		.loc 1 319 5 is_stmt 1 view .LVU275
+ 1139              	.LVL129:
+ 320:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(pin_source > SCFG_PINS_SOURCE15)
+ 1140              		.loc 1 320 5 view .LVU276
+ 320:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(pin_source > SCFG_PINS_SOURCE15)
+ 1141              		.loc 1 320 18 is_stmt 0 view .LVU277
+ 1142 000c BDF80800 		ldrh	r0, [sp, #8]
+ 1143 0010 FFF7FEFF 		bl	BspGPIO_Get_PinSource
+ 1144              	.LVL130:
+ 321:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 1145              		.loc 1 321 5 is_stmt 1 view .LVU278
+ 321:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 1146              		.loc 1 321 7 is_stmt 0 view .LVU279
+ 1147 0014 0F28     		cmp	r0, #15
+ 1148 0016 05D8     		bhi	.L99
+ 324:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1149              		.loc 1 324 5 is_stmt 1 view .LVU280
+ 324:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1150              		.loc 1 324 36 is_stmt 0 view .LVU281
+ 1151 0018 034B     		ldr	r3, .L101
+ 1152 001a 43F82040 		str	r4, [r3, r0, lsl #2]
+ 326:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 1153              		.loc 1 326 5 is_stmt 1 view .LVU282
+ 326:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 1154              		.loc 1 326 12 is_stmt 0 view .LVU283
+ 1155 001e 0120     		movs	r0, #1
+ 1156              	.LVL131:
+ 1157              	.L98:
+ 327:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1158              		.loc 1 327 1 view .LVU284
+ 1159 0020 04B0     		add	sp, sp, #16
+ 1160              	.LCFI26:
+ 1161              		.cfi_remember_state
+ 1162              		.cfi_def_cfa_offset 8
+ 1163              		@ sp needed
+ 1164 0022 10BD     		pop	{r4, pc}
+ 1165              	.LVL132:
+ 1166              	.L99:
+ 1167              	.LCFI27:
+ 1168              		.cfi_restore_state
+ 322:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1169              		.loc 1 322 16 view .LVU285
+ 1170 0024 0020     		movs	r0, #0
+ 1171              	.LVL133:
+ 322:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 32
+
+
+ 1172              		.loc 1 322 16 view .LVU286
+ 1173 0026 FBE7     		b	.L98
+ 1174              	.L102:
+ 1175              		.align	2
+ 1176              	.L101:
+ 1177 0028 00000000 		.word	.LANCHOR0
+ 1178              		.cfi_endproc
+ 1179              	.LFE145:
+ 1181              		.section	.text.BspGPIO_Altnate_Init,"ax",%progbits
+ 1182              		.align	1
+ 1183              		.syntax unified
+ 1184              		.thumb
+ 1185              		.thumb_func
+ 1187              	BspGPIO_Altnate_Init:
+ 1188              	.LVL134:
+ 1189              	.LFB143:
+ 277:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_type gpio_initstructure;
+ 1190              		.loc 1 277 1 is_stmt 1 view -0
+ 1191              		.cfi_startproc
+ 1192              		@ args = 0, pretend = 0, frame = 24
+ 1193              		@ frame_needed = 0, uses_anonymous_args = 0
+ 277:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_type gpio_initstructure;
+ 1194              		.loc 1 277 1 is_stmt 0 view .LVU288
+ 1195 0000 70B5     		push	{r4, r5, r6, lr}
+ 1196              	.LCFI28:
+ 1197              		.cfi_def_cfa_offset 16
+ 1198              		.cfi_offset 4, -16
+ 1199              		.cfi_offset 5, -12
+ 1200              		.cfi_offset 6, -8
+ 1201              		.cfi_offset 14, -4
+ 1202 0002 86B0     		sub	sp, sp, #24
+ 1203              	.LCFI29:
+ 1204              		.cfi_def_cfa_offset 40
+ 1205 0004 01AB     		add	r3, sp, #4
+ 1206              	.LVL135:
+ 277:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init_type gpio_initstructure;
+ 1207              		.loc 1 277 1 view .LVU289
+ 1208 0006 83E80700 		stm	r3, {r0, r1, r2}
+ 278:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t pin_source = 0;
+ 1209              		.loc 1 278 5 is_stmt 1 view .LVU290
+ 279:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_type clk = 0;
+ 1210              		.loc 1 279 5 view .LVU291
+ 1211              	.LVL136:
+ 280:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1212              		.loc 1 280 5 view .LVU292
+ 282:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1213              		.loc 1 282 5 view .LVU293
+ 284:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 1214              		.loc 1 284 5 view .LVU294
+ 284:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 1215              		.loc 1 284 27 is_stmt 0 view .LVU295
+ 1216 000a 0446     		mov	r4, r0
+ 284:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 1217              		.loc 1 284 11 view .LVU296
+ 1218 000c 0068     		ldr	r0, [r0]
+ 1219 000e FFF7FEFF 		bl	BspGPIO_Get_CLK
+ 1220              	.LVL137:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 33
+
+
+ 285:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 1221              		.loc 1 285 5 is_stmt 1 view .LVU297
+ 285:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 1222              		.loc 1 285 7 is_stmt 0 view .LVU298
+ 1223 0012 10B9     		cbnz	r0, .L109
+ 286:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 1224              		.loc 1 286 16 view .LVU299
+ 1225 0014 0020     		movs	r0, #0
+ 1226              	.LVL138:
+ 1227              	.L104:
+ 307:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1228              		.loc 1 307 1 view .LVU300
+ 1229 0016 06B0     		add	sp, sp, #24
+ 1230              	.LCFI30:
+ 1231              		.cfi_remember_state
+ 1232              		.cfi_def_cfa_offset 16
+ 1233              		@ sp needed
+ 1234 0018 70BD     		pop	{r4, r5, r6, pc}
+ 1235              	.LVL139:
+ 1236              	.L109:
+ 1237              	.LCFI31:
+ 1238              		.cfi_restore_state
+ 288:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_default_para_init(&gpio_initstructure);
+ 1239              		.loc 1 288 5 is_stmt 1 view .LVU301
+ 1240 001a 0121     		movs	r1, #1
+ 1241 001c FFF7FEFF 		bl	crm_periph_clock_enable
+ 1242              	.LVL140:
+ 289:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1243              		.loc 1 289 5 view .LVU302
+ 1244 0020 04A8     		add	r0, sp, #16
+ 1245 0022 FFF7FEFF 		bl	gpio_default_para_init
+ 1246              	.LVL141:
+ 291:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1247              		.loc 1 291 5 view .LVU303
+ 291:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1248              		.loc 1 291 18 is_stmt 0 view .LVU304
+ 1249 0026 BDF80860 		ldrh	r6, [sp, #8]
+ 1250 002a 3046     		mov	r0, r6
+ 1251 002c FFF7FEFF 		bl	BspGPIO_Get_PinSource
+ 1252              	.LVL142:
+ 1253 0030 0546     		mov	r5, r0
+ 1254              	.LVL143:
+ 293:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 1255              		.loc 1 293 5 is_stmt 1 view .LVU305
+ 293:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 1256              		.loc 1 293 7 is_stmt 0 view .LVU306
+ 1257 0032 1028     		cmp	r0, #16
+ 1258 0034 1AD0     		beq	.L107
+ 296:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_initstructure.gpio_pull = GPIO_PULL_UP;
+ 1259              		.loc 1 296 5 is_stmt 1 view .LVU307
+ 296:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_initstructure.gpio_pull = GPIO_PULL_UP;
+ 1260              		.loc 1 296 44 is_stmt 0 view .LVU308
+ 1261 0036 0123     		movs	r3, #1
+ 1262 0038 8DF81730 		strb	r3, [sp, #23]
+ 297:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_initstructure.gpio_mode = GPIO_MODE_MUX;
+ 1263              		.loc 1 297 5 is_stmt 1 view .LVU309
+ 297:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_initstructure.gpio_mode = GPIO_MODE_MUX;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 34
+
+
+ 1264              		.loc 1 297 34 is_stmt 0 view .LVU310
+ 1265 003c 8DF81530 		strb	r3, [sp, #21]
+ 298:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_initstructure.gpio_pins = IO_Obj.pin;
+ 1266              		.loc 1 298 5 is_stmt 1 view .LVU311
+ 298:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_initstructure.gpio_pins = IO_Obj.pin;
+ 1267              		.loc 1 298 34 is_stmt 0 view .LVU312
+ 1268 0040 0223     		movs	r3, #2
+ 1269 0042 8DF81630 		strb	r3, [sp, #22]
+ 299:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if (IO_Obj.open_drain)
+ 1270              		.loc 1 299 5 is_stmt 1 view .LVU313
+ 299:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if (IO_Obj.open_drain)
+ 1271              		.loc 1 299 34 is_stmt 0 view .LVU314
+ 1272 0046 0496     		str	r6, [sp, #16]
+ 300:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         gpio_initstructure.gpio_out_type = GPIO_OUTPUT_OPEN_DRAIN;
+ 1273              		.loc 1 300 5 is_stmt 1 view .LVU315
+ 300:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         gpio_initstructure.gpio_out_type = GPIO_OUTPUT_OPEN_DRAIN;
+ 1274              		.loc 1 300 15 is_stmt 0 view .LVU316
+ 1275 0048 9DF80B30 		ldrb	r3, [sp, #11]	@ zero_extendqisi2
+ 300:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         gpio_initstructure.gpio_out_type = GPIO_OUTPUT_OPEN_DRAIN;
+ 1276              		.loc 1 300 8 view .LVU317
+ 1277 004c 13B1     		cbz	r3, .L105
+ 301:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_initstructure);
+ 1278              		.loc 1 301 9 is_stmt 1 view .LVU318
+ 301:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_initstructure);
+ 1279              		.loc 1 301 42 is_stmt 0 view .LVU319
+ 1280 004e 0123     		movs	r3, #1
+ 1281 0050 8DF81430 		strb	r3, [sp, #20]
+ 1282              	.L105:
+ 302:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1283              		.loc 1 302 5 is_stmt 1 view .LVU320
+ 1284 0054 04A9     		add	r1, sp, #16
+ 1285 0056 2068     		ldr	r0, [r4]
+ 1286              	.LVL144:
+ 302:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1287              		.loc 1 302 5 is_stmt 0 view .LVU321
+ 1288 0058 FFF7FEFF 		bl	gpio_init
+ 1289              	.LVL145:
+ 304:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1290              		.loc 1 304 5 is_stmt 1 view .LVU322
+ 1291 005c 9DF80C20 		ldrb	r2, [sp, #12]	@ zero_extendqisi2
+ 1292 0060 2946     		mov	r1, r5
+ 1293 0062 2068     		ldr	r0, [r4]
+ 1294 0064 FFF7FEFF 		bl	gpio_pin_mux_config
+ 1295              	.LVL146:
+ 306:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 1296              		.loc 1 306 5 view .LVU323
+ 306:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 1297              		.loc 1 306 12 is_stmt 0 view .LVU324
+ 1298 0068 0120     		movs	r0, #1
+ 1299 006a D4E7     		b	.L104
+ 1300              	.LVL147:
+ 1301              	.L107:
+ 294:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1302              		.loc 1 294 16 view .LVU325
+ 1303 006c 0020     		movs	r0, #0
+ 1304              	.LVL148:
+ 294:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 35
+
+
+ 1305              		.loc 1 294 16 view .LVU326
+ 1306 006e D2E7     		b	.L104
+ 1307              		.cfi_endproc
+ 1308              	.LFE143:
+ 1310              		.section	.text.BspGPIO_Exti_Init,"ax",%progbits
+ 1311              		.align	1
+ 1312              		.syntax unified
+ 1313              		.thumb
+ 1314              		.thumb_func
+ 1316              	BspGPIO_Exti_Init:
+ 1317              	.LVL149:
+ 1318              	.LFB142:
+ 237:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_type exint_init_struct;
+ 1319              		.loc 1 237 1 is_stmt 1 view -0
+ 1320              		.cfi_startproc
+ 1321              		@ args = 0, pretend = 0, frame = 32
+ 1322              		@ frame_needed = 0, uses_anonymous_args = 0
+ 237:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_type exint_init_struct;
+ 1323              		.loc 1 237 1 is_stmt 0 view .LVU328
+ 1324 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 1325              	.LCFI32:
+ 1326              		.cfi_def_cfa_offset 32
+ 1327              		.cfi_offset 4, -32
+ 1328              		.cfi_offset 5, -28
+ 1329              		.cfi_offset 6, -24
+ 1330              		.cfi_offset 7, -20
+ 1331              		.cfi_offset 8, -16
+ 1332              		.cfi_offset 9, -12
+ 1333              		.cfi_offset 10, -8
+ 1334              		.cfi_offset 14, -4
+ 1335 0004 88B0     		sub	sp, sp, #32
+ 1336              	.LCFI33:
+ 1337              		.cfi_def_cfa_offset 64
+ 1338 0006 0DF1040C 		add	ip, sp, #4
+ 1339 000a 8CE80700 		stm	ip, {r0, r1, r2}
+ 1340 000e 1E46     		mov	r6, r3
+ 238:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t exti_line = 0;
+ 1341              		.loc 1 238 5 is_stmt 1 view .LVU329
+ 239:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint32_t pin_source = 0;
+ 1342              		.loc 1 239 5 view .LVU330
+ 1343              	.LVL150:
+ 240:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_type clk = 0;
+ 1344              		.loc 1 240 5 view .LVU331
+ 241:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1345              		.loc 1 241 5 view .LVU332
+ 243:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 1346              		.loc 1 243 5 view .LVU333
+ 243:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 1347              		.loc 1 243 31 is_stmt 0 view .LVU334
+ 1348 0010 0446     		mov	r4, r0
+ 243:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     if(clk == 0)
+ 1349              		.loc 1 243 11 view .LVU335
+ 1350 0012 0078     		ldrb	r0, [r0]	@ zero_extendqisi2
+ 1351 0014 FFF7FEFF 		bl	BspGPIO_Get_ExtiCLK
+ 1352              	.LVL151:
+ 244:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 1353              		.loc 1 244 5 is_stmt 1 view .LVU336
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 36
+
+
+ 244:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 1354              		.loc 1 244 7 is_stmt 0 view .LVU337
+ 1355 0018 18B9     		cbnz	r0, .L117
+ 245:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1356              		.loc 1 245 16 view .LVU338
+ 1357 001a 0020     		movs	r0, #0
+ 1358              	.LVL152:
+ 1359              	.L111:
+ 274:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1360              		.loc 1 274 1 view .LVU339
+ 1361 001c 08B0     		add	sp, sp, #32
+ 1362              	.LCFI34:
+ 1363              		.cfi_remember_state
+ 1364              		.cfi_def_cfa_offset 32
+ 1365              		@ sp needed
+ 1366 001e BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 1367              	.LVL153:
+ 1368              	.L117:
+ 1369              	.LCFI35:
+ 1370              		.cfi_restore_state
+ 274:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1371              		.loc 1 274 1 view .LVU340
+ 1372 0022 0546     		mov	r5, r0
+ 247:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_enable(clk, TRUE);
+ 1373              		.loc 1 247 5 is_stmt 1 view .LVU341
+ 1374 0024 0121     		movs	r1, #1
+ 1375 0026 2148     		ldr	r0, .L119
+ 1376              	.LVL154:
+ 247:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     crm_periph_clock_enable(clk, TRUE);
+ 1377              		.loc 1 247 5 is_stmt 0 view .LVU342
+ 1378 0028 FFF7FEFF 		bl	crm_periph_clock_enable
+ 1379              	.LVL155:
+ 248:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1380              		.loc 1 248 5 is_stmt 1 view .LVU343
+ 1381 002c 0121     		movs	r1, #1
+ 1382 002e 2846     		mov	r0, r5
+ 1383 0030 FFF7FEFF 		bl	crm_periph_clock_enable
+ 1384              	.LVL156:
+ 250:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     pin_source = BspGPIO_Get_PinSource(IO_Obj.pin);
+ 1385              		.loc 1 250 5 view .LVU344
+ 250:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     pin_source = BspGPIO_Get_PinSource(IO_Obj.pin);
+ 1386              		.loc 1 250 17 is_stmt 0 view .LVU345
+ 1387 0034 BDF80880 		ldrh	r8, [sp, #8]
+ 1388 0038 4046     		mov	r0, r8
+ 1389 003a FFF7FEFF 		bl	BsPGPIO_Get_EXTI_Line
+ 1390              	.LVL157:
+ 1391 003e 0546     		mov	r5, r0
+ 1392              	.LVL158:
+ 251:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1393              		.loc 1 251 5 is_stmt 1 view .LVU346
+ 251:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1394              		.loc 1 251 18 is_stmt 0 view .LVU347
+ 1395 0040 4046     		mov	r0, r8
+ 1396              	.LVL159:
+ 251:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1397              		.loc 1 251 18 view .LVU348
+ 1398 0042 FFF7FEFF 		bl	BspGPIO_Get_PinSource
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 37
+
+
+ 1399              	.LVL160:
+ 1400 0046 0746     		mov	r7, r0
+ 1401              	.LVL161:
+ 253:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (pin_source > SCFG_PINS_SOURCE15) || \
+ 1402              		.loc 1 253 5 is_stmt 1 view .LVU349
+ 253:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (pin_source > SCFG_PINS_SOURCE15) || \
+ 1403              		.loc 1 253 7 is_stmt 0 view .LVU350
+ 1404 0048 5DB3     		cbz	r5, .L113
+ 253:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (pin_source > SCFG_PINS_SOURCE15) || \
+ 1405              		.loc 1 253 26 discriminator 1 view .LVU351
+ 1406 004a 0F28     		cmp	r0, #15
+ 1407 004c 2BD8     		bhi	.L114
+ 255:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return false;
+ 1408              		.loc 1 255 16 view .LVU352
+ 1409 004e 9DF80A90 		ldrb	r9, [sp, #10]	@ zero_extendqisi2
+ 254:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         (IO_Obj.init_state > EXINT_TRIGGER_BOTH_EDGE))
+ 1410              		.loc 1 254 43 view .LVU353
+ 1411 0052 B9F1020F 		cmp	r9, #2
+ 1412 0056 01D9     		bls	.L118
+ 256:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1413              		.loc 1 256 16 view .LVU354
+ 1414 0058 0020     		movs	r0, #0
+ 1415              	.LVL162:
+ 256:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1416              		.loc 1 256 16 view .LVU355
+ 1417 005a DFE7     		b	.L111
+ 1418              	.LVL163:
+ 1419              	.L118:
+ 258:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 1420              		.loc 1 258 5 is_stmt 1 view .LVU356
+ 1421 005c 0146     		mov	r1, r0
+ 1422 005e 2078     		ldrb	r0, [r4]	@ zero_extendqisi2
+ 1423              	.LVL164:
+ 258:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 1424              		.loc 1 258 5 is_stmt 0 view .LVU357
+ 1425 0060 FFF7FEFF 		bl	scfg_exint_line_config
+ 1426              	.LVL165:
+ 260:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_enable = TRUE;
+ 1427              		.loc 1 260 5 is_stmt 1 view .LVU358
+ 1428 0064 05A8     		add	r0, sp, #20
+ 1429 0066 FFF7FEFF 		bl	exint_default_para_init
+ 1430              	.LVL166:
+ 261:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_mode = EXINT_LINE_INTERRUPUT;
+ 1431              		.loc 1 261 5 view .LVU359
+ 261:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_mode = EXINT_LINE_INTERRUPUT;
+ 1432              		.loc 1 261 35 is_stmt 0 view .LVU360
+ 1433 006a 0124     		movs	r4, #1
+ 1434 006c 8DF81D40 		strb	r4, [sp, #29]
+ 262:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_select = exti_line;
+ 1435              		.loc 1 262 5 is_stmt 1 view .LVU361
+ 262:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_select = exti_line;
+ 1436              		.loc 1 262 33 is_stmt 0 view .LVU362
+ 1437 0070 4FF0000A 		mov	r10, #0
+ 1438 0074 8DF814A0 		strb	r10, [sp, #20]
+ 263:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_polarity = IO_Obj.init_state;
+ 1439              		.loc 1 263 5 is_stmt 1 view .LVU363
+ 263:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init_struct.line_polarity = IO_Obj.init_state;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 38
+
+
+ 1440              		.loc 1 263 35 is_stmt 0 view .LVU364
+ 1441 0078 0695     		str	r5, [sp, #24]
+ 264:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init(&exint_init_struct);
+ 1442              		.loc 1 264 5 is_stmt 1 view .LVU365
+ 264:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     exint_init(&exint_init_struct);
+ 1443              		.loc 1 264 37 is_stmt 0 view .LVU366
+ 1444 007a 8DF81C90 		strb	r9, [sp, #28]
+ 265:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1445              		.loc 1 265 5 is_stmt 1 view .LVU367
+ 1446 007e 05A8     		add	r0, sp, #20
+ 1447 0080 FFF7FEFF 		bl	exint_init
+ 1448              	.LVL167:
+ 267:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     nvic_irq_enable(BspGPIO_Get_IRQn(IO_Obj.pin), 5, 0);
+ 1449              		.loc 1 267 5 view .LVU368
+ 1450 0084 0320     		movs	r0, #3
+ 1451 0086 FFF7FEFF 		bl	nvic_priority_group_config
+ 1452              	.LVL168:
+ 268:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1453              		.loc 1 268 5 view .LVU369
+ 1454 008a 4046     		mov	r0, r8
+ 1455 008c FFF7FEFF 		bl	BspGPIO_Get_IRQn
+ 1456              	.LVL169:
+ 1457 0090 5246     		mov	r2, r10
+ 1458 0092 0521     		movs	r1, #5
+ 1459 0094 FFF7FEFF 		bl	nvic_irq_enable
+ 1460              	.LVL170:
+ 271:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1461              		.loc 1 271 5 view .LVU370
+ 271:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1462              		.loc 1 271 36 is_stmt 0 view .LVU371
+ 1463 0098 054B     		ldr	r3, .L119+4
+ 1464 009a 43F82760 		str	r6, [r3, r7, lsl #2]
+ 273:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 1465              		.loc 1 273 5 is_stmt 1 view .LVU372
+ 273:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 1466              		.loc 1 273 12 is_stmt 0 view .LVU373
+ 1467 009e 2046     		mov	r0, r4
+ 1468 00a0 BCE7     		b	.L111
+ 1469              	.LVL171:
+ 1470              	.L113:
+ 256:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1471              		.loc 1 256 16 view .LVU374
+ 1472 00a2 0020     		movs	r0, #0
+ 1473              	.LVL172:
+ 256:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1474              		.loc 1 256 16 view .LVU375
+ 1475 00a4 BAE7     		b	.L111
+ 1476              	.LVL173:
+ 1477              	.L114:
+ 256:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1478              		.loc 1 256 16 view .LVU376
+ 1479 00a6 0020     		movs	r0, #0
+ 1480              	.LVL174:
+ 256:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1481              		.loc 1 256 16 view .LVU377
+ 1482 00a8 B8E7     		b	.L111
+ 1483              	.L120:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 39
+
+
+ 1484 00aa 00BF     		.align	2
+ 1485              	.L119:
+ 1486 00ac 0E004400 		.word	4456462
+ 1487 00b0 00000000 		.word	.LANCHOR0
+ 1488              		.cfi_endproc
+ 1489              	.LFE142:
+ 1491              		.section	.text.BspGPIO_EXTILine_To_PinSource,"ax",%progbits
+ 1492              		.align	1
+ 1493              		.syntax unified
+ 1494              		.thumb
+ 1495              		.thumb_func
+ 1497              	BspGPIO_EXTILine_To_PinSource:
+ 1498              	.LVL175:
+ 1499              	.LFB137:
+ 109:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint16_t index = 0;
+ 1500              		.loc 1 109 1 is_stmt 1 view -0
+ 1501              		.cfi_startproc
+ 1502              		@ args = 0, pretend = 0, frame = 0
+ 1503              		@ frame_needed = 0, uses_anonymous_args = 0
+ 110:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ 1504              		.loc 1 110 5 view .LVU379
+ 112:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return 0;
+ 1505              		.loc 1 112 5 view .LVU380
+ 112:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****         return 0;
+ 1506              		.loc 1 112 7 is_stmt 0 view .LVU381
+ 1507 0000 B0F5004F 		cmp	r0, #32768
+ 1508 0004 04D8     		bhi	.L123
+ 109:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint16_t index = 0;
+ 1509              		.loc 1 109 1 view .LVU382
+ 1510 0006 08B5     		push	{r3, lr}
+ 1511              	.LCFI36:
+ 1512              		.cfi_def_cfa_offset 8
+ 1513              		.cfi_offset 3, -8
+ 1514              		.cfi_offset 14, -4
+ 115:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     return BspGPIO_Get_Bit_Index(index);
+ 1515              		.loc 1 115 5 is_stmt 1 view .LVU383
+ 1516              	.LVL176:
+ 116:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 1517              		.loc 1 116 5 view .LVU384
+ 116:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 1518              		.loc 1 116 12 is_stmt 0 view .LVU385
+ 1519 0008 80B2     		uxth	r0, r0
+ 1520              	.LVL177:
+ 116:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** }
+ 1521              		.loc 1 116 12 view .LVU386
+ 1522 000a FFF7FEFF 		bl	BspGPIO_Get_Bit_Index
+ 1523              	.LVL178:
+ 117:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1524              		.loc 1 117 1 view .LVU387
+ 1525 000e 08BD     		pop	{r3, pc}
+ 1526              	.LVL179:
+ 1527              	.L123:
+ 1528              	.LCFI37:
+ 1529              		.cfi_def_cfa_offset 0
+ 1530              		.cfi_restore 3
+ 1531              		.cfi_restore 14
+ 113:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 40
+
+
+ 1532              		.loc 1 113 16 view .LVU388
+ 1533 0010 0020     		movs	r0, #0
+ 1534              	.LVL180:
+ 117:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1535              		.loc 1 117 1 view .LVU389
+ 1536 0012 7047     		bx	lr
+ 1537              		.cfi_endproc
+ 1538              	.LFE137:
+ 1540              		.section	.text.BspGPIO_IRQ_Polling,"ax",%progbits
+ 1541              		.align	1
+ 1542              		.global	BspGPIO_IRQ_Polling
+ 1543              		.syntax unified
+ 1544              		.thumb
+ 1545              		.thumb_func
+ 1547              	BspGPIO_IRQ_Polling:
+ 1548              	.LVL181:
+ 1549              	.LFB148:
+ 399:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint8_t index = 0;
+ 1550              		.loc 1 399 1 is_stmt 1 view -0
+ 1551              		.cfi_startproc
+ 1552              		@ args = 0, pretend = 0, frame = 0
+ 1553              		@ frame_needed = 0, uses_anonymous_args = 0
+ 399:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     uint8_t index = 0;
+ 1554              		.loc 1 399 1 is_stmt 0 view .LVU391
+ 1555 0000 10B5     		push	{r4, lr}
+ 1556              	.LCFI38:
+ 1557              		.cfi_def_cfa_offset 8
+ 1558              		.cfi_offset 4, -8
+ 1559              		.cfi_offset 14, -4
+ 1560 0002 0446     		mov	r4, r0
+ 400:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1561              		.loc 1 400 5 is_stmt 1 view .LVU392
+ 1562              	.LVL182:
+ 402:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 1563              		.loc 1 402 5 view .LVU393
+ 402:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 1564              		.loc 1 402 8 is_stmt 0 view .LVU394
+ 1565 0004 FFF7FEFF 		bl	exint_flag_get
+ 1566              	.LVL183:
+ 402:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     {
+ 1567              		.loc 1 402 7 view .LVU395
+ 1568 0008 60B1     		cbz	r0, .L128
+ 404:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1569              		.loc 1 404 9 is_stmt 1 view .LVU396
+ 404:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1570              		.loc 1 404 17 is_stmt 0 view .LVU397
+ 1571 000a 2046     		mov	r0, r4
+ 1572 000c FFF7FEFF 		bl	BspGPIO_EXTILine_To_PinSource
+ 1573              	.LVL184:
+ 406:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             EXTI_CallBack_List[index]();
+ 1574              		.loc 1 406 9 is_stmt 1 view .LVU398
+ 406:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             EXTI_CallBack_List[index]();
+ 1575              		.loc 1 406 11 is_stmt 0 view .LVU399
+ 1576 0010 0F28     		cmp	r0, #15
+ 1577 0012 04D8     		bhi	.L130
+ 406:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             EXTI_CallBack_List[index]();
+ 1578              		.loc 1 406 64 discriminator 1 view .LVU400
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 41
+
+
+ 1579 0014 044B     		ldr	r3, .L132
+ 1580 0016 53F82030 		ldr	r3, [r3, r0, lsl #2]
+ 406:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****             EXTI_CallBack_List[index]();
+ 1581              		.loc 1 406 42 discriminator 1 view .LVU401
+ 1582 001a 03B1     		cbz	r3, .L130
+ 407:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1583              		.loc 1 407 13 is_stmt 1 view .LVU402
+ 1584 001c 9847     		blx	r3
+ 1585              	.LVL185:
+ 1586              	.L130:
+ 409:HW_Lib/AT32F435/bsp/Bsp_GPIO.c ****     }
+ 1587              		.loc 1 409 9 view .LVU403
+ 1588 001e 2046     		mov	r0, r4
+ 1589 0020 FFF7FEFF 		bl	exint_flag_clear
+ 1590              	.LVL186:
+ 1591              	.L128:
+ 411:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1592              		.loc 1 411 1 is_stmt 0 view .LVU404
+ 1593 0024 10BD     		pop	{r4, pc}
+ 1594              	.LVL187:
+ 1595              	.L133:
+ 411:HW_Lib/AT32F435/bsp/Bsp_GPIO.c **** 
+ 1596              		.loc 1 411 1 view .LVU405
+ 1597 0026 00BF     		.align	2
+ 1598              	.L132:
+ 1599 0028 00000000 		.word	.LANCHOR0
+ 1600              		.cfi_endproc
+ 1601              	.LFE148:
+ 1603              		.global	BspGPIO
+ 1604              		.section	.bss.EXTI_CallBack_List,"aw",%nobits
+ 1605              		.align	2
+ 1606              		.set	.LANCHOR0,. + 0
+ 1609              	EXTI_CallBack_List:
+ 1610 0000 00000000 		.space	64
+ 1610      00000000 
+ 1610      00000000 
+ 1610      00000000 
+ 1610      00000000 
+ 1611              		.section	.data.BspGPIO,"aw"
+ 1612              		.align	2
+ 1615              	BspGPIO:
+ 1616 0000 00000000 		.word	BspGPIO_Exti_Init
+ 1617 0004 00000000 		.word	BspGPIO_Out_Init
+ 1618 0008 00000000 		.word	BspGPIO_In_Init
+ 1619 000c 00000000 		.word	BspGPIO_Altnate_Init
+ 1620 0010 00000000 		.word	BspGPIO_Read
+ 1621 0014 00000000 		.word	BspGPIO_Set_Exti_Callback
+ 1622 0018 00000000 		.word	BspGPIO_Set_Exti_Mode
+ 1623 001c 00000000 		.word	BspGPIO_Write
+ 1624 0020 00000000 		.word	BspGPIO_De_Init
+ 1625              		.text
+ 1626              	.Letext0:
+ 1627              		.file 2 "HW_Lib/AT32F435/device_support/at32f435_437.h"
+ 1628              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1629              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1630              		.file 5 "HW_Lib/AT32F435/drivers/inc/at32f435_437_crm.h"
+ 1631              		.file 6 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 42
+
+
+ 1632              		.file 7 "HW_Lib/AT32F435/drivers/inc/at32f435_437_gpio.h"
+ 1633              		.file 8 "HW_Lib/AT32F435/drivers/inc/at32f435_437_exint.h"
+ 1634              		.file 9 "HW_Lib/AT32F435/drivers/inc/at32f435_437_misc.h"
+ 1635              		.file 10 "HW_Lib/AT32F435/drivers/inc/at32f435_437_scfg.h"
+ 1636              		.file 11 "HW_Lib/Port_Def/Bsp_GPIO_Port_Def.h"
+ 1637              		.file 12 "HW_Lib/AT32F435/bsp/Bsp_GPIO.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 43
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Bsp_GPIO.c
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:20     .text.BspGPIO_Get_IRQn:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:25     .text.BspGPIO_Get_IRQn:00000000 BspGPIO_Get_IRQn
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:46     .text.BspGPIO_Get_IRQn:00000012 $d
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:78     .text.BspGPIO_Get_IRQn:00000032 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:250    .text.BsPGPIO_Get_EXTI_Line:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:255    .text.BsPGPIO_Get_EXTI_Line:00000000 BsPGPIO_Get_EXTI_Line
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:282    .text.BspGPIO_Get_ExtiCLK:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:287    .text.BspGPIO_Get_ExtiCLK:00000000 BspGPIO_Get_ExtiCLK
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:300    .text.BspGPIO_Get_ExtiCLK:00000008 $d
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:308    .text.BspGPIO_Get_ExtiCLK:00000010 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:380    .text.BspGPIO_Get_ExtiCLK:00000038 $d
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:391    .text.BspGPIO_Get_CLK:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:396    .text.BspGPIO_Get_CLK:00000000 BspGPIO_Get_CLK
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:518    .text.BspGPIO_Get_CLK:0000006c $d
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:530    .text.BspGPIO_Write:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:535    .text.BspGPIO_Write:00000000 BspGPIO_Write
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:587    .text.BspGPIO_De_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:592    .text.BspGPIO_De_Init:00000000 BspGPIO_De_Init
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:628    .text.BspGPIO_Read:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:633    .text.BspGPIO_Read:00000000 BspGPIO_Read
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:674    .text.BspGPIO_In_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:679    .text.BspGPIO_In_Init:00000000 BspGPIO_In_Init
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:766    .text.BspGPIO_Out_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:771    .text.BspGPIO_Out_Init:00000000 BspGPIO_Out_Init
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:858    .text.BspGPIO_Get_Bit_Index:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:864    .text.BspGPIO_Get_Bit_Index:00000000 BspGPIO_Get_Bit_Index
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:902    .text.BspGPIO_Get_PinSource:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:907    .text.BspGPIO_Get_PinSource:00000000 BspGPIO_Get_PinSource
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:945    .text.BspGPIO_Set_Exti_Mode:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:950    .text.BspGPIO_Set_Exti_Mode:00000000 BspGPIO_Set_Exti_Mode
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1114   .text.BspGPIO_Set_Exti_Callback:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1119   .text.BspGPIO_Set_Exti_Callback:00000000 BspGPIO_Set_Exti_Callback
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1177   .text.BspGPIO_Set_Exti_Callback:00000028 $d
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1182   .text.BspGPIO_Altnate_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1187   .text.BspGPIO_Altnate_Init:00000000 BspGPIO_Altnate_Init
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1311   .text.BspGPIO_Exti_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1316   .text.BspGPIO_Exti_Init:00000000 BspGPIO_Exti_Init
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1486   .text.BspGPIO_Exti_Init:000000ac $d
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1492   .text.BspGPIO_EXTILine_To_PinSource:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1497   .text.BspGPIO_EXTILine_To_PinSource:00000000 BspGPIO_EXTILine_To_PinSource
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1541   .text.BspGPIO_IRQ_Polling:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1547   .text.BspGPIO_IRQ_Polling:00000000 BspGPIO_IRQ_Polling
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1599   .text.BspGPIO_IRQ_Polling:00000028 $d
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1615   .data.BspGPIO:00000000 BspGPIO
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1605   .bss.EXTI_CallBack_List:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1609   .bss.EXTI_CallBack_List:00000000 EXTI_CallBack_List
+C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s:1612   .data.BspGPIO:00000000 $d
+
+UNDEFINED SYMBOLS
+gpio_reset
+gpio_input_data_bit_read
+crm_periph_clock_enable
+gpio_default_para_init
+gpio_init
+nvic_irq_disable
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc09eCxj.s 			page 44
+
+
+scfg_exint_line_config
+exint_default_para_init
+exint_init
+nvic_priority_group_config
+nvic_irq_enable
+gpio_pin_mux_config
+exint_flag_get
+exint_flag_clear

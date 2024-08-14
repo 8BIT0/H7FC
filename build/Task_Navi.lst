@@ -1,0 +1,1661 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Task_Navi.cpp"
+  16              		.text
+  17              		.section	.text._ZL24TaskNavi_FlipOver_Detectf,"ax",%progbits
+  18              		.align	1
+  19              		.syntax unified
+  20              		.thumb
+  21              		.thumb_func
+  23              	_ZL24TaskNavi_FlipOver_Detectf:
+  24              		.fnstart
+  25              	.LFB8391:
+  26              		@ args = 0, pretend = 0, frame = 0
+  27              		@ frame_needed = 0, uses_anonymous_args = 0
+  28 0000 08B5     		push	{r3, lr}
+  29              		.save {r3, lr}
+  30 0002 344B     		ldr	r3, .L20
+  31 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  32 0006 002B     		cmp	r3, #0
+  33 0008 38D1     		bne	.L2
+  34 000a DFED337A 		vldr.32	s15, .L20+4
+  35 000e B4EEE70A 		vcmpe.f32	s0, s15
+  36 0012 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  37 0016 06D5     		bpl	.L3
+  38 0018 DFED307A 		vldr.32	s15, .L20+8
+  39 001c B4EEE70A 		vcmpe.f32	s0, s15
+  40 0020 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  41 0024 0DDC     		bgt	.L5
+  42              	.L3:
+  43 0026 DFED2E7A 		vldr.32	s15, .L20+12
+  44 002a B4EEE70A 		vcmpe.f32	s0, s15
+  45 002e F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  46 0032 1FDD     		ble	.L6
+  47 0034 DFED2B7A 		vldr.32	s15, .L20+16
+  48 0038 B4EEE70A 		vcmpe.f32	s0, s15
+  49 003c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  50 0040 18D5     		bpl	.L6
+  51              	.L5:
+  52 0042 294B     		ldr	r3, .L20+20
+  53 0044 1B68     		ldr	r3, [r3]
+  54 0046 2BB9     		cbnz	r3, .L9
+  55 0048 284B     		ldr	r3, .L20+24
+  56 004a 1B68     		ldr	r3, [r3]
+  57 004c 9847     		blx	r3
+  58 004e 264B     		ldr	r3, .L20+20
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 2
+
+
+  59 0050 1860     		str	r0, [r3]
+  60 0052 3CE0     		b	.L10
+  61              	.L9:
+  62 0054 254B     		ldr	r3, .L20+24
+  63 0056 1B68     		ldr	r3, [r3]
+  64 0058 9847     		blx	r3
+  65 005a 234B     		ldr	r3, .L20+20
+  66 005c 1B68     		ldr	r3, [r3]
+  67 005e C01A     		subs	r0, r0, r3
+  68 0060 B0F5FA7F 		cmp	r0, #500
+  69 0064 33D3     		bcc	.L10
+  70 0066 204B     		ldr	r3, .L20+20
+  71 0068 0022     		movs	r2, #0
+  72 006a 1A60     		str	r2, [r3]
+  73 006c 194B     		ldr	r3, .L20
+  74 006e 0122     		movs	r2, #1
+  75 0070 1A70     		strb	r2, [r3]
+  76 0072 2CE0     		b	.L10
+  77              	.L6:
+  78 0074 1C4B     		ldr	r3, .L20+20
+  79 0076 0022     		movs	r2, #0
+  80 0078 1A60     		str	r2, [r3]
+  81 007a 28E0     		b	.L10
+  82              	.L2:
+  83 007c F3EE047A 		vmov.f32	s15, #2.0e+1
+  84 0080 B4EEE70A 		vcmpe.f32	s0, s15
+  85 0084 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  86 0088 1ED5     		bpl	.L11
+  87 008a FBEE047A 		vmov.f32	s15, #-2.0e+1
+  88 008e B4EEE70A 		vcmpe.f32	s0, s15
+  89 0092 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  90 0096 17DD     		ble	.L11
+  91 0098 154B     		ldr	r3, .L20+28
+  92 009a 1B68     		ldr	r3, [r3]
+  93 009c 2BB9     		cbnz	r3, .L14
+  94 009e 134B     		ldr	r3, .L20+24
+  95 00a0 1B68     		ldr	r3, [r3]
+  96 00a2 9847     		blx	r3
+  97 00a4 124B     		ldr	r3, .L20+28
+  98 00a6 1860     		str	r0, [r3]
+  99 00a8 11E0     		b	.L10
+ 100              	.L14:
+ 101 00aa 104B     		ldr	r3, .L20+24
+ 102 00ac 1B68     		ldr	r3, [r3]
+ 103 00ae 9847     		blx	r3
+ 104 00b0 0F4B     		ldr	r3, .L20+28
+ 105 00b2 1B68     		ldr	r3, [r3]
+ 106 00b4 C01A     		subs	r0, r0, r3
+ 107 00b6 B0F5FA7F 		cmp	r0, #500
+ 108 00ba 08D3     		bcc	.L10
+ 109 00bc 0023     		movs	r3, #0
+ 110 00be 0C4A     		ldr	r2, .L20+28
+ 111 00c0 1360     		str	r3, [r2]
+ 112 00c2 044A     		ldr	r2, .L20
+ 113 00c4 1370     		strb	r3, [r2]
+ 114 00c6 02E0     		b	.L10
+ 115              	.L11:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 3
+
+
+ 116 00c8 094B     		ldr	r3, .L20+28
+ 117 00ca 0022     		movs	r2, #0
+ 118 00cc 1A60     		str	r2, [r3]
+ 119              	.L10:
+ 120 00ce 014B     		ldr	r3, .L20
+ 121 00d0 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+ 122 00d2 08BD     		pop	{r3, pc}
+ 123              	.L21:
+ 124              		.align	2
+ 125              	.L20:
+ 126 00d4 00000000 		.word	.LANCHOR0
+ 127 00d8 00003443 		.word	1127481344
+ 128 00dc 0000A042 		.word	1117782016
+ 129 00e0 000034C3 		.word	-1020002304
+ 130 00e4 0000A0C2 		.word	-1029701632
+ 131 00e8 00000000 		.word	.LANCHOR1
+ 132 00ec 00000000 		.word	SrvOsCommon
+ 133 00f0 00000000 		.word	.LANCHOR2
+ 134              		.fnend
+ 136              		.section	.text._Z41__static_initialization_and_destruction_0ii,"ax",%progbits
+ 137              		.align	1
+ 138              		.syntax unified
+ 139              		.thumb
+ 140              		.thumb_func
+ 142              	_Z41__static_initialization_and_destruction_0ii:
+ 143              		.fnstart
+ 144              	.LFB9351:
+ 145              		@ args = 0, pretend = 0, frame = 0
+ 146              		@ frame_needed = 0, uses_anonymous_args = 0
+ 147 0000 0128     		cmp	r0, #1
+ 148 0002 00D0     		beq	.L28
+ 149              	.L25:
+ 150 0004 7047     		bx	lr
+ 151              	.L28:
+ 152 0006 4FF6FF73 		movw	r3, #65535
+ 153 000a 9942     		cmp	r1, r3
+ 154 000c FAD1     		bne	.L25
+ 155 000e 10B5     		push	{r4, lr}
+ 156 0010 044C     		ldr	r4, .L29
+ 157 0012 2046     		mov	r0, r4
+ 158 0014 FFF7FEFF 		bl	_ZNSt8ios_base4InitC1Ev
+ 159 0018 034A     		ldr	r2, .L29+4
+ 160 001a 0449     		ldr	r1, .L29+8
+ 161 001c 2046     		mov	r0, r4
+ 162 001e FFF7FEFF 		bl	__aeabi_atexit
+ 163 0022 10BD     		pop	{r4, pc}
+ 164              	.L30:
+ 165              		.align	2
+ 166              	.L29:
+ 167 0024 00000000 		.word	.LANCHOR3
+ 168 0028 00000000 		.word	__dso_handle
+ 169 002c 00000000 		.word	_ZNSt8ios_base4InitD1Ev
+ 170              		.cantunwind
+ 171              		.fnend
+ 173              		.section	.text.TaskNavi_Core,"ax",%progbits
+ 174              		.align	1
+ 175              		.global	TaskNavi_Core
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 4
+
+
+ 176              		.syntax unified
+ 177              		.thumb
+ 178              		.thumb_func
+ 180              	TaskNavi_Core:
+ 181              		.fnstart
+ 182              	.LFB8390:
+ 183              		@ args = 0, pretend = 0, frame = 160
+ 184              		@ frame_needed = 0, uses_anonymous_args = 0
+ 185 0000 30B5     		push	{r4, r5, lr}
+ 186              		.save {r4, r5, lr}
+ 187              		.pad #196
+ 188 0002 B1B0     		sub	sp, sp, #196
+ 189 0004 724B     		ldr	r3, .L40
+ 190 0006 1B68     		ldr	r3, [r3]
+ 191 0008 9847     		blx	r3
+ 192 000a 2F90     		str	r0, [sp, #188]
+ 193 000c 0025     		movs	r5, #0
+ 194 000e 8DF8BB50 		strb	r5, [sp, #187]
+ 195 0012 8DF8BA50 		strb	r5, [sp, #186]
+ 196 0016 8DF8B950 		strb	r5, [sp, #185]
+ 197 001a 2D95     		str	r5, [sp, #180]
+ 198 001c 2C95     		str	r5, [sp, #176]
+ 199 001e 2B95     		str	r5, [sp, #172]
+ 200 0020 0023     		movs	r3, #0
+ 201 0022 2A93     		str	r3, [sp, #168]	@ float
+ 202 0024 2993     		str	r3, [sp, #164]	@ float
+ 203 0026 2893     		str	r3, [sp, #160]	@ float
+ 204 0028 1495     		str	r5, [sp, #80]
+ 205 002a 1595     		str	r5, [sp, #84]
+ 206 002c 1695     		str	r5, [sp, #88]
+ 207 002e 1195     		str	r5, [sp, #68]
+ 208 0030 1295     		str	r5, [sp, #72]
+ 209 0032 1395     		str	r5, [sp, #76]
+ 210 0034 0E95     		str	r5, [sp, #56]
+ 211 0036 0F95     		str	r5, [sp, #60]
+ 212 0038 1095     		str	r5, [sp, #64]
+ 213 003a 0D93     		str	r3, [sp, #52]	@ float
+ 214 003c 0C93     		str	r3, [sp, #48]	@ float
+ 215 003e 0B93     		str	r3, [sp, #44]	@ float
+ 216 0040 0A93     		str	r3, [sp, #40]	@ float
+ 217 0042 0993     		str	r3, [sp, #36]	@ float
+ 218 0044 8DF82350 		strb	r5, [sp, #35]
+ 219 0048 8DF82250 		strb	r5, [sp, #34]
+ 220 004c 8DF82150 		strb	r5, [sp, #33]
+ 221 0050 2222     		movs	r2, #34
+ 222 0052 2946     		mov	r1, r5
+ 223 0054 1FA8     		add	r0, sp, #124
+ 224 0056 FFF7FEFF 		bl	memset
+ 225 005a 17A8     		add	r0, sp, #92
+ 226 005c FFF7FEFF 		bl	MadgwickAHRSInit
+ 227 0060 56E0     		b	.L37
+ 228              	.L33:
+ 229 0062 0023     		movs	r3, #0
+ 230 0064 0E93     		str	r3, [sp, #56]	@ float
+ 231 0066 0F93     		str	r3, [sp, #60]	@ float
+ 232 0068 1093     		str	r3, [sp, #64]	@ float
+ 233 006a 88E0     		b	.L34
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 5
+
+
+ 234              	.L39:
+ 235 006c DFED597A 		vldr.32	s15, .L40+4
+ 236 0070 9DED104A 		vldr.32	s8, [sp, #64]
+ 237 0074 DDED0F3A 		vldr.32	s7, [sp, #60]
+ 238 0078 9DED0E3A 		vldr.32	s6, [sp, #56]
+ 239 007c DDED162A 		vldr.32	s5, [sp, #88]
+ 240 0080 9DED152A 		vldr.32	s4, [sp, #84]
+ 241 0084 DDED141A 		vldr.32	s3, [sp, #80]
+ 242 0088 9DED131A 		vldr.32	s2, [sp, #76]
+ 243 008c 81EE271A 		vdiv.f32	s2, s2, s15
+ 244 0090 DDED120A 		vldr.32	s1, [sp, #72]
+ 245 0094 C0EEA70A 		vdiv.f32	s1, s1, s15
+ 246 0098 9DED110A 		vldr.32	s0, [sp, #68]
+ 247 009c 80EE270A 		vdiv.f32	s0, s0, s15
+ 248 00a0 17A8     		add	r0, sp, #92
+ 249 00a2 FFF7FEFF 		bl	MadgwickAHRSupdate
+ 250 00a6 1C9B     		ldr	r3, [sp, #112]	@ float
+ 251 00a8 2093     		str	r3, [sp, #128]	@ float
+ 252 00aa 9DED1D0A 		vldr.32	s0, [sp, #116]
+ 253 00ae 8DED210A 		vstr.32	s0, [sp, #132]
+ 254 00b2 1E9B     		ldr	r3, [sp, #120]	@ float
+ 255 00b4 2293     		str	r3, [sp, #136]	@ float
+ 256 00b6 189B     		ldr	r3, [sp, #96]	@ float
+ 257 00b8 2393     		str	r3, [sp, #140]	@ float
+ 258 00ba 199B     		ldr	r3, [sp, #100]	@ float
+ 259 00bc 2493     		str	r3, [sp, #144]	@ float
+ 260 00be 1A9B     		ldr	r3, [sp, #104]	@ float
+ 261 00c0 2593     		str	r3, [sp, #148]	@ float
+ 262 00c2 1B9B     		ldr	r3, [sp, #108]	@ float
+ 263 00c4 2693     		str	r3, [sp, #152]	@ float
+ 264 00c6 FFF7FEFF 		bl	_ZL24TaskNavi_FlipOver_Detectf
+ 265 00ca 8DF89C00 		strb	r0, [sp, #156]
+ 266 00ce 404B     		ldr	r3, .L40
+ 267 00d0 1B68     		ldr	r3, [r3]
+ 268 00d2 9847     		blx	r3
+ 269 00d4 1F90     		str	r0, [sp, #124]
+ 270 00d6 404C     		ldr	r4, .L40+8
+ 271 00d8 0DF17C0C 		add	ip, sp, #124
+ 272 00dc BCE80F00 		ldmia	ip!, {r0, r1, r2, r3}
+ 273 00e0 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 274 00e2 BCE80F00 		ldmia	ip!, {r0, r1, r2, r3}
+ 275 00e6 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 276 00e8 DCF80030 		ldr	r3, [ip]
+ 277 00ec 2380     		strh	r3, [r4]	@ movhi
+ 278 00ee 3B4C     		ldr	r4, .L40+12
+ 279 00f0 3B49     		ldr	r1, .L40+16
+ 280 00f2 2046     		mov	r0, r4
+ 281 00f4 FFF7FEFF 		bl	DataPipe_SendTo
+ 282 00f8 3A49     		ldr	r1, .L40+20
+ 283 00fa 2046     		mov	r0, r4
+ 284 00fc FFF7FEFF 		bl	DataPipe_SendTo
+ 285 0100 40E0     		b	.L35
+ 286              	.L36:
+ 287 0102 334B     		ldr	r3, .L40
+ 288 0104 9B68     		ldr	r3, [r3, #8]
+ 289 0106 384A     		ldr	r2, .L40+24
+ 290 0108 B2F85810 		ldrh	r1, [r2, #88]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 6
+
+
+ 291 010c 2FA8     		add	r0, sp, #188
+ 292 010e 9847     		blx	r3
+ 293              	.L37:
+ 294 0110 364C     		ldr	r4, .L40+28
+ 295 0112 E369     		ldr	r3, [r4, #28]
+ 296 0114 0DF1BB00 		add	r0, sp, #187
+ 297 0118 9847     		blx	r3
+ 298 011a E36A     		ldr	r3, [r4, #44]
+ 299 011c 0DF1BA00 		add	r0, sp, #186
+ 300 0120 9847     		blx	r3
+ 301 0122 A36A     		ldr	r3, [r4, #40]
+ 302 0124 0DF1B900 		add	r0, sp, #185
+ 303 0128 9847     		blx	r3
+ 304 012a 9DF8BB30 		ldrb	r3, [sp, #187]	@ zero_extendqisi2
+ 305 012e ABB1     		cbz	r3, .L32
+ 306 0130 A46B     		ldr	r4, [r4, #56]
+ 307 0132 0DF12303 		add	r3, sp, #35
+ 308 0136 0693     		str	r3, [sp, #24]
+ 309 0138 0DAB     		add	r3, sp, #52
+ 310 013a 0593     		str	r3, [sp, #20]
+ 311 013c 13AB     		add	r3, sp, #76
+ 312 013e 0493     		str	r3, [sp, #16]
+ 313 0140 12AB     		add	r3, sp, #72
+ 314 0142 0393     		str	r3, [sp, #12]
+ 315 0144 11AB     		add	r3, sp, #68
+ 316 0146 0293     		str	r3, [sp, #8]
+ 317 0148 16AB     		add	r3, sp, #88
+ 318 014a 0193     		str	r3, [sp, #4]
+ 319 014c 15AB     		add	r3, sp, #84
+ 320 014e 0093     		str	r3, [sp]
+ 321 0150 14AB     		add	r3, sp, #80
+ 322 0152 29AA     		add	r2, sp, #164
+ 323 0154 2AA9     		add	r1, sp, #168
+ 324 0156 2DA8     		add	r0, sp, #180
+ 325 0158 A047     		blx	r4
+ 326 015a 0546     		mov	r5, r0
+ 327              	.L32:
+ 328 015c 9DF8BA30 		ldrb	r3, [sp, #186]	@ zero_extendqisi2
+ 329 0160 002B     		cmp	r3, #0
+ 330 0162 3FF47EAF 		beq	.L33
+ 331 0166 214B     		ldr	r3, .L40+28
+ 332 0168 1C6C     		ldr	r4, [r3, #64]
+ 333 016a 0DF12203 		add	r3, sp, #34
+ 334 016e 0193     		str	r3, [sp, #4]
+ 335 0170 10AB     		add	r3, sp, #64
+ 336 0172 0093     		str	r3, [sp]
+ 337 0174 0FAB     		add	r3, sp, #60
+ 338 0176 0EAA     		add	r2, sp, #56
+ 339 0178 28A9     		add	r1, sp, #160
+ 340 017a 2CA8     		add	r0, sp, #176
+ 341 017c A047     		blx	r4
+ 342              	.L34:
+ 343 017e 002D     		cmp	r5, #0
+ 344 0180 7FF474AF 		bne	.L39
+ 345              	.L35:
+ 346 0184 9DF8B930 		ldrb	r3, [sp, #185]	@ zero_extendqisi2
+ 347 0188 002B     		cmp	r3, #0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 7
+
+
+ 348 018a BAD0     		beq	.L36
+ 349 018c 002D     		cmp	r5, #0
+ 350 018e B8D0     		beq	.L36
+ 351 0190 164B     		ldr	r3, .L40+28
+ 352 0192 1C6D     		ldr	r4, [r3, #80]
+ 353 0194 0DF12103 		add	r3, sp, #33
+ 354 0198 0193     		str	r3, [sp, #4]
+ 355 019a 09AB     		add	r3, sp, #36
+ 356 019c 0093     		str	r3, [sp]
+ 357 019e 0AAB     		add	r3, sp, #40
+ 358 01a0 0BAA     		add	r2, sp, #44
+ 359 01a2 0CA9     		add	r1, sp, #48
+ 360 01a4 2BA8     		add	r0, sp, #172
+ 361 01a6 A047     		blx	r4
+ 362 01a8 0028     		cmp	r0, #0
+ 363 01aa AAD0     		beq	.L36
+ 364 01ac 084B     		ldr	r3, .L40
+ 365 01ae 1B68     		ldr	r3, [r3]
+ 366 01b0 9847     		blx	r3
+ 367 01b2 094B     		ldr	r3, .L40+8
+ 368 01b4 5862     		str	r0, [r3, #36]
+ 369 01b6 0022     		movs	r2, #0
+ 370 01b8 9A62     		str	r2, [r3, #40]	@ float
+ 371 01ba 0D4C     		ldr	r4, .L40+32
+ 372 01bc 0D49     		ldr	r1, .L40+36
+ 373 01be 2046     		mov	r0, r4
+ 374 01c0 FFF7FEFF 		bl	DataPipe_SendTo
+ 375 01c4 0C49     		ldr	r1, .L40+40
+ 376 01c6 2046     		mov	r0, r4
+ 377 01c8 FFF7FEFF 		bl	DataPipe_SendTo
+ 378 01cc 99E7     		b	.L36
+ 379              	.L41:
+ 380 01ce 00BF     		.align	2
+ 381              	.L40:
+ 382 01d0 00000000 		.word	SrvOsCommon
+ 383 01d4 33336542 		.word	1113928499
+ 384 01d8 00000000 		.word	.LANCHOR4
+ 385 01dc 00000000 		.word	Attitude_smp_DataPipe
+ 386 01e0 00000000 		.word	Attitude_hub_DataPipe
+ 387 01e4 00000000 		.word	Attitude_Log_DataPipe
+ 388 01e8 00000000 		.word	.LANCHOR5
+ 389 01ec 00000000 		.word	SrvDataHub
+ 390 01f0 00000000 		.word	Altitude_smp_DataPipe
+ 391 01f4 00000000 		.word	Altitude_hub_DataPipe
+ 392 01f8 00000000 		.word	Altitude_Log_DataPipe
+ 393              		.fnend
+ 395              		.section	.rodata._ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv.str1.4
+ 396              		.align	2
+ 397              	.LC0:
+ 398 0000 28286D5F 		.ascii	"((m_row+m_currentBlockRows) == m_xpr.rows() || m_xp"
+ 398      726F772B 
+ 398      6D5F6375 
+ 398      7272656E 
+ 398      74426C6F 
+ 399 0033 722E636F 		.ascii	"r.cols() == 0) && m_col == m_xpr.cols() && \"Too fe"
+ 399      6C732829 
+ 399      203D3D20 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 8
+
+
+ 399      30292026 
+ 399      26206D5F 
+ 400 0065 7720636F 		.ascii	"w coefficients passed to comma initializer (operato"
+ 400      65666669 
+ 400      6369656E 
+ 400      74732070 
+ 400      61737365 
+ 401 0098 723C3C29 		.ascii	"r<<)\"\000"
+ 401      2200
+ 402 009e 0000     		.align	2
+ 403              	.LC1:
+ 404 00a0 58707254 		.ascii	"XprType& Eigen::CommaInitializer<MatrixType>::finis"
+ 404      79706526 
+ 404      20456967 
+ 404      656E3A3A 
+ 404      436F6D6D 
+ 405 00d3 68656428 		.ascii	"hed() [with XprType = Eigen::Matrix<float, 2, 3>]\000"
+ 405      29205B77 
+ 405      69746820 
+ 405      58707254 
+ 405      79706520 
+ 406 0105 000000   		.align	2
+ 407              	.LC2:
+ 408 0108 45696765 		.ascii	"Eigen/src/Core/CommaInitializer.h\000"
+ 408      6E2F7372 
+ 408      632F436F 
+ 408      72652F43 
+ 408      6F6D6D61 
+ 409              		.section	.text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv,"axG",%p
+ 410              		.align	1
+ 411              		.weak	_ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv
+ 412              		.syntax unified
+ 413              		.thumb
+ 414              		.thumb_func
+ 416              	_ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv:
+ 417              		.fnstart
+ 418              	.LFB8730:
+ 419              		@ args = 0, pretend = 0, frame = 0
+ 420              		@ frame_needed = 0, uses_anonymous_args = 0
+ 421 0000 08B5     		push	{r3, lr}
+ 422              		.save {r3, lr}
+ 423 0002 0346     		mov	r3, r0
+ 424 0004 4268     		ldr	r2, [r0, #4]
+ 425 0006 C168     		ldr	r1, [r0, #12]
+ 426 0008 0A44     		add	r2, r2, r1
+ 427 000a 0068     		ldr	r0, [r0]
+ 428 000c 022A     		cmp	r2, #2
+ 429 000e 03D1     		bne	.L43
+ 430 0010 9B68     		ldr	r3, [r3, #8]
+ 431 0012 032B     		cmp	r3, #3
+ 432 0014 00D1     		bne	.L43
+ 433 0016 08BD     		pop	{r3, pc}
+ 434              	.L43:
+ 435 0018 024B     		ldr	r3, .L46
+ 436 001a 034A     		ldr	r2, .L46+4
+ 437 001c 7621     		movs	r1, #118
+ 438 001e 0348     		ldr	r0, .L46+8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 9
+
+
+ 439 0020 FFF7FEFF 		bl	__assert_func
+ 440              	.L47:
+ 441              		.align	2
+ 442              	.L46:
+ 443 0024 00000000 		.word	.LC0
+ 444 0028 A0000000 		.word	.LC1
+ 445 002c 08010000 		.word	.LC2
+ 446              		.fnend
+ 448              		.section	.rodata._ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv.str1.4
+ 449              		.align	2
+ 450              	.LC3:
+ 451 0000 58707254 		.ascii	"XprType& Eigen::CommaInitializer<MatrixType>::finis"
+ 451      79706526 
+ 451      20456967 
+ 451      656E3A3A 
+ 451      436F6D6D 
+ 452 0033 68656428 		.ascii	"hed() [with XprType = Eigen::Matrix<float, 3, 1>]\000"
+ 452      29205B77 
+ 452      69746820 
+ 452      58707254 
+ 452      79706520 
+ 453              		.section	.text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv,"axG",%p
+ 454              		.align	1
+ 455              		.weak	_ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv
+ 456              		.syntax unified
+ 457              		.thumb
+ 458              		.thumb_func
+ 460              	_ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv:
+ 461              		.fnstart
+ 462              	.LFB8740:
+ 463              		@ args = 0, pretend = 0, frame = 0
+ 464              		@ frame_needed = 0, uses_anonymous_args = 0
+ 465 0000 08B5     		push	{r3, lr}
+ 466              		.save {r3, lr}
+ 467 0002 0346     		mov	r3, r0
+ 468 0004 4268     		ldr	r2, [r0, #4]
+ 469 0006 C168     		ldr	r1, [r0, #12]
+ 470 0008 0A44     		add	r2, r2, r1
+ 471 000a 0068     		ldr	r0, [r0]
+ 472 000c 032A     		cmp	r2, #3
+ 473 000e 03D1     		bne	.L49
+ 474 0010 9B68     		ldr	r3, [r3, #8]
+ 475 0012 012B     		cmp	r3, #1
+ 476 0014 00D1     		bne	.L49
+ 477 0016 08BD     		pop	{r3, pc}
+ 478              	.L49:
+ 479 0018 024B     		ldr	r3, .L52
+ 480 001a 034A     		ldr	r2, .L52+4
+ 481 001c 7621     		movs	r1, #118
+ 482 001e 0348     		ldr	r0, .L52+8
+ 483 0020 FFF7FEFF 		bl	__assert_func
+ 484              	.L53:
+ 485              		.align	2
+ 486              	.L52:
+ 487 0024 00000000 		.word	.LC0
+ 488 0028 00000000 		.word	.LC3
+ 489 002c 08010000 		.word	.LC2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 10
+
+
+ 490              		.fnend
+ 492              		.section	.text._ZNK5Eigen10MatrixBaseINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE11lazyProductINS1_IfLi3EL
+ 493              		.align	1
+ 494              		.weak	_ZNK5Eigen10MatrixBaseINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE11lazyProductINS1_IfLi3ELi1ELi0ELi
+ 495              		.syntax unified
+ 496              		.thumb
+ 497              		.thumb_func
+ 499              	_ZNK5Eigen10MatrixBaseINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE11lazyProductINS1_IfLi3ELi1ELi0ELi3ELi1EE
+ 500              		.fnstart
+ 501              	.LFB8958:
+ 502              		@ args = 0, pretend = 0, frame = 0
+ 503              		@ frame_needed = 0, uses_anonymous_args = 0
+ 504              		@ link register save eliminated.
+ 505 0000 0160     		str	r1, [r0]
+ 506 0002 4260     		str	r2, [r0, #4]
+ 507 0004 7047     		bx	lr
+ 508              		.cantunwind
+ 509              		.fnend
+ 511              		.section	.rodata._ZN5Eigen8internal15call_assignmentINS_6MatrixIfLi2ELi1ELi0ELi2ELi1EEENS_7Product
+ 512              		.align	2
+ 513              	.LC4:
+ 514 0000 76203D3D 		.ascii	"v == T(Value)\000"
+ 514      20542856 
+ 514      616C7565 
+ 514      2900
+ 515 000e 0000     		.align	2
+ 516              	.LC5:
+ 517 0010 45696765 		.ascii	"Eigen::internal::variable_if_dynamic<T, Value>::var"
+ 517      6E3A3A69 
+ 517      6E746572 
+ 517      6E616C3A 
+ 517      3A766172 
+ 518 0043 6961626C 		.ascii	"iable_if_dynamic(T) [with T = int; int Value = 1]\000"
+ 518      655F6966 
+ 518      5F64796E 
+ 518      616D6963 
+ 518      28542920 
+ 519 0075 000000   		.align	2
+ 520              	.LC6:
+ 521 0078 45696765 		.ascii	"Eigen/src/Core/util/XprHelper.h\000"
+ 521      6E2F7372 
+ 521      632F436F 
+ 521      72652F75 
+ 521      74696C2F 
+ 522              		.align	2
+ 523              	.LC7:
+ 524 0098 45696765 		.ascii	"Eigen::internal::variable_if_dynamic<T, Value>::var"
+ 524      6E3A3A69 
+ 524      6E746572 
+ 524      6E616C3A 
+ 524      3A766172 
+ 525 00cb 6961626C 		.ascii	"iable_if_dynamic(T) [with T = int; int Value = 3]\000"
+ 525      655F6966 
+ 525      5F64796E 
+ 525      616D6963 
+ 525      28542920 
+ 526              		.section	.text._ZN5Eigen8internal15call_assignmentINS_6MatrixIfLi2ELi1ELi0ELi2ELi1EEENS_7ProductIN
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 11
+
+
+ 527              		.align	1
+ 528              		.weak	_ZN5Eigen8internal15call_assignmentINS_6MatrixIfLi2ELi1ELi0ELi2ELi1EEENS_7ProductINS2_IfLi2E
+ 529              		.syntax unified
+ 530              		.thumb
+ 531              		.thumb_func
+ 533              	_ZN5Eigen8internal15call_assignmentINS_6MatrixIfLi2ELi1ELi0ELi2ELi1EEENS_7ProductINS2_IfLi2ELi3ELi0
+ 534              		.fnstart
+ 535              	.LFB8886:
+ 536              		@ args = 0, pretend = 0, frame = 296
+ 537              		@ frame_needed = 0, uses_anonymous_args = 0
+ 538 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 539              		.save {r4, r5, r6, r7, lr}
+ 540              		.pad #300
+ 541 0002 CBB0     		sub	sp, sp, #300
+ 542 0004 0546     		mov	r5, r0
+ 543 0006 1646     		mov	r6, r2
+ 544 0008 4A68     		ldr	r2, [r1, #4]
+ 545 000a 0968     		ldr	r1, [r1]
+ 546 000c 24A8     		add	r0, sp, #144
+ 547 000e FFF7FEFF 		bl	_ZNK5Eigen10MatrixBaseINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE11lazyProductINS1_IfLi3ELi1ELi0ELi3EL
+ 548 0012 249B     		ldr	r3, [sp, #144]
+ 549 0014 06A9     		add	r1, sp, #24
+ 550 0016 0693     		str	r3, [sp, #24]
+ 551 0018 259C     		ldr	r4, [sp, #148]
+ 552 001a 0794     		str	r4, [sp, #28]
+ 553 001c 0893     		str	r3, [sp, #32]
+ 554 001e 0A94     		str	r4, [sp, #40]
+ 555 0020 0322     		movs	r2, #3
+ 556 0022 0C92     		str	r2, [sp, #48]
+ 557 0024 21A8     		add	r0, sp, #132
+ 558 0026 0090     		str	r0, [sp]
+ 559 0028 CDF808D0 		str	sp, [sp, #8]
+ 560 002c 0391     		str	r1, [sp, #12]
+ 561 002e 23A9     		add	r1, sp, #140
+ 562 0030 0491     		str	r1, [sp, #16]
+ 563 0032 0590     		str	r0, [sp, #20]
+ 564 0034 2C93     		str	r3, [sp, #176]
+ 565 0036 2E93     		str	r3, [sp, #184]
+ 566 0038 0021     		movs	r1, #0
+ 567 003a 2F91     		str	r1, [sp, #188]
+ 568 003c 3091     		str	r1, [sp, #192]
+ 569 003e 0120     		movs	r0, #1
+ 570 0040 3190     		str	r0, [sp, #196]
+ 571 0042 3293     		str	r3, [sp, #200]
+ 572 0044 3493     		str	r3, [sp, #208]
+ 573 0046 3591     		str	r1, [sp, #212]
+ 574 0048 3691     		str	r1, [sp, #216]
+ 575 004a 3790     		str	r0, [sp, #220]
+ 576 004c 2694     		str	r4, [sp, #152]
+ 577 004e 2894     		str	r4, [sp, #160]
+ 578 0050 2991     		str	r1, [sp, #164]
+ 579 0052 2B92     		str	r2, [sp, #172]
+ 580 0054 1493     		str	r3, [sp, #80]
+ 581 0056 1693     		str	r3, [sp, #88]
+ 582 0058 1791     		str	r1, [sp, #92]
+ 583 005a 1891     		str	r1, [sp, #96]
+ 584 005c 1990     		str	r0, [sp, #100]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 12
+
+
+ 585 005e 1A94     		str	r4, [sp, #104]
+ 586 0060 1C94     		str	r4, [sp, #112]
+ 587 0062 1D91     		str	r1, [sp, #116]
+ 588 0064 1F92     		str	r2, [sp, #124]
+ 589 0066 0F93     		str	r3, [sp, #60]
+ 590 0068 1194     		str	r4, [sp, #68]
+ 591 006a 9242     		cmp	r2, r2
+ 592 006c 6FD1     		bne	.L61
+ 593 006e 14AB     		add	r3, sp, #80
+ 594 0070 1393     		str	r3, [sp, #76]
+ 595 0072 0F9A     		ldr	r2, [sp, #60]
+ 596 0074 D2ED007A 		vldr.32	s15, [r2]
+ 597 0078 119B     		ldr	r3, [sp, #68]
+ 598 007a 93ED007A 		vldr.32	s14, [r3]
+ 599 007e 27EE877A 		vmul.f32	s14, s15, s14
+ 600 0082 D2ED027A 		vldr.32	s15, [r2, #8]
+ 601 0086 D3ED016A 		vldr.32	s13, [r3, #4]
+ 602 008a 67EEA66A 		vmul.f32	s13, s15, s13
+ 603 008e D2ED047A 		vldr.32	s15, [r2, #16]
+ 604 0092 93ED026A 		vldr.32	s12, [r3, #8]
+ 605 0096 67EE867A 		vmul.f32	s15, s15, s12
+ 606 009a 77EEA67A 		vadd.f32	s15, s15, s13
+ 607 009e 77EE877A 		vadd.f32	s15, s15, s14
+ 608 00a2 CDED217A 		vstr.32	s15, [sp, #132]
+ 609 00a6 029B     		ldr	r3, [sp, #8]
+ 610 00a8 D3F800C0 		ldr	ip, [r3]
+ 611 00ac 0398     		ldr	r0, [sp, #12]
+ 612 00ae 0468     		ldr	r4, [r0]
+ 613 00b0 221D     		adds	r2, r4, #4
+ 614 00b2 3E92     		str	r2, [sp, #248]
+ 615 00b4 4094     		str	r4, [sp, #256]
+ 616 00b6 0123     		movs	r3, #1
+ 617 00b8 4193     		str	r3, [sp, #260]
+ 618 00ba 0021     		movs	r1, #0
+ 619 00bc 4291     		str	r1, [sp, #264]
+ 620 00be 4393     		str	r3, [sp, #268]
+ 621 00c0 4492     		str	r2, [sp, #272]
+ 622 00c2 4694     		str	r4, [sp, #280]
+ 623 00c4 4793     		str	r3, [sp, #284]
+ 624 00c6 4891     		str	r1, [sp, #288]
+ 625 00c8 4993     		str	r3, [sp, #292]
+ 626 00ca 4068     		ldr	r0, [r0, #4]
+ 627 00cc 3890     		str	r0, [sp, #224]
+ 628 00ce 3A90     		str	r0, [sp, #232]
+ 629 00d0 3B91     		str	r1, [sp, #236]
+ 630 00d2 0327     		movs	r7, #3
+ 631 00d4 3D97     		str	r7, [sp, #244]
+ 632 00d6 1492     		str	r2, [sp, #80]
+ 633 00d8 1694     		str	r4, [sp, #88]
+ 634 00da 1793     		str	r3, [sp, #92]
+ 635 00dc 1891     		str	r1, [sp, #96]
+ 636 00de 1993     		str	r3, [sp, #100]
+ 637 00e0 1A90     		str	r0, [sp, #104]
+ 638 00e2 1C90     		str	r0, [sp, #112]
+ 639 00e4 1D91     		str	r1, [sp, #116]
+ 640 00e6 1F97     		str	r7, [sp, #124]
+ 641 00e8 0F92     		str	r2, [sp, #60]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 13
+
+
+ 642 00ea 1190     		str	r0, [sp, #68]
+ 643 00ec BF42     		cmp	r7, r7
+ 644 00ee 34D1     		bne	.L62
+ 645 00f0 14AB     		add	r3, sp, #80
+ 646 00f2 1393     		str	r3, [sp, #76]
+ 647 00f4 0F9A     		ldr	r2, [sp, #60]
+ 648 00f6 D2ED007A 		vldr.32	s15, [r2]
+ 649 00fa 119B     		ldr	r3, [sp, #68]
+ 650 00fc 93ED007A 		vldr.32	s14, [r3]
+ 651 0100 27EE877A 		vmul.f32	s14, s15, s14
+ 652 0104 D2ED027A 		vldr.32	s15, [r2, #8]
+ 653 0108 D3ED016A 		vldr.32	s13, [r3, #4]
+ 654 010c 67EEA66A 		vmul.f32	s13, s15, s13
+ 655 0110 D2ED047A 		vldr.32	s15, [r2, #16]
+ 656 0114 93ED026A 		vldr.32	s12, [r3, #8]
+ 657 0118 67EE867A 		vmul.f32	s15, s15, s12
+ 658 011c 77EEA67A 		vadd.f32	s15, s15, s13
+ 659 0120 77EE877A 		vadd.f32	s15, s15, s14
+ 660 0124 CCED017A 		vstr.32	s15, [ip, #4]
+ 661 0128 06AB     		add	r3, sp, #24
+ 662 012a 21AA     		add	r2, sp, #132
+ 663 012c 0692     		str	r2, [sp, #24]
+ 664 012e 0D95     		str	r5, [sp, #52]
+ 665 0130 0DAA     		add	r2, sp, #52
+ 666 0132 1492     		str	r2, [sp, #80]
+ 667 0134 1593     		str	r3, [sp, #84]
+ 668 0136 1696     		str	r6, [sp, #88]
+ 669 0138 1795     		str	r5, [sp, #92]
+ 670 013a 219A     		ldr	r2, [sp, #132]	@ float
+ 671 013c 2A60     		str	r2, [r5]	@ float
+ 672 013e 149B     		ldr	r3, [sp, #80]
+ 673 0140 1B68     		ldr	r3, [r3]
+ 674 0142 159A     		ldr	r2, [sp, #84]
+ 675 0144 1268     		ldr	r2, [r2]
+ 676 0146 5268     		ldr	r2, [r2, #4]	@ float
+ 677 0148 5A60     		str	r2, [r3, #4]	@ float
+ 678 014a 4BB0     		add	sp, sp, #300
+ 679              		@ sp needed
+ 680 014c F0BD     		pop	{r4, r5, r6, r7, pc}
+ 681              	.L61:
+ 682 014e 064B     		ldr	r3, .L63
+ 683 0150 064A     		ldr	r2, .L63+4
+ 684 0152 6E21     		movs	r1, #110
+ 685 0154 0648     		ldr	r0, .L63+8
+ 686 0156 FFF7FEFF 		bl	__assert_func
+ 687              	.L62:
+ 688 015a 034B     		ldr	r3, .L63
+ 689 015c 034A     		ldr	r2, .L63+4
+ 690 015e 6E21     		movs	r1, #110
+ 691 0160 0348     		ldr	r0, .L63+8
+ 692 0162 FFF7FEFF 		bl	__assert_func
+ 693              	.L64:
+ 694 0166 00BF     		.align	2
+ 695              	.L63:
+ 696 0168 00000000 		.word	.LC4
+ 697 016c 98000000 		.word	.LC7
+ 698 0170 78000000 		.word	.LC6
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 14
+
+
+ 699              		.fnend
+ 701              		.section	.rodata.TaskNavi_Init.str1.4,"aMS",%progbits,1
+ 702              		.align	2
+ 703              	.LC8:
+ 704 0000 6D5F726F 		.ascii	"m_row<m_xpr.rows() && \"Too many rows passed to com"
+ 704      773C6D5F 
+ 704      7870722E 
+ 704      726F7773 
+ 704      28292026 
+ 705 0032 6D612069 		.ascii	"ma initializer (operator<<)\"\000"
+ 705      6E697469 
+ 705      616C697A 
+ 705      65722028 
+ 705      6F706572 
+ 706 004f 00       		.align	2
+ 707              	.LC9:
+ 708 0050 45696765 		.ascii	"Eigen::CommaInitializer<MatrixType>& Eigen::CommaIn"
+ 708      6E3A3A43 
+ 708      6F6D6D61 
+ 708      496E6974 
+ 708      69616C69 
+ 709 0083 69746961 		.ascii	"itializer<MatrixType>::operator,(const Scalar&) [wi"
+ 709      6C697A65 
+ 709      723C4D61 
+ 709      74726978 
+ 709      54797065 
+ 710 00b6 74682058 		.ascii	"th XprType = Eigen::Matrix<float, 2, 3>; Eigen::Com"
+ 710      70725479 
+ 710      7065203D 
+ 710      20456967 
+ 710      656E3A3A 
+ 711 00e9 6D61496E 		.ascii	"maInitializer<MatrixType>::Scalar = float]\000"
+ 711      69746961 
+ 711      6C697A65 
+ 711      723C4D61 
+ 711      74726978 
+ 712              		.align	2
+ 713              	.LC10:
+ 714 0114 6D5F636F 		.ascii	"m_col<m_xpr.cols() && \"Too many coefficients passe"
+ 714      6C3C6D5F 
+ 714      7870722E 
+ 714      636F6C73 
+ 714      28292026 
+ 715 0146 6420746F 		.ascii	"d to comma initializer (operator<<)\"\000"
+ 715      20636F6D 
+ 715      6D612069 
+ 715      6E697469 
+ 715      616C697A 
+ 716 016b 00       		.align	2
+ 717              	.LC11:
+ 718 016c 6D5F6375 		.ascii	"m_currentBlockRows==1\000"
+ 718      7272656E 
+ 718      74426C6F 
+ 718      636B526F 
+ 718      77733D3D 
+ 719 0182 0000     		.align	2
+ 720              	.LC12:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 15
+
+
+ 721 0184 45696765 		.ascii	"Eigen::CommaInitializer<MatrixType>& Eigen::CommaIn"
+ 721      6E3A3A43 
+ 721      6F6D6D61 
+ 721      496E6974 
+ 721      69616C69 
+ 722 01b7 69746961 		.ascii	"itializer<MatrixType>::operator,(const Scalar&) [wi"
+ 722      6C697A65 
+ 722      723C4D61 
+ 722      74726978 
+ 722      54797065 
+ 723 01ea 74682058 		.ascii	"th XprType = Eigen::Matrix<float, 3, 1>; Eigen::Com"
+ 723      70725479 
+ 723      7065203D 
+ 723      20456967 
+ 723      656E3A3A 
+ 724 021d 6D61496E 		.ascii	"maInitializer<MatrixType>::Scalar = float]\000"
+ 724      69746961 
+ 724      6C697A65 
+ 724      723C4D61 
+ 724      74726978 
+ 725              		.align	2
+ 726              	.LC13:
+ 727 0248 45696765 		.ascii	"Eigen Test\015\012\000"
+ 727      6E205465 
+ 727      73740D0A 
+ 727      00
+ 728 0255 000000   		.align	2
+ 729              	.LC14:
+ 730 0258 2000     		.ascii	" \000"
+ 731 025a 0000     		.align	2
+ 732              	.LC15:
+ 733 025c 726F7720 		.ascii	"row >= 0 && row < rows() && col >= 0 && col < cols("
+ 733      3E3D2030 
+ 733      20262620 
+ 733      726F7720 
+ 733      3C20726F 
+ 734 028f 2900     		.ascii	")\000"
+ 735 0291 000000   		.align	2
+ 736              	.LC16:
+ 737 0294 45696765 		.ascii	"Eigen::DenseCoeffsBase<Derived, 1>::Scalar& Eigen::"
+ 737      6E3A3A44 
+ 737      656E7365 
+ 737      436F6566 
+ 737      66734261 
+ 738 02c7 44656E73 		.ascii	"DenseCoeffsBase<Derived, 1>::operator()(Eigen::Inde"
+ 738      65436F65 
+ 738      66667342 
+ 738      6173653C 
+ 738      44657269 
+ 739 02fa 782C2045 		.ascii	"x, Eigen::Index) [with Derived = Eigen::Matrix<floa"
+ 739      6967656E 
+ 739      3A3A496E 
+ 739      64657829 
+ 739      205B7769 
+ 740 032d 742C2032 		.ascii	"t, 2, 1>; Eigen::DenseCoeffsBase<Derived, 1>::Scala"
+ 740      2C20313E 
+ 740      3B204569 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 16
+
+
+ 740      67656E3A 
+ 740      3A44656E 
+ 741 0360 72203D20 		.ascii	"r = float; Eigen::Index = int]\000"
+ 741      666C6F61 
+ 741      743B2045 
+ 741      6967656E 
+ 741      3A3A496E 
+ 742 037f 00       		.align	2
+ 743              	.LC17:
+ 744 0380 45696765 		.ascii	"Eigen/src/Core/DenseCoeffsBase.h\000"
+ 744      6E2F7372 
+ 744      632F436F 
+ 744      72652F44 
+ 744      656E7365 
+ 745 03a1 000000   		.align	2
+ 746              	.LC18:
+ 747 03a4 25660900 		.ascii	"%f\011\000"
+ 748              		.global	__aeabi_f2d
+ 749              		.align	2
+ 750              	.LC19:
+ 751 03a8 0D0A00   		.ascii	"\015\012\000"
+ 752              		.section	.text.TaskNavi_Init,"ax",%progbits
+ 753              		.align	1
+ 754              		.global	TaskNavi_Init
+ 755              		.syntax unified
+ 756              		.thumb
+ 757              		.thumb_func
+ 759              	TaskNavi_Init:
+ 760              		.fnstart
+ 761              	.LFB8389:
+ 762              		@ args = 0, pretend = 0, frame = 96
+ 763              		@ frame_needed = 0, uses_anonymous_args = 0
+ 764 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 765              		.save {r4, r5, r6, r7, lr}
+ 766              		.pad #108
+ 767 0002 9BB0     		sub	sp, sp, #108
+ 768 0004 0646     		mov	r6, r0
+ 769 0006 AE4F     		ldr	r7, .L122
+ 770 0008 6022     		movs	r2, #96
+ 771 000a 0021     		movs	r1, #0
+ 772 000c 3846     		mov	r0, r7
+ 773 000e FFF7FEFF 		bl	memset
+ 774 0012 AC4C     		ldr	r4, .L122+4
+ 775 0014 2722     		movs	r2, #39
+ 776 0016 0021     		movs	r1, #0
+ 777 0018 2046     		mov	r0, r4
+ 778 001a FFF7FEFF 		bl	memset
+ 779 001e AA4D     		ldr	r5, .L122+8
+ 780 0020 2222     		movs	r2, #34
+ 781 0022 0021     		movs	r1, #0
+ 782 0024 2846     		mov	r0, r5
+ 783 0026 FFF7FEFF 		bl	memset
+ 784 002a 05F12400 		add	r0, r5, #36
+ 785 002e 0022     		movs	r2, #0
+ 786 0030 6A62     		str	r2, [r5, #36]
+ 787 0032 AA62     		str	r2, [r5, #40]
+ 788 0034 C4F80D50 		str	r5, [r4, #13]	@ unaligned
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 17
+
+
+ 789 0038 2223     		movs	r3, #34
+ 790 003a 6374     		strb	r3, [r4, #17]
+ 791 003c A274     		strb	r2, [r4, #18]
+ 792 003e 0121     		movs	r1, #1
+ 793 0040 2173     		strb	r1, [r4, #12]
+ 794 0042 A24B     		ldr	r3, .L122+12
+ 795 0044 C3F80D00 		str	r0, [r3, #13]	@ unaligned
+ 796 0048 0820     		movs	r0, #8
+ 797 004a 5874     		strb	r0, [r3, #17]
+ 798 004c 9A74     		strb	r2, [r3, #18]
+ 799 004e 1973     		strb	r1, [r3, #12]
+ 800 0050 A7F85860 		strh	r6, [r7, #88]	@ movhi
+ 801 0054 07AB     		add	r3, sp, #28
+ 802 0056 0D93     		str	r3, [sp, #52]
+ 803 0058 0E92     		str	r2, [sp, #56]
+ 804 005a 0F91     		str	r1, [sp, #60]
+ 805 005c 1091     		str	r1, [sp, #64]
+ 806 005e 4FF07E52 		mov	r2, #1065353216
+ 807 0062 0792     		str	r2, [sp, #28]	@ float
+ 808 0064 0229     		cmp	r1, #2
+ 809 0066 00F3C880 		bgt	.L102
+ 810 006a 109A     		ldr	r2, [sp, #64]
+ 811 006c 012A     		cmp	r2, #1
+ 812 006e 40F0CF80 		bne	.L103
+ 813 0072 4A1C     		adds	r2, r1, #1
+ 814 0074 0F92     		str	r2, [sp, #60]
+ 815 0076 0E9A     		ldr	r2, [sp, #56]
+ 816 0078 02EB4102 		add	r2, r2, r1, lsl #1
+ 817 007c 03EB8203 		add	r3, r3, r2, lsl #2
+ 818 0080 4FF08042 		mov	r2, #1073741824
+ 819 0084 1A60     		str	r2, [r3]	@ float
+ 820 0086 0D9B     		ldr	r3, [sp, #52]
+ 821 0088 0F9A     		ldr	r2, [sp, #60]
+ 822 008a 032A     		cmp	r2, #3
+ 823 008c 00F0C680 		beq	.L104
+ 824              	.L69:
+ 825 0090 0F99     		ldr	r1, [sp, #60]
+ 826 0092 0229     		cmp	r1, #2
+ 827 0094 00F3D380 		bgt	.L105
+ 828 0098 109A     		ldr	r2, [sp, #64]
+ 829 009a 012A     		cmp	r2, #1
+ 830 009c 40F0D580 		bne	.L106
+ 831 00a0 4A1C     		adds	r2, r1, #1
+ 832 00a2 0F92     		str	r2, [sp, #60]
+ 833 00a4 0E9A     		ldr	r2, [sp, #56]
+ 834 00a6 02EB4102 		add	r2, r2, r1, lsl #1
+ 835 00aa 03EB8203 		add	r3, r3, r2, lsl #2
+ 836 00ae 884A     		ldr	r2, .L122+16
+ 837 00b0 1A60     		str	r2, [r3]	@ float
+ 838 00b2 0D9B     		ldr	r3, [sp, #52]
+ 839 00b4 0F9A     		ldr	r2, [sp, #60]
+ 840 00b6 032A     		cmp	r2, #3
+ 841 00b8 00F0CD80 		beq	.L107
+ 842              	.L72:
+ 843 00bc 0F99     		ldr	r1, [sp, #60]
+ 844 00be 0229     		cmp	r1, #2
+ 845 00c0 00F3DA80 		bgt	.L108
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 18
+
+
+ 846 00c4 109A     		ldr	r2, [sp, #64]
+ 847 00c6 012A     		cmp	r2, #1
+ 848 00c8 40F0DC80 		bne	.L109
+ 849 00cc 4A1C     		adds	r2, r1, #1
+ 850 00ce 0F92     		str	r2, [sp, #60]
+ 851 00d0 0E9A     		ldr	r2, [sp, #56]
+ 852 00d2 02EB4102 		add	r2, r2, r1, lsl #1
+ 853 00d6 03EB8203 		add	r3, r3, r2, lsl #2
+ 854 00da 4FF08142 		mov	r2, #1082130432
+ 855 00de 1A60     		str	r2, [r3]	@ float
+ 856 00e0 0D9B     		ldr	r3, [sp, #52]
+ 857 00e2 0F9A     		ldr	r2, [sp, #60]
+ 858 00e4 032A     		cmp	r2, #3
+ 859 00e6 00F0D380 		beq	.L110
+ 860              	.L75:
+ 861 00ea 0F99     		ldr	r1, [sp, #60]
+ 862 00ec 0229     		cmp	r1, #2
+ 863 00ee 00F3E080 		bgt	.L111
+ 864 00f2 109A     		ldr	r2, [sp, #64]
+ 865 00f4 012A     		cmp	r2, #1
+ 866 00f6 40F00181 		bne	.L112
+ 867 00fa 4A1C     		adds	r2, r1, #1
+ 868 00fc 0F92     		str	r2, [sp, #60]
+ 869 00fe 0E9A     		ldr	r2, [sp, #56]
+ 870 0100 02EB4102 		add	r2, r2, r1, lsl #1
+ 871 0104 03EB8203 		add	r3, r3, r2, lsl #2
+ 872 0108 724A     		ldr	r2, .L122+20
+ 873 010a 1A60     		str	r2, [r3]	@ float
+ 874 010c 0D9B     		ldr	r3, [sp, #52]
+ 875 010e 0F9A     		ldr	r2, [sp, #60]
+ 876 0110 032A     		cmp	r2, #3
+ 877 0112 00F0F980 		beq	.L113
+ 878              	.L78:
+ 879 0116 0F99     		ldr	r1, [sp, #60]
+ 880 0118 0229     		cmp	r1, #2
+ 881 011a 00F30681 		bgt	.L114
+ 882 011e 109A     		ldr	r2, [sp, #64]
+ 883 0120 012A     		cmp	r2, #1
+ 884 0122 40F00881 		bne	.L115
+ 885 0126 4A1C     		adds	r2, r1, #1
+ 886 0128 0F92     		str	r2, [sp, #60]
+ 887 012a 0E9A     		ldr	r2, [sp, #56]
+ 888 012c 02EB4102 		add	r2, r2, r1, lsl #1
+ 889 0130 03EB8203 		add	r3, r3, r2, lsl #2
+ 890 0134 684A     		ldr	r2, .L122+24
+ 891 0136 1A60     		str	r2, [r3]	@ float
+ 892 0138 0E9B     		ldr	r3, [sp, #56]
+ 893 013a 109A     		ldr	r2, [sp, #64]
+ 894 013c 1344     		add	r3, r3, r2
+ 895 013e 022B     		cmp	r3, #2
+ 896 0140 40F0FF80 		bne	.L81
+ 897 0144 0F9B     		ldr	r3, [sp, #60]
+ 898 0146 032B     		cmp	r3, #3
+ 899 0148 40F0FB80 		bne	.L81
+ 900 014c 04AB     		add	r3, sp, #16
+ 901 014e 1193     		str	r3, [sp, #68]
+ 902 0150 0022     		movs	r2, #0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 19
+
+
+ 903 0152 1292     		str	r2, [sp, #72]
+ 904 0154 0122     		movs	r2, #1
+ 905 0156 1392     		str	r2, [sp, #76]
+ 906 0158 1492     		str	r2, [sp, #80]
+ 907 015a 5D4A     		ldr	r2, .L122+16
+ 908 015c 0492     		str	r2, [sp, #16]	@ float
+ 909 015e 0122     		movs	r2, #1
+ 910 0160 0021     		movs	r1, #0
+ 911 0162 0A44     		add	r2, r2, r1
+ 912 0164 1292     		str	r2, [sp, #72]
+ 913 0166 1391     		str	r1, [sp, #76]
+ 914 0168 022A     		cmp	r2, #2
+ 915 016a 00F3F080 		bgt	.L116
+ 916 016e 139A     		ldr	r2, [sp, #76]
+ 917 0170 002A     		cmp	r2, #0
+ 918 0172 00F3F780 		bgt	.L117
+ 919 0176 1499     		ldr	r1, [sp, #80]
+ 920 0178 0129     		cmp	r1, #1
+ 921 017a 40F0F980 		bne	.L118
+ 922 017e 511C     		adds	r1, r2, #1
+ 923 0180 1391     		str	r1, [sp, #76]
+ 924 0182 02EB4202 		add	r2, r2, r2, lsl #1
+ 925 0186 1299     		ldr	r1, [sp, #72]
+ 926 0188 0A44     		add	r2, r2, r1
+ 927 018a 03EB8203 		add	r3, r3, r2, lsl #2
+ 928 018e 4FF08042 		mov	r2, #1073741824
+ 929 0192 1A60     		str	r2, [r3]	@ float
+ 930 0194 119A     		ldr	r2, [sp, #68]
+ 931 0196 139B     		ldr	r3, [sp, #76]
+ 932 0198 012B     		cmp	r3, #1
+ 933 019a 00F0EF80 		beq	.L119
+ 934              	.L86:
+ 935 019e 139B     		ldr	r3, [sp, #76]
+ 936 01a0 002B     		cmp	r3, #0
+ 937 01a2 00F3FC80 		bgt	.L120
+ 938 01a6 1499     		ldr	r1, [sp, #80]
+ 939 01a8 0129     		cmp	r1, #1
+ 940 01aa 40F0FE80 		bne	.L121
+ 941 01ae 591C     		adds	r1, r3, #1
+ 942 01b0 1391     		str	r1, [sp, #76]
+ 943 01b2 03EB4303 		add	r3, r3, r3, lsl #1
+ 944 01b6 1299     		ldr	r1, [sp, #72]
+ 945 01b8 0B44     		add	r3, r3, r1
+ 946 01ba 02EB8303 		add	r3, r2, r3, lsl #2
+ 947 01be 4FF07E52 		mov	r2, #1065353216
+ 948 01c2 1A60     		str	r2, [r3]	@ float
+ 949 01c4 129B     		ldr	r3, [sp, #72]
+ 950 01c6 149A     		ldr	r2, [sp, #80]
+ 951 01c8 1344     		add	r3, r3, r2
+ 952 01ca 032B     		cmp	r3, #3
+ 953 01cc 40F0F380 		bne	.L89
+ 954 01d0 139B     		ldr	r3, [sp, #76]
+ 955 01d2 012B     		cmp	r3, #1
+ 956 01d4 40F0EF80 		bne	.L89
+ 957 01d8 07AB     		add	r3, sp, #28
+ 958 01da 1593     		str	r3, [sp, #84]
+ 959 01dc 04AB     		add	r3, sp, #16
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 20
+
+
+ 960 01de 1693     		str	r3, [sp, #88]
+ 961 01e0 0023     		movs	r3, #0
+ 962 01e2 17AA     		add	r2, sp, #92
+ 963 01e4 15A9     		add	r1, sp, #84
+ 964 01e6 02A8     		add	r0, sp, #8
+ 965              	.LEHB0:
+ 966 01e8 FFF7FEFF 		bl	_ZN5Eigen8internal15call_assignmentINS_6MatrixIfLi2ELi1ELi0ELi2ELi1EEENS_7ProductINS2_IfLi2ELi3
+ 967 01ec 3B4A     		ldr	r2, .L122+28
+ 968 01ee 3C49     		ldr	r1, .L122+32
+ 969 01f0 3C48     		ldr	r0, .L122+36
+ 970 01f2 FFF7FEFF 		bl	Debug_Print
+ 971              	.LEHE0:
+ 972 01f6 0024     		movs	r4, #0
+ 973 01f8 F0E0     		b	.L96
+ 974              	.L102:
+ 975 01fa 3B4B     		ldr	r3, .L122+40
+ 976 01fc 3B4A     		ldr	r2, .L122+44
+ 977 01fe 4721     		movs	r1, #71
+ 978 0200 3B48     		ldr	r0, .L122+48
+ 979              	.LEHB1:
+ 980 0202 FFF7FEFF 		bl	__assert_func
+ 981              	.LEHE1:
+ 982              	.L99:
+ 983 0206 0DA8     		add	r0, sp, #52
+ 984 0208 FFF7FEFF 		bl	_ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv
+ 985              	.LEHB2:
+ 986 020c FFF7FEFF 		bl	__cxa_end_cleanup
+ 987              	.LEHE2:
+ 988              	.L103:
+ 989 0210 384B     		ldr	r3, .L122+52
+ 990 0212 364A     		ldr	r2, .L122+44
+ 991 0214 4921     		movs	r1, #73
+ 992 0216 3648     		ldr	r0, .L122+48
+ 993              	.LEHB3:
+ 994 0218 FFF7FEFF 		bl	__assert_func
+ 995              	.L104:
+ 996 021c 109A     		ldr	r2, [sp, #64]
+ 997 021e 0E99     		ldr	r1, [sp, #56]
+ 998 0220 0A44     		add	r2, r2, r1
+ 999 0222 0E92     		str	r2, [sp, #56]
+ 1000 0224 0021     		movs	r1, #0
+ 1001 0226 0F91     		str	r1, [sp, #60]
+ 1002 0228 0121     		movs	r1, #1
+ 1003 022a 1091     		str	r1, [sp, #64]
+ 1004 022c 8A42     		cmp	r2, r1
+ 1005 022e 7FF72FAF 		ble	.L69
+ 1006 0232 314B     		ldr	r3, .L122+56
+ 1007 0234 2D4A     		ldr	r2, .L122+44
+ 1008 0236 4421     		movs	r1, #68
+ 1009 0238 2D48     		ldr	r0, .L122+48
+ 1010 023a FFF7FEFF 		bl	__assert_func
+ 1011              	.L105:
+ 1012 023e 2A4B     		ldr	r3, .L122+40
+ 1013 0240 2A4A     		ldr	r2, .L122+44
+ 1014 0242 4721     		movs	r1, #71
+ 1015 0244 2A48     		ldr	r0, .L122+48
+ 1016 0246 FFF7FEFF 		bl	__assert_func
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 21
+
+
+ 1017              	.L106:
+ 1018 024a 2A4B     		ldr	r3, .L122+52
+ 1019 024c 274A     		ldr	r2, .L122+44
+ 1020 024e 4921     		movs	r1, #73
+ 1021 0250 2748     		ldr	r0, .L122+48
+ 1022 0252 FFF7FEFF 		bl	__assert_func
+ 1023              	.L107:
+ 1024 0256 109A     		ldr	r2, [sp, #64]
+ 1025 0258 0E99     		ldr	r1, [sp, #56]
+ 1026 025a 0A44     		add	r2, r2, r1
+ 1027 025c 0E92     		str	r2, [sp, #56]
+ 1028 025e 0021     		movs	r1, #0
+ 1029 0260 0F91     		str	r1, [sp, #60]
+ 1030 0262 0121     		movs	r1, #1
+ 1031 0264 1091     		str	r1, [sp, #64]
+ 1032 0266 8A42     		cmp	r2, r1
+ 1033 0268 7FF728AF 		ble	.L72
+ 1034 026c 224B     		ldr	r3, .L122+56
+ 1035 026e 1F4A     		ldr	r2, .L122+44
+ 1036 0270 4421     		movs	r1, #68
+ 1037 0272 1F48     		ldr	r0, .L122+48
+ 1038 0274 FFF7FEFF 		bl	__assert_func
+ 1039              	.L108:
+ 1040 0278 1B4B     		ldr	r3, .L122+40
+ 1041 027a 1C4A     		ldr	r2, .L122+44
+ 1042 027c 4721     		movs	r1, #71
+ 1043 027e 1C48     		ldr	r0, .L122+48
+ 1044 0280 FFF7FEFF 		bl	__assert_func
+ 1045              	.L109:
+ 1046 0284 1B4B     		ldr	r3, .L122+52
+ 1047 0286 194A     		ldr	r2, .L122+44
+ 1048 0288 4921     		movs	r1, #73
+ 1049 028a 1948     		ldr	r0, .L122+48
+ 1050 028c FFF7FEFF 		bl	__assert_func
+ 1051              	.L110:
+ 1052 0290 109A     		ldr	r2, [sp, #64]
+ 1053 0292 0E99     		ldr	r1, [sp, #56]
+ 1054 0294 0A44     		add	r2, r2, r1
+ 1055 0296 0E92     		str	r2, [sp, #56]
+ 1056 0298 0021     		movs	r1, #0
+ 1057 029a 0F91     		str	r1, [sp, #60]
+ 1058 029c 0121     		movs	r1, #1
+ 1059 029e 1091     		str	r1, [sp, #64]
+ 1060 02a0 8A42     		cmp	r2, r1
+ 1061 02a2 7FF722AF 		ble	.L75
+ 1062 02a6 144B     		ldr	r3, .L122+56
+ 1063 02a8 104A     		ldr	r2, .L122+44
+ 1064 02aa 4421     		movs	r1, #68
+ 1065 02ac 1048     		ldr	r0, .L122+48
+ 1066 02ae FFF7FEFF 		bl	__assert_func
+ 1067              	.L111:
+ 1068 02b2 0D4B     		ldr	r3, .L122+40
+ 1069 02b4 0D4A     		ldr	r2, .L122+44
+ 1070 02b6 4721     		movs	r1, #71
+ 1071 02b8 0D48     		ldr	r0, .L122+48
+ 1072 02ba FFF7FEFF 		bl	__assert_func
+ 1073              	.L123:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 22
+
+
+ 1074 02be 00BF     		.align	2
+ 1075              	.L122:
+ 1076 02c0 00000000 		.word	.LANCHOR5
+ 1077 02c4 00000000 		.word	Attitude_smp_DataPipe
+ 1078 02c8 00000000 		.word	.LANCHOR4
+ 1079 02cc 00000000 		.word	Altitude_smp_DataPipe
+ 1080 02d0 00004040 		.word	1077936128
+ 1081 02d4 0000A040 		.word	1084227584
+ 1082 02d8 0000C040 		.word	1086324736
+ 1083 02dc 48020000 		.word	.LC13
+ 1084 02e0 58020000 		.word	.LC14
+ 1085 02e4 00000000 		.word	DebugPort
+ 1086 02e8 14010000 		.word	.LC10
+ 1087 02ec 50000000 		.word	.LC9
+ 1088 02f0 08010000 		.word	.LC2
+ 1089 02f4 6C010000 		.word	.LC11
+ 1090 02f8 00000000 		.word	.LC8
+ 1091              	.L112:
+ 1092 02fc 464B     		ldr	r3, .L124
+ 1093 02fe 474A     		ldr	r2, .L124+4
+ 1094 0300 4921     		movs	r1, #73
+ 1095 0302 4748     		ldr	r0, .L124+8
+ 1096 0304 FFF7FEFF 		bl	__assert_func
+ 1097              	.L113:
+ 1098 0308 109A     		ldr	r2, [sp, #64]
+ 1099 030a 0E99     		ldr	r1, [sp, #56]
+ 1100 030c 0A44     		add	r2, r2, r1
+ 1101 030e 0E92     		str	r2, [sp, #56]
+ 1102 0310 0021     		movs	r1, #0
+ 1103 0312 0F91     		str	r1, [sp, #60]
+ 1104 0314 0121     		movs	r1, #1
+ 1105 0316 1091     		str	r1, [sp, #64]
+ 1106 0318 8A42     		cmp	r2, r1
+ 1107 031a 7FF7FCAE 		ble	.L78
+ 1108 031e 414B     		ldr	r3, .L124+12
+ 1109 0320 3E4A     		ldr	r2, .L124+4
+ 1110 0322 4421     		movs	r1, #68
+ 1111 0324 3E48     		ldr	r0, .L124+8
+ 1112 0326 FFF7FEFF 		bl	__assert_func
+ 1113              	.L114:
+ 1114 032a 3F4B     		ldr	r3, .L124+16
+ 1115 032c 3B4A     		ldr	r2, .L124+4
+ 1116 032e 4721     		movs	r1, #71
+ 1117 0330 3B48     		ldr	r0, .L124+8
+ 1118 0332 FFF7FEFF 		bl	__assert_func
+ 1119              	.L115:
+ 1120 0336 384B     		ldr	r3, .L124
+ 1121 0338 384A     		ldr	r2, .L124+4
+ 1122 033a 4921     		movs	r1, #73
+ 1123 033c 3848     		ldr	r0, .L124+8
+ 1124 033e FFF7FEFF 		bl	__assert_func
+ 1125              	.LEHE3:
+ 1126              	.L81:
+ 1127 0342 3A4B     		ldr	r3, .L124+20
+ 1128 0344 3A4A     		ldr	r2, .L124+24
+ 1129 0346 7621     		movs	r1, #118
+ 1130 0348 3548     		ldr	r0, .L124+8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 23
+
+
+ 1131 034a FFF7FEFF 		bl	__assert_func
+ 1132              	.L116:
+ 1133 034e 354B     		ldr	r3, .L124+12
+ 1134 0350 384A     		ldr	r2, .L124+28
+ 1135 0352 4421     		movs	r1, #68
+ 1136 0354 3248     		ldr	r0, .L124+8
+ 1137              	.LEHB4:
+ 1138 0356 FFF7FEFF 		bl	__assert_func
+ 1139              	.LEHE4:
+ 1140              	.L100:
+ 1141 035a 11A8     		add	r0, sp, #68
+ 1142 035c FFF7FEFF 		bl	_ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv
+ 1143              	.LEHB5:
+ 1144 0360 FFF7FEFF 		bl	__cxa_end_cleanup
+ 1145              	.LEHE5:
+ 1146              	.L117:
+ 1147 0364 304B     		ldr	r3, .L124+16
+ 1148 0366 334A     		ldr	r2, .L124+28
+ 1149 0368 4721     		movs	r1, #71
+ 1150 036a 2D48     		ldr	r0, .L124+8
+ 1151              	.LEHB6:
+ 1152 036c FFF7FEFF 		bl	__assert_func
+ 1153              	.L118:
+ 1154 0370 294B     		ldr	r3, .L124
+ 1155 0372 304A     		ldr	r2, .L124+28
+ 1156 0374 4921     		movs	r1, #73
+ 1157 0376 2A48     		ldr	r0, .L124+8
+ 1158 0378 FFF7FEFF 		bl	__assert_func
+ 1159              	.L119:
+ 1160 037c 149B     		ldr	r3, [sp, #80]
+ 1161 037e 1299     		ldr	r1, [sp, #72]
+ 1162 0380 0B44     		add	r3, r3, r1
+ 1163 0382 1293     		str	r3, [sp, #72]
+ 1164 0384 0021     		movs	r1, #0
+ 1165 0386 1391     		str	r1, [sp, #76]
+ 1166 0388 0121     		movs	r1, #1
+ 1167 038a 1491     		str	r1, [sp, #80]
+ 1168 038c 022B     		cmp	r3, #2
+ 1169 038e 7FF706AF 		ble	.L86
+ 1170 0392 244B     		ldr	r3, .L124+12
+ 1171 0394 274A     		ldr	r2, .L124+28
+ 1172 0396 4421     		movs	r1, #68
+ 1173 0398 2148     		ldr	r0, .L124+8
+ 1174 039a FFF7FEFF 		bl	__assert_func
+ 1175              	.L120:
+ 1176 039e 224B     		ldr	r3, .L124+16
+ 1177 03a0 244A     		ldr	r2, .L124+28
+ 1178 03a2 4721     		movs	r1, #71
+ 1179 03a4 1E48     		ldr	r0, .L124+8
+ 1180 03a6 FFF7FEFF 		bl	__assert_func
+ 1181              	.L121:
+ 1182 03aa 1B4B     		ldr	r3, .L124
+ 1183 03ac 214A     		ldr	r2, .L124+28
+ 1184 03ae 4921     		movs	r1, #73
+ 1185 03b0 1B48     		ldr	r0, .L124+8
+ 1186 03b2 FFF7FEFF 		bl	__assert_func
+ 1187              	.LEHE6:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 24
+
+
+ 1188              	.L89:
+ 1189 03b6 1D4B     		ldr	r3, .L124+20
+ 1190 03b8 1F4A     		ldr	r2, .L124+32
+ 1191 03ba 7621     		movs	r1, #118
+ 1192 03bc 1848     		ldr	r0, .L124+8
+ 1193 03be FFF7FEFF 		bl	__assert_func
+ 1194              	.L93:
+ 1195 03c2 1E4B     		ldr	r3, .L124+36
+ 1196 03c4 1E4A     		ldr	r2, .L124+40
+ 1197 03c6 4FF4B671 		mov	r1, #364
+ 1198 03ca 1E48     		ldr	r0, .L124+44
+ 1199              	.LEHB7:
+ 1200 03cc FFF7FEFF 		bl	__assert_func
+ 1201              	.L92:
+ 1202 03d0 1D4A     		ldr	r2, .L124+48
+ 1203 03d2 1E49     		ldr	r1, .L124+52
+ 1204 03d4 1E48     		ldr	r0, .L124+56
+ 1205 03d6 FFF7FEFF 		bl	Debug_Print
+ 1206 03da 0134     		adds	r4, r4, #1
+ 1207              	.L96:
+ 1208 03dc 012C     		cmp	r4, #1
+ 1209 03de 19DC     		bgt	.L65
+ 1210 03e0 0025     		movs	r5, #0
+ 1211              	.L95:
+ 1212 03e2 002D     		cmp	r5, #0
+ 1213 03e4 F4DC     		bgt	.L92
+ 1214 03e6 002C     		cmp	r4, #0
+ 1215 03e8 EBDB     		blt	.L93
+ 1216 03ea 012C     		cmp	r4, #1
+ 1217 03ec E9DC     		bgt	.L93
+ 1218 03ee 002D     		cmp	r5, #0
+ 1219 03f0 E7DB     		blt	.L93
+ 1220 03f2 E6DC     		bgt	.L93
+ 1221 03f4 02AB     		add	r3, sp, #8
+ 1222 03f6 1893     		str	r3, [sp, #96]
+ 1223 03f8 03EB8403 		add	r3, r3, r4, lsl #2
+ 1224 03fc 1868     		ldr	r0, [r3]	@ float
+ 1225 03fe FFF7FEFF 		bl	__aeabi_f2d
+ 1226 0402 CDE90001 		strd	r0, [sp]
+ 1227 0406 134A     		ldr	r2, .L124+60
+ 1228 0408 1049     		ldr	r1, .L124+52
+ 1229 040a 1148     		ldr	r0, .L124+56
+ 1230 040c FFF7FEFF 		bl	Debug_Print
+ 1231              	.LEHE7:
+ 1232 0410 0135     		adds	r5, r5, #1
+ 1233 0412 E6E7     		b	.L95
+ 1234              	.L65:
+ 1235 0414 1BB0     		add	sp, sp, #108
+ 1236              		@ sp needed
+ 1237 0416 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 1238              	.L125:
+ 1239              		.align	2
+ 1240              	.L124:
+ 1241 0418 6C010000 		.word	.LC11
+ 1242 041c 50000000 		.word	.LC9
+ 1243 0420 08010000 		.word	.LC2
+ 1244 0424 00000000 		.word	.LC8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 25
+
+
+ 1245 0428 14010000 		.word	.LC10
+ 1246 042c 00000000 		.word	.LC0
+ 1247 0430 A0000000 		.word	.LC1
+ 1248 0434 84010000 		.word	.LC12
+ 1249 0438 00000000 		.word	.LC3
+ 1250 043c 5C020000 		.word	.LC15
+ 1251 0440 94020000 		.word	.LC16
+ 1252 0444 80030000 		.word	.LC17
+ 1253 0448 A8030000 		.word	.LC19
+ 1254 044c 58020000 		.word	.LC14
+ 1255 0450 00000000 		.word	DebugPort
+ 1256 0454 A4030000 		.word	.LC18
+ 1257              		.global	__gxx_personality_v0
+ 1258              		.personality	__gxx_personality_v0
+ 1259              		.handlerdata
+ 1260              	.LLSDA8389:
+ 1261 0008 FF       		.byte	0xff
+ 1262 0009 FF       		.byte	0xff
+ 1263 000a 01       		.byte	0x1
+ 1264 000b 2D       		.uleb128 .LLSDACSE8389-.LLSDACSB8389
+ 1265              	.LLSDACSB8389:
+ 1266 000c E803     		.uleb128 .LEHB0-.LFB8389
+ 1267 000e 0E       		.uleb128 .LEHE0-.LEHB0
+ 1268 000f 00       		.uleb128 0
+ 1269 0010 00       		.uleb128 0
+ 1270 0011 8204     		.uleb128 .LEHB1-.LFB8389
+ 1271 0013 04       		.uleb128 .LEHE1-.LEHB1
+ 1272 0014 8604     		.uleb128 .L99-.LFB8389
+ 1273 0016 00       		.uleb128 0
+ 1274 0017 8C04     		.uleb128 .LEHB2-.LFB8389
+ 1275 0019 04       		.uleb128 .LEHE2-.LEHB2
+ 1276 001a 00       		.uleb128 0
+ 1277 001b 00       		.uleb128 0
+ 1278 001c 9804     		.uleb128 .LEHB3-.LFB8389
+ 1279 001e AA02     		.uleb128 .LEHE3-.LEHB3
+ 1280 0020 8604     		.uleb128 .L99-.LFB8389
+ 1281 0022 00       		.uleb128 0
+ 1282 0023 D606     		.uleb128 .LEHB4-.LFB8389
+ 1283 0025 04       		.uleb128 .LEHE4-.LEHB4
+ 1284 0026 DA06     		.uleb128 .L100-.LFB8389
+ 1285 0028 00       		.uleb128 0
+ 1286 0029 E006     		.uleb128 .LEHB5-.LFB8389
+ 1287 002b 04       		.uleb128 .LEHE5-.LEHB5
+ 1288 002c 00       		.uleb128 0
+ 1289 002d 00       		.uleb128 0
+ 1290 002e EC06     		.uleb128 .LEHB6-.LFB8389
+ 1291 0030 4A       		.uleb128 .LEHE6-.LEHB6
+ 1292 0031 DA06     		.uleb128 .L100-.LFB8389
+ 1293 0033 00       		.uleb128 0
+ 1294 0034 CC07     		.uleb128 .LEHB7-.LFB8389
+ 1295 0036 44       		.uleb128 .LEHE7-.LEHB7
+ 1296 0037 00       		.uleb128 0
+ 1297 0038 00       		.uleb128 0
+ 1298              	.LLSDACSE8389:
+ 1299              		.section	.text.TaskNavi_Init
+ 1300              		.fnend
+ 1302              		.section	.text._GLOBAL__sub_I_TaskNavi_Monitor,"ax",%progbits
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 26
+
+
+ 1303              		.align	1
+ 1304              		.syntax unified
+ 1305              		.thumb
+ 1306              		.thumb_func
+ 1308              	_GLOBAL__sub_I_TaskNavi_Monitor:
+ 1309              		.fnstart
+ 1310              	.LFB9352:
+ 1311              		@ args = 0, pretend = 0, frame = 0
+ 1312              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1313 0000 08B5     		push	{r3, lr}
+ 1314 0002 4FF6FF71 		movw	r1, #65535
+ 1315 0006 0120     		movs	r0, #1
+ 1316 0008 FFF7FEFF 		bl	_Z41__static_initialization_and_destruction_0ii
+ 1317 000c 08BD     		pop	{r3, pc}
+ 1318              		.cantunwind
+ 1319              		.fnend
+ 1321              		.section	.init_array,"aw",%init_array
+ 1322              		.align	2
+ 1323 0000 00000000 		.word	_GLOBAL__sub_I_TaskNavi_Monitor(target1)
+ 1324              		.global	TaskNavi_Monitor
+ 1325              		.section	.Perph_Section,"aw"
+ 1326              		.align	2
+ 1327              		.set	.LANCHOR4,. + 0
+ 1330              	_ZL25Navi_Attitude_PipeDataObj:
+ 1331 0000 00000000 		.space	34
+ 1331      00000000 
+ 1331      00000000 
+ 1331      00000000 
+ 1331      00000000 
+ 1332 0022 0000     		.space	2
+ 1335              	_ZL25Navi_Altitude_PipeDataObj:
+ 1336 0024 00000000 		.space	8
+ 1336      00000000 
+ 1337              		.section	.bss.TaskNavi_Monitor,"aw",%nobits
+ 1338              		.align	3
+ 1339              		.set	.LANCHOR5,. + 0
+ 1342              	TaskNavi_Monitor:
+ 1343 0000 00000000 		.space	96
+ 1343      00000000 
+ 1343      00000000 
+ 1343      00000000 
+ 1343      00000000 
+ 1344              		.section	.bss._ZStL8__ioinit,"aw",%nobits
+ 1345              		.align	2
+ 1346              		.set	.LANCHOR3,. + 0
+ 1349              	_ZStL8__ioinit:
+ 1350 0000 00       		.space	1
+ 1351              		.section	.bss._ZZL24TaskNavi_FlipOver_DetectfE14FlipOver_State,"aw",%nobits
+ 1352              		.set	.LANCHOR0,. + 0
+ 1355              	_ZZL24TaskNavi_FlipOver_DetectfE14FlipOver_State:
+ 1356 0000 00       		.space	1
+ 1357              		.section	.bss._ZZL24TaskNavi_FlipOver_DetectfE21FilpOver_Trigger_Time,"aw",%nobits
+ 1358              		.align	2
+ 1359              		.set	.LANCHOR1,. + 0
+ 1362              	_ZZL24TaskNavi_FlipOver_DetectfE21FilpOver_Trigger_Time:
+ 1363 0000 00000000 		.space	4
+ 1364              		.section	.bss._ZZL24TaskNavi_FlipOver_DetectfE26FlipOver_ResetTrigger_Time,"aw",%nobits
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 27
+
+
+ 1365              		.align	2
+ 1366              		.set	.LANCHOR2,. + 0
+ 1369              	_ZZL24TaskNavi_FlipOver_DetectfE26FlipOver_ResetTrigger_Time:
+ 1370 0000 00000000 		.space	4
+ 1371              		.hidden	__dso_handle
+ 1372              		.ident	"GCC: (GNU Arm Embedded Toolchain 10.3-2021.10) 10.3.1 20210824 (release)"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 28
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Task_Navi.cpp
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:18     .text._ZL24TaskNavi_FlipOver_Detectf:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:23     .text._ZL24TaskNavi_FlipOver_Detectf:00000000 _ZL24TaskNavi_FlipOver_Detectf
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:126    .text._ZL24TaskNavi_FlipOver_Detectf:000000d4 $d
+.ARM.extab.text._ZL24TaskNavi_FlipOver_Detectf:00000000 $d
+.ARM.exidx.text._ZL24TaskNavi_FlipOver_Detectf:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:137    .text._Z41__static_initialization_and_destruction_0ii:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:142    .text._Z41__static_initialization_and_destruction_0ii:00000000 _Z41__static_initialization_and_destruction_0ii
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:167    .text._Z41__static_initialization_and_destruction_0ii:00000024 $d
+.ARM.exidx.text._Z41__static_initialization_and_destruction_0ii:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:174    .text.TaskNavi_Core:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:180    .text.TaskNavi_Core:00000000 TaskNavi_Core
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:382    .text.TaskNavi_Core:000001d0 $d
+    .ARM.exidx.text.TaskNavi_Core:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:396    .rodata._ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:410    .text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:416    .text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv:00000000 _ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:443    .text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv:00000024 $d
+.ARM.extab.text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv:00000000 $d
+.ARM.exidx.text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE8finishedEv:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:449    .rodata._ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:454    .text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:460    .text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv:00000000 _ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:487    .text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv:00000024 $d
+.ARM.extab.text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv:00000000 $d
+.ARM.exidx.text._ZN5Eigen16CommaInitializerINS_6MatrixIfLi3ELi1ELi0ELi3ELi1EEEE8finishedEv:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:493    .text._ZNK5Eigen10MatrixBaseINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE11lazyProductINS1_IfLi3ELi1ELi0ELi3ELi1EEEEEKNS_7ProductIS2_T_Li1EEERKNS0_IS7_EE:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:499    .text._ZNK5Eigen10MatrixBaseINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE11lazyProductINS1_IfLi3ELi1ELi0ELi3ELi1EEEEEKNS_7ProductIS2_T_Li1EEERKNS0_IS7_EE:00000000 _ZNK5Eigen10MatrixBaseINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE11lazyProductINS1_IfLi3ELi1ELi0ELi3ELi1EEEEEKNS_7ProductIS2_T_Li1EEERKNS0_IS7_EE
+.ARM.exidx.text._ZNK5Eigen10MatrixBaseINS_6MatrixIfLi2ELi3ELi0ELi2ELi3EEEE11lazyProductINS1_IfLi3ELi1ELi0ELi3ELi1EEEEEKNS_7ProductIS2_T_Li1EEERKNS0_IS7_EE:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:512    .rodata._ZN5Eigen8internal15call_assignmentINS_6MatrixIfLi2ELi1ELi0ELi2ELi1EEENS_7ProductINS2_IfLi2ELi3ELi0ELi2ELi3EEENS2_IfLi3ELi1ELi0ELi3ELi1EEELi0EEENS0_9assign_opIffEEEEvRT_RKT0_RKT1_NS0_9enable_ifIXsrNS0_25evaluator_assume_aliasingISC_NS0_16evaluator_traitsISC_E5ShapeEEE5valueEPvE4typeE.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:527    .text._ZN5Eigen8internal15call_assignmentINS_6MatrixIfLi2ELi1ELi0ELi2ELi1EEENS_7ProductINS2_IfLi2ELi3ELi0ELi2ELi3EEENS2_IfLi3ELi1ELi0ELi3ELi1EEELi0EEENS0_9assign_opIffEEEEvRT_RKT0_RKT1_NS0_9enable_ifIXsrNS0_25evaluator_assume_aliasingISC_NS0_16evaluator_traitsISC_E5ShapeEEE5valueEPvE4typeE:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:533    .text._ZN5Eigen8internal15call_assignmentINS_6MatrixIfLi2ELi1ELi0ELi2ELi1EEENS_7ProductINS2_IfLi2ELi3ELi0ELi2ELi3EEENS2_IfLi3ELi1ELi0ELi3ELi1EEELi0EEENS0_9assign_opIffEEEEvRT_RKT0_RKT1_NS0_9enable_ifIXsrNS0_25evaluator_assume_aliasingISC_NS0_16evaluator_traitsISC_E5ShapeEEE5valueEPvE4typeE:00000000 _ZN5Eigen8internal15call_assignmentINS_6MatrixIfLi2ELi1ELi0ELi2ELi1EEENS_7ProductINS2_IfLi2ELi3ELi0ELi2ELi3EEENS2_IfLi3ELi1ELi0ELi3ELi1EEELi0EEENS0_9assign_opIffEEEEvRT_RKT0_RKT1_NS0_9enable_ifIXsrNS0_25evaluator_assume_aliasingISC_NS0_16evaluator_traitsISC_E5ShapeEEE5valueEPvE4typeE
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:696    .text._ZN5Eigen8internal15call_assignmentINS_6MatrixIfLi2ELi1ELi0ELi2ELi1EEENS_7ProductINS2_IfLi2ELi3ELi0ELi2ELi3EEENS2_IfLi3ELi1ELi0ELi3ELi1EEELi0EEENS0_9assign_opIffEEEEvRT_RKT0_RKT1_NS0_9enable_ifIXsrNS0_25evaluator_assume_aliasingISC_NS0_16evaluator_traitsISC_E5ShapeEEE5valueEPvE4typeE:00000168 $d
+.ARM.exidx.text._ZN5Eigen8internal15call_assignmentINS_6MatrixIfLi2ELi1ELi0ELi2ELi1EEENS_7ProductINS2_IfLi2ELi3ELi0ELi2ELi3EEENS2_IfLi3ELi1ELi0ELi3ELi1EEELi0EEENS0_9assign_opIffEEEEvRT_RKT0_RKT1_NS0_9enable_ifIXsrNS0_25evaluator_assume_aliasingISC_NS0_16evaluator_traitsISC_E5ShapeEEE5valueEPvE4typeE:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:702    .rodata.TaskNavi_Init.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:753    .text.TaskNavi_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:759    .text.TaskNavi_Init:00000000 TaskNavi_Init
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1076   .text.TaskNavi_Init:000002c0 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1092   .text.TaskNavi_Init:000002fc $t
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1241   .text.TaskNavi_Init:00000418 $d
+    .ARM.extab.text.TaskNavi_Init:00000000 $d
+    .ARM.exidx.text.TaskNavi_Init:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1303   .text._GLOBAL__sub_I_TaskNavi_Monitor:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1308   .text._GLOBAL__sub_I_TaskNavi_Monitor:00000000 _GLOBAL__sub_I_TaskNavi_Monitor
+.ARM.exidx.text._GLOBAL__sub_I_TaskNavi_Monitor:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1322   .init_array:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1342   .bss.TaskNavi_Monitor:00000000 TaskNavi_Monitor
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1326   .Perph_Section:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1330   .Perph_Section:00000000 _ZL25Navi_Attitude_PipeDataObj
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1335   .Perph_Section:00000024 _ZL25Navi_Altitude_PipeDataObj
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1338   .bss.TaskNavi_Monitor:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1345   .bss._ZStL8__ioinit:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1349   .bss._ZStL8__ioinit:00000000 _ZStL8__ioinit
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1355   .bss._ZZL24TaskNavi_FlipOver_DetectfE14FlipOver_State:00000000 _ZZL24TaskNavi_FlipOver_DetectfE14FlipOver_State
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1356   .bss._ZZL24TaskNavi_FlipOver_DetectfE14FlipOver_State:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1358   .bss._ZZL24TaskNavi_FlipOver_DetectfE21FilpOver_Trigger_Time:00000000 $d
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s 			page 29
+
+
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1362   .bss._ZZL24TaskNavi_FlipOver_DetectfE21FilpOver_Trigger_Time:00000000 _ZZL24TaskNavi_FlipOver_DetectfE21FilpOver_Trigger_Time
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1365   .bss._ZZL24TaskNavi_FlipOver_DetectfE26FlipOver_ResetTrigger_Time:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccGP3PLm.s:1369   .bss._ZZL24TaskNavi_FlipOver_DetectfE26FlipOver_ResetTrigger_Time:00000000 _ZZL24TaskNavi_FlipOver_DetectfE26FlipOver_ResetTrigger_Time
+
+UNDEFINED SYMBOLS
+SrvOsCommon
+__aeabi_unwind_cpp_pr1
+_ZNSt8ios_base4InitC1Ev
+__aeabi_atexit
+__dso_handle
+_ZNSt8ios_base4InitD1Ev
+memset
+MadgwickAHRSInit
+MadgwickAHRSupdate
+DataPipe_SendTo
+Attitude_smp_DataPipe
+Attitude_hub_DataPipe
+Attitude_Log_DataPipe
+SrvDataHub
+Altitude_smp_DataPipe
+Altitude_hub_DataPipe
+Altitude_Log_DataPipe
+__aeabi_unwind_cpp_pr0
+__assert_func
+__aeabi_f2d
+Debug_Print
+__cxa_end_cleanup
+DebugPort
+__gxx_personality_v0

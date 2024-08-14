@@ -1,0 +1,1651 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Bsp_Spi.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.BspSPI_Get_Clock,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	BspSPI_Get_Clock:
+  26              	.LVL0:
+  27              	.LFB133:
+  28              		.file 1 "HW_Lib/AT32F435/bsp/Bsp_Spi.c"
+   1:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** #include "Bsp_Spi.h"
+   2:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** #include "Bsp_GPIO.h"
+   3:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** #include "at32f435_437.h"
+   4:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+   5:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** #define Dummy_Byte 0xFF
+   6:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** #define To_SPI_Instance(x) ((spi_type *)x)
+   7:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+   8:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** /* internal function */
+   9:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static crm_periph_clock_type BspSPI_Get_Clock(spi_type *type);
+  10:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Pin_Init(BspSPI_PinConfig_TypeDef pin);
+  11:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  12:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** /* external function */
+  13:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance);
+  14:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Deinit(BspSPI_NorModeConfig_TypeDef spi_cfg);
+  15:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Transmit(void *instance, uint8_t *tx, uint16_t size, uint16_t time_out);
+  16:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Receive(void *instance, uint8_t *rx, uint16_t size, uint16_t time_out);
+  17:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static uint16_t BspSPI_Trans_Receive(void *instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint1
+  18:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Set_Speed(void *instance, uint32_t speed);
+  19:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  20:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** BspSpi_TypeDef BspSPI = {
+  21:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     .init = BspSPI_Init,
+  22:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     .deinit = BspSPI_Deinit,
+  23:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     .trans = BspSPI_Transmit,
+  24:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     .receive = BspSPI_Receive,
+  25:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     .trans_receive = BspSPI_Trans_Receive,
+  26:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     .set_speed = BspSPI_Set_Speed,
+  27:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** };
+  28:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  29:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static crm_periph_clock_type BspSPI_Get_Clock(spi_type *type)
+  30:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 2
+
+
+  29              		.loc 1 30 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  31:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     switch((uint32_t)type)
+  34              		.loc 1 31 5 view .LVU1
+  35 0000 0D4B     		ldr	r3, .L8
+  36 0002 9842     		cmp	r0, r3
+  37 0004 0FD0     		beq	.L4
+  38 0006 09D8     		bhi	.L3
+  39 0008 A3F57843 		sub	r3, r3, #63488
+  40 000c 9842     		cmp	r0, r3
+  41 000e 0CD0     		beq	.L5
+  42 0010 03F58063 		add	r3, r3, #1024
+  43 0014 9842     		cmp	r0, r3
+  44 0016 0AD1     		bne	.L6
+  32:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+  33:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         case (uint32_t)SPI1:
+  34:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****             return CRM_SPI1_PERIPH_CLOCK;
+  35:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         
+  36:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         case (uint32_t)SPI2:
+  37:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****             return CRM_SPI2_PERIPH_CLOCK;
+  38:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     
+  39:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         case (uint32_t)SPI3:
+  40:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****             return CRM_SPI3_PERIPH_CLOCK;
+  45              		.loc 1 40 20 is_stmt 0 view .LVU2
+  46 0018 0848     		ldr	r0, .L8+4
+  47              	.LVL1:
+  48              		.loc 1 40 20 view .LVU3
+  49 001a 7047     		bx	lr
+  50              	.LVL2:
+  51              	.L3:
+  31:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     switch((uint32_t)type)
+  52              		.loc 1 31 5 view .LVU4
+  53 001c 084B     		ldr	r3, .L8+8
+  54 001e 9842     		cmp	r0, r3
+  55 0020 07D1     		bne	.L7
+  41:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     
+  42:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         case (uint32_t)SPI4:
+  43:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****             return CRM_SPI4_PERIPH_CLOCK;
+  56              		.loc 1 43 20 view .LVU5
+  57 0022 0848     		ldr	r0, .L8+12
+  58              	.LVL3:
+  59              		.loc 1 43 20 view .LVU6
+  60 0024 7047     		bx	lr
+  61              	.LVL4:
+  62              	.L4:
+  31:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+  63              		.loc 1 31 5 view .LVU7
+  64 0026 0848     		ldr	r0, .L8+16
+  65              	.LVL5:
+  31:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+  66              		.loc 1 31 5 view .LVU8
+  67 0028 7047     		bx	lr
+  68              	.LVL6:
+  69              	.L5:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 3
+
+
+  37:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     
+  70              		.loc 1 37 20 view .LVU9
+  71 002a 0848     		ldr	r0, .L8+20
+  72              	.LVL7:
+  37:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     
+  73              		.loc 1 37 20 view .LVU10
+  74 002c 7047     		bx	lr
+  75              	.LVL8:
+  76              	.L6:
+  44:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  45:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         default:
+  46:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****             return 0;
+  77              		.loc 1 46 20 view .LVU11
+  78 002e 0020     		movs	r0, #0
+  79              	.LVL9:
+  80              		.loc 1 46 20 view .LVU12
+  81 0030 7047     		bx	lr
+  82              	.LVL10:
+  83              	.L7:
+  84              		.loc 1 46 20 view .LVU13
+  85 0032 0020     		movs	r0, #0
+  86              	.LVL11:
+  47:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     }
+  48:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+  87              		.loc 1 48 1 view .LVU14
+  88 0034 7047     		bx	lr
+  89              	.L9:
+  90 0036 00BF     		.align	2
+  91              	.L8:
+  92 0038 00300140 		.word	1073819648
+  93 003c 0F004000 		.word	4194319
+  94 0040 00340140 		.word	1073820672
+  95 0044 0D004400 		.word	4456461
+  96 0048 0C004400 		.word	4456460
+  97 004c 0E004000 		.word	4194318
+  98              		.cfi_endproc
+  99              	.LFE133:
+ 101              		.section	.text.BspSPI_Set_Speed,"ax",%progbits
+ 102              		.align	1
+ 103              		.syntax unified
+ 104              		.thumb
+ 105              		.thumb_func
+ 107              	BspSPI_Set_Speed:
+ 108              	.LVL12:
+ 109              	.LFB140:
+  49:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  50:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Pin_Init(BspSPI_PinConfig_TypeDef pin)
+  51:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** {
+  52:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     BspGPIO_Obj_TypeDef GPIO_Pin_Obj;
+  53:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     BspGPIO_Port_TypeDef GPIO_Port_Obj;
+  54:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  55:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if( (pin.port_clk == NULL) || \
+  56:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         (pin.port_miso == NULL) || \
+  57:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         (pin.port_mosi == NULL))
+  58:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+  59:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  60:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     memset(&GPIO_Pin_Obj, 0, sizeof(BspGPIO_Obj_TypeDef));
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 4
+
+
+  61:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     memset(&GPIO_Port_Obj, 0, sizeof(BspGPIO_Port_TypeDef));
+  62:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  63:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.open_drain = false;
+  64:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     
+  65:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     /* sck */
+  66:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Port_Obj.port = pin.port_clk;
+  67:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.alternate = pin.pin_Alternate;
+  68:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.pin = pin.pin_clk;
+  69:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+  70:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(!BspGPIO.alt_init(GPIO_Pin_Obj, 0))
+  71:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+  72:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  73:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     /* mosi */
+  74:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Port_Obj.port = pin.port_mosi;
+  75:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.alternate = pin.pin_Alternate;
+  76:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.pin = pin.pin_mosi;
+  77:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+  78:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(!BspGPIO.alt_init(GPIO_Pin_Obj, 0))
+  79:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+  80:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  81:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     /* miso */
+  82:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Port_Obj.port = pin.port_miso;
+  83:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.alternate = pin.pin_Alternate;
+  84:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.pin = pin.pin_miso;
+  85:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+  86:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(!BspGPIO.alt_init(GPIO_Pin_Obj, 0))
+  87:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+  88:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  89:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     return true;
+  90:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+  91:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  92:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance)
+  93:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** {
+  94:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_type spi_init_struct;
+  95:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     crm_periph_clock_type clk = 0;
+  96:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+  97:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if((spi_cfg.Instance == NULL) || !BspSPI_Pin_Init(spi_cfg.Pin))
+  98:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+  99:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 100:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     clk = BspSPI_Get_Clock(spi_cfg.Instance);
+ 101:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(clk == 0)
+ 102:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 103:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 104:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     crm_periph_clock_enable(clk, TRUE);
+ 105:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_default_para_init(&spi_init_struct);
+ 106:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 107:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.transmission_mode = SPI_TRANSMIT_FULL_DUPLEX;
+ 108:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.master_slave_mode = SPI_MODE_MASTER;
+ 109:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.mclk_freq_division = spi_cfg.BaudRatePrescaler;
+ 110:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.first_bit_transmission = SPI_FIRST_BIT_MSB;
+ 111:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.frame_bit_num = SPI_FRAME_8BIT;
+ 112:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.clock_polarity = spi_cfg.CLKPolarity;
+ 113:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.clock_phase = spi_cfg.CLKPhase;
+ 114:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.cs_mode_selection = SPI_CS_SOFTWARE_MODE;
+ 115:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 116:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init(To_SPI_Instance(spi_cfg.Instance), &spi_init_struct);
+ 117:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_enable(To_SPI_Instance(spi_cfg.Instance), TRUE);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 5
+
+
+ 118:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 119:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     *(uint32_t *)spi_instance = (uint32_t *)spi_cfg.Instance;
+ 120:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 121:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     return true;
+ 122:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 123:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 124:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Deinit(BspSPI_NorModeConfig_TypeDef spi_cfg)
+ 125:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** {
+ 126:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     uint32_t clk = 0;
+ 127:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 128:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(spi_cfg.Instance == NULL)
+ 129:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 130:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 131:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     clk = BspSPI_Get_Clock(spi_cfg.Instance);
+ 132:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(clk == 0)
+ 133:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 134:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 135:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     crm_periph_clock_enable(clk, FALSE);
+ 136:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_enable(To_SPI_Instance(spi_cfg.Instance), FALSE);
+ 137:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 138:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     return true;
+ 139:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 140:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 141:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Transmit(void *instance, uint8_t *tx, uint16_t size, uint16_t time_out)
+ 142:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** {
+ 143:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     uint64_t start_time = System_GetTick();
+ 144:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 145:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if((instance == NULL) || (tx == NULL) || (size == 0))
+ 146:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 147:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 148:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     for(uint16_t i = 0; i < size; i++)
+ 149:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 150:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_TDBE_FLAG) == RESET)
+ 151:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 152:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****             if ((System_GetTick() - start_time) > time_out)
+ 153:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 154:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 155:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         spi_i2s_data_transmit(To_SPI_Instance(*(uint32_t *)instance), tx[i]);
+ 156:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         
+ 157:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_RDBF_FLAG) == RESET)
+ 158:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 159:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****             if ((System_GetTick() - start_time) > time_out)
+ 160:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 161:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 162:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         spi_i2s_data_receive(To_SPI_Instance(*(uint32_t *)instance));
+ 163:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     }
+ 164:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 165:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     return true;
+ 166:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 167:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 168:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Receive(void *instance, uint8_t *rx, uint16_t size, uint16_t time_out)
+ 169:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** {
+ 170:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     uint64_t start_time = System_GetTick();
+ 171:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 172:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if((instance == NULL) || (rx == NULL) || (size == 0))
+ 173:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 174:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 6
+
+
+ 175:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     for(uint16_t i = 0; i < size; i++)
+ 176:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 177:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_TDBE_FLAG) == RESET)
+ 178:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 179:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****             if ((System_GetTick() - start_time) > time_out)
+ 180:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 181:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 182:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         spi_i2s_data_transmit(To_SPI_Instance(*(uint32_t *)instance), Dummy_Byte);
+ 183:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         
+ 184:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_RDBF_FLAG) == RESET)
+ 185:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 186:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****             if ((System_GetTick() - start_time) > time_out)
+ 187:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 188:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 189:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         rx[i] = spi_i2s_data_receive(To_SPI_Instance(*(uint32_t *)instance));
+ 190:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     }
+ 191:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 192:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     return true;
+ 193:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 194:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 195:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static uint16_t BspSPI_Trans_Receive(void *instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint1
+ 196:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** {
+ 197:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     uint64_t start_time = System_GetTick();
+ 198:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 199:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if((instance == NULL) || (tx == NULL) || (rx == NULL) || (size == 0))
+ 200:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return 0;
+ 201:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 202:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     for(uint16_t i = 0; i < size; i++)
+ 203:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 204:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_TDBE_FLAG) == RESET)
+ 205:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 206:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****             if ((System_GetTick() - start_time) > time_out)
+ 207:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return 0;
+ 208:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 209:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         spi_i2s_data_transmit(To_SPI_Instance(*(uint32_t *)instance), tx[i]);
+ 210:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 211:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         while(spi_i2s_flag_get(To_SPI_Instance(*(uint32_t *)instance), SPI_I2S_RDBF_FLAG) == RESET)
+ 212:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 213:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****             if ((System_GetTick() - start_time) > time_out)
+ 214:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return 0;
+ 215:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 216:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         rx[i] = spi_i2s_data_receive(To_SPI_Instance(*(uint32_t *)instance));
+ 217:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     }
+ 218:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 219:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     return size;
+ 220:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 221:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 222:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** static bool BspSPI_Set_Speed(void *instance, uint32_t speed)
+ 223:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** {
+ 110              		.loc 1 223 1 is_stmt 1 view -0
+ 111              		.cfi_startproc
+ 112              		@ args = 0, pretend = 0, frame = 0
+ 113              		@ frame_needed = 0, uses_anonymous_args = 0
+ 114              		@ link register save eliminated.
+ 224:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     UNUSED(instance);
+ 115              		.loc 1 224 5 view .LVU16
+ 225:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     UNUSED(speed);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 7
+
+
+ 116              		.loc 1 225 5 view .LVU17
+ 226:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 227:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     return false;
+ 117              		.loc 1 227 5 view .LVU18
+ 228:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 118              		.loc 1 228 1 is_stmt 0 view .LVU19
+ 119 0000 0020     		movs	r0, #0
+ 120              	.LVL13:
+ 121              		.loc 1 228 1 view .LVU20
+ 122 0002 7047     		bx	lr
+ 123              		.cfi_endproc
+ 124              	.LFE140:
+ 126              		.section	.text.BspSPI_Trans_Receive,"ax",%progbits
+ 127              		.align	1
+ 128              		.syntax unified
+ 129              		.thumb
+ 130              		.thumb_func
+ 132              	BspSPI_Trans_Receive:
+ 133              	.LVL14:
+ 134              	.LFB139:
+ 196:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     uint64_t start_time = System_GetTick();
+ 135              		.loc 1 196 1 is_stmt 1 view -0
+ 136              		.cfi_startproc
+ 137              		@ args = 4, pretend = 0, frame = 8
+ 138              		@ frame_needed = 0, uses_anonymous_args = 0
+ 196:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     uint64_t start_time = System_GetTick();
+ 139              		.loc 1 196 1 is_stmt 0 view .LVU22
+ 140 0000 2DE9F04F 		push	{r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ 141              	.LCFI0:
+ 142              		.cfi_def_cfa_offset 36
+ 143              		.cfi_offset 4, -36
+ 144              		.cfi_offset 5, -32
+ 145              		.cfi_offset 6, -28
+ 146              		.cfi_offset 7, -24
+ 147              		.cfi_offset 8, -20
+ 148              		.cfi_offset 9, -16
+ 149              		.cfi_offset 10, -12
+ 150              		.cfi_offset 11, -8
+ 151              		.cfi_offset 14, -4
+ 152 0004 83B0     		sub	sp, sp, #12
+ 153              	.LCFI1:
+ 154              		.cfi_def_cfa_offset 48
+ 155 0006 0546     		mov	r5, r0
+ 156 0008 8946     		mov	r9, r1
+ 157 000a 9246     		mov	r10, r2
+ 158 000c 9846     		mov	r8, r3
+ 159 000e BDF83070 		ldrh	r7, [sp, #48]
+ 197:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 160              		.loc 1 197 5 is_stmt 1 view .LVU23
+ 197:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 161              		.loc 1 197 27 is_stmt 0 view .LVU24
+ 162 0012 FFF7FEFF 		bl	System_GetTick
+ 163              	.LVL15:
+ 199:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return 0;
+ 164              		.loc 1 199 5 is_stmt 1 view .LVU25
+ 199:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return 0;
+ 165              		.loc 1 199 7 is_stmt 0 view .LVU26
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 8
+
+
+ 166 0016 002D     		cmp	r5, #0
+ 167 0018 46D0     		beq	.L18
+ 168 001a 0446     		mov	r4, r0
+ 169 001c 0E46     		mov	r6, r1
+ 199:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return 0;
+ 170              		.loc 1 199 27 discriminator 1 view .LVU27
+ 171 001e B9F1000F 		cmp	r9, #0
+ 172 0022 43D0     		beq	.L19
+ 199:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return 0;
+ 173              		.loc 1 199 43 discriminator 2 view .LVU28
+ 174 0024 BAF1000F 		cmp	r10, #0
+ 175 0028 42D0     		beq	.L20
+ 199:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return 0;
+ 176              		.loc 1 199 59 discriminator 3 view .LVU29
+ 177 002a B8F1000F 		cmp	r8, #0
+ 178 002e 41D0     		beq	.L21
+ 179              	.LBB2:
+ 202:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 180              		.loc 1 202 18 view .LVU30
+ 181 0030 4FF0000B 		mov	fp, #0
+ 182              	.LVL16:
+ 183              	.L13:
+ 202:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 184              		.loc 1 202 25 is_stmt 1 discriminator 1 view .LVU31
+ 202:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 185              		.loc 1 202 5 is_stmt 0 discriminator 1 view .LVU32
+ 186 0034 C345     		cmp	fp, r8
+ 187 0036 35D2     		bcs	.L25
+ 188              	.L17:
+ 204:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 189              		.loc 1 204 14 is_stmt 1 view .LVU33
+ 204:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 190              		.loc 1 204 15 is_stmt 0 view .LVU34
+ 191 0038 0221     		movs	r1, #2
+ 192 003a 2868     		ldr	r0, [r5]
+ 193 003c FFF7FEFF 		bl	spi_i2s_flag_get
+ 194              	.LVL17:
+ 204:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 195              		.loc 1 204 14 view .LVU35
+ 196 0040 68B9     		cbnz	r0, .L26
+ 206:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return 0;
+ 197              		.loc 1 206 13 is_stmt 1 view .LVU36
+ 206:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return 0;
+ 198              		.loc 1 206 18 is_stmt 0 view .LVU37
+ 199 0042 FFF7FEFF 		bl	System_GetTick
+ 200              	.LVL18:
+ 206:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return 0;
+ 201              		.loc 1 206 35 view .LVU38
+ 202 0046 001B     		subs	r0, r0, r4
+ 203 0048 61EB0601 		sbc	r1, r1, r6
+ 206:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return 0;
+ 204              		.loc 1 206 16 view .LVU39
+ 205 004c 8742     		cmp	r7, r0
+ 206 004e 4FF00003 		mov	r3, #0
+ 207 0052 8B41     		sbcs	r3, r3, r1
+ 208 0054 F0D2     		bcs	.L17
+ 207:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 9
+
+
+ 209              		.loc 1 207 24 view .LVU40
+ 210 0056 0020     		movs	r0, #0
+ 211              	.LVL19:
+ 212              	.L12:
+ 207:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 213              		.loc 1 207 24 view .LVU41
+ 214              	.LBE2:
+ 220:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 215              		.loc 1 220 1 view .LVU42
+ 216 0058 03B0     		add	sp, sp, #12
+ 217              	.LCFI2:
+ 218              		.cfi_remember_state
+ 219              		.cfi_def_cfa_offset 36
+ 220              		@ sp needed
+ 221 005a BDE8F08F 		pop	{r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 222              	.LVL20:
+ 223              	.L26:
+ 224              	.LCFI3:
+ 225              		.cfi_restore_state
+ 226              	.LBB3:
+ 209:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 227              		.loc 1 209 9 is_stmt 1 view .LVU43
+ 209:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 228              		.loc 1 209 73 is_stmt 0 view .LVU44
+ 229 005e CDF804B0 		str	fp, [sp, #4]
+ 209:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 230              		.loc 1 209 9 view .LVU45
+ 231 0062 19F80B10 		ldrb	r1, [r9, fp]	@ zero_extendqisi2
+ 232 0066 2868     		ldr	r0, [r5]
+ 233 0068 FFF7FEFF 		bl	spi_i2s_data_transmit
+ 234              	.LVL21:
+ 211:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 235              		.loc 1 211 9 is_stmt 1 view .LVU46
+ 236              	.L15:
+ 211:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 237              		.loc 1 211 14 view .LVU47
+ 211:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 238              		.loc 1 211 15 is_stmt 0 view .LVU48
+ 239 006c 0121     		movs	r1, #1
+ 240 006e 2868     		ldr	r0, [r5]
+ 241 0070 FFF7FEFF 		bl	spi_i2s_flag_get
+ 242              	.LVL22:
+ 211:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 243              		.loc 1 211 14 view .LVU49
+ 244 0074 58B9     		cbnz	r0, .L27
+ 213:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return 0;
+ 245              		.loc 1 213 13 is_stmt 1 view .LVU50
+ 213:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return 0;
+ 246              		.loc 1 213 18 is_stmt 0 view .LVU51
+ 247 0076 FFF7FEFF 		bl	System_GetTick
+ 248              	.LVL23:
+ 213:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return 0;
+ 249              		.loc 1 213 35 view .LVU52
+ 250 007a 001B     		subs	r0, r0, r4
+ 251 007c 61EB0601 		sbc	r1, r1, r6
+ 213:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return 0;
+ 252              		.loc 1 213 16 view .LVU53
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 10
+
+
+ 253 0080 8742     		cmp	r7, r0
+ 254 0082 4FF00003 		mov	r3, #0
+ 255 0086 8B41     		sbcs	r3, r3, r1
+ 256 0088 F0D2     		bcs	.L15
+ 214:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 257              		.loc 1 214 24 view .LVU54
+ 258 008a 0020     		movs	r0, #0
+ 259 008c E4E7     		b	.L12
+ 260              	.L27:
+ 216:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     }
+ 261              		.loc 1 216 9 is_stmt 1 discriminator 2 view .LVU55
+ 216:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     }
+ 262              		.loc 1 216 17 is_stmt 0 discriminator 2 view .LVU56
+ 263 008e 2868     		ldr	r0, [r5]
+ 264 0090 FFF7FEFF 		bl	spi_i2s_data_receive
+ 265              	.LVL24:
+ 216:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     }
+ 266              		.loc 1 216 15 discriminator 2 view .LVU57
+ 267 0094 019B     		ldr	r3, [sp, #4]
+ 268 0096 0AF80300 		strb	r0, [r10, r3]
+ 202:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 269              		.loc 1 202 35 is_stmt 1 discriminator 2 view .LVU58
+ 202:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 270              		.loc 1 202 36 is_stmt 0 discriminator 2 view .LVU59
+ 271 009a 0BF1010B 		add	fp, fp, #1
+ 272              	.LVL25:
+ 202:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 273              		.loc 1 202 36 discriminator 2 view .LVU60
+ 274 009e 1FFA8BFB 		uxth	fp, fp
+ 275              	.LVL26:
+ 202:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 276              		.loc 1 202 36 discriminator 2 view .LVU61
+ 277 00a2 C7E7     		b	.L13
+ 278              	.L25:
+ 202:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 279              		.loc 1 202 36 discriminator 2 view .LVU62
+ 280              	.LBE3:
+ 219:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 281              		.loc 1 219 12 view .LVU63
+ 282 00a4 4046     		mov	r0, r8
+ 283              	.LBB4:
+ 284 00a6 D7E7     		b	.L12
+ 285              	.LVL27:
+ 286              	.L18:
+ 219:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 287              		.loc 1 219 12 view .LVU64
+ 288              	.LBE4:
+ 200:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 289              		.loc 1 200 16 view .LVU65
+ 290 00a8 0020     		movs	r0, #0
+ 291              	.LVL28:
+ 200:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 292              		.loc 1 200 16 view .LVU66
+ 293 00aa D5E7     		b	.L12
+ 294              	.LVL29:
+ 295              	.L19:
+ 200:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 11
+
+
+ 296              		.loc 1 200 16 view .LVU67
+ 297 00ac 0020     		movs	r0, #0
+ 298              	.LVL30:
+ 200:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 299              		.loc 1 200 16 view .LVU68
+ 300 00ae D3E7     		b	.L12
+ 301              	.LVL31:
+ 302              	.L20:
+ 200:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 303              		.loc 1 200 16 view .LVU69
+ 304 00b0 0020     		movs	r0, #0
+ 305              	.LVL32:
+ 200:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 306              		.loc 1 200 16 view .LVU70
+ 307 00b2 D1E7     		b	.L12
+ 308              	.LVL33:
+ 309              	.L21:
+ 200:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 310              		.loc 1 200 16 view .LVU71
+ 311 00b4 4046     		mov	r0, r8
+ 312              	.LVL34:
+ 200:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 313              		.loc 1 200 16 view .LVU72
+ 314 00b6 CFE7     		b	.L12
+ 315              		.cfi_endproc
+ 316              	.LFE139:
+ 318              		.section	.text.BspSPI_Receive,"ax",%progbits
+ 319              		.align	1
+ 320              		.syntax unified
+ 321              		.thumb
+ 322              		.thumb_func
+ 324              	BspSPI_Receive:
+ 325              	.LVL35:
+ 326              	.LFB138:
+ 169:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     uint64_t start_time = System_GetTick();
+ 327              		.loc 1 169 1 is_stmt 1 view -0
+ 328              		.cfi_startproc
+ 329              		@ args = 0, pretend = 0, frame = 0
+ 330              		@ frame_needed = 0, uses_anonymous_args = 0
+ 169:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     uint64_t start_time = System_GetTick();
+ 331              		.loc 1 169 1 is_stmt 0 view .LVU74
+ 332 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 333              	.LCFI4:
+ 334              		.cfi_def_cfa_offset 32
+ 335              		.cfi_offset 4, -32
+ 336              		.cfi_offset 5, -28
+ 337              		.cfi_offset 6, -24
+ 338              		.cfi_offset 7, -20
+ 339              		.cfi_offset 8, -16
+ 340              		.cfi_offset 9, -12
+ 341              		.cfi_offset 10, -8
+ 342              		.cfi_offset 14, -4
+ 343 0004 0546     		mov	r5, r0
+ 344 0006 8946     		mov	r9, r1
+ 345 0008 9046     		mov	r8, r2
+ 346 000a 1E46     		mov	r6, r3
+ 170:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 12
+
+
+ 347              		.loc 1 170 5 is_stmt 1 view .LVU75
+ 170:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 348              		.loc 1 170 27 is_stmt 0 view .LVU76
+ 349 000c FFF7FEFF 		bl	System_GetTick
+ 350              	.LVL36:
+ 172:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 351              		.loc 1 172 5 is_stmt 1 view .LVU77
+ 172:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 352              		.loc 1 172 7 is_stmt 0 view .LVU78
+ 353 0010 002D     		cmp	r5, #0
+ 354 0012 3ED0     		beq	.L35
+ 355 0014 0446     		mov	r4, r0
+ 356 0016 0F46     		mov	r7, r1
+ 172:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 357              		.loc 1 172 27 discriminator 1 view .LVU79
+ 358 0018 B9F1000F 		cmp	r9, #0
+ 359 001c 3BD0     		beq	.L36
+ 172:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 360              		.loc 1 172 43 discriminator 2 view .LVU80
+ 361 001e B8F1000F 		cmp	r8, #0
+ 362 0022 3AD0     		beq	.L37
+ 363              	.LBB5:
+ 175:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 364              		.loc 1 175 18 view .LVU81
+ 365 0024 4FF0000A 		mov	r10, #0
+ 366              	.LVL37:
+ 367              	.L30:
+ 175:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 368              		.loc 1 175 25 is_stmt 1 discriminator 1 view .LVU82
+ 175:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 369              		.loc 1 175 5 is_stmt 0 discriminator 1 view .LVU83
+ 370 0028 C245     		cmp	r10, r8
+ 371 002a 30D2     		bcs	.L41
+ 372              	.L34:
+ 177:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 373              		.loc 1 177 14 is_stmt 1 view .LVU84
+ 177:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 374              		.loc 1 177 15 is_stmt 0 view .LVU85
+ 375 002c 0221     		movs	r1, #2
+ 376 002e 2868     		ldr	r0, [r5]
+ 377 0030 FFF7FEFF 		bl	spi_i2s_flag_get
+ 378              	.LVL38:
+ 177:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 379              		.loc 1 177 14 view .LVU86
+ 380 0034 60B9     		cbnz	r0, .L42
+ 179:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 381              		.loc 1 179 13 is_stmt 1 view .LVU87
+ 179:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 382              		.loc 1 179 18 is_stmt 0 view .LVU88
+ 383 0036 FFF7FEFF 		bl	System_GetTick
+ 384              	.LVL39:
+ 179:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 385              		.loc 1 179 35 view .LVU89
+ 386 003a 001B     		subs	r0, r0, r4
+ 387 003c 61EB0701 		sbc	r1, r1, r7
+ 179:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 388              		.loc 1 179 16 view .LVU90
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 13
+
+
+ 389 0040 8642     		cmp	r6, r0
+ 390 0042 4FF00003 		mov	r3, #0
+ 391 0046 8B41     		sbcs	r3, r3, r1
+ 392 0048 F0D2     		bcs	.L34
+ 180:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 393              		.loc 1 180 24 view .LVU91
+ 394 004a 0020     		movs	r0, #0
+ 395              	.LVL40:
+ 396              	.L29:
+ 180:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 397              		.loc 1 180 24 view .LVU92
+ 398              	.LBE5:
+ 193:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 399              		.loc 1 193 1 view .LVU93
+ 400 004c BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 401              	.LVL41:
+ 402              	.L42:
+ 403              	.LBB6:
+ 182:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         
+ 404              		.loc 1 182 9 is_stmt 1 view .LVU94
+ 405 0050 FF21     		movs	r1, #255
+ 406 0052 2868     		ldr	r0, [r5]
+ 407 0054 FFF7FEFF 		bl	spi_i2s_data_transmit
+ 408              	.LVL42:
+ 184:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 409              		.loc 1 184 9 view .LVU95
+ 410              	.L32:
+ 184:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 411              		.loc 1 184 14 view .LVU96
+ 184:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 412              		.loc 1 184 15 is_stmt 0 view .LVU97
+ 413 0058 0121     		movs	r1, #1
+ 414 005a 2868     		ldr	r0, [r5]
+ 415 005c FFF7FEFF 		bl	spi_i2s_flag_get
+ 416              	.LVL43:
+ 184:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 417              		.loc 1 184 14 view .LVU98
+ 418 0060 58B9     		cbnz	r0, .L43
+ 186:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 419              		.loc 1 186 13 is_stmt 1 view .LVU99
+ 186:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 420              		.loc 1 186 18 is_stmt 0 view .LVU100
+ 421 0062 FFF7FEFF 		bl	System_GetTick
+ 422              	.LVL44:
+ 186:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 423              		.loc 1 186 35 view .LVU101
+ 424 0066 001B     		subs	r0, r0, r4
+ 425 0068 61EB0701 		sbc	r1, r1, r7
+ 186:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 426              		.loc 1 186 16 view .LVU102
+ 427 006c 8642     		cmp	r6, r0
+ 428 006e 4FF00003 		mov	r3, #0
+ 429 0072 8B41     		sbcs	r3, r3, r1
+ 430 0074 F0D2     		bcs	.L32
+ 187:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 431              		.loc 1 187 24 view .LVU103
+ 432 0076 0020     		movs	r0, #0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 14
+
+
+ 433 0078 E8E7     		b	.L29
+ 434              	.L43:
+ 189:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     }
+ 435              		.loc 1 189 9 is_stmt 1 discriminator 2 view .LVU104
+ 189:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     }
+ 436              		.loc 1 189 17 is_stmt 0 discriminator 2 view .LVU105
+ 437 007a 2868     		ldr	r0, [r5]
+ 438 007c FFF7FEFF 		bl	spi_i2s_data_receive
+ 439              	.LVL45:
+ 189:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     }
+ 440              		.loc 1 189 15 discriminator 2 view .LVU106
+ 441 0080 09F80A00 		strb	r0, [r9, r10]
+ 175:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 442              		.loc 1 175 35 is_stmt 1 discriminator 2 view .LVU107
+ 175:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 443              		.loc 1 175 36 is_stmt 0 discriminator 2 view .LVU108
+ 444 0084 0AF1010A 		add	r10, r10, #1
+ 445              	.LVL46:
+ 175:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 446              		.loc 1 175 36 discriminator 2 view .LVU109
+ 447 0088 1FFA8AFA 		uxth	r10, r10
+ 448              	.LVL47:
+ 175:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 449              		.loc 1 175 36 discriminator 2 view .LVU110
+ 450 008c CCE7     		b	.L30
+ 451              	.L41:
+ 175:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 452              		.loc 1 175 36 discriminator 2 view .LVU111
+ 453              	.LBE6:
+ 192:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 454              		.loc 1 192 12 view .LVU112
+ 455 008e 0120     		movs	r0, #1
+ 456              	.LBB7:
+ 457 0090 DCE7     		b	.L29
+ 458              	.LVL48:
+ 459              	.L35:
+ 192:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 460              		.loc 1 192 12 view .LVU113
+ 461              	.LBE7:
+ 173:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 462              		.loc 1 173 16 view .LVU114
+ 463 0092 0020     		movs	r0, #0
+ 464              	.LVL49:
+ 173:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 465              		.loc 1 173 16 view .LVU115
+ 466 0094 DAE7     		b	.L29
+ 467              	.LVL50:
+ 468              	.L36:
+ 173:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 469              		.loc 1 173 16 view .LVU116
+ 470 0096 0020     		movs	r0, #0
+ 471              	.LVL51:
+ 173:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 472              		.loc 1 173 16 view .LVU117
+ 473 0098 D8E7     		b	.L29
+ 474              	.LVL52:
+ 475              	.L37:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 15
+
+
+ 173:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 476              		.loc 1 173 16 view .LVU118
+ 477 009a 0020     		movs	r0, #0
+ 478              	.LVL53:
+ 173:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 479              		.loc 1 173 16 view .LVU119
+ 480 009c D6E7     		b	.L29
+ 481              		.cfi_endproc
+ 482              	.LFE138:
+ 484              		.section	.text.BspSPI_Transmit,"ax",%progbits
+ 485              		.align	1
+ 486              		.syntax unified
+ 487              		.thumb
+ 488              		.thumb_func
+ 490              	BspSPI_Transmit:
+ 491              	.LVL54:
+ 492              	.LFB137:
+ 142:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     uint64_t start_time = System_GetTick();
+ 493              		.loc 1 142 1 is_stmt 1 view -0
+ 494              		.cfi_startproc
+ 495              		@ args = 0, pretend = 0, frame = 0
+ 496              		@ frame_needed = 0, uses_anonymous_args = 0
+ 142:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     uint64_t start_time = System_GetTick();
+ 497              		.loc 1 142 1 is_stmt 0 view .LVU121
+ 498 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 499              	.LCFI5:
+ 500              		.cfi_def_cfa_offset 32
+ 501              		.cfi_offset 4, -32
+ 502              		.cfi_offset 5, -28
+ 503              		.cfi_offset 6, -24
+ 504              		.cfi_offset 7, -20
+ 505              		.cfi_offset 8, -16
+ 506              		.cfi_offset 9, -12
+ 507              		.cfi_offset 10, -8
+ 508              		.cfi_offset 14, -4
+ 509 0004 0546     		mov	r5, r0
+ 510 0006 8946     		mov	r9, r1
+ 511 0008 9046     		mov	r8, r2
+ 512 000a 1E46     		mov	r6, r3
+ 143:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 513              		.loc 1 143 5 is_stmt 1 view .LVU122
+ 143:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 514              		.loc 1 143 27 is_stmt 0 view .LVU123
+ 515 000c FFF7FEFF 		bl	System_GetTick
+ 516              	.LVL55:
+ 145:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 517              		.loc 1 145 5 is_stmt 1 view .LVU124
+ 145:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 518              		.loc 1 145 7 is_stmt 0 view .LVU125
+ 519 0010 002D     		cmp	r5, #0
+ 520 0012 3DD0     		beq	.L51
+ 521 0014 0446     		mov	r4, r0
+ 522 0016 0F46     		mov	r7, r1
+ 145:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 523              		.loc 1 145 27 discriminator 1 view .LVU126
+ 524 0018 B9F1000F 		cmp	r9, #0
+ 525 001c 3AD0     		beq	.L52
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 16
+
+
+ 145:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 526              		.loc 1 145 43 discriminator 2 view .LVU127
+ 527 001e B8F1000F 		cmp	r8, #0
+ 528 0022 39D0     		beq	.L53
+ 529              	.LBB8:
+ 148:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 530              		.loc 1 148 18 view .LVU128
+ 531 0024 4FF0000A 		mov	r10, #0
+ 532              	.LVL56:
+ 533              	.L46:
+ 148:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 534              		.loc 1 148 25 is_stmt 1 discriminator 1 view .LVU129
+ 148:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 535              		.loc 1 148 5 is_stmt 0 discriminator 1 view .LVU130
+ 536 0028 C245     		cmp	r10, r8
+ 537 002a 2FD2     		bcs	.L57
+ 538              	.L50:
+ 150:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 539              		.loc 1 150 14 is_stmt 1 view .LVU131
+ 150:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 540              		.loc 1 150 15 is_stmt 0 view .LVU132
+ 541 002c 0221     		movs	r1, #2
+ 542 002e 2868     		ldr	r0, [r5]
+ 543 0030 FFF7FEFF 		bl	spi_i2s_flag_get
+ 544              	.LVL57:
+ 150:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 545              		.loc 1 150 14 view .LVU133
+ 546 0034 60B9     		cbnz	r0, .L58
+ 152:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 547              		.loc 1 152 13 is_stmt 1 view .LVU134
+ 152:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 548              		.loc 1 152 18 is_stmt 0 view .LVU135
+ 549 0036 FFF7FEFF 		bl	System_GetTick
+ 550              	.LVL58:
+ 152:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 551              		.loc 1 152 35 view .LVU136
+ 552 003a 001B     		subs	r0, r0, r4
+ 553 003c 61EB0701 		sbc	r1, r1, r7
+ 152:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 554              		.loc 1 152 16 view .LVU137
+ 555 0040 8642     		cmp	r6, r0
+ 556 0042 4FF00003 		mov	r3, #0
+ 557 0046 8B41     		sbcs	r3, r3, r1
+ 558 0048 F0D2     		bcs	.L50
+ 153:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 559              		.loc 1 153 24 view .LVU138
+ 560 004a 0020     		movs	r0, #0
+ 561              	.LVL59:
+ 562              	.L45:
+ 153:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 563              		.loc 1 153 24 view .LVU139
+ 564              	.LBE8:
+ 166:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 565              		.loc 1 166 1 view .LVU140
+ 566 004c BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 567              	.LVL60:
+ 568              	.L58:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 17
+
+
+ 569              	.LBB9:
+ 155:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         
+ 570              		.loc 1 155 9 is_stmt 1 view .LVU141
+ 571 0050 19F80A10 		ldrb	r1, [r9, r10]	@ zero_extendqisi2
+ 572 0054 2868     		ldr	r0, [r5]
+ 573 0056 FFF7FEFF 		bl	spi_i2s_data_transmit
+ 574              	.LVL61:
+ 157:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 575              		.loc 1 157 9 view .LVU142
+ 576              	.L48:
+ 157:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 577              		.loc 1 157 14 view .LVU143
+ 157:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 578              		.loc 1 157 15 is_stmt 0 view .LVU144
+ 579 005a 0121     		movs	r1, #1
+ 580 005c 2868     		ldr	r0, [r5]
+ 581 005e FFF7FEFF 		bl	spi_i2s_flag_get
+ 582              	.LVL62:
+ 157:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         {
+ 583              		.loc 1 157 14 view .LVU145
+ 584 0062 58B9     		cbnz	r0, .L59
+ 159:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 585              		.loc 1 159 13 is_stmt 1 view .LVU146
+ 159:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 586              		.loc 1 159 18 is_stmt 0 view .LVU147
+ 587 0064 FFF7FEFF 		bl	System_GetTick
+ 588              	.LVL63:
+ 159:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 589              		.loc 1 159 35 view .LVU148
+ 590 0068 001B     		subs	r0, r0, r4
+ 591 006a 61EB0701 		sbc	r1, r1, r7
+ 159:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****                 return false;
+ 592              		.loc 1 159 16 view .LVU149
+ 593 006e 8642     		cmp	r6, r0
+ 594 0070 4FF00003 		mov	r3, #0
+ 595 0074 8B41     		sbcs	r3, r3, r1
+ 596 0076 F0D2     		bcs	.L48
+ 160:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         }
+ 597              		.loc 1 160 24 view .LVU150
+ 598 0078 0020     		movs	r0, #0
+ 599 007a E7E7     		b	.L45
+ 600              	.L59:
+ 162:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     }
+ 601              		.loc 1 162 9 is_stmt 1 discriminator 2 view .LVU151
+ 602 007c 2868     		ldr	r0, [r5]
+ 603 007e FFF7FEFF 		bl	spi_i2s_data_receive
+ 604              	.LVL64:
+ 148:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 605              		.loc 1 148 35 discriminator 2 view .LVU152
+ 148:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 606              		.loc 1 148 36 is_stmt 0 discriminator 2 view .LVU153
+ 607 0082 0AF1010A 		add	r10, r10, #1
+ 608              	.LVL65:
+ 148:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 609              		.loc 1 148 36 discriminator 2 view .LVU154
+ 610 0086 1FFA8AFA 		uxth	r10, r10
+ 611              	.LVL66:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 18
+
+
+ 148:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 612              		.loc 1 148 36 discriminator 2 view .LVU155
+ 613 008a CDE7     		b	.L46
+ 614              	.L57:
+ 148:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     {
+ 615              		.loc 1 148 36 discriminator 2 view .LVU156
+ 616              	.LBE9:
+ 165:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 617              		.loc 1 165 12 view .LVU157
+ 618 008c 0120     		movs	r0, #1
+ 619              	.LBB10:
+ 620 008e DDE7     		b	.L45
+ 621              	.LVL67:
+ 622              	.L51:
+ 165:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 623              		.loc 1 165 12 view .LVU158
+ 624              	.LBE10:
+ 146:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 625              		.loc 1 146 16 view .LVU159
+ 626 0090 0020     		movs	r0, #0
+ 627              	.LVL68:
+ 146:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 628              		.loc 1 146 16 view .LVU160
+ 629 0092 DBE7     		b	.L45
+ 630              	.LVL69:
+ 631              	.L52:
+ 146:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 632              		.loc 1 146 16 view .LVU161
+ 633 0094 0020     		movs	r0, #0
+ 634              	.LVL70:
+ 146:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 635              		.loc 1 146 16 view .LVU162
+ 636 0096 D9E7     		b	.L45
+ 637              	.LVL71:
+ 638              	.L53:
+ 146:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 639              		.loc 1 146 16 view .LVU163
+ 640 0098 0020     		movs	r0, #0
+ 641              	.LVL72:
+ 146:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 642              		.loc 1 146 16 view .LVU164
+ 643 009a D7E7     		b	.L45
+ 644              		.cfi_endproc
+ 645              	.LFE137:
+ 647              		.section	.text.BspSPI_Deinit,"ax",%progbits
+ 648              		.align	1
+ 649              		.syntax unified
+ 650              		.thumb
+ 651              		.thumb_func
+ 653              	BspSPI_Deinit:
+ 654              	.LFB136:
+ 125:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     uint32_t clk = 0;
+ 655              		.loc 1 125 1 is_stmt 1 view -0
+ 656              		.cfi_startproc
+ 657              		@ args = 44, pretend = 16, frame = 0
+ 658              		@ frame_needed = 0, uses_anonymous_args = 0
+ 659 0000 84B0     		sub	sp, sp, #16
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 19
+
+
+ 660              	.LCFI6:
+ 661              		.cfi_def_cfa_offset 16
+ 662 0002 10B5     		push	{r4, lr}
+ 663              	.LCFI7:
+ 664              		.cfi_def_cfa_offset 24
+ 665              		.cfi_offset 4, -24
+ 666              		.cfi_offset 14, -20
+ 667 0004 02AC     		add	r4, sp, #8
+ 668 0006 84E80F00 		stm	r4, {r0, r1, r2, r3}
+ 126:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 669              		.loc 1 126 5 view .LVU166
+ 670              	.LVL73:
+ 128:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 671              		.loc 1 128 5 view .LVU167
+ 128:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 672              		.loc 1 128 15 is_stmt 0 view .LVU168
+ 673 000a 099C     		ldr	r4, [sp, #36]
+ 128:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 674              		.loc 1 128 7 view .LVU169
+ 675 000c 8CB1     		cbz	r4, .L62
+ 131:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(clk == 0)
+ 676              		.loc 1 131 5 is_stmt 1 view .LVU170
+ 131:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(clk == 0)
+ 677              		.loc 1 131 11 is_stmt 0 view .LVU171
+ 678 000e 2046     		mov	r0, r4
+ 679 0010 FFF7FEFF 		bl	BspSPI_Get_Clock
+ 680              	.LVL74:
+ 132:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 681              		.loc 1 132 5 is_stmt 1 view .LVU172
+ 132:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 682              		.loc 1 132 7 is_stmt 0 view .LVU173
+ 683 0014 20B9     		cbnz	r0, .L65
+ 133:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 684              		.loc 1 133 16 view .LVU174
+ 685 0016 0020     		movs	r0, #0
+ 686              	.LVL75:
+ 687              	.L61:
+ 139:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 688              		.loc 1 139 1 view .LVU175
+ 689 0018 BDE81040 		pop	{r4, lr}
+ 690              	.LCFI8:
+ 691              		.cfi_remember_state
+ 692              		.cfi_restore 14
+ 693              		.cfi_restore 4
+ 694              		.cfi_def_cfa_offset 16
+ 695 001c 04B0     		add	sp, sp, #16
+ 696              	.LCFI9:
+ 697              		.cfi_def_cfa_offset 0
+ 698 001e 7047     		bx	lr
+ 699              	.LVL76:
+ 700              	.L65:
+ 701              	.LCFI10:
+ 702              		.cfi_restore_state
+ 135:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_enable(To_SPI_Instance(spi_cfg.Instance), FALSE);
+ 703              		.loc 1 135 5 is_stmt 1 view .LVU176
+ 704 0020 0021     		movs	r1, #0
+ 705 0022 FFF7FEFF 		bl	crm_periph_clock_enable
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 20
+
+
+ 706              	.LVL77:
+ 136:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 707              		.loc 1 136 5 view .LVU177
+ 708 0026 0021     		movs	r1, #0
+ 709 0028 2046     		mov	r0, r4
+ 710 002a FFF7FEFF 		bl	spi_enable
+ 711              	.LVL78:
+ 138:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 712              		.loc 1 138 5 view .LVU178
+ 138:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 713              		.loc 1 138 12 is_stmt 0 view .LVU179
+ 714 002e 0120     		movs	r0, #1
+ 715 0030 F2E7     		b	.L61
+ 716              	.LVL79:
+ 717              	.L62:
+ 129:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 718              		.loc 1 129 16 view .LVU180
+ 719 0032 0020     		movs	r0, #0
+ 720 0034 F0E7     		b	.L61
+ 721              		.cfi_endproc
+ 722              	.LFE136:
+ 724              		.section	.text.BspSPI_Pin_Init,"ax",%progbits
+ 725              		.align	1
+ 726              		.syntax unified
+ 727              		.thumb
+ 728              		.thumb_func
+ 730              	BspSPI_Pin_Init:
+ 731              	.LFB134:
+  51:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     BspGPIO_Obj_TypeDef GPIO_Pin_Obj;
+ 732              		.loc 1 51 1 is_stmt 1 view -0
+ 733              		.cfi_startproc
+ 734              		@ args = 28, pretend = 16, frame = 16
+ 735              		@ frame_needed = 0, uses_anonymous_args = 0
+ 736 0000 84B0     		sub	sp, sp, #16
+ 737              	.LCFI11:
+ 738              		.cfi_def_cfa_offset 16
+ 739 0002 F0B5     		push	{r4, r5, r6, r7, lr}
+ 740              	.LCFI12:
+ 741              		.cfi_def_cfa_offset 36
+ 742              		.cfi_offset 4, -36
+ 743              		.cfi_offset 5, -32
+ 744              		.cfi_offset 6, -28
+ 745              		.cfi_offset 7, -24
+ 746              		.cfi_offset 14, -20
+ 747 0004 85B0     		sub	sp, sp, #20
+ 748              	.LCFI13:
+ 749              		.cfi_def_cfa_offset 56
+ 750 0006 0AAC     		add	r4, sp, #40
+ 751 0008 84E80F00 		stm	r4, {r0, r1, r2, r3}
+  52:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     BspGPIO_Port_TypeDef GPIO_Port_Obj;
+ 752              		.loc 1 52 5 view .LVU182
+  53:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 753              		.loc 1 53 5 view .LVU183
+  55:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         (pin.port_miso == NULL) || \
+ 754              		.loc 1 55 5 view .LVU184
+  55:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         (pin.port_miso == NULL) || \
+ 755              		.loc 1 55 7 is_stmt 0 view .LVU185
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 21
+
+
+ 756 000c 002A     		cmp	r2, #0
+ 757 000e 37D0     		beq	.L68
+ 758 0010 1146     		mov	r1, r2
+  56:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         (pin.port_mosi == NULL))
+ 759              		.loc 1 56 13 discriminator 1 view .LVU186
+ 760 0012 0B9C     		ldr	r4, [sp, #44]
+  55:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         (pin.port_miso == NULL) || \
+ 761              		.loc 1 55 32 discriminator 1 view .LVU187
+ 762 0014 002C     		cmp	r4, #0
+ 763 0016 35D0     		beq	.L69
+  57:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 764              		.loc 1 57 13 view .LVU188
+ 765 0018 0546     		mov	r5, r0
+  56:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         (pin.port_mosi == NULL))
+ 766              		.loc 1 56 33 view .LVU189
+ 767 001a 0028     		cmp	r0, #0
+ 768 001c 34D0     		beq	.L70
+  60:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     memset(&GPIO_Port_Obj, 0, sizeof(BspGPIO_Port_TypeDef));
+ 769              		.loc 1 60 5 is_stmt 1 view .LVU190
+ 770 001e 01AA     		add	r2, sp, #4
+ 771 0020 0023     		movs	r3, #0
+ 772 0022 0193     		str	r3, [sp, #4]
+ 773 0024 0293     		str	r3, [sp, #8]
+ 774 0026 0393     		str	r3, [sp, #12]
+  61:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 775              		.loc 1 61 5 view .LVU191
+ 776 0028 0093     		str	r3, [sp]
+  63:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     
+ 777              		.loc 1 63 5 view .LVU192
+  66:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.alternate = pin.pin_Alternate;
+ 778              		.loc 1 66 5 view .LVU193
+  66:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.alternate = pin.pin_Alternate;
+ 779              		.loc 1 66 24 is_stmt 0 view .LVU194
+ 780 002a 0091     		str	r1, [sp]
+  67:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.pin = pin.pin_clk;
+ 781              		.loc 1 67 5 is_stmt 1 view .LVU195
+  67:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.pin = pin.pin_clk;
+ 782              		.loc 1 67 33 is_stmt 0 view .LVU196
+ 783 002c 109E     		ldr	r6, [sp, #64]
+  67:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.pin = pin.pin_clk;
+ 784              		.loc 1 67 28 view .LVU197
+ 785 002e 0396     		str	r6, [sp, #12]
+  68:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+ 786              		.loc 1 68 5 is_stmt 1 view .LVU198
+  68:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+ 787              		.loc 1 68 27 is_stmt 0 view .LVU199
+ 788 0030 0F99     		ldr	r1, [sp, #60]
+  68:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+ 789              		.loc 1 68 22 view .LVU200
+ 790 0032 ADF80810 		strh	r1, [sp, #8]	@ movhi
+  69:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(!BspGPIO.alt_init(GPIO_Pin_Obj, 0))
+ 791              		.loc 1 69 5 is_stmt 1 view .LVU201
+  69:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(!BspGPIO.alt_init(GPIO_Pin_Obj, 0))
+ 792              		.loc 1 69 23 is_stmt 0 view .LVU202
+ 793 0036 CDF804D0 		str	sp, [sp, #4]
+  70:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 794              		.loc 1 70 5 is_stmt 1 view .LVU203
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 22
+
+
+  70:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 795              		.loc 1 70 16 is_stmt 0 view .LVU204
+ 796 003a 1649     		ldr	r1, .L72
+ 797 003c CF68     		ldr	r7, [r1, #12]
+  70:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 798              		.loc 1 70 9 view .LVU205
+ 799 003e 07CA     		ldm	r2, {r0, r1, r2}
+ 800 0040 B847     		blx	r7
+ 801              	.LVL80:
+  70:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 802              		.loc 1 70 7 view .LVU206
+ 803 0042 10B3     		cbz	r0, .L67
+  74:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.alternate = pin.pin_Alternate;
+ 804              		.loc 1 74 5 is_stmt 1 view .LVU207
+  74:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.alternate = pin.pin_Alternate;
+ 805              		.loc 1 74 24 is_stmt 0 view .LVU208
+ 806 0044 0095     		str	r5, [sp]
+  75:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.pin = pin.pin_mosi;
+ 807              		.loc 1 75 5 is_stmt 1 view .LVU209
+  75:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.pin = pin.pin_mosi;
+ 808              		.loc 1 75 28 is_stmt 0 view .LVU210
+ 809 0046 0396     		str	r6, [sp, #12]
+  76:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+ 810              		.loc 1 76 5 is_stmt 1 view .LVU211
+  76:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+ 811              		.loc 1 76 27 is_stmt 0 view .LVU212
+ 812 0048 0D9B     		ldr	r3, [sp, #52]
+  76:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+ 813              		.loc 1 76 22 view .LVU213
+ 814 004a ADF80830 		strh	r3, [sp, #8]	@ movhi
+  77:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(!BspGPIO.alt_init(GPIO_Pin_Obj, 0))
+ 815              		.loc 1 77 5 is_stmt 1 view .LVU214
+  77:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(!BspGPIO.alt_init(GPIO_Pin_Obj, 0))
+ 816              		.loc 1 77 23 is_stmt 0 view .LVU215
+ 817 004e CDF804D0 		str	sp, [sp, #4]
+  78:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 818              		.loc 1 78 5 is_stmt 1 view .LVU216
+  78:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 819              		.loc 1 78 16 is_stmt 0 view .LVU217
+ 820 0052 104B     		ldr	r3, .L72
+ 821 0054 DD68     		ldr	r5, [r3, #12]
+  78:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 822              		.loc 1 78 9 view .LVU218
+ 823 0056 0023     		movs	r3, #0
+ 824 0058 04AA     		add	r2, sp, #16
+ 825 005a 12E90700 		ldmdb	r2, {r0, r1, r2}
+ 826 005e A847     		blx	r5
+ 827              	.LVL81:
+  78:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 828              		.loc 1 78 7 view .LVU219
+ 829 0060 98B1     		cbz	r0, .L67
+  82:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.alternate = pin.pin_Alternate;
+ 830              		.loc 1 82 5 is_stmt 1 view .LVU220
+  82:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.alternate = pin.pin_Alternate;
+ 831              		.loc 1 82 24 is_stmt 0 view .LVU221
+ 832 0062 0094     		str	r4, [sp]
+  83:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.pin = pin.pin_miso;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 23
+
+
+ 833              		.loc 1 83 5 is_stmt 1 view .LVU222
+  83:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.pin = pin.pin_miso;
+ 834              		.loc 1 83 28 is_stmt 0 view .LVU223
+ 835 0064 0396     		str	r6, [sp, #12]
+  84:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+ 836              		.loc 1 84 5 is_stmt 1 view .LVU224
+  84:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+ 837              		.loc 1 84 27 is_stmt 0 view .LVU225
+ 838 0066 0E9B     		ldr	r3, [sp, #56]
+  84:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     GPIO_Pin_Obj.port = &GPIO_Port_Obj;
+ 839              		.loc 1 84 22 view .LVU226
+ 840 0068 ADF80830 		strh	r3, [sp, #8]	@ movhi
+  85:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(!BspGPIO.alt_init(GPIO_Pin_Obj, 0))
+ 841              		.loc 1 85 5 is_stmt 1 view .LVU227
+  85:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(!BspGPIO.alt_init(GPIO_Pin_Obj, 0))
+ 842              		.loc 1 85 23 is_stmt 0 view .LVU228
+ 843 006c CDF804D0 		str	sp, [sp, #4]
+  86:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 844              		.loc 1 86 5 is_stmt 1 view .LVU229
+  86:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 845              		.loc 1 86 16 is_stmt 0 view .LVU230
+ 846 0070 084B     		ldr	r3, .L72
+ 847 0072 DC68     		ldr	r4, [r3, #12]
+  86:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 848              		.loc 1 86 9 view .LVU231
+ 849 0074 0023     		movs	r3, #0
+ 850 0076 04AA     		add	r2, sp, #16
+ 851 0078 12E90700 		ldmdb	r2, {r0, r1, r2}
+ 852 007c A047     		blx	r4
+ 853              	.LVL82:
+ 854 007e 04E0     		b	.L67
+ 855              	.L68:
+  58:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 856              		.loc 1 58 16 view .LVU232
+ 857 0080 0020     		movs	r0, #0
+ 858 0082 02E0     		b	.L67
+ 859              	.L69:
+ 860 0084 0020     		movs	r0, #0
+ 861 0086 00E0     		b	.L67
+ 862              	.L70:
+ 863 0088 0020     		movs	r0, #0
+ 864              	.L67:
+  90:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 865              		.loc 1 90 1 view .LVU233
+ 866 008a 05B0     		add	sp, sp, #20
+ 867              	.LCFI14:
+ 868              		.cfi_def_cfa_offset 36
+ 869              		@ sp needed
+ 870 008c BDE8F040 		pop	{r4, r5, r6, r7, lr}
+ 871              	.LCFI15:
+ 872              		.cfi_restore 14
+ 873              		.cfi_restore 7
+ 874              		.cfi_restore 6
+ 875              		.cfi_restore 5
+ 876              		.cfi_restore 4
+ 877              		.cfi_def_cfa_offset 16
+ 878 0090 04B0     		add	sp, sp, #16
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 24
+
+
+ 879              	.LCFI16:
+ 880              		.cfi_def_cfa_offset 0
+ 881 0092 7047     		bx	lr
+ 882              	.L73:
+ 883              		.align	2
+ 884              	.L72:
+ 885 0094 00000000 		.word	BspGPIO
+ 886              		.cfi_endproc
+ 887              	.LFE134:
+ 889              		.section	.text.BspSPI_Init,"ax",%progbits
+ 890              		.align	1
+ 891              		.syntax unified
+ 892              		.thumb
+ 893              		.thumb_func
+ 895              	BspSPI_Init:
+ 896              	.LVL83:
+ 897              	.LFB135:
+  93:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_type spi_init_struct;
+ 898              		.loc 1 93 1 is_stmt 1 view -0
+ 899              		.cfi_startproc
+ 900              		@ args = 48, pretend = 16, frame = 8
+ 901              		@ frame_needed = 0, uses_anonymous_args = 0
+  93:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_type spi_init_struct;
+ 902              		.loc 1 93 1 is_stmt 0 view .LVU235
+ 903 0000 84B0     		sub	sp, sp, #16
+ 904              	.LCFI17:
+ 905              		.cfi_def_cfa_offset 16
+ 906 0002 70B5     		push	{r4, r5, r6, lr}
+ 907              	.LCFI18:
+ 908              		.cfi_def_cfa_offset 32
+ 909              		.cfi_offset 4, -32
+ 910              		.cfi_offset 5, -28
+ 911              		.cfi_offset 6, -24
+ 912              		.cfi_offset 14, -20
+ 913 0004 86B0     		sub	sp, sp, #24
+ 914              	.LCFI19:
+ 915              		.cfi_def_cfa_offset 56
+ 916 0006 0AAC     		add	r4, sp, #40
+ 917 0008 84E80F00 		stm	r4, {r0, r1, r2, r3}
+  94:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     crm_periph_clock_type clk = 0;
+ 918              		.loc 1 94 5 is_stmt 1 view .LVU236
+  95:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 919              		.loc 1 95 5 view .LVU237
+ 920              	.LVL84:
+  97:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 921              		.loc 1 97 5 view .LVU238
+  97:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 922              		.loc 1 97 16 is_stmt 0 view .LVU239
+ 923 000c 119C     		ldr	r4, [sp, #68]
+  97:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 924              		.loc 1 97 7 view .LVU240
+ 925 000e 84B1     		cbz	r4, .L75
+  97:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 926              		.loc 1 97 39 discriminator 1 view .LVU241
+ 927 0010 0EAB     		add	r3, sp, #56
+ 928 0012 93E80700 		ldm	r3, {r0, r1, r2}
+ 929 0016 8DE80700 		stm	sp, {r0, r1, r2}
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 25
+
+
+ 930 001a 0AAB     		add	r3, sp, #40
+ 931 001c 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 932 001e FFF7FEFF 		bl	BspSPI_Pin_Init
+ 933              	.LVL85:
+  97:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 934              		.loc 1 97 35 discriminator 1 view .LVU242
+ 935 0022 0546     		mov	r5, r0
+ 936 0024 28B1     		cbz	r0, .L75
+ 100:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(clk == 0)
+ 937              		.loc 1 100 5 is_stmt 1 view .LVU243
+ 100:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     if(clk == 0)
+ 938              		.loc 1 100 11 is_stmt 0 view .LVU244
+ 939 0026 2046     		mov	r0, r4
+ 940 0028 FFF7FEFF 		bl	BspSPI_Get_Clock
+ 941              	.LVL86:
+ 101:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 942              		.loc 1 101 5 is_stmt 1 view .LVU245
+ 101:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****         return false;
+ 943              		.loc 1 101 7 is_stmt 0 view .LVU246
+ 944 002c 40B9     		cbnz	r0, .L80
+ 102:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 945              		.loc 1 102 16 view .LVU247
+ 946 002e 0025     		movs	r5, #0
+ 947 0030 00E0     		b	.L77
+ 948              	.LVL87:
+ 949              	.L75:
+  98:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 950              		.loc 1 98 9 is_stmt 1 view .LVU248
+  98:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 951              		.loc 1 98 16 is_stmt 0 view .LVU249
+ 952 0032 0025     		movs	r5, #0
+ 953              	.LVL88:
+ 954              	.L77:
+ 122:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 955              		.loc 1 122 1 view .LVU250
+ 956 0034 2846     		mov	r0, r5
+ 957 0036 06B0     		add	sp, sp, #24
+ 958              	.LCFI20:
+ 959              		.cfi_remember_state
+ 960              		.cfi_def_cfa_offset 32
+ 961              		@ sp needed
+ 962 0038 BDE87040 		pop	{r4, r5, r6, lr}
+ 963              	.LCFI21:
+ 964              		.cfi_restore 14
+ 965              		.cfi_restore 6
+ 966              		.cfi_restore 5
+ 967              		.cfi_restore 4
+ 968              		.cfi_def_cfa_offset 16
+ 969 003c 04B0     		add	sp, sp, #16
+ 970              	.LCFI22:
+ 971              		.cfi_def_cfa_offset 0
+ 972 003e 7047     		bx	lr
+ 973              	.LVL89:
+ 974              	.L80:
+ 975              	.LCFI23:
+ 976              		.cfi_restore_state
+ 104:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_default_para_init(&spi_init_struct);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 26
+
+
+ 977              		.loc 1 104 5 is_stmt 1 view .LVU251
+ 978 0040 0121     		movs	r1, #1
+ 979 0042 FFF7FEFF 		bl	crm_periph_clock_enable
+ 980              	.LVL90:
+ 105:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 981              		.loc 1 105 5 view .LVU252
+ 982 0046 04A8     		add	r0, sp, #16
+ 983 0048 FFF7FEFF 		bl	spi_default_para_init
+ 984              	.LVL91:
+ 107:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.master_slave_mode = SPI_MODE_MASTER;
+ 985              		.loc 1 107 5 view .LVU253
+ 107:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.master_slave_mode = SPI_MODE_MASTER;
+ 986              		.loc 1 107 39 is_stmt 0 view .LVU254
+ 987 004c 0023     		movs	r3, #0
+ 988 004e 8DF81030 		strb	r3, [sp, #16]
+ 108:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.mclk_freq_division = spi_cfg.BaudRatePrescaler;
+ 989              		.loc 1 108 5 is_stmt 1 view .LVU255
+ 108:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.mclk_freq_division = spi_cfg.BaudRatePrescaler;
+ 990              		.loc 1 108 39 is_stmt 0 view .LVU256
+ 991 0052 0126     		movs	r6, #1
+ 992 0054 8DF81160 		strb	r6, [sp, #17]
+ 109:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.first_bit_transmission = SPI_FIRST_BIT_MSB;
+ 993              		.loc 1 109 5 is_stmt 1 view .LVU257
+ 109:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.first_bit_transmission = SPI_FIRST_BIT_MSB;
+ 994              		.loc 1 109 49 is_stmt 0 view .LVU258
+ 995 0058 9DF85020 		ldrb	r2, [sp, #80]	@ zero_extendqisi2
+ 109:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.first_bit_transmission = SPI_FIRST_BIT_MSB;
+ 996              		.loc 1 109 40 view .LVU259
+ 997 005c 8DF81220 		strb	r2, [sp, #18]
+ 110:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.frame_bit_num = SPI_FRAME_8BIT;
+ 998              		.loc 1 110 5 is_stmt 1 view .LVU260
+ 110:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.frame_bit_num = SPI_FRAME_8BIT;
+ 999              		.loc 1 110 44 is_stmt 0 view .LVU261
+ 1000 0060 8DF81330 		strb	r3, [sp, #19]
+ 111:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.clock_polarity = spi_cfg.CLKPolarity;
+ 1001              		.loc 1 111 5 is_stmt 1 view .LVU262
+ 111:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.clock_polarity = spi_cfg.CLKPolarity;
+ 1002              		.loc 1 111 35 is_stmt 0 view .LVU263
+ 1003 0064 8DF81430 		strb	r3, [sp, #20]
+ 112:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.clock_phase = spi_cfg.CLKPhase;
+ 1004              		.loc 1 112 5 is_stmt 1 view .LVU264
+ 112:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.clock_phase = spi_cfg.CLKPhase;
+ 1005              		.loc 1 112 45 is_stmt 0 view .LVU265
+ 1006 0068 9DF84830 		ldrb	r3, [sp, #72]	@ zero_extendqisi2
+ 112:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.clock_phase = spi_cfg.CLKPhase;
+ 1007              		.loc 1 112 36 view .LVU266
+ 1008 006c 8DF81530 		strb	r3, [sp, #21]
+ 113:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.cs_mode_selection = SPI_CS_SOFTWARE_MODE;
+ 1009              		.loc 1 113 5 is_stmt 1 view .LVU267
+ 113:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.cs_mode_selection = SPI_CS_SOFTWARE_MODE;
+ 1010              		.loc 1 113 42 is_stmt 0 view .LVU268
+ 1011 0070 9DF84C30 		ldrb	r3, [sp, #76]	@ zero_extendqisi2
+ 113:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_init_struct.cs_mode_selection = SPI_CS_SOFTWARE_MODE;
+ 1012              		.loc 1 113 33 view .LVU269
+ 1013 0074 8DF81630 		strb	r3, [sp, #22]
+ 114:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 1014              		.loc 1 114 5 is_stmt 1 view .LVU270
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 27
+
+
+ 114:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 1015              		.loc 1 114 39 is_stmt 0 view .LVU271
+ 1016 0078 8DF81760 		strb	r6, [sp, #23]
+ 116:HW_Lib/AT32F435/bsp/Bsp_Spi.c ****     spi_enable(To_SPI_Instance(spi_cfg.Instance), TRUE);
+ 1017              		.loc 1 116 5 is_stmt 1 view .LVU272
+ 1018 007c 04A9     		add	r1, sp, #16
+ 1019 007e 2046     		mov	r0, r4
+ 1020 0080 FFF7FEFF 		bl	spi_init
+ 1021              	.LVL92:
+ 117:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 1022              		.loc 1 117 5 view .LVU273
+ 1023 0084 3146     		mov	r1, r6
+ 1024 0086 2046     		mov	r0, r4
+ 1025 0088 FFF7FEFF 		bl	spi_enable
+ 1026              	.LVL93:
+ 119:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 1027              		.loc 1 119 5 view .LVU274
+ 119:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** 
+ 1028              		.loc 1 119 31 is_stmt 0 view .LVU275
+ 1029 008c 159B     		ldr	r3, [sp, #84]
+ 1030 008e 1C60     		str	r4, [r3]
+ 121:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 1031              		.loc 1 121 5 is_stmt 1 view .LVU276
+ 121:HW_Lib/AT32F435/bsp/Bsp_Spi.c **** }
+ 1032              		.loc 1 121 12 is_stmt 0 view .LVU277
+ 1033 0090 D0E7     		b	.L77
+ 1034              		.cfi_endproc
+ 1035              	.LFE135:
+ 1037              		.global	BspSPI
+ 1038              		.section	.data.BspSPI,"aw"
+ 1039              		.align	2
+ 1042              	BspSPI:
+ 1043 0000 00000000 		.word	BspSPI_Init
+ 1044 0004 00000000 		.word	BspSPI_Deinit
+ 1045 0008 00000000 		.word	BspSPI_Transmit
+ 1046 000c 00000000 		.word	BspSPI_Receive
+ 1047 0010 00000000 		.word	BspSPI_Trans_Receive
+ 1048 0014 00000000 		.word	BspSPI_Set_Speed
+ 1049              		.text
+ 1050              	.Letext0:
+ 1051              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1052              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1053              		.file 4 "HW_Lib/Port_Def/Bsp_SPI_Port_Def.h"
+ 1054              		.file 5 "HW_Lib/AT32F435/device_support/at32f435_437.h"
+ 1055              		.file 6 "HW_Lib/AT32F435/drivers/inc/at32f435_437_crm.h"
+ 1056              		.file 7 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 1057              		.file 8 "HW_Lib/AT32F435/drivers/inc/at32f435_437_gpio.h"
+ 1058              		.file 9 "HW_Lib/AT32F435/drivers/inc/at32f435_437_spi.h"
+ 1059              		.file 10 "HW_Lib/Port_Def/Bsp_GPIO_Port_Def.h"
+ 1060              		.file 11 "HW_Lib/AT32F435/bsp/Bsp_GPIO.h"
+ 1061              		.file 12 "HW_Lib/AT32F435/bsp/Bsp_Spi.h"
+ 1062              		.file 13 "HW_Lib/AT32F435/device_support/system_at32f435_437.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s 			page 28
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Bsp_Spi.c
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:20     .text.BspSPI_Get_Clock:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:25     .text.BspSPI_Get_Clock:00000000 BspSPI_Get_Clock
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:92     .text.BspSPI_Get_Clock:00000038 $d
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:102    .text.BspSPI_Set_Speed:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:107    .text.BspSPI_Set_Speed:00000000 BspSPI_Set_Speed
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:127    .text.BspSPI_Trans_Receive:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:132    .text.BspSPI_Trans_Receive:00000000 BspSPI_Trans_Receive
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:319    .text.BspSPI_Receive:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:324    .text.BspSPI_Receive:00000000 BspSPI_Receive
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:485    .text.BspSPI_Transmit:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:490    .text.BspSPI_Transmit:00000000 BspSPI_Transmit
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:648    .text.BspSPI_Deinit:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:653    .text.BspSPI_Deinit:00000000 BspSPI_Deinit
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:725    .text.BspSPI_Pin_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:730    .text.BspSPI_Pin_Init:00000000 BspSPI_Pin_Init
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:885    .text.BspSPI_Pin_Init:00000094 $d
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:890    .text.BspSPI_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:895    .text.BspSPI_Init:00000000 BspSPI_Init
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:1042   .data.BspSPI:00000000 BspSPI
+C:\Users\8bit\AppData\Local\Temp\ccyd9jmJ.s:1039   .data.BspSPI:00000000 $d
+
+UNDEFINED SYMBOLS
+System_GetTick
+spi_i2s_flag_get
+spi_i2s_data_transmit
+spi_i2s_data_receive
+crm_periph_clock_enable
+spi_enable
+BspGPIO
+spi_default_para_init
+spi_init

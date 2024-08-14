@@ -1,0 +1,487 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cciakRFO.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Task_Manager.cpp"
+  16              		.section	.rodata.str1.4,"aMS",%progbits,1
+  17              		.align	2
+  18              	.LC0:
+  19 0000 4D616E61 		.ascii	"ManagerTask\000"
+  19      67657254 
+  19      61736B00 
+  20              		.align	2
+  21              	.LC2:
+  22 000c 53616D70 		.ascii	"SampleTask\000"
+  22      6C655461 
+  22      736B00
+  23 0017 00       		.align	2
+  24              	.LC4:
+  25 0018 54656C65 		.ascii	"TelemtryTask\000"
+  25      6D747279 
+  25      5461736B 
+  25      00
+  26 0025 000000   		.align	2
+  27              	.LC6:
+  28 0028 436F6E74 		.ascii	"ControlTask\000"
+  28      726F6C54 
+  28      61736B00 
+  29              		.align	2
+  30              	.LC8:
+  31 0034 4E617654 		.ascii	"NavTask\000"
+  31      61736B00 
+  32              		.align	2
+  33              	.LC10:
+  34 003c 426C6163 		.ascii	"BlackBoxTask\000"
+  34      6B426F78 
+  34      5461736B 
+  34      00
+  35 0049 000000   		.align	2
+  36              	.LC12:
+  37 004c 4672616D 		.ascii	"FrameCTLTask\000"
+  37      6543544C 
+  37      5461736B 
+  37      00
+  38              		.text
+  39              		.section	.rodata.Task_Manager_CreateTask.str1.4,"aMS",%progbits,1
+  40              		.align	2
+  41              	.LC14:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cciakRFO.s 			page 2
+
+
+  42 0000 53797320 		.ascii	"Sys Start\015\012\000"
+  42      53746172 
+  42      740D0A00 
+  43              		.align	2
+  44              	.LC15:
+  45 000c 5B204445 		.ascii	"[ DEBUG INFO ] \000"
+  45      42554720 
+  45      494E464F 
+  45      205D2000 
+  46              		.align	2
+  47              	.LC16:
+  48 001c 53797320 		.ascii	"Sys Time: %d\015\012\000"
+  48      54696D65 
+  48      3A202564 
+  48      0D0A00
+  49              		.section	.text.Task_Manager_CreateTask,"ax",%progbits
+  50              		.align	1
+  51              		.global	Task_Manager_CreateTask
+  52              		.syntax unified
+  53              		.thumb
+  54              		.thumb_func
+  56              	Task_Manager_CreateTask:
+  57              		.fnstart
+  58              	.LFB2297:
+  59              		@ args = 0, pretend = 0, frame = 168
+  60              		@ frame_needed = 0, uses_anonymous_args = 0
+  61 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  62              		.save {r4, r5, r6, r7, lr}
+  63              		.pad #172
+  64 0002 ABB0     		sub	sp, sp, #172
+  65 0004 5A4B     		ldr	r3, .L8
+  66 0006 9B6A     		ldr	r3, [r3, #40]
+  67 0008 3420     		movs	r0, #52
+  68 000a 9847     		blx	r3
+  69 000c 0546     		mov	r5, r0
+  70 000e 40B1     		cbz	r0, .L2
+  71 0010 0123     		movs	r3, #1
+  72 0012 0370     		strb	r3, [r0]
+  73 0014 4370     		strb	r3, [r0, #1]
+  74 0016 574B     		ldr	r3, .L8+4
+  75 0018 0363     		str	r3, [r0, #48]
+  76 001a 0023     		movs	r3, #0
+  77 001c C362     		str	r3, [r0, #44]
+  78              	.L3:
+  79 001e 0024     		movs	r4, #0
+  80 0020 A2E0     		b	.L5
+  81              	.L2:
+  82 0022 534B     		ldr	r3, .L8
+  83 0024 DB6A     		ldr	r3, [r3, #44]
+  84 0026 9847     		blx	r3
+  85 0028 F9E7     		b	.L3
+  86              	.L7:
+  87 002a 514B     		ldr	r3, .L8
+  88 002c 1B68     		ldr	r3, [r3]
+  89 002e 9847     		blx	r3
+  90 0030 0446     		mov	r4, r0
+  91 0032 514F     		ldr	r7, .L8+8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cciakRFO.s 			page 3
+
+
+  92 0034 514E     		ldr	r6, .L8+12
+  93 0036 524A     		ldr	r2, .L8+16
+  94 0038 3946     		mov	r1, r7
+  95 003a 3046     		mov	r0, r6
+  96 003c FFF7FEFF 		bl	Debug_Print
+  97 0040 2346     		mov	r3, r4
+  98 0042 504A     		ldr	r2, .L8+20
+  99 0044 3946     		mov	r1, r7
+ 100 0046 3046     		mov	r0, r6
+ 101 0048 FFF7FEFF 		bl	Debug_Print
+ 102 004c FFF7FEFF 		bl	DataPipe_Init
+ 103 0050 4D4B     		ldr	r3, .L8+24
+ 104 0052 1B68     		ldr	r3, [r3]
+ 105 0054 2846     		mov	r0, r5
+ 106 0056 9847     		blx	r3
+ 107 0058 4C4B     		ldr	r3, .L8+28
+ 108 005a 1B68     		ldr	r3, [r3]
+ 109 005c 9847     		blx	r3
+ 110 005e 4C4B     		ldr	r3, .L8+32
+ 111 0060 1B68     		ldr	r3, [r3]
+ 112 0062 0021     		movs	r1, #0
+ 113 0064 0220     		movs	r0, #2
+ 114 0066 9847     		blx	r3
+ 115 0068 0120     		movs	r0, #1
+ 116 006a FFF7FEFF 		bl	TaskSample_Init
+ 117 006e 0220     		movs	r0, #2
+ 118 0070 FFF7FEFF 		bl	TaskTelemetry_Init
+ 119 0074 0220     		movs	r0, #2
+ 120 0076 FFF7FEFF 		bl	TaskControl_Init
+ 121 007a FFF7FEFF 		bl	TaskBlackBox_Init
+ 122 007e 0A20     		movs	r0, #10
+ 123 0080 FFF7FEFF 		bl	TaskNavi_Init
+ 124 0084 0520     		movs	r0, #5
+ 125 0086 FFF7FEFF 		bl	TaskFrameCTL_Init
+ 126 008a 424C     		ldr	r4, .L8+36
+ 127 008c EC46     		mov	ip, sp
+ 128 008e A646     		mov	lr, r4
+ 129 0090 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 130 0094 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 131 0098 9EE80700 		ldm	lr, {r0, r1, r2}
+ 132 009c 8CE80700 		stm	ip, {r0, r1, r2}
+ 133 00a0 0021     		movs	r1, #0
+ 134 00a2 6846     		mov	r0, sp
+ 135 00a4 FFF7FEFF 		bl	osThreadCreate
+ 136 00a8 3B4B     		ldr	r3, .L8+40
+ 137 00aa 1860     		str	r0, [r3]
+ 138 00ac 0DF11C0C 		add	ip, sp, #28
+ 139 00b0 04F11C0E 		add	lr, r4, #28
+ 140 00b4 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 141 00b8 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 142 00bc 9EE80700 		ldm	lr, {r0, r1, r2}
+ 143 00c0 8CE80700 		stm	ip, {r0, r1, r2}
+ 144 00c4 0021     		movs	r1, #0
+ 145 00c6 07A8     		add	r0, sp, #28
+ 146 00c8 FFF7FEFF 		bl	osThreadCreate
+ 147 00cc 334B     		ldr	r3, .L8+44
+ 148 00ce 1860     		str	r0, [r3]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cciakRFO.s 			page 4
+
+
+ 149 00d0 0DF1380C 		add	ip, sp, #56
+ 150 00d4 04F1380E 		add	lr, r4, #56
+ 151 00d8 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 152 00dc ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 153 00e0 9EE80700 		ldm	lr, {r0, r1, r2}
+ 154 00e4 8CE80700 		stm	ip, {r0, r1, r2}
+ 155 00e8 0021     		movs	r1, #0
+ 156 00ea 0EA8     		add	r0, sp, #56
+ 157 00ec FFF7FEFF 		bl	osThreadCreate
+ 158 00f0 2B4B     		ldr	r3, .L8+48
+ 159 00f2 1860     		str	r0, [r3]
+ 160 00f4 0DF1540C 		add	ip, sp, #84
+ 161 00f8 04F1540E 		add	lr, r4, #84
+ 162 00fc BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 163 0100 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 164 0104 9EE80700 		ldm	lr, {r0, r1, r2}
+ 165 0108 8CE80700 		stm	ip, {r0, r1, r2}
+ 166 010c 0021     		movs	r1, #0
+ 167 010e 15A8     		add	r0, sp, #84
+ 168 0110 FFF7FEFF 		bl	osThreadCreate
+ 169 0114 234B     		ldr	r3, .L8+52
+ 170 0116 1860     		str	r0, [r3]
+ 171 0118 0DF1700C 		add	ip, sp, #112
+ 172 011c 04F1700E 		add	lr, r4, #112
+ 173 0120 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 174 0124 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 175 0128 9EE80700 		ldm	lr, {r0, r1, r2}
+ 176 012c 8CE80700 		stm	ip, {r0, r1, r2}
+ 177 0130 0021     		movs	r1, #0
+ 178 0132 1CA8     		add	r0, sp, #112
+ 179 0134 FFF7FEFF 		bl	osThreadCreate
+ 180 0138 1B4B     		ldr	r3, .L8+56
+ 181 013a 1860     		str	r0, [r3]
+ 182 013c 0DF18C0E 		add	lr, sp, #140
+ 183 0140 04F18C0C 		add	ip, r4, #140
+ 184 0144 BCE80F00 		ldmia	ip!, {r0, r1, r2, r3}
+ 185 0148 AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 186 014c 9CE80700 		ldm	ip, {r0, r1, r2}
+ 187 0150 8EE80700 		stm	lr, {r0, r1, r2}
+ 188 0154 0021     		movs	r1, #0
+ 189 0156 23A8     		add	r0, sp, #140
+ 190 0158 FFF7FEFF 		bl	osThreadCreate
+ 191 015c 134B     		ldr	r3, .L8+60
+ 192 015e 1860     		str	r0, [r3]
+ 193 0160 0124     		movs	r4, #1
+ 194              	.L4:
+ 195 0162 0A20     		movs	r0, #10
+ 196 0164 FFF7FEFF 		bl	osDelay
+ 197              	.L5:
+ 198 0168 002C     		cmp	r4, #0
+ 199 016a 3FF45EAF 		beq	.L7
+ 200 016e F8E7     		b	.L4
+ 201              	.L9:
+ 202              		.align	2
+ 203              	.L8:
+ 204 0170 00000000 		.word	SrvOsCommon
+ 205 0174 00000000 		.word	DevW25Qxx
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cciakRFO.s 			page 5
+
+
+ 206 0178 0C000000 		.word	.LC15
+ 207 017c 00000000 		.word	DebugPort
+ 208 0180 00000000 		.word	.LC14
+ 209 0184 1C000000 		.word	.LC16
+ 210 0188 00000000 		.word	Storage
+ 211 018c 00000000 		.word	SrvUpgrade
+ 212 0190 00000000 		.word	SrvComProto
+ 213 0194 00000000 		.word	.LANCHOR0
+ 214 0198 00000000 		.word	.LANCHOR1
+ 215 019c 00000000 		.word	.LANCHOR2
+ 216 01a0 00000000 		.word	.LANCHOR3
+ 217 01a4 00000000 		.word	.LANCHOR4
+ 218 01a8 00000000 		.word	.LANCHOR5
+ 219 01ac 00000000 		.word	.LANCHOR6
+ 220              		.fnend
+ 222              		.section	.text.Task_Manager_Init,"ax",%progbits
+ 223              		.align	1
+ 224              		.global	Task_Manager_Init
+ 225              		.syntax unified
+ 226              		.thumb
+ 227              		.thumb_func
+ 229              	Task_Manager_Init:
+ 230              		.fnstart
+ 231              	.LFB2296:
+ 232              		@ args = 0, pretend = 0, frame = 32
+ 233              		@ frame_needed = 0, uses_anonymous_args = 0
+ 234 0000 10B5     		push	{r4, lr}
+ 235              		.save {r4, lr}
+ 236              		.pad #32
+ 237 0002 88B0     		sub	sp, sp, #32
+ 238 0004 104B     		ldr	r3, .L12
+ 239 0006 1C68     		ldr	r4, [r3]
+ 240 0008 104B     		ldr	r3, .L12+4
+ 241 000a 93E80700 		ldm	r3, {r0, r1, r2}
+ 242 000e A047     		blx	r4
+ 243 0010 0F4B     		ldr	r3, .L12+8
+ 244 0012 DA6A     		ldr	r2, [r3, #44]
+ 245 0014 0F48     		ldr	r0, .L12+12
+ 246 0016 0261     		str	r2, [r0, #16]
+ 247 0018 9B6A     		ldr	r3, [r3, #40]
+ 248 001a C360     		str	r3, [r0, #12]
+ 249 001c FFF7FEFF 		bl	Debug_Port_Init
+ 250 0020 0DF1040C 		add	ip, sp, #4
+ 251 0024 0C4C     		ldr	r4, .L12+16
+ 252 0026 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 253 0028 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 254 002c 94E80700 		ldm	r4, {r0, r1, r2}
+ 255 0030 8CE80700 		stm	ip, {r0, r1, r2}
+ 256 0034 0021     		movs	r1, #0
+ 257 0036 01A8     		add	r0, sp, #4
+ 258 0038 FFF7FEFF 		bl	osThreadCreate
+ 259 003c 074B     		ldr	r3, .L12+20
+ 260 003e 1860     		str	r0, [r3]
+ 261 0040 FFF7FEFF 		bl	osKernelStart
+ 262 0044 08B0     		add	sp, sp, #32
+ 263              		@ sp needed
+ 264 0046 10BD     		pop	{r4, pc}
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cciakRFO.s 			page 6
+
+
+ 265              	.L13:
+ 266              		.align	2
+ 267              	.L12:
+ 268 0048 00000000 		.word	DevLED
+ 269 004c 00000000 		.word	Led1
+ 270 0050 00000000 		.word	SrvOsCommon
+ 271 0054 00000000 		.word	DebugPort
+ 272 0058 A8000000 		.word	.LANCHOR0+168
+ 273 005c 00000000 		.word	.LANCHOR7
+ 274              		.fnend
+ 276              		.global	TaskManager_Handle
+ 277              		.global	TaskFrameCTL_Handle
+ 278              		.global	TaskTelemetry_Handle
+ 279              		.global	TaskLog_Handle
+ 280              		.global	TaskNavi_Handle
+ 281              		.global	TaskControl_Handle
+ 282              		.global	TaskInertial_Handle
+ 283              		.section	.rodata
+ 284              		.align	2
+ 285              		.set	.LANCHOR0,. + 0
+ 286              	.LC17:
+ 287 0000 0C000000 		.word	.LC2
+ 288 0004 00000000 		.word	TaskSample_Core
+ 289 0008 0300     		.short	3
+ 290 000a 0000     		.space	2
+ 291 000c 00000000 		.word	0
+ 292 0010 00040000 		.word	1024
+ 293 0014 00000000 		.word	0
+ 294 0018 00000000 		.word	0
+ 295              	.LC18:
+ 296 001c 18000000 		.word	.LC4
+ 297 0020 00000000 		.word	TaskTelemetry_Core
+ 298 0024 0200     		.short	2
+ 299 0026 0000     		.space	2
+ 300 0028 00000000 		.word	0
+ 301 002c 00040000 		.word	1024
+ 302 0030 00000000 		.word	0
+ 303 0034 00000000 		.word	0
+ 304              	.LC19:
+ 305 0038 28000000 		.word	.LC6
+ 306 003c 00000000 		.word	TaskControl_Core
+ 307 0040 0200     		.short	2
+ 308 0042 0000     		.space	2
+ 309 0044 00000000 		.word	0
+ 310 0048 00040000 		.word	1024
+ 311 004c 00000000 		.word	0
+ 312 0050 00000000 		.word	0
+ 313              	.LC20:
+ 314 0054 34000000 		.word	.LC8
+ 315 0058 00000000 		.word	TaskNavi_Core
+ 316 005c 0100     		.short	1
+ 317 005e 0000     		.space	2
+ 318 0060 00000000 		.word	0
+ 319 0064 00040000 		.word	1024
+ 320 0068 00000000 		.word	0
+ 321 006c 00000000 		.word	0
+ 322              	.LC21:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cciakRFO.s 			page 7
+
+
+ 323 0070 3C000000 		.word	.LC10
+ 324 0074 00000000 		.word	TaskBlackBox_Core
+ 325 0078 0000     		.short	0
+ 326 007a 0000     		.space	2
+ 327 007c 00000000 		.word	0
+ 328 0080 00100000 		.word	4096
+ 329 0084 00000000 		.word	0
+ 330 0088 00000000 		.word	0
+ 331              	.LC22:
+ 332 008c 4C000000 		.word	.LC12
+ 333 0090 00000000 		.word	TaskFrameCTL_Core
+ 334 0094 0000     		.short	0
+ 335 0096 0000     		.space	2
+ 336 0098 00000000 		.word	0
+ 337 009c 00040000 		.word	1024
+ 338 00a0 00000000 		.word	0
+ 339 00a4 00000000 		.word	0
+ 340              	.LC23:
+ 341 00a8 00000000 		.word	.LC0
+ 342 00ac 00000000 		.word	Task_Manager_CreateTask
+ 343 00b0 FEFF     		.short	-2
+ 344 00b2 0000     		.space	2
+ 345 00b4 00000000 		.word	0
+ 346 00b8 00040000 		.word	1024
+ 347 00bc 00000000 		.word	0
+ 348 00c0 00000000 		.word	0
+ 349              		.section	.bss.TaskControl_Handle,"aw",%nobits
+ 350              		.align	2
+ 351              		.set	.LANCHOR3,. + 0
+ 354              	TaskControl_Handle:
+ 355 0000 00000000 		.space	4
+ 356              		.section	.bss.TaskFrameCTL_Handle,"aw",%nobits
+ 357              		.align	2
+ 358              		.set	.LANCHOR6,. + 0
+ 361              	TaskFrameCTL_Handle:
+ 362 0000 00000000 		.space	4
+ 363              		.section	.bss.TaskInertial_Handle,"aw",%nobits
+ 364              		.align	2
+ 365              		.set	.LANCHOR1,. + 0
+ 368              	TaskInertial_Handle:
+ 369 0000 00000000 		.space	4
+ 370              		.section	.bss.TaskLog_Handle,"aw",%nobits
+ 371              		.align	2
+ 372              		.set	.LANCHOR5,. + 0
+ 375              	TaskLog_Handle:
+ 376 0000 00000000 		.space	4
+ 377              		.section	.bss.TaskManager_Handle,"aw",%nobits
+ 378              		.align	2
+ 379              		.set	.LANCHOR7,. + 0
+ 382              	TaskManager_Handle:
+ 383 0000 00000000 		.space	4
+ 384              		.section	.bss.TaskNavi_Handle,"aw",%nobits
+ 385              		.align	2
+ 386              		.set	.LANCHOR4,. + 0
+ 389              	TaskNavi_Handle:
+ 390 0000 00000000 		.space	4
+ 391              		.section	.bss.TaskTelemetry_Handle,"aw",%nobits
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cciakRFO.s 			page 8
+
+
+ 392              		.align	2
+ 393              		.set	.LANCHOR2,. + 0
+ 396              	TaskTelemetry_Handle:
+ 397 0000 00000000 		.space	4
+ 398              		.ident	"GCC: (GNU Arm Embedded Toolchain 10.3-2021.10) 10.3.1 20210824 (release)"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cciakRFO.s 			page 9
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Task_Manager.cpp
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:17     .rodata.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:40     .rodata.Task_Manager_CreateTask.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:50     .text.Task_Manager_CreateTask:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:56     .text.Task_Manager_CreateTask:00000000 Task_Manager_CreateTask
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:204    .text.Task_Manager_CreateTask:00000170 $d
+.ARM.exidx.text.Task_Manager_CreateTask:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:223    .text.Task_Manager_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:229    .text.Task_Manager_Init:00000000 Task_Manager_Init
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:268    .text.Task_Manager_Init:00000048 $d
+.ARM.exidx.text.Task_Manager_Init:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:382    .bss.TaskManager_Handle:00000000 TaskManager_Handle
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:361    .bss.TaskFrameCTL_Handle:00000000 TaskFrameCTL_Handle
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:396    .bss.TaskTelemetry_Handle:00000000 TaskTelemetry_Handle
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:375    .bss.TaskLog_Handle:00000000 TaskLog_Handle
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:389    .bss.TaskNavi_Handle:00000000 TaskNavi_Handle
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:354    .bss.TaskControl_Handle:00000000 TaskControl_Handle
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:368    .bss.TaskInertial_Handle:00000000 TaskInertial_Handle
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:284    .rodata:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:350    .bss.TaskControl_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:357    .bss.TaskFrameCTL_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:364    .bss.TaskInertial_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:371    .bss.TaskLog_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:378    .bss.TaskManager_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:385    .bss.TaskNavi_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cciakRFO.s:392    .bss.TaskTelemetry_Handle:00000000 $d
+
+UNDEFINED SYMBOLS
+Debug_Print
+DataPipe_Init
+TaskSample_Init
+TaskTelemetry_Init
+TaskControl_Init
+TaskBlackBox_Init
+TaskNavi_Init
+TaskFrameCTL_Init
+osThreadCreate
+osDelay
+SrvOsCommon
+DevW25Qxx
+DebugPort
+Storage
+SrvUpgrade
+SrvComProto
+__aeabi_unwind_cpp_pr0
+Debug_Port_Init
+osKernelStart
+DevLED
+Led1
+TaskSample_Core
+TaskTelemetry_Core
+TaskControl_Core
+TaskNavi_Core
+TaskBlackBox_Core
+TaskFrameCTL_Core

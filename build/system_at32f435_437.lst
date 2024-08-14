@@ -1,0 +1,683 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"system_at32f435_437.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.SystemInit,"ax",%progbits
+  20              		.align	1
+  21              		.global	SystemInit
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	SystemInit:
+  27              	.LFB133:
+  28              		.file 1 "HW_Lib/AT32F435/device_support/system_at32f435_437.c"
+   1:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** /**
+   2:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   **************************************************************************
+   3:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @file     system_at32f435_437.c
+   4:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @version  v2.1.0
+   5:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @date     2022-08-16
+   6:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @brief    contains all the functions for cmsis cortex-m4 system source file
+   7:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   **************************************************************************
+   8:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   *                       Copyright notice & Disclaimer
+   9:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   *
+  10:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * The software Board Support Package (BSP) that is made available to
+  11:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * download from Artery official website is the copyrighted work of Artery.
+  12:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * Artery authorizes customers to use, copy, and distribute the BSP
+  13:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * software and its related documentation for the purpose of design and
+  14:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * development in conjunction with Artery microcontrollers. Use of the
+  15:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * software is governed by this copyright notice and the following disclaimer.
+  16:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   *
+  17:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
+  18:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * GUARANTEES OR REPRESENTATIONS OF ANY KIND. ARTERY EXPRESSLY DISCLAIMS,
+  19:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * TO THE FULLEST EXTENT PERMITTED BY LAW, ALL EXPRESS, IMPLIED OR
+  20:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * STATUTORY OR OTHER WARRANTIES, GUARANTEES OR REPRESENTATIONS,
+  21:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+  22:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+  23:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   *
+  24:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   **************************************************************************
+  25:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   */
+  26:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  27:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** /** @addtogroup CMSIS
+  28:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @{
+  29:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   */
+  30:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 2
+
+
+  31:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** /** @addtogroup AT32F435_437_system
+  32:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @{
+  33:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   */
+  34:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  35:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** #include "at32f435_437.h"
+  36:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  37:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** /** @addtogroup AT32F435_437_system_private_defines
+  38:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @{
+  39:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   */
+  40:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** #define VECT_TAB_OFFSET                  0x0 /*!< vector table base offset field. this value must b
+  41:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** /**
+  42:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @}
+  43:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   */
+  44:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  45:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** /** @addtogroup AT32F435_437_system_private_variables
+  46:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @{
+  47:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   */
+  48:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** unsigned int system_core_clock           = HICK_VALUE; /*!< system clock frequency (core clock) */
+  49:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** /**
+  50:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @}
+  51:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   */
+  52:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  53:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** /** @addtogroup AT32F435_437_system_private_functions
+  54:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @{
+  55:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   */
+  56:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  57:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** /**
+  58:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @brief  setup the microcontroller system
+  59:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   *         initialize the flash interface.
+  60:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @note   this function should be used only after reset.
+  61:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @param  none
+  62:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @retval none
+  63:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   */
+  64:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** void SystemInit (void)
+  65:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** {
+  29              		.loc 1 65 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  66:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** #if defined (__FPU_USED) && (__FPU_USED == 1U)
+  67:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   SCB->CPACR |= ((3U << 10U * 2U) |         /* set cp10 full access */
+  34              		.loc 1 67 3 view .LVU1
+  35              		.loc 1 67 14 is_stmt 0 view .LVU2
+  36 0000 174A     		ldr	r2, .L4
+  37 0002 D2F88830 		ldr	r3, [r2, #136]
+  38 0006 43F47003 		orr	r3, r3, #15728640
+  39 000a C2F88830 		str	r3, [r2, #136]
+  68:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****                  (3U << 11U * 2U)  );       /* set cp11 full access */
+  69:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** #endif
+  70:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  71:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* reset the crm clock configuration to the default reset state(for debug purpose) */
+  72:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* set hicken bit */
+  73:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   CRM->ctrl_bit.hicken = TRUE;
+  40              		.loc 1 73 3 is_stmt 1 view .LVU3
+  41              		.loc 1 73 24 is_stmt 0 view .LVU4
+  42 000e 154A     		ldr	r2, .L4+4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 3
+
+
+  43 0010 1368     		ldr	r3, [r2]
+  44 0012 43F00103 		orr	r3, r3, #1
+  45 0016 1360     		str	r3, [r2]
+  74:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  75:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* wait hick stable */
+  76:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   while(CRM->ctrl_bit.hickstbl != SET);
+  46              		.loc 1 76 3 is_stmt 1 view .LVU5
+  47              	.L2:
+  48              		.loc 1 76 39 discriminator 1 view .LVU6
+  49              		.loc 1 76 8 discriminator 1 view .LVU7
+  50              		.loc 1 76 22 is_stmt 0 discriminator 1 view .LVU8
+  51 0018 124B     		ldr	r3, .L4+4
+  52 001a 1B68     		ldr	r3, [r3]
+  53              		.loc 1 76 8 discriminator 1 view .LVU9
+  54 001c 13F0020F 		tst	r3, #2
+  55 0020 FAD0     		beq	.L2
+  77:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  78:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* hick used as system clock */
+  79:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   CRM->cfg_bit.sclksel = CRM_SCLK_HICK;
+  56              		.loc 1 79 3 is_stmt 1 view .LVU10
+  57              		.loc 1 79 24 is_stmt 0 view .LVU11
+  58 0022 104B     		ldr	r3, .L4+4
+  59 0024 9A68     		ldr	r2, [r3, #8]
+  60 0026 6FF30102 		bfc	r2, #0, #2
+  61 002a 9A60     		str	r2, [r3, #8]
+  80:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  81:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* wait sclk switch status */
+  82:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   while(CRM->cfg_bit.sclksts != CRM_SCLK_HICK);
+  62              		.loc 1 82 3 is_stmt 1 view .LVU12
+  63              	.L3:
+  64              		.loc 1 82 47 discriminator 1 view .LVU13
+  65              		.loc 1 82 8 discriminator 1 view .LVU14
+  66              		.loc 1 82 21 is_stmt 0 discriminator 1 view .LVU15
+  67 002c 0D4B     		ldr	r3, .L4+4
+  68 002e 9B68     		ldr	r3, [r3, #8]
+  69              		.loc 1 82 8 discriminator 1 view .LVU16
+  70 0030 13F00C0F 		tst	r3, #12
+  71 0034 FAD1     		bne	.L3
+  83:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  84:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* reset hexten, hextbyps, cfden and pllen bits */
+  85:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   CRM->ctrl &= ~(0x010D0000U);
+  72              		.loc 1 85 3 is_stmt 1 view .LVU17
+  73              		.loc 1 85 13 is_stmt 0 view .LVU18
+  74 0036 0B4B     		ldr	r3, .L4+4
+  75 0038 1A68     		ldr	r2, [r3]
+  76 003a 22F08672 		bic	r2, r2, #17563648
+  77 003e 22F48032 		bic	r2, r2, #65536
+  78 0042 1A60     		str	r2, [r3]
+  86:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  87:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* reset cfg register, include sclk switch, ahbdiv, apb1div, apb2div, adcdiv, clkout bits */
+  88:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   CRM->cfg = 0;
+  79              		.loc 1 88 3 is_stmt 1 view .LVU19
+  80              		.loc 1 88 12 is_stmt 0 view .LVU20
+  81 0044 0022     		movs	r2, #0
+  82 0046 9A60     		str	r2, [r3, #8]
+  89:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  90:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* reset pllms pllns pllfr pllrcs bits */
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 4
+
+
+  91:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   CRM->pllcfg = 0x00033002U;
+  83              		.loc 1 91 3 is_stmt 1 view .LVU21
+  84              		.loc 1 91 15 is_stmt 0 view .LVU22
+  85 0048 0749     		ldr	r1, .L4+8
+  86 004a 5960     		str	r1, [r3, #4]
+  92:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  93:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* reset clkout[3], usbbufs, hickdiv, clkoutdiv */
+  94:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   CRM->misc1 = 0;
+  87              		.loc 1 94 3 is_stmt 1 view .LVU23
+  88              		.loc 1 94 14 is_stmt 0 view .LVU24
+  89 004c C3F8A020 		str	r2, [r3, #160]
+  95:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  96:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* disable all interrupts enable and clear pending bits  */
+  97:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   CRM->clkint = 0x009F0000U;
+  90              		.loc 1 97 3 is_stmt 1 view .LVU25
+  91              		.loc 1 97 15 is_stmt 0 view .LVU26
+  92 0050 4FF41F02 		mov	r2, #10420224
+  93 0054 DA60     		str	r2, [r3, #12]
+  98:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+  99:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** #ifdef VECT_TAB_SRAM
+ 100:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   SCB->VTOR = SRAM_BASE  | VECT_TAB_OFFSET;  /* vector table relocation in internal sram. */
+ 101:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** #else
+ 102:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET;  /* vector table relocation in internal flash. */
+  94              		.loc 1 102 3 is_stmt 1 view .LVU27
+  95              		.loc 1 102 13 is_stmt 0 view .LVU28
+  96 0056 024B     		ldr	r3, .L4
+  97 0058 4FF00062 		mov	r2, #134217728
+  98 005c 9A60     		str	r2, [r3, #8]
+ 103:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** #endif
+ 104:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** }
+  99              		.loc 1 104 1 view .LVU29
+ 100 005e 7047     		bx	lr
+ 101              	.L5:
+ 102              		.align	2
+ 103              	.L4:
+ 104 0060 00ED00E0 		.word	-536810240
+ 105 0064 00380240 		.word	1073887232
+ 106 0068 02300300 		.word	208898
+ 107              		.cfi_endproc
+ 108              	.LFE133:
+ 110              		.global	__aeabi_uldivmod
+ 111              		.section	.text.system_core_clock_update,"ax",%progbits
+ 112              		.align	1
+ 113              		.global	system_core_clock_update
+ 114              		.syntax unified
+ 115              		.thumb
+ 116              		.thumb_func
+ 118              	system_core_clock_update:
+ 119              	.LFB134:
+ 105:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 106:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** /**
+ 107:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @brief  update system_core_clock variable according to clock register values.
+ 108:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   *         the system_core_clock variable contains the core clock (hclk), it can
+ 109:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   *         be used by the user application to setup the systick timer or configure
+ 110:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   *         other parameters.
+ 111:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @param  none
+ 112:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   * @retval none
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 5
+
+
+ 113:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   */
+ 114:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** void system_core_clock_update(void)
+ 115:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** {
+ 120              		.loc 1 115 1 is_stmt 1 view -0
+ 121              		.cfi_startproc
+ 122              		@ args = 0, pretend = 0, frame = 0
+ 123              		@ frame_needed = 0, uses_anonymous_args = 0
+ 124 0000 10B5     		push	{r4, lr}
+ 125              	.LCFI0:
+ 126              		.cfi_def_cfa_offset 8
+ 127              		.cfi_offset 4, -8
+ 128              		.cfi_offset 14, -4
+ 116:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   uint32_t pll_ns = 0, pll_ms = 0, pll_fr = 0, pll_clock_source = 0, pllrcsfreq = 0;
+ 129              		.loc 1 116 3 view .LVU31
+ 130              	.LVL0:
+ 117:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   uint32_t temp = 0, div_value = 0;
+ 131              		.loc 1 117 3 view .LVU32
+ 118:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   crm_sclk_type sclk_source;
+ 132              		.loc 1 118 3 view .LVU33
+ 119:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 120:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   static const uint8_t sys_ahb_div_table[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
+ 133              		.loc 1 120 3 view .LVU34
+ 121:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   static const uint8_t pll_fr_table[6] = {1, 2, 4, 8, 16, 32};
+ 134              		.loc 1 121 3 view .LVU35
+ 122:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 123:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* get sclk source */
+ 124:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   sclk_source = crm_sysclk_switch_status_get();
+ 135              		.loc 1 124 3 view .LVU36
+ 136              		.loc 1 124 17 is_stmt 0 view .LVU37
+ 137 0002 FFF7FEFF 		bl	crm_sysclk_switch_status_get
+ 138              	.LVL1:
+ 125:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 126:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   switch(sclk_source)
+ 139              		.loc 1 126 3 is_stmt 1 view .LVU38
+ 140 0006 0128     		cmp	r0, #1
+ 141 0008 1AD0     		beq	.L7
+ 142 000a 0228     		cmp	r0, #2
+ 143 000c 26D0     		beq	.L8
+ 144 000e 18B1     		cbz	r0, .L13
+ 127:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   {
+ 128:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****     case CRM_SCLK_HICK:
+ 129:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       if(((CRM->misc1_bit.hick_to_sclk) != RESET) && ((CRM->misc1_bit.hickdiv) != RESET))
+ 130:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****         system_core_clock = HICK_VALUE * 6;
+ 131:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       else
+ 132:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****         system_core_clock = HICK_VALUE;
+ 133:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 134:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****     case CRM_SCLK_HEXT:
+ 135:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       system_core_clock = HEXT_VALUE;
+ 136:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 137:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****     case CRM_SCLK_PLL:
+ 138:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       /* get pll clock source */
+ 139:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       pll_clock_source = CRM->pllcfg_bit.pllrcs;
+ 140:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 141:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       /* get multiplication factor */
+ 142:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       pll_ns = CRM->pllcfg_bit.pllns;
+ 143:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       pll_ms = CRM->pllcfg_bit.pllms;
+ 144:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       pll_fr = pll_fr_table[CRM->pllcfg_bit.pllfr];
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 6
+
+
+ 145:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 146:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       if (pll_clock_source == CRM_PLL_SOURCE_HICK)
+ 147:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       {
+ 148:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****         /* hick selected as pll clock entry */
+ 149:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****         pllrcsfreq = HICK_VALUE;
+ 150:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       }
+ 151:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       else
+ 152:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       {
+ 153:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****         /* hext selected as pll clock entry */
+ 154:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****         pllrcsfreq = HEXT_VALUE;
+ 155:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       }
+ 156:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 157:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       system_core_clock = (uint32_t)(((uint64_t)pllrcsfreq * pll_ns) / (pll_ms * pll_fr));
+ 158:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 159:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****     default:
+ 160:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       system_core_clock = HICK_VALUE;
+ 145              		.loc 1 160 7 view .LVU39
+ 146              		.loc 1 160 25 is_stmt 0 view .LVU40
+ 147 0010 2A4B     		ldr	r3, .L14
+ 148 0012 2B4A     		ldr	r2, .L14+4
+ 149 0014 1A60     		str	r2, [r3]
+ 161:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 150              		.loc 1 161 7 is_stmt 1 view .LVU41
+ 151 0016 16E0     		b	.L11
+ 152              	.L13:
+ 129:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****         system_core_clock = HICK_VALUE * 6;
+ 153              		.loc 1 129 7 view .LVU42
+ 129:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****         system_core_clock = HICK_VALUE * 6;
+ 154              		.loc 1 129 26 is_stmt 0 view .LVU43
+ 155 0018 2A4B     		ldr	r3, .L14+8
+ 156 001a D3F8A030 		ldr	r3, [r3, #160]
+ 129:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****         system_core_clock = HICK_VALUE * 6;
+ 157              		.loc 1 129 9 view .LVU44
+ 158 001e 13F4804F 		tst	r3, #16384
+ 159 0022 09D0     		beq	.L10
+ 129:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****         system_core_clock = HICK_VALUE * 6;
+ 160              		.loc 1 129 70 discriminator 1 view .LVU45
+ 161 0024 274B     		ldr	r3, .L14+8
+ 162 0026 D3F8A030 		ldr	r3, [r3, #160]
+ 129:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****         system_core_clock = HICK_VALUE * 6;
+ 163              		.loc 1 129 51 discriminator 1 view .LVU46
+ 164 002a 13F4805F 		tst	r3, #4096
+ 165 002e 03D0     		beq	.L10
+ 130:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       else
+ 166              		.loc 1 130 9 is_stmt 1 view .LVU47
+ 130:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       else
+ 167              		.loc 1 130 27 is_stmt 0 view .LVU48
+ 168 0030 224B     		ldr	r3, .L14
+ 169 0032 254A     		ldr	r2, .L14+12
+ 170 0034 1A60     		str	r2, [r3]
+ 171 0036 06E0     		b	.L11
+ 172              	.L10:
+ 132:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 173              		.loc 1 132 9 is_stmt 1 view .LVU49
+ 132:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 174              		.loc 1 132 27 is_stmt 0 view .LVU50
+ 175 0038 204B     		ldr	r3, .L14
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 7
+
+
+ 176 003a 214A     		ldr	r2, .L14+4
+ 177 003c 1A60     		str	r2, [r3]
+ 178 003e 02E0     		b	.L11
+ 179              	.L7:
+ 135:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 180              		.loc 1 135 7 is_stmt 1 view .LVU51
+ 135:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 181              		.loc 1 135 25 is_stmt 0 view .LVU52
+ 182 0040 1E4B     		ldr	r3, .L14
+ 183 0042 1F4A     		ldr	r2, .L14+4
+ 184 0044 1A60     		str	r2, [r3]
+ 136:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****     case CRM_SCLK_PLL:
+ 185              		.loc 1 136 7 is_stmt 1 view .LVU53
+ 186              	.LVL2:
+ 187              	.L11:
+ 162:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   }
+ 163:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 164:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* compute sclk, ahbclk frequency */
+ 165:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* get ahb division */
+ 166:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   temp = CRM->cfg_bit.ahbdiv;
+ 188              		.loc 1 166 3 view .LVU54
+ 189              		.loc 1 166 22 is_stmt 0 view .LVU55
+ 190 0046 1F4B     		ldr	r3, .L14+8
+ 191 0048 9B68     		ldr	r3, [r3, #8]
+ 192 004a C3F30313 		ubfx	r3, r3, #4, #4
+ 193              	.LVL3:
+ 167:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   div_value = sys_ahb_div_table[temp];
+ 194              		.loc 1 167 3 is_stmt 1 view .LVU56
+ 195              		.loc 1 167 32 is_stmt 0 view .LVU57
+ 196 004e 1F4A     		ldr	r2, .L14+16
+ 197 0050 D15C     		ldrb	r1, [r2, r3]	@ zero_extendqisi2
+ 198              	.LVL4:
+ 168:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   /* ahbclk frequency */
+ 169:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   system_core_clock = system_core_clock >> div_value;
+ 199              		.loc 1 169 3 is_stmt 1 view .LVU58
+ 200              		.loc 1 169 41 is_stmt 0 view .LVU59
+ 201 0052 1A4A     		ldr	r2, .L14
+ 202 0054 1368     		ldr	r3, [r2]
+ 203              	.LVL5:
+ 204              		.loc 1 169 41 view .LVU60
+ 205 0056 CB40     		lsrs	r3, r3, r1
+ 206              		.loc 1 169 21 view .LVU61
+ 207 0058 1360     		str	r3, [r2]
+ 170:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** }
+ 208              		.loc 1 170 1 view .LVU62
+ 209 005a 10BD     		pop	{r4, pc}
+ 210              	.LVL6:
+ 211              	.L8:
+ 139:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 212              		.loc 1 139 7 is_stmt 1 view .LVU63
+ 139:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 213              		.loc 1 139 41 is_stmt 0 view .LVU64
+ 214 005c 194B     		ldr	r3, .L14+8
+ 215 005e 5A68     		ldr	r2, [r3, #4]
+ 216              	.LVL7:
+ 142:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       pll_ms = CRM->pllcfg_bit.pllms;
+ 217              		.loc 1 142 7 is_stmt 1 view .LVU65
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 8
+
+
+ 142:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       pll_ms = CRM->pllcfg_bit.pllms;
+ 218              		.loc 1 142 31 is_stmt 0 view .LVU66
+ 219 0060 5968     		ldr	r1, [r3, #4]
+ 220 0062 C1F3881C 		ubfx	ip, r1, #6, #9
+ 221              	.LVL8:
+ 143:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       pll_fr = pll_fr_table[CRM->pllcfg_bit.pllfr];
+ 222              		.loc 1 143 7 is_stmt 1 view .LVU67
+ 143:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       pll_fr = pll_fr_table[CRM->pllcfg_bit.pllfr];
+ 223              		.loc 1 143 31 is_stmt 0 view .LVU68
+ 224 0066 5A68     		ldr	r2, [r3, #4]
+ 225 0068 02F00F02 		and	r2, r2, #15
+ 226              	.LVL9:
+ 144:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 227              		.loc 1 144 7 is_stmt 1 view .LVU69
+ 144:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 228              		.loc 1 144 44 is_stmt 0 view .LVU70
+ 229 006c 5B68     		ldr	r3, [r3, #4]
+ 230 006e C3F30243 		ubfx	r3, r3, #16, #3
+ 144:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 231              		.loc 1 144 28 view .LVU71
+ 232 0072 1749     		ldr	r1, .L14+20
+ 233              	.LVL10:
+ 144:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 234              		.loc 1 144 28 view .LVU72
+ 235 0074 11F803E0 		ldrb	lr, [r1, r3]	@ zero_extendqisi2
+ 236              	.LVL11:
+ 146:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       {
+ 237              		.loc 1 146 7 is_stmt 1 view .LVU73
+ 157:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 238              		.loc 1 157 7 view .LVU74
+ 157:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 239              		.loc 1 157 60 is_stmt 0 view .LVU75
+ 240 0078 4FEA4C11 		lsl	r1, ip, #5
+ 241 007c B1EB0C00 		subs	r0, r1, ip
+ 242              	.LVL12:
+ 157:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 243              		.loc 1 157 60 view .LVU76
+ 244 0080 64EB0404 		sbc	r4, r4, r4
+ 245 0084 A301     		lsls	r3, r4, #6
+ 246 0086 43EA9063 		orr	r3, r3, r0, lsr #26
+ 247 008a 8101     		lsls	r1, r0, #6
+ 248 008c 091A     		subs	r1, r1, r0
+ 249 008e 63EB0403 		sbc	r3, r3, r4
+ 250 0092 DB00     		lsls	r3, r3, #3
+ 251 0094 43EA5173 		orr	r3, r3, r1, lsr #29
+ 252 0098 C900     		lsls	r1, r1, #3
+ 253 009a 11EB0C0C 		adds	ip, r1, ip
+ 254 009e 43F10003 		adc	r3, r3, #0
+ 255 00a2 5902     		lsls	r1, r3, #9
+ 157:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 256              		.loc 1 157 70 view .LVU77
+ 257 00a4 0EFB02F2 		mul	r2, lr, r2
+ 258              	.LVL13:
+ 157:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 259              		.loc 1 157 70 view .LVU78
+ 260 00a8 0023     		movs	r3, #0
+ 261 00aa 4FEA4C20 		lsl	r0, ip, #9
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 9
+
+
+ 262 00ae 41EADC51 		orr	r1, r1, ip, lsr #23
+ 263 00b2 FFF7FEFF 		bl	__aeabi_uldivmod
+ 264              	.LVL14:
+ 157:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****       break;
+ 265              		.loc 1 157 25 view .LVU79
+ 266 00b6 014B     		ldr	r3, .L14
+ 267 00b8 1860     		str	r0, [r3]
+ 158:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****     default:
+ 268              		.loc 1 158 7 is_stmt 1 view .LVU80
+ 269 00ba C4E7     		b	.L11
+ 270              	.L15:
+ 271              		.align	2
+ 272              	.L14:
+ 273 00bc 00000000 		.word	.LANCHOR0
+ 274 00c0 00127A00 		.word	8000000
+ 275 00c4 00380240 		.word	1073887232
+ 276 00c8 006CDC02 		.word	48000000
+ 277 00cc 00000000 		.word	.LANCHOR2
+ 278 00d0 00000000 		.word	.LANCHOR1
+ 279              		.cfi_endproc
+ 280              	.LFE134:
+ 282              		.section	.text.System_Tick,"ax",%progbits
+ 283              		.align	1
+ 284              		.global	System_Tick
+ 285              		.syntax unified
+ 286              		.thumb
+ 287              		.thumb_func
+ 289              	System_Tick:
+ 290              	.LFB135:
+ 171:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 172:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** static uint8_t Reading = 0;
+ 173:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** static uint64_t SysTick_Val = 0;
+ 174:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** void System_Tick(void)
+ 175:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** {
+ 291              		.loc 1 175 1 view -0
+ 292              		.cfi_startproc
+ 293              		@ args = 0, pretend = 0, frame = 0
+ 294              		@ frame_needed = 0, uses_anonymous_args = 0
+ 295              		@ link register save eliminated.
+ 176:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   SysTick_Val ++;
+ 296              		.loc 1 176 3 view .LVU82
+ 297              		.loc 1 176 15 is_stmt 0 view .LVU83
+ 298 0000 074A     		ldr	r2, .L18
+ 299 0002 1368     		ldr	r3, [r2]
+ 300 0004 5168     		ldr	r1, [r2, #4]
+ 301 0006 0133     		adds	r3, r3, #1
+ 302 0008 41F10001 		adc	r1, r1, #0
+ 303 000c 1360     		str	r3, [r2]
+ 304 000e 5160     		str	r1, [r2, #4]
+ 177:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   if (Reading)
+ 305              		.loc 1 177 3 is_stmt 1 view .LVU84
+ 306              		.loc 1 177 7 is_stmt 0 view .LVU85
+ 307 0010 044B     		ldr	r3, .L18+4
+ 308 0012 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 309              		.loc 1 177 6 view .LVU86
+ 310 0014 13B1     		cbz	r3, .L16
+ 178:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****     Reading = 0;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 10
+
+
+ 311              		.loc 1 178 5 is_stmt 1 view .LVU87
+ 312              		.loc 1 178 13 is_stmt 0 view .LVU88
+ 313 0016 034B     		ldr	r3, .L18+4
+ 314 0018 0022     		movs	r2, #0
+ 315 001a 1A70     		strb	r2, [r3]
+ 316              	.L16:
+ 179:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** }
+ 317              		.loc 1 179 1 view .LVU89
+ 318 001c 7047     		bx	lr
+ 319              	.L19:
+ 320 001e 00BF     		.align	2
+ 321              	.L18:
+ 322 0020 00000000 		.word	.LANCHOR3
+ 323 0024 00000000 		.word	.LANCHOR4
+ 324              		.cfi_endproc
+ 325              	.LFE135:
+ 327              		.section	.text.System_GetTick,"ax",%progbits
+ 328              		.align	1
+ 329              		.global	System_GetTick
+ 330              		.syntax unified
+ 331              		.thumb
+ 332              		.thumb_func
+ 334              	System_GetTick:
+ 335              	.LFB136:
+ 180:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 181:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** uint64_t System_GetTick(void)
+ 182:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** {
+ 336              		.loc 1 182 1 is_stmt 1 view -0
+ 337              		.cfi_startproc
+ 338              		@ args = 0, pretend = 0, frame = 0
+ 339              		@ frame_needed = 0, uses_anonymous_args = 0
+ 340              		@ link register save eliminated.
+ 183:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   uint64_t tmp = 0;
+ 341              		.loc 1 183 3 view .LVU91
+ 342              	.LVL15:
+ 343              	.LDL1:
+ 184:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 185:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** reupdate:
+ 186:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   Reading = 1;
+ 344              		.loc 1 186 3 view .LVU92
+ 345              		.loc 1 186 11 is_stmt 0 view .LVU93
+ 346 0000 034B     		ldr	r3, .L21
+ 347 0002 0122     		movs	r2, #1
+ 348 0004 1A70     		strb	r2, [r3]
+ 187:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   tmp = SysTick_Val;
+ 349              		.loc 1 187 3 is_stmt 1 view .LVU94
+ 350              	.LVL16:
+ 188:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   
+ 189:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   if (Reading == 0)
+ 351              		.loc 1 189 3 view .LVU95
+ 190:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****     goto reupdate;
+ 191:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** 
+ 192:HW_Lib/AT32F435/device_support/system_at32f435_437.c ****   return tmp;
+ 352              		.loc 1 192 3 view .LVU96
+ 193:HW_Lib/AT32F435/device_support/system_at32f435_437.c **** }
+ 353              		.loc 1 193 1 is_stmt 0 view .LVU97
+ 354 0006 034B     		ldr	r3, .L21+4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 11
+
+
+ 355 0008 D3E90001 		ldrd	r0, [r3]
+ 356 000c 7047     		bx	lr
+ 357              	.L22:
+ 358 000e 00BF     		.align	2
+ 359              	.L21:
+ 360 0010 00000000 		.word	.LANCHOR4
+ 361 0014 00000000 		.word	.LANCHOR3
+ 362              		.cfi_endproc
+ 363              	.LFE136:
+ 365              		.global	system_core_clock
+ 366              		.section	.bss.Reading,"aw",%nobits
+ 367              		.set	.LANCHOR4,. + 0
+ 370              	Reading:
+ 371 0000 00       		.space	1
+ 372              		.section	.bss.SysTick_Val,"aw",%nobits
+ 373              		.align	3
+ 374              		.set	.LANCHOR3,. + 0
+ 377              	SysTick_Val:
+ 378 0000 00000000 		.space	8
+ 378      00000000 
+ 379              		.section	.data.system_core_clock,"aw"
+ 380              		.align	2
+ 381              		.set	.LANCHOR0,. + 0
+ 384              	system_core_clock:
+ 385 0000 00127A00 		.word	8000000
+ 386              		.section	.rodata.pll_fr_table.1,"a"
+ 387              		.align	2
+ 388              		.set	.LANCHOR1,. + 0
+ 391              	pll_fr_table.1:
+ 392 0000 01020408 		.ascii	"\001\002\004\010\020 "
+ 392      1020
+ 393              		.section	.rodata.sys_ahb_div_table.0,"a"
+ 394              		.align	2
+ 395              		.set	.LANCHOR2,. + 0
+ 398              	sys_ahb_div_table.0:
+ 399 0000 00000000 		.ascii	"\000\000\000\000\000\000\000\000\001\002\003\004\006"
+ 399      00000000 
+ 399      01020304 
+ 399      06
+ 400 000d 070809   		.ascii	"\007\010\011"
+ 401              		.text
+ 402              	.Letext0:
+ 403              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 404              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 405              		.file 4 "HW_Lib/AT32F435/cmsis/cm4/core_support/core_cm4.h"
+ 406              		.file 5 "HW_Lib/AT32F435/device_support/at32f435_437.h"
+ 407              		.file 6 "HW_Lib/AT32F435/drivers/inc/at32f435_437_crm.h"
+ 408              		.file 7 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 409              		.file 8 "HW_Lib/AT32F435/device_support/system_at32f435_437.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cctowvq6.s 			page 12
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 system_at32f435_437.c
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:20     .text.SystemInit:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:26     .text.SystemInit:00000000 SystemInit
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:104    .text.SystemInit:00000060 $d
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:112    .text.system_core_clock_update:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:118    .text.system_core_clock_update:00000000 system_core_clock_update
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:273    .text.system_core_clock_update:000000bc $d
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:283    .text.System_Tick:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:289    .text.System_Tick:00000000 System_Tick
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:322    .text.System_Tick:00000020 $d
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:328    .text.System_GetTick:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:334    .text.System_GetTick:00000000 System_GetTick
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:360    .text.System_GetTick:00000010 $d
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:384    .data.system_core_clock:00000000 system_core_clock
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:370    .bss.Reading:00000000 Reading
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:371    .bss.Reading:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:373    .bss.SysTick_Val:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:377    .bss.SysTick_Val:00000000 SysTick_Val
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:380    .data.system_core_clock:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:387    .rodata.pll_fr_table.1:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:391    .rodata.pll_fr_table.1:00000000 pll_fr_table.1
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:394    .rodata.sys_ahb_div_table.0:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cctowvq6.s:398    .rodata.sys_ahb_div_table.0:00000000 sys_ahb_div_table.0
+
+UNDEFINED SYMBOLS
+__aeabi_uldivmod
+crm_sysclk_switch_status_get

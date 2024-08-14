@@ -1,0 +1,1068 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Bsp_IIC.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.BspIIC_Write,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	BspIIC_Write:
+  26              	.LVL0:
+  27              	.LFB138:
+  28              		.file 1 "HW_Lib/AT32F435/bsp/Bsp_IIC.c"
+   1:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** #include "Bsp_GPIO.h"
+   2:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** #include "Bsp_IIC.h"
+   3:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** #include "at32f435_437.h"
+   4:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** #include "i2c_application.h"
+   5:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+   6:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** #define I2C_TIMEOUT     100
+   7:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+   8:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** #define I2Cx_CLK_10K    0xB170FFFF   //10K
+   9:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** #define I2Cx_CLK_50K    0xC0E06969   //50K
+  10:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** #define I2Cx_CLK_100K   0x80504C4E   //100K
+  11:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** #define I2Cx_CLK_200K   0x30F03C6B   //200K
+  12:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  13:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** /* external function */
+  14:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** static bool BspIIC_Init(BspIICObj_TypeDef *obj);
+  15:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** static bool BspIIC_DeInit(BspIICObj_TypeDef *obj);
+  16:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg, uint8_t *p_buf, ui
+  17:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg, uint8_t *p_buf, u
+  18:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  19:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** BspIIC_TypeDef BspIIC = {
+  20:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     .init = BspIIC_Init,
+  21:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     .de_init = BspIIC_DeInit,
+  22:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     .read = BspIIC_Read,
+  23:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     .write = BspIIC_Write,
+  24:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** };
+  25:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  26:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** static bool BspIIC_Pin_Init(BspIICObj_TypeDef *obj)
+  27:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** {
+  28:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     BspGPIO_Obj_TypeDef Pin;
+  29:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     bool pin_state = false;
+  30:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 2
+
+
+  31:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     memset(&Pin, 0, sizeof(BspGPIO_Obj_TypeDef));
+  32:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  33:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if (obj && \
+  34:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->port_sck && \
+  35:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->port_sda && \
+  36:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->pin_sck && \
+  37:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->pin_sda)
+  38:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+  39:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.open_drain = true;
+  40:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.alternate = obj->Pin->pin_Alternate;
+  41:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.init_state = false;
+  42:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  43:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         /* sck init */
+  44:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.port = obj->Pin->port_sck;
+  45:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.pin = obj->Pin->pin_sck;
+  46:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         pin_state = BspGPIO.alt_init(Pin, 0);
+  47:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  48:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         /* sda init */
+  49:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.port = obj->Pin->port_sda;
+  50:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.pin = obj->Pin->pin_sda;
+  51:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         pin_state &= BspGPIO.alt_init(Pin, 0);
+  52:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+  53:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  54:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     return pin_state;
+  55:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+  56:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  57:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** static bool BspIIC_PeriphClk_Init(BspIICObj_TypeDef *obj)
+  58:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** {
+  59:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if (obj)
+  60:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+  61:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         switch ((uint8_t)obj->instance_id)
+  62:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         {
+  63:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_1:
+  64:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 crm_periph_clock_enable(CRM_I2C1_PERIPH_CLOCK, TRUE);
+  65:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 return true;
+  66:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  67:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_2:
+  68:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 crm_periph_clock_enable(CRM_I2C2_PERIPH_CLOCK, TRUE);
+  69:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 return true;
+  70:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  71:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_3:
+  72:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 crm_periph_clock_enable(CRM_I2C3_PERIPH_CLOCK, TRUE);
+  73:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 return true;
+  74:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  75:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             default: return false;
+  76:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         }
+  77:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+  78:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  79:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     return false;
+  80:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+  81:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  82:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** static bool BspIIC_Init(BspIICObj_TypeDef *obj)
+  83:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** {
+  84:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if(obj)
+  85:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+  86:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->handle = NULL;
+  87:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         switch ((uint8_t)obj->instance_id)
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 3
+
+
+  88:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         {
+  89:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_1: obj->handle = I2C1; break;
+  90:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_2: obj->handle = I2C2; break;
+  91:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_3: obj->handle = I2C3; break;
+  92:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             default: return false;
+  93:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         }
+  94:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  95:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         if (!BspIIC_Pin_Init(obj))
+  96:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+  97:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     
+  98:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         if (!BspIIC_PeriphClk_Init(obj))
+  99:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 100:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 101:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         if (obj->handle == NULL)
+ 102:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 103:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 104:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         i2c_reset((i2c_type *)obj->handle);
+ 105:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         i2c_init((i2c_type *)obj->handle, 0x0F, I2Cx_CLK_100K);
+ 106:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         i2c_own_address1_set((i2c_type *)obj->handle, I2C_ADDRESS_MODE_7BIT, obj->addr);
+ 107:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         i2c_enable((i2c_type *)obj->handle, TRUE);
+ 108:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         
+ 109:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         return true;
+ 110:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 111:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 112:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     return false;
+ 113:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 114:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 115:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** static bool BspIIC_DeInit(BspIICObj_TypeDef *obj)
+ 116:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** {
+ 117:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if(obj)
+ 118:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 119:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         i2c_reset((i2c_type *)obj->handle);
+ 120:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         memset(obj, 0, sizeof(BspIICObj_TypeDef));
+ 121:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 122:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 123:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     return false;
+ 124:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 125:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 126:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg, uint8_t *p_buf, ui
+ 127:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** {
+ 128:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if(obj && p_buf && len)
+ 129:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 130:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         if (i2c_memory_read(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEO
+ 131:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 132:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 133:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         return true;
+ 134:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 135:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 136:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     return false;
+ 137:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 138:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 139:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg, uint8_t *p_buf, u
+ 140:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** {
+  29              		.loc 1 140 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 4, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 4
+
+
+  33              		.loc 1 140 1 is_stmt 0 view .LVU1
+  34 0000 10B5     		push	{r4, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 8
+  37              		.cfi_offset 4, -8
+  38              		.cfi_offset 14, -4
+  39 0002 84B0     		sub	sp, sp, #16
+  40              	.LCFI1:
+  41              		.cfi_def_cfa_offset 24
+  42 0004 BDF81840 		ldrh	r4, [sp, #24]
+ 141:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if(obj && p_buf && len)
+  43              		.loc 1 141 5 is_stmt 1 view .LVU2
+  44              		.loc 1 141 7 is_stmt 0 view .LVU3
+  45 0008 98B1     		cbz	r0, .L3
+  46 000a 8446     		mov	ip, r0
+  47              		.loc 1 141 12 discriminator 1 view .LVU4
+  48 000c 9BB1     		cbz	r3, .L4
+  49              		.loc 1 141 21 discriminator 2 view .LVU5
+  50 000e 14B9     		cbnz	r4, .L8
+ 142:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 143:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         if (i2c_memory_write(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIME
+ 144:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 145:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 146:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         return true;
+ 147:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 148:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 149:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     return false;
+  51              		.loc 1 149 12 view .LVU6
+  52 0010 0020     		movs	r0, #0
+  53              	.LVL1:
+  54              	.L2:
+ 150:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+  55              		.loc 1 150 1 view .LVU7
+  56 0012 04B0     		add	sp, sp, #16
+  57              	.LCFI2:
+  58              		.cfi_remember_state
+  59              		.cfi_def_cfa_offset 8
+  60              		@ sp needed
+  61 0014 10BD     		pop	{r4, pc}
+  62              	.LVL2:
+  63              	.L8:
+  64              	.LCFI3:
+  65              		.cfi_restore_state
+ 143:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+  66              		.loc 1 143 9 is_stmt 1 view .LVU8
+ 143:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+  67              		.loc 1 143 13 is_stmt 0 view .LVU9
+  68 0016 6420     		movs	r0, #100
+  69              	.LVL3:
+ 143:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+  70              		.loc 1 143 13 view .LVU10
+  71 0018 0290     		str	r0, [sp, #8]
+  72 001a 0194     		str	r4, [sp, #4]
+  73 001c 0093     		str	r3, [sp]
+  74 001e 1346     		mov	r3, r2
+  75              	.LVL4:
+ 143:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 5
+
+
+  76              		.loc 1 143 13 view .LVU11
+  77 0020 0A46     		mov	r2, r1
+  78              	.LVL5:
+ 143:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+  79              		.loc 1 143 13 view .LVU12
+  80 0022 0121     		movs	r1, #1
+  81              	.LVL6:
+ 143:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+  82              		.loc 1 143 13 view .LVU13
+  83 0024 DCF80C00 		ldr	r0, [ip, #12]
+  84 0028 FFF7FEFF 		bl	i2c_memory_write
+  85              	.LVL7:
+ 143:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+  86              		.loc 1 143 12 view .LVU14
+  87 002c 28B1     		cbz	r0, .L6
+ 144:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+  88              		.loc 1 144 20 view .LVU15
+  89 002e 0020     		movs	r0, #0
+  90 0030 EFE7     		b	.L2
+  91              	.LVL8:
+  92              	.L3:
+ 149:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+  93              		.loc 1 149 12 view .LVU16
+  94 0032 0020     		movs	r0, #0
+  95              	.LVL9:
+ 149:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+  96              		.loc 1 149 12 view .LVU17
+  97 0034 EDE7     		b	.L2
+  98              	.LVL10:
+  99              	.L4:
+ 149:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 100              		.loc 1 149 12 view .LVU18
+ 101 0036 0020     		movs	r0, #0
+ 102              	.LVL11:
+ 149:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 103              		.loc 1 149 12 view .LVU19
+ 104 0038 EBE7     		b	.L2
+ 105              	.LVL12:
+ 106              	.L6:
+ 146:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 107              		.loc 1 146 16 view .LVU20
+ 108 003a 0120     		movs	r0, #1
+ 109 003c E9E7     		b	.L2
+ 110              		.cfi_endproc
+ 111              	.LFE138:
+ 113              		.section	.text.BspIIC_Read,"ax",%progbits
+ 114              		.align	1
+ 115              		.syntax unified
+ 116              		.thumb
+ 117              		.thumb_func
+ 119              	BspIIC_Read:
+ 120              	.LVL13:
+ 121              	.LFB137:
+ 127:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if(obj && p_buf && len)
+ 122              		.loc 1 127 1 is_stmt 1 view -0
+ 123              		.cfi_startproc
+ 124              		@ args = 4, pretend = 0, frame = 0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 6
+
+
+ 125              		@ frame_needed = 0, uses_anonymous_args = 0
+ 127:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if(obj && p_buf && len)
+ 126              		.loc 1 127 1 is_stmt 0 view .LVU22
+ 127 0000 10B5     		push	{r4, lr}
+ 128              	.LCFI4:
+ 129              		.cfi_def_cfa_offset 8
+ 130              		.cfi_offset 4, -8
+ 131              		.cfi_offset 14, -4
+ 132 0002 84B0     		sub	sp, sp, #16
+ 133              	.LCFI5:
+ 134              		.cfi_def_cfa_offset 24
+ 135 0004 BDF81840 		ldrh	r4, [sp, #24]
+ 128:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 136              		.loc 1 128 5 is_stmt 1 view .LVU23
+ 128:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 137              		.loc 1 128 7 is_stmt 0 view .LVU24
+ 138 0008 98B1     		cbz	r0, .L11
+ 139 000a 8446     		mov	ip, r0
+ 128:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 140              		.loc 1 128 12 discriminator 1 view .LVU25
+ 141 000c 9BB1     		cbz	r3, .L12
+ 128:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 142              		.loc 1 128 21 discriminator 2 view .LVU26
+ 143 000e 14B9     		cbnz	r4, .L16
+ 136:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 144              		.loc 1 136 12 view .LVU27
+ 145 0010 0020     		movs	r0, #0
+ 146              	.LVL14:
+ 147              	.L10:
+ 137:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 148              		.loc 1 137 1 view .LVU28
+ 149 0012 04B0     		add	sp, sp, #16
+ 150              	.LCFI6:
+ 151              		.cfi_remember_state
+ 152              		.cfi_def_cfa_offset 8
+ 153              		@ sp needed
+ 154 0014 10BD     		pop	{r4, pc}
+ 155              	.LVL15:
+ 156              	.L16:
+ 157              	.LCFI7:
+ 158              		.cfi_restore_state
+ 130:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 159              		.loc 1 130 9 is_stmt 1 view .LVU29
+ 130:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 160              		.loc 1 130 13 is_stmt 0 view .LVU30
+ 161 0016 6420     		movs	r0, #100
+ 162              	.LVL16:
+ 130:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 163              		.loc 1 130 13 view .LVU31
+ 164 0018 0290     		str	r0, [sp, #8]
+ 165 001a 0194     		str	r4, [sp, #4]
+ 166 001c 0093     		str	r3, [sp]
+ 167 001e 1346     		mov	r3, r2
+ 168              	.LVL17:
+ 130:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 169              		.loc 1 130 13 view .LVU32
+ 170 0020 0A46     		mov	r2, r1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 7
+
+
+ 171              	.LVL18:
+ 130:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 172              		.loc 1 130 13 view .LVU33
+ 173 0022 0121     		movs	r1, #1
+ 174              	.LVL19:
+ 130:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 175              		.loc 1 130 13 view .LVU34
+ 176 0024 DCF80C00 		ldr	r0, [ip, #12]
+ 177 0028 FFF7FEFF 		bl	i2c_memory_read
+ 178              	.LVL20:
+ 130:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 179              		.loc 1 130 12 view .LVU35
+ 180 002c 28B1     		cbz	r0, .L14
+ 131:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 181              		.loc 1 131 20 view .LVU36
+ 182 002e 0020     		movs	r0, #0
+ 183 0030 EFE7     		b	.L10
+ 184              	.LVL21:
+ 185              	.L11:
+ 136:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 186              		.loc 1 136 12 view .LVU37
+ 187 0032 0020     		movs	r0, #0
+ 188              	.LVL22:
+ 136:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 189              		.loc 1 136 12 view .LVU38
+ 190 0034 EDE7     		b	.L10
+ 191              	.LVL23:
+ 192              	.L12:
+ 136:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 193              		.loc 1 136 12 view .LVU39
+ 194 0036 0020     		movs	r0, #0
+ 195              	.LVL24:
+ 136:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 196              		.loc 1 136 12 view .LVU40
+ 197 0038 EBE7     		b	.L10
+ 198              	.LVL25:
+ 199              	.L14:
+ 133:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 200              		.loc 1 133 16 view .LVU41
+ 201 003a 0120     		movs	r0, #1
+ 202 003c E9E7     		b	.L10
+ 203              		.cfi_endproc
+ 204              	.LFE137:
+ 206              		.section	.text.BspIIC_DeInit,"ax",%progbits
+ 207              		.align	1
+ 208              		.syntax unified
+ 209              		.thumb
+ 210              		.thumb_func
+ 212              	BspIIC_DeInit:
+ 213              	.LVL26:
+ 214              	.LFB136:
+ 116:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if(obj)
+ 215              		.loc 1 116 1 is_stmt 1 view -0
+ 216              		.cfi_startproc
+ 217              		@ args = 0, pretend = 0, frame = 0
+ 218              		@ frame_needed = 0, uses_anonymous_args = 0
+ 117:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 8
+
+
+ 219              		.loc 1 117 5 view .LVU43
+ 117:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 220              		.loc 1 117 7 is_stmt 0 view .LVU44
+ 221 0000 60B1     		cbz	r0, .L20
+ 116:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if(obj)
+ 222              		.loc 1 116 1 view .LVU45
+ 223 0002 10B5     		push	{r4, lr}
+ 224              	.LCFI8:
+ 225              		.cfi_def_cfa_offset 8
+ 226              		.cfi_offset 4, -8
+ 227              		.cfi_offset 14, -4
+ 228 0004 0446     		mov	r4, r0
+ 119:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         memset(obj, 0, sizeof(BspIICObj_TypeDef));
+ 229              		.loc 1 119 9 is_stmt 1 view .LVU46
+ 230 0006 C068     		ldr	r0, [r0, #12]
+ 231              	.LVL27:
+ 119:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         memset(obj, 0, sizeof(BspIICObj_TypeDef));
+ 232              		.loc 1 119 9 is_stmt 0 view .LVU47
+ 233 0008 FFF7FEFF 		bl	i2c_reset
+ 234              	.LVL28:
+ 120:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 235              		.loc 1 120 9 is_stmt 1 view .LVU48
+ 236 000c 0023     		movs	r3, #0
+ 237 000e 2360     		str	r3, [r4]	@ unaligned
+ 238 0010 6360     		str	r3, [r4, #4]	@ unaligned
+ 239 0012 A360     		str	r3, [r4, #8]	@ unaligned
+ 240 0014 E360     		str	r3, [r4, #12]	@ unaligned
+ 241 0016 2361     		str	r3, [r4, #16]	@ unaligned
+ 123:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 242              		.loc 1 123 5 view .LVU49
+ 124:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 243              		.loc 1 124 1 is_stmt 0 view .LVU50
+ 244 0018 0020     		movs	r0, #0
+ 245 001a 10BD     		pop	{r4, pc}
+ 246              	.LVL29:
+ 247              	.L20:
+ 248              	.LCFI9:
+ 249              		.cfi_def_cfa_offset 0
+ 250              		.cfi_restore 4
+ 251              		.cfi_restore 14
+ 123:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 252              		.loc 1 123 5 is_stmt 1 view .LVU51
+ 124:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 253              		.loc 1 124 1 is_stmt 0 view .LVU52
+ 254 001c 0020     		movs	r0, #0
+ 255              	.LVL30:
+ 124:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 256              		.loc 1 124 1 view .LVU53
+ 257 001e 7047     		bx	lr
+ 258              		.cfi_endproc
+ 259              	.LFE136:
+ 261              		.section	.text.BspIIC_Pin_Init,"ax",%progbits
+ 262              		.align	1
+ 263              		.syntax unified
+ 264              		.thumb
+ 265              		.thumb_func
+ 267              	BspIIC_Pin_Init:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 9
+
+
+ 268              	.LVL31:
+ 269              	.LFB133:
+  27:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     BspGPIO_Obj_TypeDef Pin;
+ 270              		.loc 1 27 1 is_stmt 1 view -0
+ 271              		.cfi_startproc
+ 272              		@ args = 0, pretend = 0, frame = 16
+ 273              		@ frame_needed = 0, uses_anonymous_args = 0
+  27:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     BspGPIO_Obj_TypeDef Pin;
+ 274              		.loc 1 27 1 is_stmt 0 view .LVU55
+ 275 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 276              	.LCFI10:
+ 277              		.cfi_def_cfa_offset 20
+ 278              		.cfi_offset 4, -20
+ 279              		.cfi_offset 5, -16
+ 280              		.cfi_offset 6, -12
+ 281              		.cfi_offset 7, -8
+ 282              		.cfi_offset 14, -4
+ 283 0002 85B0     		sub	sp, sp, #20
+ 284              	.LCFI11:
+ 285              		.cfi_def_cfa_offset 40
+  28:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     bool pin_state = false;
+ 286              		.loc 1 28 5 is_stmt 1 view .LVU56
+  29:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 287              		.loc 1 29 5 view .LVU57
+ 288              	.LVL32:
+  31:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 289              		.loc 1 31 5 view .LVU58
+ 290 0004 0023     		movs	r3, #0
+ 291 0006 0193     		str	r3, [sp, #4]
+ 292 0008 0293     		str	r3, [sp, #8]
+ 293 000a 0393     		str	r3, [sp, #12]
+  33:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->port_sck && \
+ 294              		.loc 1 33 5 view .LVU59
+  33:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->port_sck && \
+ 295              		.loc 1 33 8 is_stmt 0 view .LVU60
+ 296 000c 0028     		cmp	r0, #0
+ 297 000e 2AD0     		beq	.L25
+ 298 0010 0546     		mov	r5, r0
+  34:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->port_sda && \
+ 299              		.loc 1 34 12 discriminator 1 view .LVU61
+ 300 0012 0368     		ldr	r3, [r0]
+  34:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->port_sda && \
+ 301              		.loc 1 34 17 discriminator 1 view .LVU62
+ 302 0014 5A68     		ldr	r2, [r3, #4]
+  33:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->port_sck && \
+ 303              		.loc 1 33 13 discriminator 1 view .LVU63
+ 304 0016 4AB3     		cbz	r2, .L26
+  35:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->pin_sck && \
+ 305              		.loc 1 35 17 view .LVU64
+ 306 0018 1A68     		ldr	r2, [r3]
+  34:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->port_sda && \
+ 307              		.loc 1 34 28 view .LVU65
+ 308 001a 4AB3     		cbz	r2, .L27
+  36:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->pin_sda)
+ 309              		.loc 1 36 17 view .LVU66
+ 310 001c DA68     		ldr	r2, [r3, #12]
+  35:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->pin_sck && \
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 10
+
+
+ 311              		.loc 1 35 28 view .LVU67
+ 312 001e 4AB3     		cbz	r2, .L28
+  37:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 313              		.loc 1 37 17 view .LVU68
+ 314 0020 9B68     		ldr	r3, [r3, #8]
+  36:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         obj->Pin->pin_sda)
+ 315              		.loc 1 36 27 view .LVU69
+ 316 0022 4BB3     		cbz	r3, .L29
+  39:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.alternate = obj->Pin->pin_Alternate;
+ 317              		.loc 1 39 9 is_stmt 1 view .LVU70
+  39:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.alternate = obj->Pin->pin_Alternate;
+ 318              		.loc 1 39 24 is_stmt 0 view .LVU71
+ 319 0024 0123     		movs	r3, #1
+ 320 0026 8DF80B30 		strb	r3, [sp, #11]
+  40:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.init_state = false;
+ 321              		.loc 1 40 9 is_stmt 1 view .LVU72
+  40:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.init_state = false;
+ 322              		.loc 1 40 28 is_stmt 0 view .LVU73
+ 323 002a 0368     		ldr	r3, [r0]
+  40:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.init_state = false;
+ 324              		.loc 1 40 33 view .LVU74
+ 325 002c 1A69     		ldr	r2, [r3, #16]
+  40:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.init_state = false;
+ 326              		.loc 1 40 23 view .LVU75
+ 327 002e 0392     		str	r2, [sp, #12]
+  41:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 328              		.loc 1 41 9 is_stmt 1 view .LVU76
+  44:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.pin = obj->Pin->pin_sck;
+ 329              		.loc 1 44 9 view .LVU77
+  44:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.pin = obj->Pin->pin_sck;
+ 330              		.loc 1 44 28 is_stmt 0 view .LVU78
+ 331 0030 5A68     		ldr	r2, [r3, #4]
+  44:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.pin = obj->Pin->pin_sck;
+ 332              		.loc 1 44 18 view .LVU79
+ 333 0032 0192     		str	r2, [sp, #4]
+  45:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         pin_state = BspGPIO.alt_init(Pin, 0);
+ 334              		.loc 1 45 9 is_stmt 1 view .LVU80
+  45:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         pin_state = BspGPIO.alt_init(Pin, 0);
+ 335              		.loc 1 45 27 is_stmt 0 view .LVU81
+ 336 0034 DB68     		ldr	r3, [r3, #12]
+  45:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         pin_state = BspGPIO.alt_init(Pin, 0);
+ 337              		.loc 1 45 17 view .LVU82
+ 338 0036 ADF80830 		strh	r3, [sp, #8]	@ movhi
+  46:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 339              		.loc 1 46 9 is_stmt 1 view .LVU83
+  46:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 340              		.loc 1 46 28 is_stmt 0 view .LVU84
+ 341 003a 104F     		ldr	r7, .L31
+ 342 003c FC68     		ldr	r4, [r7, #12]
+  46:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 343              		.loc 1 46 21 view .LVU85
+ 344 003e 0023     		movs	r3, #0
+ 345 0040 01AE     		add	r6, sp, #4
+ 346 0042 96E80700 		ldm	r6, {r0, r1, r2}
+ 347              	.LVL33:
+  46:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 348              		.loc 1 46 21 view .LVU86
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 11
+
+
+ 349 0046 A047     		blx	r4
+ 350              	.LVL34:
+ 351 0048 0446     		mov	r4, r0
+ 352              	.LVL35:
+  49:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.pin = obj->Pin->pin_sda;
+ 353              		.loc 1 49 9 is_stmt 1 view .LVU87
+  49:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.pin = obj->Pin->pin_sda;
+ 354              		.loc 1 49 23 is_stmt 0 view .LVU88
+ 355 004a 2B68     		ldr	r3, [r5]
+  49:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.pin = obj->Pin->pin_sda;
+ 356              		.loc 1 49 28 view .LVU89
+ 357 004c 1A68     		ldr	r2, [r3]
+  49:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         Pin.pin = obj->Pin->pin_sda;
+ 358              		.loc 1 49 18 view .LVU90
+ 359 004e 0192     		str	r2, [sp, #4]
+  50:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         pin_state &= BspGPIO.alt_init(Pin, 0);
+ 360              		.loc 1 50 9 is_stmt 1 view .LVU91
+  50:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         pin_state &= BspGPIO.alt_init(Pin, 0);
+ 361              		.loc 1 50 27 is_stmt 0 view .LVU92
+ 362 0050 9B68     		ldr	r3, [r3, #8]
+  50:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         pin_state &= BspGPIO.alt_init(Pin, 0);
+ 363              		.loc 1 50 17 view .LVU93
+ 364 0052 ADF80830 		strh	r3, [sp, #8]	@ movhi
+  51:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 365              		.loc 1 51 9 is_stmt 1 view .LVU94
+  51:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 366              		.loc 1 51 29 is_stmt 0 view .LVU95
+ 367 0056 FD68     		ldr	r5, [r7, #12]
+ 368              	.LVL36:
+  51:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 369              		.loc 1 51 22 view .LVU96
+ 370 0058 0023     		movs	r3, #0
+ 371 005a 96E80700 		ldm	r6, {r0, r1, r2}
+ 372 005e A847     		blx	r5
+ 373              	.LVL37:
+ 374 0060 2040     		ands	r0, r0, r4
+ 375 0062 C0B2     		uxtb	r0, r0
+ 376              	.LVL38:
+  51:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 377              		.loc 1 51 22 view .LVU97
+ 378 0064 00E0     		b	.L24
+ 379              	.LVL39:
+ 380              	.L25:
+  29:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 381              		.loc 1 29 10 view .LVU98
+ 382 0066 0020     		movs	r0, #0
+ 383              	.LVL40:
+ 384              	.L24:
+  54:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 385              		.loc 1 54 5 is_stmt 1 view .LVU99
+  55:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 386              		.loc 1 55 1 is_stmt 0 view .LVU100
+ 387 0068 05B0     		add	sp, sp, #20
+ 388              	.LCFI12:
+ 389              		.cfi_remember_state
+ 390              		.cfi_def_cfa_offset 20
+ 391              		@ sp needed
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 12
+
+
+ 392 006a F0BD     		pop	{r4, r5, r6, r7, pc}
+ 393              	.LVL41:
+ 394              	.L26:
+ 395              	.LCFI13:
+ 396              		.cfi_restore_state
+  29:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 397              		.loc 1 29 10 view .LVU101
+ 398 006c 0020     		movs	r0, #0
+ 399              	.LVL42:
+  29:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 400              		.loc 1 29 10 view .LVU102
+ 401 006e FBE7     		b	.L24
+ 402              	.LVL43:
+ 403              	.L27:
+  29:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 404              		.loc 1 29 10 view .LVU103
+ 405 0070 0020     		movs	r0, #0
+ 406              	.LVL44:
+  29:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 407              		.loc 1 29 10 view .LVU104
+ 408 0072 F9E7     		b	.L24
+ 409              	.LVL45:
+ 410              	.L28:
+  29:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 411              		.loc 1 29 10 view .LVU105
+ 412 0074 0020     		movs	r0, #0
+ 413              	.LVL46:
+  29:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 414              		.loc 1 29 10 view .LVU106
+ 415 0076 F7E7     		b	.L24
+ 416              	.LVL47:
+ 417              	.L29:
+  29:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 418              		.loc 1 29 10 view .LVU107
+ 419 0078 0020     		movs	r0, #0
+ 420              	.LVL48:
+  29:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 421              		.loc 1 29 10 view .LVU108
+ 422 007a F5E7     		b	.L24
+ 423              	.L32:
+ 424              		.align	2
+ 425              	.L31:
+ 426 007c 00000000 		.word	BspGPIO
+ 427              		.cfi_endproc
+ 428              	.LFE133:
+ 430              		.section	.text.BspIIC_PeriphClk_Init,"ax",%progbits
+ 431              		.align	1
+ 432              		.syntax unified
+ 433              		.thumb
+ 434              		.thumb_func
+ 436              	BspIIC_PeriphClk_Init:
+ 437              	.LVL49:
+ 438              	.LFB134:
+  58:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if (obj)
+ 439              		.loc 1 58 1 is_stmt 1 view -0
+ 440              		.cfi_startproc
+ 441              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 13
+
+
+ 442              		@ frame_needed = 0, uses_anonymous_args = 0
+  59:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 443              		.loc 1 59 5 view .LVU110
+  59:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 444              		.loc 1 59 8 is_stmt 0 view .LVU111
+ 445 0000 D0B1     		cbz	r0, .L37
+  58:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if (obj)
+ 446              		.loc 1 58 1 view .LVU112
+ 447 0002 08B5     		push	{r3, lr}
+ 448              	.LCFI14:
+ 449              		.cfi_def_cfa_offset 8
+ 450              		.cfi_offset 3, -8
+ 451              		.cfi_offset 14, -4
+  61:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         {
+ 452              		.loc 1 61 9 is_stmt 1 view .LVU113
+  61:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         {
+ 453              		.loc 1 61 29 is_stmt 0 view .LVU114
+ 454 0004 4379     		ldrb	r3, [r0, #5]	@ zero_extendqisi2
+  61:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         {
+ 455              		.loc 1 61 9 view .LVU115
+ 456 0006 012B     		cmp	r3, #1
+ 457 0008 0AD0     		beq	.L35
+ 458 000a 022B     		cmp	r3, #2
+ 459 000c 0ED0     		beq	.L36
+ 460 000e 0BB1     		cbz	r3, .L43
+ 461 0010 0020     		movs	r0, #0
+ 462              	.LVL50:
+ 463              	.L34:
+  80:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 464              		.loc 1 80 1 view .LVU116
+ 465 0012 08BD     		pop	{r3, pc}
+ 466              	.LVL51:
+ 467              	.L43:
+  64:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 return true;
+ 468              		.loc 1 64 17 is_stmt 1 view .LVU117
+ 469 0014 0121     		movs	r1, #1
+ 470 0016 0948     		ldr	r0, .L44
+ 471              	.LVL52:
+  64:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 return true;
+ 472              		.loc 1 64 17 is_stmt 0 view .LVU118
+ 473 0018 FFF7FEFF 		bl	crm_periph_clock_enable
+ 474              	.LVL53:
+  65:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 475              		.loc 1 65 17 is_stmt 1 view .LVU119
+  65:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 476              		.loc 1 65 24 is_stmt 0 view .LVU120
+ 477 001c 0120     		movs	r0, #1
+ 478 001e F8E7     		b	.L34
+ 479              	.LVL54:
+ 480              	.L35:
+  68:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 return true;
+ 481              		.loc 1 68 17 is_stmt 1 view .LVU121
+ 482 0020 0121     		movs	r1, #1
+ 483 0022 0748     		ldr	r0, .L44+4
+ 484              	.LVL55:
+  68:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 return true;
+ 485              		.loc 1 68 17 is_stmt 0 view .LVU122
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 14
+
+
+ 486 0024 FFF7FEFF 		bl	crm_periph_clock_enable
+ 487              	.LVL56:
+  69:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 488              		.loc 1 69 17 is_stmt 1 view .LVU123
+  69:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 489              		.loc 1 69 24 is_stmt 0 view .LVU124
+ 490 0028 0120     		movs	r0, #1
+ 491 002a F2E7     		b	.L34
+ 492              	.LVL57:
+ 493              	.L36:
+  72:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 return true;
+ 494              		.loc 1 72 17 is_stmt 1 view .LVU125
+ 495 002c 0121     		movs	r1, #1
+ 496 002e 0548     		ldr	r0, .L44+8
+ 497              	.LVL58:
+  72:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****                 return true;
+ 498              		.loc 1 72 17 is_stmt 0 view .LVU126
+ 499 0030 FFF7FEFF 		bl	crm_periph_clock_enable
+ 500              	.LVL59:
+  73:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 501              		.loc 1 73 17 is_stmt 1 view .LVU127
+  73:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 502              		.loc 1 73 24 is_stmt 0 view .LVU128
+ 503 0034 0120     		movs	r0, #1
+ 504 0036 ECE7     		b	.L34
+ 505              	.LVL60:
+ 506              	.L37:
+ 507              	.LCFI15:
+ 508              		.cfi_def_cfa_offset 0
+ 509              		.cfi_restore 3
+ 510              		.cfi_restore 14
+  79:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 511              		.loc 1 79 12 view .LVU129
+ 512 0038 0020     		movs	r0, #0
+ 513              	.LVL61:
+  80:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 514              		.loc 1 80 1 view .LVU130
+ 515 003a 7047     		bx	lr
+ 516              	.L45:
+ 517              		.align	2
+ 518              	.L44:
+ 519 003c 15004000 		.word	4194325
+ 520 0040 16004000 		.word	4194326
+ 521 0044 17004000 		.word	4194327
+ 522              		.cfi_endproc
+ 523              	.LFE134:
+ 525              		.section	.text.BspIIC_Init,"ax",%progbits
+ 526              		.align	1
+ 527              		.syntax unified
+ 528              		.thumb
+ 529              		.thumb_func
+ 531              	BspIIC_Init:
+ 532              	.LVL62:
+ 533              	.LFB135:
+  83:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if(obj)
+ 534              		.loc 1 83 1 is_stmt 1 view -0
+ 535              		.cfi_startproc
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 15
+
+
+ 536              		@ args = 0, pretend = 0, frame = 0
+ 537              		@ frame_needed = 0, uses_anonymous_args = 0
+  83:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     if(obj)
+ 538              		.loc 1 83 1 is_stmt 0 view .LVU132
+ 539 0000 38B5     		push	{r3, r4, r5, lr}
+ 540              	.LCFI16:
+ 541              		.cfi_def_cfa_offset 16
+ 542              		.cfi_offset 3, -16
+ 543              		.cfi_offset 4, -12
+ 544              		.cfi_offset 5, -8
+ 545              		.cfi_offset 14, -4
+  84:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 546              		.loc 1 84 5 is_stmt 1 view .LVU133
+  84:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     {
+ 547              		.loc 1 84 7 is_stmt 0 view .LVU134
+ 548 0002 0028     		cmp	r0, #0
+ 549 0004 32D0     		beq	.L51
+ 550 0006 0446     		mov	r4, r0
+  86:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         switch ((uint8_t)obj->instance_id)
+ 551              		.loc 1 86 9 is_stmt 1 view .LVU135
+  86:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         switch ((uint8_t)obj->instance_id)
+ 552              		.loc 1 86 21 is_stmt 0 view .LVU136
+ 553 0008 0023     		movs	r3, #0
+ 554 000a C360     		str	r3, [r0, #12]
+  87:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         {
+ 555              		.loc 1 87 9 is_stmt 1 view .LVU137
+  87:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         {
+ 556              		.loc 1 87 29 is_stmt 0 view .LVU138
+ 557 000c 4379     		ldrb	r3, [r0, #5]	@ zero_extendqisi2
+  87:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         {
+ 558              		.loc 1 87 9 view .LVU139
+ 559 000e 012B     		cmp	r3, #1
+ 560 0010 26D0     		beq	.L48
+ 561 0012 022B     		cmp	r3, #2
+ 562 0014 27D0     		beq	.L49
+ 563 0016 13B1     		cbz	r3, .L55
+ 564 0018 0025     		movs	r5, #0
+ 565              	.LVL63:
+ 566              	.L47:
+ 113:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 567              		.loc 1 113 1 view .LVU140
+ 568 001a 2846     		mov	r0, r5
+ 569 001c 38BD     		pop	{r3, r4, r5, pc}
+ 570              	.LVL64:
+ 571              	.L55:
+  89:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_2: obj->handle = I2C2; break;
+ 572              		.loc 1 89 41 is_stmt 1 view .LVU141
+  89:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_2: obj->handle = I2C2; break;
+ 573              		.loc 1 89 53 is_stmt 0 view .LVU142
+ 574 001e 154B     		ldr	r3, .L56
+ 575 0020 C360     		str	r3, [r0, #12]
+  89:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_2: obj->handle = I2C2; break;
+ 576              		.loc 1 89 61 is_stmt 1 view .LVU143
+ 577              	.L50:
+  95:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 578              		.loc 1 95 9 view .LVU144
+  95:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 16
+
+
+ 579              		.loc 1 95 14 is_stmt 0 view .LVU145
+ 580 0022 2046     		mov	r0, r4
+ 581              	.LVL65:
+  95:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 582              		.loc 1 95 14 view .LVU146
+ 583 0024 FFF7FEFF 		bl	BspIIC_Pin_Init
+ 584              	.LVL66:
+  95:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 585              		.loc 1 95 12 view .LVU147
+ 586 0028 0546     		mov	r5, r0
+ 587 002a 0028     		cmp	r0, #0
+ 588 002c F5D0     		beq	.L47
+  98:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 589              		.loc 1 98 9 is_stmt 1 view .LVU148
+  98:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 590              		.loc 1 98 14 is_stmt 0 view .LVU149
+ 591 002e 2046     		mov	r0, r4
+ 592 0030 FFF7FEFF 		bl	BspIIC_PeriphClk_Init
+ 593              	.LVL67:
+  98:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 594              		.loc 1 98 12 view .LVU150
+ 595 0034 0546     		mov	r5, r0
+ 596 0036 0028     		cmp	r0, #0
+ 597 0038 EFD0     		beq	.L47
+ 101:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 598              		.loc 1 101 9 is_stmt 1 view .LVU151
+ 101:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 599              		.loc 1 101 16 is_stmt 0 view .LVU152
+ 600 003a E068     		ldr	r0, [r4, #12]
+ 101:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             return false;
+ 601              		.loc 1 101 12 view .LVU153
+ 602 003c C0B1     		cbz	r0, .L53
+ 104:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         i2c_init((i2c_type *)obj->handle, 0x0F, I2Cx_CLK_100K);
+ 603              		.loc 1 104 9 is_stmt 1 view .LVU154
+ 604 003e FFF7FEFF 		bl	i2c_reset
+ 605              	.LVL68:
+ 105:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         i2c_own_address1_set((i2c_type *)obj->handle, I2C_ADDRESS_MODE_7BIT, obj->addr);
+ 606              		.loc 1 105 9 view .LVU155
+ 607 0042 0D4A     		ldr	r2, .L56+4
+ 608 0044 0F21     		movs	r1, #15
+ 609 0046 E068     		ldr	r0, [r4, #12]
+ 610 0048 FFF7FEFF 		bl	i2c_init
+ 611              	.LVL69:
+ 106:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         i2c_enable((i2c_type *)obj->handle, TRUE);
+ 612              		.loc 1 106 9 view .LVU156
+ 613 004c 228A     		ldrh	r2, [r4, #16]
+ 614 004e 0021     		movs	r1, #0
+ 615 0050 E068     		ldr	r0, [r4, #12]
+ 616 0052 FFF7FEFF 		bl	i2c_own_address1_set
+ 617              	.LVL70:
+ 107:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****         
+ 618              		.loc 1 107 9 view .LVU157
+ 619 0056 0121     		movs	r1, #1
+ 620 0058 E068     		ldr	r0, [r4, #12]
+ 621 005a FFF7FEFF 		bl	i2c_enable
+ 622              	.LVL71:
+ 109:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 17
+
+
+ 623              		.loc 1 109 9 view .LVU158
+ 109:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****     }
+ 624              		.loc 1 109 16 is_stmt 0 view .LVU159
+ 625 005e DCE7     		b	.L47
+ 626              	.LVL72:
+ 627              	.L48:
+  90:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_3: obj->handle = I2C3; break;
+ 628              		.loc 1 90 41 is_stmt 1 view .LVU160
+  90:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_3: obj->handle = I2C3; break;
+ 629              		.loc 1 90 53 is_stmt 0 view .LVU161
+ 630 0060 064B     		ldr	r3, .L56+8
+ 631 0062 C360     		str	r3, [r0, #12]
+  90:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_3: obj->handle = I2C3; break;
+ 632              		.loc 1 90 61 is_stmt 1 view .LVU162
+  90:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             case BspIIC_Instance_I2C_3: obj->handle = I2C3; break;
+ 633              		.loc 1 90 13 is_stmt 0 view .LVU163
+ 634 0064 DDE7     		b	.L50
+ 635              	.L49:
+  91:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             default: return false;
+ 636              		.loc 1 91 41 is_stmt 1 view .LVU164
+  91:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             default: return false;
+ 637              		.loc 1 91 53 is_stmt 0 view .LVU165
+ 638 0066 064B     		ldr	r3, .L56+12
+ 639 0068 C360     		str	r3, [r0, #12]
+  91:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             default: return false;
+ 640              		.loc 1 91 61 is_stmt 1 view .LVU166
+  91:HW_Lib/AT32F435/bsp/Bsp_IIC.c ****             default: return false;
+ 641              		.loc 1 91 13 is_stmt 0 view .LVU167
+ 642 006a DAE7     		b	.L50
+ 643              	.L51:
+ 112:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** }
+ 644              		.loc 1 112 12 view .LVU168
+ 645 006c 0025     		movs	r5, #0
+ 646 006e D4E7     		b	.L47
+ 647              	.LVL73:
+ 648              	.L53:
+ 102:HW_Lib/AT32F435/bsp/Bsp_IIC.c **** 
+ 649              		.loc 1 102 20 view .LVU169
+ 650 0070 0025     		movs	r5, #0
+ 651 0072 D2E7     		b	.L47
+ 652              	.L57:
+ 653              		.align	2
+ 654              	.L56:
+ 655 0074 00540040 		.word	1073763328
+ 656 0078 4E4C5080 		.word	-2142221234
+ 657 007c 00580040 		.word	1073764352
+ 658 0080 005C0040 		.word	1073765376
+ 659              		.cfi_endproc
+ 660              	.LFE135:
+ 662              		.global	BspIIC
+ 663              		.section	.data.BspIIC,"aw"
+ 664              		.align	2
+ 667              	BspIIC:
+ 668 0000 00000000 		.word	BspIIC_Init
+ 669 0004 00000000 		.word	BspIIC_DeInit
+ 670 0008 00000000 		.word	BspIIC_Read
+ 671 000c 00000000 		.word	BspIIC_Write
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 18
+
+
+ 672              		.text
+ 673              	.Letext0:
+ 674              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 675              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 676              		.file 4 "HW_Lib/AT32F435/device_support/at32f435_437.h"
+ 677              		.file 5 "HW_Lib/AT32F435/drivers/inc/at32f435_437_crm.h"
+ 678              		.file 6 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 679              		.file 7 "HW_Lib/AT32F435/drivers/inc/at32f435_437_i2c.h"
+ 680              		.file 8 "HW_Lib/Port_Def/Bsp_GPIO_Port_Def.h"
+ 681              		.file 9 "HW_Lib/Port_Def/Bsp_IIC_Port_Def.h"
+ 682              		.file 10 "HW_Lib/AT32F435/bsp/Bsp_IIC.h"
+ 683              		.file 11 "HW_Lib/AT32F435/bsp/Bsp_GPIO.h"
+ 684              		.file 12 "HW_Lib/AT32F435/drivers/inc/i2c_application.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccojatdd.s 			page 19
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Bsp_IIC.c
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:20     .text.BspIIC_Write:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:25     .text.BspIIC_Write:00000000 BspIIC_Write
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:114    .text.BspIIC_Read:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:119    .text.BspIIC_Read:00000000 BspIIC_Read
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:207    .text.BspIIC_DeInit:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:212    .text.BspIIC_DeInit:00000000 BspIIC_DeInit
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:262    .text.BspIIC_Pin_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:267    .text.BspIIC_Pin_Init:00000000 BspIIC_Pin_Init
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:426    .text.BspIIC_Pin_Init:0000007c $d
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:431    .text.BspIIC_PeriphClk_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:436    .text.BspIIC_PeriphClk_Init:00000000 BspIIC_PeriphClk_Init
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:519    .text.BspIIC_PeriphClk_Init:0000003c $d
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:526    .text.BspIIC_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:531    .text.BspIIC_Init:00000000 BspIIC_Init
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:655    .text.BspIIC_Init:00000074 $d
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:667    .data.BspIIC:00000000 BspIIC
+C:\Users\8bit\AppData\Local\Temp\ccojatdd.s:664    .data.BspIIC:00000000 $d
+
+UNDEFINED SYMBOLS
+i2c_memory_write
+i2c_memory_read
+i2c_reset
+BspGPIO
+crm_periph_clock_enable
+i2c_init
+i2c_own_address1_set
+i2c_enable

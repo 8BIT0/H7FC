@@ -1,0 +1,2311 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"usbd_sdr.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.usbd_get_status,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	usbd_get_status:
+  26              	.LVL0:
+  27              	.LFB139:
+  28              		.file 1 "HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c"
+   1:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+   2:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   **************************************************************************
+   3:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @file     usbd_sdr.c
+   4:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @version  v2.0.8
+   5:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @date     2022-04-25
+   6:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief    usb standard device request
+   7:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   **************************************************************************
+   8:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   *                       Copyright notice & Disclaimer
+   9:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   *
+  10:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * The software Board Support Package (BSP) that is made available to
+  11:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * download from Artery official website is the copyrighted work of Artery.
+  12:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * Artery authorizes customers to use, copy, and distribute the BSP
+  13:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * software and its related documentation for the purpose of design and
+  14:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * development in conjunction with Artery microcontrollers. Use of the
+  15:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * software is governed by this copyright notice and the following disclaimer.
+  16:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   *
+  17:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
+  18:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * GUARANTEES OR REPRESENTATIONS OF ANY KIND. ARTERY EXPRESSLY DISCLAIMS,
+  19:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * TO THE FULLEST EXTENT PERMITTED BY LAW, ALL EXPRESS, IMPLIED OR
+  20:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * STATUTORY OR OTHER WARRANTIES, GUARANTEES OR REPRESENTATIONS,
+  21:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+  22:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+  23:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   *
+  24:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   **************************************************************************
+  25:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+  26:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** #include "usbd_sdr.h"
+  27:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+  28:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /** @addtogroup AT32F435_437_middlewares_usbd_drivers
+  29:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @{
+  30:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 2
+
+
+  31:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+  32:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /** @defgroup USBD_drivers_standard_request
+  33:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief usb device standard_request
+  34:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @{
+  35:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+  36:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+  37:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /** @defgroup USBD_sdr_private_functions
+  38:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @{
+  39:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+  40:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+  41:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_get_descriptor(usbd_core_type *udev);
+  42:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_set_address(usbd_core_type *udev);
+  43:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_get_status(usbd_core_type *udev);
+  44:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_clear_feature(usbd_core_type *udev);
+  45:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_set_feature(usbd_core_type *udev);
+  46:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_get_configuration(usbd_core_type *udev);
+  47:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_set_configuration(usbd_core_type *udev);
+  48:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+  49:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+  50:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief  usb parse standard setup request
+  51:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  setup: setup structure
+  52:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  buf: setup buffer
+  53:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @retval none
+  54:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+  55:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** void usbd_setup_request_parse(usb_setup_type *setup, uint8_t *buf)
+  56:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** {
+  57:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->bmRequestType         = *(uint8_t *) buf;
+  58:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->bRequest              = *(uint8_t *) (buf + 1);
+  59:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->wValue                = SWAPBYTE(buf + 2);
+  60:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->wIndex                = SWAPBYTE(buf + 4);
+  61:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->wLength               = SWAPBYTE(buf + 6);
+  62:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+  63:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+  64:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+  65:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief  get usb standard device description request
+  66:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  udev: to the structure of usbd_core_type
+  67:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @retval status of usb_sts_type
+  68:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+  69:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_get_descriptor(usbd_core_type *udev)
+  70:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** {
+  71:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+  72:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   uint16_t len = 0;
+  73:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usbd_desc_t *desc = NULL;
+  74:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   uint8_t desc_type = udev->setup.wValue >> 8;
+  75:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   switch(desc_type)
+  76:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+  77:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_DESCIPTOR_TYPE_DEVICE:
+  78:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       desc = udev->desc_handler->get_device_descriptor();
+  79:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+  80:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_DESCIPTOR_TYPE_CONFIGURATION:
+  81:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       desc = udev->desc_handler->get_device_configuration();
+  82:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+  83:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_DESCIPTOR_TYPE_STRING:
+  84:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+  85:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       uint8_t str_desc = (uint8_t)udev->setup.wValue;
+  86:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       switch(str_desc)
+  87:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 3
+
+
+  88:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_LANGID_STRING:
+  89:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           desc = udev->desc_handler->get_device_lang_id();
+  90:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+  91:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_MFC_STRING:
+  92:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           desc = udev->desc_handler->get_device_manufacturer_string();
+  93:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+  94:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_PRODUCT_STRING:
+  95:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           desc = udev->desc_handler->get_device_product_string();
+  96:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+  97:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_SERIAL_STRING:
+  98:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           desc = udev->desc_handler->get_device_serial_string();
+  99:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 100:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_CONFIG_STRING:
+ 101:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           desc = udev->desc_handler->get_device_config_string();
+ 102:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 103:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_INTERFACE_STRING:
+ 104:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           desc = udev->desc_handler->get_device_interface_string();
+ 105:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 106:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         default:
+ 107:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->setup_handler(udev, &udev->setup);
+ 108:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           return ret;
+ 109:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 110:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 111:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 112:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_DESCIPTOR_TYPE_DEVICE_QUALIFIER:
+ 113:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_unsupport(udev);
+ 114:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 115:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_DESCIPTOR_TYPE_OTHER_SPEED:
+ 116:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_unsupport(udev);
+ 117:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       return ret;
+ 118:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     default:
+ 119:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_unsupport(udev);
+ 120:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       return ret;
+ 121:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 122:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 123:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   if(desc != NULL)
+ 124:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 125:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     if((desc->length != 0) && (udev->setup.wLength != 0))
+ 126:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 127:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       len = MIN(desc->length , udev->setup.wLength);
+ 128:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_send(udev, desc->descriptor, len);
+ 129:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 130:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 131:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   return ret;
+ 132:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 133:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 134:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+ 135:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief  this request sets the device address
+ 136:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  udev: to the structure of usbd_core_type
+ 137:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @retval status of usb_sts_type
+ 138:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+ 139:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_set_address(usbd_core_type *udev)
+ 140:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** {
+ 141:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 142:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_setup_type *setup = &udev->setup;
+ 143:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   uint8_t dev_addr;
+ 144:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 4
+
+
+ 145:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   /* if wIndex or wLength are non-zero, then the behavior of
+ 146:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****      the device is not specified
+ 147:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+ 148:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   if(setup->wIndex == 0 && setup->wLength == 0)
+ 149:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 150:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     dev_addr = (uint8_t)(setup->wValue) & 0x7f;
+ 151:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 152:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     /* device behavior when this request is received
+ 153:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****        while the device is in the configured state is not specified.*/
+ 154:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     if(udev->conn_state == USB_CONN_STATE_CONFIGURED )
+ 155:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 156:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_unsupport(udev);
+ 157:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 158:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     else
+ 159:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 160:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       udev->device_addr = dev_addr;
+ 161:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 162:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       if(dev_addr != 0)
+ 163:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 164:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         udev->conn_state = USB_CONN_STATE_ADDRESSED;
+ 165:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 166:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       else
+ 167:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 168:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         udev->conn_state = USB_CONN_STATE_DEFAULT;
+ 169:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 170:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_send_status(udev);
+ 171:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 172:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 173:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   else
+ 174:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 175:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     usbd_ctrl_unsupport(udev);
+ 176:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 177:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   return ret;
+ 178:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 179:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 180:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+ 181:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief  get usb status request
+ 182:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  udev: to the structure of usbd_core_type
+ 183:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @retval status of usb_sts_type
+ 184:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+ 185:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_get_status(usbd_core_type *udev)
+ 186:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** {
+  29              		.loc 1 186 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 186 1 is_stmt 0 view .LVU1
+  34 0000 08B5     		push	{r3, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 8
+  37              		.cfi_offset 3, -8
+  38              		.cfi_offset 14, -4
+ 187:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+  39              		.loc 1 187 3 is_stmt 1 view .LVU2
+  40              	.LVL1:
+ 188:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   switch(udev->conn_state)
+  41              		.loc 1 188 3 view .LVU3
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 5
+
+
+  42              		.loc 1 188 14 is_stmt 0 view .LVU4
+  43 0002 90F8E432 		ldrb	r3, [r0, #740]	@ zero_extendqisi2
+  44              		.loc 1 188 3 view .LVU5
+  45 0006 023B     		subs	r3, r3, #2
+  46 0008 012B     		cmp	r3, #1
+  47 000a 0FD8     		bhi	.L2
+ 189:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 190:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_CONN_STATE_ADDRESSED:
+ 191:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_CONN_STATE_CONFIGURED:
+ 192:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       if(udev->remote_wakup)
+  48              		.loc 1 192 7 is_stmt 1 view .LVU6
+  49              		.loc 1 192 14 is_stmt 0 view .LVU7
+  50 000c 90F8E732 		ldrb	r3, [r0, #743]	@ zero_extendqisi2
+  51              		.loc 1 192 9 view .LVU8
+  52 0010 2BB1     		cbz	r3, .L3
+ 193:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 194:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         udev->config_status |= USB_CONF_REMOTE_WAKEUP;
+  53              		.loc 1 194 9 is_stmt 1 view .LVU9
+  54              		.loc 1 194 29 is_stmt 0 view .LVU10
+  55 0012 D0F8EC32 		ldr	r3, [r0, #748]
+  56 0016 43F00203 		orr	r3, r3, #2
+  57 001a C0F8EC32 		str	r3, [r0, #748]
+  58              	.L3:
+ 195:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 196:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_send(udev, (uint8_t *)(&udev->config_status), 2);
+  59              		.loc 1 196 7 is_stmt 1 view .LVU11
+  60 001e 0222     		movs	r2, #2
+  61 0020 00F53B71 		add	r1, r0, #748
+  62 0024 FFF7FEFF 		bl	usbd_ctrl_send
+  63              	.LVL2:
+ 197:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+  64              		.loc 1 197 7 view .LVU12
+  65              	.L4:
+ 198:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     default:
+ 199:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_unsupport(udev);
+ 200:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 201:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 202:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   return ret;
+  66              		.loc 1 202 3 view .LVU13
+ 203:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+  67              		.loc 1 203 1 is_stmt 0 view .LVU14
+  68 0028 0020     		movs	r0, #0
+  69 002a 08BD     		pop	{r3, pc}
+  70              	.LVL3:
+  71              	.L2:
+ 199:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+  72              		.loc 1 199 7 is_stmt 1 view .LVU15
+  73 002c FFF7FEFF 		bl	usbd_ctrl_unsupport
+  74              	.LVL4:
+ 200:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+  75              		.loc 1 200 7 view .LVU16
+  76 0030 FAE7     		b	.L4
+  77              		.cfi_endproc
+  78              	.LFE139:
+  80              		.section	.text.usbd_get_descriptor,"ax",%progbits
+  81              		.align	1
+  82              		.syntax unified
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 6
+
+
+  83              		.thumb
+  84              		.thumb_func
+  86              	usbd_get_descriptor:
+  87              	.LVL5:
+  88              	.LFB137:
+  70:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+  89              		.loc 1 70 1 view -0
+  90              		.cfi_startproc
+  91              		@ args = 0, pretend = 0, frame = 0
+  92              		@ frame_needed = 0, uses_anonymous_args = 0
+  70:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+  93              		.loc 1 70 1 is_stmt 0 view .LVU18
+  94 0000 10B5     		push	{r4, lr}
+  95              	.LCFI1:
+  96              		.cfi_def_cfa_offset 8
+  97              		.cfi_offset 4, -8
+  98              		.cfi_offset 14, -4
+  99 0002 0446     		mov	r4, r0
+  71:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   uint16_t len = 0;
+ 100              		.loc 1 71 3 is_stmt 1 view .LVU19
+ 101              	.LVL6:
+  72:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usbd_desc_t *desc = NULL;
+ 102              		.loc 1 72 3 view .LVU20
+  73:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   uint8_t desc_type = udev->setup.wValue >> 8;
+ 103              		.loc 1 73 3 view .LVU21
+  74:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   switch(desc_type)
+ 104              		.loc 1 74 3 view .LVU22
+  74:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   switch(desc_type)
+ 105              		.loc 1 74 34 is_stmt 0 view .LVU23
+ 106 0004 B0F8CE22 		ldrh	r2, [r0, #718]
+  74:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   switch(desc_type)
+ 107              		.loc 1 74 11 view .LVU24
+ 108 0008 130A     		lsrs	r3, r2, #8
+ 109              	.LVL7:
+  75:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 110              		.loc 1 75 3 is_stmt 1 view .LVU25
+ 111 000a 013B     		subs	r3, r3, #1
+ 112              	.LVL8:
+  75:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 113              		.loc 1 75 3 is_stmt 0 view .LVU26
+ 114 000c 062B     		cmp	r3, #6
+ 115 000e 4AD8     		bhi	.L7
+ 116 0010 DFE803F0 		tbb	[pc, r3]
+ 117              	.L9:
+ 118 0014 04       		.byte	(.L13-.L9)/2
+ 119 0015 18       		.byte	(.L12-.L9)/2
+ 120 0016 1C       		.byte	(.L11-.L9)/2
+ 121 0017 49       		.byte	(.L7-.L9)/2
+ 122 0018 49       		.byte	(.L7-.L9)/2
+ 123 0019 42       		.byte	(.L10-.L9)/2
+ 124 001a 46       		.byte	(.L8-.L9)/2
+ 125 001b 00       		.p2align 1
+ 126              	.L13:
+  78:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 127              		.loc 1 78 7 is_stmt 1 view .LVU27
+  78:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 128              		.loc 1 78 18 is_stmt 0 view .LVU28
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 7
+
+
+ 129 001c 8368     		ldr	r3, [r0, #8]
+ 130              	.LVL9:
+  78:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 131              		.loc 1 78 32 view .LVU29
+ 132 001e 1B68     		ldr	r3, [r3]
+  78:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 133              		.loc 1 78 14 view .LVU30
+ 134 0020 9847     		blx	r3
+ 135              	.LVL10:
+  79:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_DESCIPTOR_TYPE_CONFIGURATION:
+ 136              		.loc 1 79 7 is_stmt 1 view .LVU31
+ 137              	.L14:
+ 123:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 138              		.loc 1 123 3 view .LVU32
+ 123:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 139              		.loc 1 123 5 is_stmt 0 view .LVU33
+ 140 0022 0028     		cmp	r0, #0
+ 141 0024 3AD0     		beq	.L23
+ 125:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 142              		.loc 1 125 5 is_stmt 1 view .LVU34
+ 125:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 143              		.loc 1 125 13 is_stmt 0 view .LVU35
+ 144 0026 0388     		ldrh	r3, [r0]
+ 125:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 145              		.loc 1 125 7 view .LVU36
+ 146 0028 002B     		cmp	r3, #0
+ 147 002a 37D0     		beq	.L23
+ 125:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 148              		.loc 1 125 43 discriminator 1 view .LVU37
+ 149 002c B4F8D222 		ldrh	r2, [r4, #722]
+ 125:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 150              		.loc 1 125 28 discriminator 1 view .LVU38
+ 151 0030 002A     		cmp	r2, #0
+ 152 0032 33D0     		beq	.L23
+ 127:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_send(udev, desc->descriptor, len);
+ 153              		.loc 1 127 7 is_stmt 1 view .LVU39
+ 154              	.LVL11:
+ 128:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 155              		.loc 1 128 7 view .LVU40
+ 156 0034 9A42     		cmp	r2, r3
+ 157 0036 28BF     		it	cs
+ 158 0038 1A46     		movcs	r2, r3
+ 159              	.LVL12:
+ 128:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 160              		.loc 1 128 7 is_stmt 0 view .LVU41
+ 161 003a 4168     		ldr	r1, [r0, #4]
+ 162 003c 2046     		mov	r0, r4
+ 163              	.LVL13:
+ 128:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 164              		.loc 1 128 7 view .LVU42
+ 165 003e FFF7FEFF 		bl	usbd_ctrl_send
+ 166              	.LVL14:
+ 128:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 167              		.loc 1 128 7 view .LVU43
+ 168 0042 2BE0     		b	.L23
+ 169              	.LVL15:
+ 170              	.L12:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 8
+
+
+  81:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 171              		.loc 1 81 7 is_stmt 1 view .LVU44
+  81:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 172              		.loc 1 81 18 is_stmt 0 view .LVU45
+ 173 0044 8368     		ldr	r3, [r0, #8]
+ 174              	.LVL16:
+  81:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 175              		.loc 1 81 32 view .LVU46
+ 176 0046 9B68     		ldr	r3, [r3, #8]
+  81:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 177              		.loc 1 81 14 view .LVU47
+ 178 0048 9847     		blx	r3
+ 179              	.LVL17:
+  82:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_DESCIPTOR_TYPE_STRING:
+ 180              		.loc 1 82 7 is_stmt 1 view .LVU48
+ 181 004a EAE7     		b	.L14
+ 182              	.LVL18:
+ 183              	.L11:
+ 184              	.LBB2:
+  85:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       switch(str_desc)
+ 185              		.loc 1 85 7 view .LVU49
+  85:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       switch(str_desc)
+ 186              		.loc 1 85 15 is_stmt 0 view .LVU50
+ 187 004c D2B2     		uxtb	r2, r2
+ 188              	.LVL19:
+  86:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 189              		.loc 1 86 7 is_stmt 1 view .LVU51
+ 190 004e 052A     		cmp	r2, #5
+ 191 0050 1CD8     		bhi	.L15
+ 192 0052 DFE802F0 		tbb	[pc, r2]
+ 193              	.LVL20:
+ 194              	.L17:
+ 195 0056 03       		.byte	(.L22-.L17)/2
+ 196 0057 07       		.byte	(.L21-.L17)/2
+ 197 0058 0B       		.byte	(.L20-.L17)/2
+ 198 0059 0F       		.byte	(.L19-.L17)/2
+ 199 005a 13       		.byte	(.L18-.L17)/2
+ 200 005b 17       		.byte	(.L16-.L17)/2
+ 201              		.p2align 1
+ 202              	.L22:
+  89:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 203              		.loc 1 89 11 view .LVU52
+  89:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 204              		.loc 1 89 22 is_stmt 0 view .LVU53
+ 205 005c 8368     		ldr	r3, [r0, #8]
+  89:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 206              		.loc 1 89 36 view .LVU54
+ 207 005e 1B69     		ldr	r3, [r3, #16]
+  89:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 208              		.loc 1 89 18 view .LVU55
+ 209 0060 9847     		blx	r3
+ 210              	.LVL21:
+  90:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_MFC_STRING:
+ 211              		.loc 1 90 11 is_stmt 1 view .LVU56
+ 212 0062 DEE7     		b	.L14
+ 213              	.LVL22:
+ 214              	.L21:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 9
+
+
+  92:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 215              		.loc 1 92 11 view .LVU57
+  92:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 216              		.loc 1 92 22 is_stmt 0 view .LVU58
+ 217 0064 8368     		ldr	r3, [r0, #8]
+  92:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 218              		.loc 1 92 36 view .LVU59
+ 219 0066 5B69     		ldr	r3, [r3, #20]
+  92:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 220              		.loc 1 92 18 view .LVU60
+ 221 0068 9847     		blx	r3
+ 222              	.LVL23:
+  93:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_PRODUCT_STRING:
+ 223              		.loc 1 93 11 is_stmt 1 view .LVU61
+ 224 006a DAE7     		b	.L14
+ 225              	.LVL24:
+ 226              	.L20:
+  95:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 227              		.loc 1 95 11 view .LVU62
+  95:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 228              		.loc 1 95 22 is_stmt 0 view .LVU63
+ 229 006c 8368     		ldr	r3, [r0, #8]
+  95:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 230              		.loc 1 95 36 view .LVU64
+ 231 006e 9B69     		ldr	r3, [r3, #24]
+  95:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 232              		.loc 1 95 18 view .LVU65
+ 233 0070 9847     		blx	r3
+ 234              	.LVL25:
+  96:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_SERIAL_STRING:
+ 235              		.loc 1 96 11 is_stmt 1 view .LVU66
+ 236 0072 D6E7     		b	.L14
+ 237              	.LVL26:
+ 238              	.L19:
+  98:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 239              		.loc 1 98 11 view .LVU67
+  98:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 240              		.loc 1 98 22 is_stmt 0 view .LVU68
+ 241 0074 8368     		ldr	r3, [r0, #8]
+  98:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 242              		.loc 1 98 36 view .LVU69
+ 243 0076 DB69     		ldr	r3, [r3, #28]
+  98:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 244              		.loc 1 98 18 view .LVU70
+ 245 0078 9847     		blx	r3
+ 246              	.LVL27:
+  99:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_CONFIG_STRING:
+ 247              		.loc 1 99 11 is_stmt 1 view .LVU71
+ 248 007a D2E7     		b	.L14
+ 249              	.LVL28:
+ 250              	.L18:
+ 101:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 251              		.loc 1 101 11 view .LVU72
+ 101:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 252              		.loc 1 101 22 is_stmt 0 view .LVU73
+ 253 007c 8368     		ldr	r3, [r0, #8]
+ 101:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 10
+
+
+ 254              		.loc 1 101 36 view .LVU74
+ 255 007e 5B6A     		ldr	r3, [r3, #36]
+ 101:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 256              		.loc 1 101 18 view .LVU75
+ 257 0080 9847     		blx	r3
+ 258              	.LVL29:
+ 102:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_INTERFACE_STRING:
+ 259              		.loc 1 102 11 is_stmt 1 view .LVU76
+ 260 0082 CEE7     		b	.L14
+ 261              	.LVL30:
+ 262              	.L16:
+ 104:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 263              		.loc 1 104 11 view .LVU77
+ 104:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 264              		.loc 1 104 22 is_stmt 0 view .LVU78
+ 265 0084 8368     		ldr	r3, [r0, #8]
+ 104:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 266              		.loc 1 104 36 view .LVU79
+ 267 0086 1B6A     		ldr	r3, [r3, #32]
+ 104:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 268              		.loc 1 104 18 view .LVU80
+ 269 0088 9847     		blx	r3
+ 270              	.LVL31:
+ 105:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         default:
+ 271              		.loc 1 105 11 is_stmt 1 view .LVU81
+ 272 008a CAE7     		b	.L14
+ 273              	.LVL32:
+ 274              	.L15:
+ 107:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           return ret;
+ 275              		.loc 1 107 11 view .LVU82
+ 107:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           return ret;
+ 276              		.loc 1 107 15 is_stmt 0 view .LVU83
+ 277 008c 4368     		ldr	r3, [r0, #4]
+ 107:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           return ret;
+ 278              		.loc 1 107 30 view .LVU84
+ 279 008e 9B68     		ldr	r3, [r3, #8]
+ 107:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           return ret;
+ 280              		.loc 1 107 11 view .LVU85
+ 281 0090 00F53371 		add	r1, r0, #716
+ 282 0094 9847     		blx	r3
+ 283              	.LVL33:
+ 108:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 284              		.loc 1 108 11 is_stmt 1 view .LVU86
+ 108:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 285              		.loc 1 108 18 is_stmt 0 view .LVU87
+ 286 0096 01E0     		b	.L23
+ 287              	.LVL34:
+ 288              	.L10:
+ 108:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 289              		.loc 1 108 18 view .LVU88
+ 290              	.LBE2:
+ 113:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 291              		.loc 1 113 7 is_stmt 1 view .LVU89
+ 292 0098 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 293              	.LVL35:
+ 114:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_DESCIPTOR_TYPE_OTHER_SPEED:
+ 294              		.loc 1 114 7 view .LVU90
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 11
+
+
+ 123:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 295              		.loc 1 123 3 view .LVU91
+ 296              	.L23:
+ 132:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 297              		.loc 1 132 1 is_stmt 0 view .LVU92
+ 298 009c 0020     		movs	r0, #0
+ 299 009e 10BD     		pop	{r4, pc}
+ 300              	.LVL36:
+ 301              	.L8:
+ 116:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       return ret;
+ 302              		.loc 1 116 7 is_stmt 1 view .LVU93
+ 303 00a0 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 304              	.LVL37:
+ 117:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     default:
+ 305              		.loc 1 117 7 view .LVU94
+ 117:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     default:
+ 306              		.loc 1 117 14 is_stmt 0 view .LVU95
+ 307 00a4 FAE7     		b	.L23
+ 308              	.LVL38:
+ 309              	.L7:
+ 119:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       return ret;
+ 310              		.loc 1 119 7 is_stmt 1 view .LVU96
+ 311 00a6 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 312              	.LVL39:
+ 120:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 313              		.loc 1 120 7 view .LVU97
+ 120:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 314              		.loc 1 120 14 is_stmt 0 view .LVU98
+ 315 00aa F7E7     		b	.L23
+ 316              		.cfi_endproc
+ 317              	.LFE137:
+ 319              		.section	.text.usbd_get_configuration,"ax",%progbits
+ 320              		.align	1
+ 321              		.syntax unified
+ 322              		.thumb
+ 323              		.thumb_func
+ 325              	usbd_get_configuration:
+ 326              	.LVL40:
+ 327              	.LFB142:
+ 204:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 205:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+ 206:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief  clear usb feature request
+ 207:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  udev: to the structure of usbd_core_type
+ 208:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @retval status of usb_sts_type
+ 209:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+ 210:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_clear_feature(usbd_core_type *udev)
+ 211:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** {
+ 212:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 213:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_setup_type *setup = &udev->setup;
+ 214:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   switch(udev->conn_state)
+ 215:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 216:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_CONN_STATE_ADDRESSED:
+ 217:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_CONN_STATE_CONFIGURED:
+ 218:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       if(setup->wValue == USB_FEATURE_REMOTE_WAKEUP)
+ 219:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 220:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         udev->remote_wakup = 0;
+ 221:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         udev->config_status &= ~USB_CONF_REMOTE_WAKEUP;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 12
+
+
+ 222:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         udev->class_handler->setup_handler(udev, &udev->setup);
+ 223:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_send_status(udev);
+ 224:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 225:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 226:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     default:
+ 227:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_unsupport(udev);
+ 228:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 229:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 230:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   return ret;
+ 231:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 232:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 233:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+ 234:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief  set usb feature request
+ 235:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  udev: to the structure of usbd_core_type
+ 236:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @retval status of usb_sts_type
+ 237:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+ 238:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_set_feature(usbd_core_type *udev)
+ 239:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** {
+ 240:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 241:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_setup_type *setup = &udev->setup;
+ 242:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   if(setup->wValue == USB_FEATURE_REMOTE_WAKEUP)
+ 243:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 244:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     udev->remote_wakup = 1;
+ 245:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     udev->class_handler->setup_handler(udev, &udev->setup);
+ 246:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     usbd_ctrl_send_status(udev);
+ 247:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 248:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   return ret;
+ 249:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 250:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 251:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+ 252:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief  get usb configuration request
+ 253:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  udev: to the structure of usbd_core_type
+ 254:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @retval status of usb_sts_type
+ 255:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+ 256:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_get_configuration(usbd_core_type *udev)
+ 257:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** {
+ 328              		.loc 1 257 1 is_stmt 1 view -0
+ 329              		.cfi_startproc
+ 330              		@ args = 0, pretend = 0, frame = 0
+ 331              		@ frame_needed = 0, uses_anonymous_args = 0
+ 332              		.loc 1 257 1 is_stmt 0 view .LVU100
+ 333 0000 08B5     		push	{r3, lr}
+ 334              	.LCFI2:
+ 335              		.cfi_def_cfa_offset 8
+ 336              		.cfi_offset 3, -8
+ 337              		.cfi_offset 14, -4
+ 258:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 338              		.loc 1 258 3 is_stmt 1 view .LVU101
+ 339              	.LVL41:
+ 259:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_setup_type *setup = &udev->setup;
+ 340              		.loc 1 259 3 view .LVU102
+ 260:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   if(setup->wLength != 1)
+ 341              		.loc 1 260 3 view .LVU103
+ 342              		.loc 1 260 11 is_stmt 0 view .LVU104
+ 343 0002 B0F8D232 		ldrh	r3, [r0, #722]
+ 344              		.loc 1 260 5 view .LVU105
+ 345 0006 012B     		cmp	r3, #1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 13
+
+
+ 346 0008 08D1     		bne	.L33
+ 261:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 262:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     usbd_ctrl_unsupport(udev);
+ 263:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 264:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   else
+ 265:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 266:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     switch(udev->conn_state)
+ 347              		.loc 1 266 5 is_stmt 1 view .LVU106
+ 348              		.loc 1 266 16 is_stmt 0 view .LVU107
+ 349 000a 90F8E432 		ldrb	r3, [r0, #740]	@ zero_extendqisi2
+ 350              		.loc 1 266 5 view .LVU108
+ 351 000e 022B     		cmp	r3, #2
+ 352 0010 08D0     		beq	.L28
+ 353 0012 032B     		cmp	r3, #3
+ 354 0014 0FD0     		beq	.L29
+ 267:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 268:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       case USB_CONN_STATE_ADDRESSED:
+ 269:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         udev->default_config = 0;
+ 270:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_send(udev, (uint8_t *)(&udev->default_config), 1);
+ 271:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         break;
+ 272:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       case USB_CONN_STATE_CONFIGURED:
+ 273:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_send(udev, (uint8_t *)(&udev->dev_config), 1);
+ 274:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         break;
+ 275:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       default:
+ 276:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_unsupport(udev);
+ 355              		.loc 1 276 9 is_stmt 1 view .LVU109
+ 356 0016 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 357              	.LVL42:
+ 277:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         break;
+ 358              		.loc 1 277 9 view .LVU110
+ 359 001a 01E0     		b	.L27
+ 360              	.LVL43:
+ 361              	.L33:
+ 262:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 362              		.loc 1 262 5 view .LVU111
+ 363 001c FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 364              	.LVL44:
+ 365              	.L27:
+ 278:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 279:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 280:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   return ret;
+ 366              		.loc 1 280 3 view .LVU112
+ 281:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 367              		.loc 1 281 1 is_stmt 0 view .LVU113
+ 368 0020 0020     		movs	r0, #0
+ 369 0022 08BD     		pop	{r3, pc}
+ 370              	.LVL45:
+ 371              	.L28:
+ 269:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_send(udev, (uint8_t *)(&udev->default_config), 1);
+ 372              		.loc 1 269 9 is_stmt 1 view .LVU114
+ 269:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_send(udev, (uint8_t *)(&udev->default_config), 1);
+ 373              		.loc 1 269 30 is_stmt 0 view .LVU115
+ 374 0024 0023     		movs	r3, #0
+ 375 0026 80F8E832 		strb	r3, [r0, #744]
+ 270:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         break;
+ 376              		.loc 1 270 9 is_stmt 1 view .LVU116
+ 377 002a 0122     		movs	r2, #1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 14
+
+
+ 378 002c 00F53A71 		add	r1, r0, #744
+ 379 0030 FFF7FEFF 		bl	usbd_ctrl_send
+ 380              	.LVL46:
+ 271:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       case USB_CONN_STATE_CONFIGURED:
+ 381              		.loc 1 271 9 view .LVU117
+ 382 0034 F4E7     		b	.L27
+ 383              	.LVL47:
+ 384              	.L29:
+ 273:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         break;
+ 385              		.loc 1 273 9 view .LVU118
+ 386 0036 0122     		movs	r2, #1
+ 387 0038 00F2E921 		addw	r1, r0, #745
+ 388 003c FFF7FEFF 		bl	usbd_ctrl_send
+ 389              	.LVL48:
+ 274:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       default:
+ 390              		.loc 1 274 9 view .LVU119
+ 391 0040 EEE7     		b	.L27
+ 392              		.cfi_endproc
+ 393              	.LFE142:
+ 395              		.section	.text.usbd_clear_feature,"ax",%progbits
+ 396              		.align	1
+ 397              		.syntax unified
+ 398              		.thumb
+ 399              		.thumb_func
+ 401              	usbd_clear_feature:
+ 402              	.LVL49:
+ 403              	.LFB140:
+ 211:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 404              		.loc 1 211 1 view -0
+ 405              		.cfi_startproc
+ 406              		@ args = 0, pretend = 0, frame = 0
+ 407              		@ frame_needed = 0, uses_anonymous_args = 0
+ 211:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 408              		.loc 1 211 1 is_stmt 0 view .LVU121
+ 409 0000 10B5     		push	{r4, lr}
+ 410              	.LCFI3:
+ 411              		.cfi_def_cfa_offset 8
+ 412              		.cfi_offset 4, -8
+ 413              		.cfi_offset 14, -4
+ 414 0002 0446     		mov	r4, r0
+ 212:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_setup_type *setup = &udev->setup;
+ 415              		.loc 1 212 3 is_stmt 1 view .LVU122
+ 416              	.LVL50:
+ 213:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   switch(udev->conn_state)
+ 417              		.loc 1 213 3 view .LVU123
+ 214:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 418              		.loc 1 214 3 view .LVU124
+ 214:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 419              		.loc 1 214 14 is_stmt 0 view .LVU125
+ 420 0004 90F8E432 		ldrb	r3, [r0, #740]	@ zero_extendqisi2
+ 214:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 421              		.loc 1 214 3 view .LVU126
+ 422 0008 023B     		subs	r3, r3, #2
+ 423 000a 012B     		cmp	r3, #1
+ 424 000c 15D8     		bhi	.L35
+ 218:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 425              		.loc 1 218 7 is_stmt 1 view .LVU127
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 15
+
+
+ 218:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 426              		.loc 1 218 15 is_stmt 0 view .LVU128
+ 427 000e B0F8CE32 		ldrh	r3, [r0, #718]
+ 218:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 428              		.loc 1 218 9 view .LVU129
+ 429 0012 012B     		cmp	r3, #1
+ 430 0014 13D1     		bne	.L36
+ 220:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         udev->config_status &= ~USB_CONF_REMOTE_WAKEUP;
+ 431              		.loc 1 220 9 is_stmt 1 view .LVU130
+ 220:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         udev->config_status &= ~USB_CONF_REMOTE_WAKEUP;
+ 432              		.loc 1 220 28 is_stmt 0 view .LVU131
+ 433 0016 0023     		movs	r3, #0
+ 434 0018 80F8E732 		strb	r3, [r0, #743]
+ 221:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         udev->class_handler->setup_handler(udev, &udev->setup);
+ 435              		.loc 1 221 9 is_stmt 1 view .LVU132
+ 221:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         udev->class_handler->setup_handler(udev, &udev->setup);
+ 436              		.loc 1 221 29 is_stmt 0 view .LVU133
+ 437 001c D0F8EC32 		ldr	r3, [r0, #748]
+ 438 0020 23F00203 		bic	r3, r3, #2
+ 439 0024 C0F8EC32 		str	r3, [r0, #748]
+ 222:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_send_status(udev);
+ 440              		.loc 1 222 9 is_stmt 1 view .LVU134
+ 222:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_send_status(udev);
+ 441              		.loc 1 222 13 is_stmt 0 view .LVU135
+ 442 0028 4368     		ldr	r3, [r0, #4]
+ 222:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_send_status(udev);
+ 443              		.loc 1 222 28 view .LVU136
+ 444 002a 9B68     		ldr	r3, [r3, #8]
+ 222:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_send_status(udev);
+ 445              		.loc 1 222 9 view .LVU137
+ 446 002c 00F53371 		add	r1, r0, #716
+ 447              	.LVL51:
+ 222:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_send_status(udev);
+ 448              		.loc 1 222 9 view .LVU138
+ 449 0030 9847     		blx	r3
+ 450              	.LVL52:
+ 223:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 451              		.loc 1 223 9 is_stmt 1 view .LVU139
+ 452 0032 2046     		mov	r0, r4
+ 453 0034 FFF7FEFF 		bl	usbd_ctrl_send_status
+ 454              	.LVL53:
+ 455 0038 01E0     		b	.L36
+ 456              	.LVL54:
+ 457              	.L35:
+ 227:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 458              		.loc 1 227 7 view .LVU140
+ 459 003a FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 460              	.LVL55:
+ 228:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 461              		.loc 1 228 7 view .LVU141
+ 462              	.L36:
+ 230:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 463              		.loc 1 230 3 view .LVU142
+ 231:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 464              		.loc 1 231 1 is_stmt 0 view .LVU143
+ 465 003e 0020     		movs	r0, #0
+ 466 0040 10BD     		pop	{r4, pc}
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 16
+
+
+ 231:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 467              		.loc 1 231 1 view .LVU144
+ 468              		.cfi_endproc
+ 469              	.LFE140:
+ 471              		.section	.text.usbd_set_feature,"ax",%progbits
+ 472              		.align	1
+ 473              		.syntax unified
+ 474              		.thumb
+ 475              		.thumb_func
+ 477              	usbd_set_feature:
+ 478              	.LVL56:
+ 479              	.LFB141:
+ 239:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 480              		.loc 1 239 1 is_stmt 1 view -0
+ 481              		.cfi_startproc
+ 482              		@ args = 0, pretend = 0, frame = 0
+ 483              		@ frame_needed = 0, uses_anonymous_args = 0
+ 240:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_setup_type *setup = &udev->setup;
+ 484              		.loc 1 240 3 view .LVU146
+ 241:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   if(setup->wValue == USB_FEATURE_REMOTE_WAKEUP)
+ 485              		.loc 1 241 3 view .LVU147
+ 242:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 486              		.loc 1 242 3 view .LVU148
+ 242:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 487              		.loc 1 242 11 is_stmt 0 view .LVU149
+ 488 0000 B0F8CE32 		ldrh	r3, [r0, #718]
+ 242:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 489              		.loc 1 242 5 view .LVU150
+ 490 0004 012B     		cmp	r3, #1
+ 491 0006 01D0     		beq	.L44
+ 248:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 492              		.loc 1 248 3 is_stmt 1 view .LVU151
+ 249:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 493              		.loc 1 249 1 is_stmt 0 view .LVU152
+ 494 0008 0020     		movs	r0, #0
+ 495              	.LVL57:
+ 249:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 496              		.loc 1 249 1 view .LVU153
+ 497 000a 7047     		bx	lr
+ 498              	.LVL58:
+ 499              	.L44:
+ 239:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 500              		.loc 1 239 1 view .LVU154
+ 501 000c 10B5     		push	{r4, lr}
+ 502              	.LCFI4:
+ 503              		.cfi_def_cfa_offset 8
+ 504              		.cfi_offset 4, -8
+ 505              		.cfi_offset 14, -4
+ 506 000e 0446     		mov	r4, r0
+ 244:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     udev->class_handler->setup_handler(udev, &udev->setup);
+ 507              		.loc 1 244 5 is_stmt 1 view .LVU155
+ 244:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     udev->class_handler->setup_handler(udev, &udev->setup);
+ 508              		.loc 1 244 24 is_stmt 0 view .LVU156
+ 509 0010 80F8E732 		strb	r3, [r0, #743]
+ 245:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     usbd_ctrl_send_status(udev);
+ 510              		.loc 1 245 5 is_stmt 1 view .LVU157
+ 245:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     usbd_ctrl_send_status(udev);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 17
+
+
+ 511              		.loc 1 245 9 is_stmt 0 view .LVU158
+ 512 0014 4368     		ldr	r3, [r0, #4]
+ 245:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     usbd_ctrl_send_status(udev);
+ 513              		.loc 1 245 24 view .LVU159
+ 514 0016 9B68     		ldr	r3, [r3, #8]
+ 245:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     usbd_ctrl_send_status(udev);
+ 515              		.loc 1 245 5 view .LVU160
+ 516 0018 00F53371 		add	r1, r0, #716
+ 517 001c 9847     		blx	r3
+ 518              	.LVL59:
+ 246:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 519              		.loc 1 246 5 is_stmt 1 view .LVU161
+ 520 001e 2046     		mov	r0, r4
+ 521 0020 FFF7FEFF 		bl	usbd_ctrl_send_status
+ 522              	.LVL60:
+ 248:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 523              		.loc 1 248 3 view .LVU162
+ 249:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 524              		.loc 1 249 1 is_stmt 0 view .LVU163
+ 525 0024 0020     		movs	r0, #0
+ 526 0026 10BD     		pop	{r4, pc}
+ 249:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 527              		.loc 1 249 1 view .LVU164
+ 528              		.cfi_endproc
+ 529              	.LFE141:
+ 531              		.section	.text.usbd_set_address,"ax",%progbits
+ 532              		.align	1
+ 533              		.syntax unified
+ 534              		.thumb
+ 535              		.thumb_func
+ 537              	usbd_set_address:
+ 538              	.LVL61:
+ 539              	.LFB138:
+ 140:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 540              		.loc 1 140 1 is_stmt 1 view -0
+ 541              		.cfi_startproc
+ 542              		@ args = 0, pretend = 0, frame = 0
+ 543              		@ frame_needed = 0, uses_anonymous_args = 0
+ 140:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 544              		.loc 1 140 1 is_stmt 0 view .LVU166
+ 545 0000 08B5     		push	{r3, lr}
+ 546              	.LCFI5:
+ 547              		.cfi_def_cfa_offset 8
+ 548              		.cfi_offset 3, -8
+ 549              		.cfi_offset 14, -4
+ 141:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_setup_type *setup = &udev->setup;
+ 550              		.loc 1 141 3 is_stmt 1 view .LVU167
+ 551              	.LVL62:
+ 142:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   uint8_t dev_addr;
+ 552              		.loc 1 142 3 view .LVU168
+ 143:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 553              		.loc 1 143 3 view .LVU169
+ 148:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 554              		.loc 1 148 3 view .LVU170
+ 148:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 555              		.loc 1 148 11 is_stmt 0 view .LVU171
+ 556 0002 B0F8D032 		ldrh	r3, [r0, #720]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 18
+
+
+ 148:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 557              		.loc 1 148 5 view .LVU172
+ 558 0006 D3B9     		cbnz	r3, .L46
+ 148:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 559              		.loc 1 148 33 discriminator 1 view .LVU173
+ 560 0008 B0F8D232 		ldrh	r3, [r0, #722]
+ 148:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 561              		.loc 1 148 25 discriminator 1 view .LVU174
+ 562 000c BBB9     		cbnz	r3, .L46
+ 150:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 563              		.loc 1 150 5 is_stmt 1 view .LVU175
+ 150:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 564              		.loc 1 150 41 is_stmt 0 view .LVU176
+ 565 000e 90F8CE32 		ldrb	r3, [r0, #718]	@ zero_extendqisi2
+ 150:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 566              		.loc 1 150 14 view .LVU177
+ 567 0012 03F07F03 		and	r3, r3, #127
+ 568              	.LVL63:
+ 154:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 569              		.loc 1 154 5 is_stmt 1 view .LVU178
+ 154:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 570              		.loc 1 154 12 is_stmt 0 view .LVU179
+ 571 0016 90F8E422 		ldrb	r2, [r0, #740]	@ zero_extendqisi2
+ 154:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 572              		.loc 1 154 7 view .LVU180
+ 573 001a 032A     		cmp	r2, #3
+ 574 001c 08D0     		beq	.L52
+ 160:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 575              		.loc 1 160 7 is_stmt 1 view .LVU181
+ 160:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 576              		.loc 1 160 25 is_stmt 0 view .LVU182
+ 577 001e 80F8E632 		strb	r3, [r0, #742]
+ 162:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 578              		.loc 1 162 7 is_stmt 1 view .LVU183
+ 162:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 579              		.loc 1 162 9 is_stmt 0 view .LVU184
+ 580 0022 43B1     		cbz	r3, .L49
+ 164:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 581              		.loc 1 164 9 is_stmt 1 view .LVU185
+ 164:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 582              		.loc 1 164 26 is_stmt 0 view .LVU186
+ 583 0024 0223     		movs	r3, #2
+ 584              	.LVL64:
+ 164:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 585              		.loc 1 164 26 view .LVU187
+ 586 0026 80F8E432 		strb	r3, [r0, #740]
+ 587              	.L50:
+ 170:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 588              		.loc 1 170 7 is_stmt 1 view .LVU188
+ 589 002a FFF7FEFF 		bl	usbd_ctrl_send_status
+ 590              	.LVL65:
+ 170:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 591              		.loc 1 170 7 is_stmt 0 view .LVU189
+ 592 002e 08E0     		b	.L48
+ 593              	.LVL66:
+ 594              	.L52:
+ 156:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 19
+
+
+ 595              		.loc 1 156 7 is_stmt 1 view .LVU190
+ 596 0030 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 597              	.LVL67:
+ 156:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 598              		.loc 1 156 7 is_stmt 0 view .LVU191
+ 599 0034 05E0     		b	.L48
+ 600              	.LVL68:
+ 601              	.L49:
+ 168:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 602              		.loc 1 168 9 is_stmt 1 view .LVU192
+ 168:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 603              		.loc 1 168 26 is_stmt 0 view .LVU193
+ 604 0036 0123     		movs	r3, #1
+ 605              	.LVL69:
+ 168:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 606              		.loc 1 168 26 view .LVU194
+ 607 0038 80F8E432 		strb	r3, [r0, #740]
+ 608 003c F5E7     		b	.L50
+ 609              	.LVL70:
+ 610              	.L46:
+ 175:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 611              		.loc 1 175 5 is_stmt 1 view .LVU195
+ 612 003e FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 613              	.LVL71:
+ 614              	.L48:
+ 177:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 615              		.loc 1 177 3 view .LVU196
+ 178:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 616              		.loc 1 178 1 is_stmt 0 view .LVU197
+ 617 0042 0020     		movs	r0, #0
+ 618 0044 08BD     		pop	{r3, pc}
+ 619              		.cfi_endproc
+ 620              	.LFE138:
+ 622              		.section	.text.usbd_set_configuration,"ax",%progbits
+ 623              		.align	1
+ 624              		.syntax unified
+ 625              		.thumb
+ 626              		.thumb_func
+ 628              	usbd_set_configuration:
+ 629              	.LVL72:
+ 630              	.LFB143:
+ 282:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 283:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+ 284:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief  sets the usb device configuration request
+ 285:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  udev: to the structure of usbd_core_type
+ 286:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @retval status of usb_sts_type
+ 287:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+ 288:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** static usb_sts_type usbd_set_configuration(usbd_core_type *udev)
+ 289:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** {
+ 631              		.loc 1 289 1 is_stmt 1 view -0
+ 632              		.cfi_startproc
+ 633              		@ args = 0, pretend = 0, frame = 0
+ 634              		@ frame_needed = 0, uses_anonymous_args = 0
+ 635              		.loc 1 289 1 is_stmt 0 view .LVU199
+ 636 0000 10B5     		push	{r4, lr}
+ 637              	.LCFI6:
+ 638              		.cfi_def_cfa_offset 8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 20
+
+
+ 639              		.cfi_offset 4, -8
+ 640              		.cfi_offset 14, -4
+ 641 0002 0446     		mov	r4, r0
+ 290:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 642              		.loc 1 290 3 is_stmt 1 view .LVU200
+ 643              	.LVL73:
+ 291:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   static uint8_t config_value;
+ 644              		.loc 1 291 3 view .LVU201
+ 292:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_setup_type *setup = &udev->setup;
+ 645              		.loc 1 292 3 view .LVU202
+ 293:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   config_value = (uint8_t)setup->wValue;
+ 646              		.loc 1 293 3 view .LVU203
+ 647              		.loc 1 293 18 is_stmt 0 view .LVU204
+ 648 0004 90F8CE32 		ldrb	r3, [r0, #718]	@ zero_extendqisi2
+ 649              		.loc 1 293 16 view .LVU205
+ 650 0008 254A     		ldr	r2, .L64
+ 651 000a 1370     		strb	r3, [r2]
+ 294:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 295:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   if(setup->wIndex == 0 && setup->wLength == 0)
+ 652              		.loc 1 295 3 is_stmt 1 view .LVU206
+ 653              		.loc 1 295 11 is_stmt 0 view .LVU207
+ 654 000c B0F8D022 		ldrh	r2, [r0, #720]
+ 655              		.loc 1 295 5 view .LVU208
+ 656 0010 002A     		cmp	r2, #0
+ 657 0012 3FD1     		bne	.L54
+ 658              		.loc 1 295 33 discriminator 1 view .LVU209
+ 659 0014 B0F8D222 		ldrh	r2, [r0, #722]
+ 660              		.loc 1 295 25 discriminator 1 view .LVU210
+ 661 0018 002A     		cmp	r2, #0
+ 662 001a 3BD1     		bne	.L54
+ 296:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 297:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     switch(udev->conn_state)
+ 663              		.loc 1 297 5 is_stmt 1 view .LVU211
+ 664              		.loc 1 297 16 is_stmt 0 view .LVU212
+ 665 001c 90F8E422 		ldrb	r2, [r0, #740]	@ zero_extendqisi2
+ 666              		.loc 1 297 5 view .LVU213
+ 667 0020 022A     		cmp	r2, #2
+ 668 0022 04D0     		beq	.L55
+ 669 0024 032A     		cmp	r2, #3
+ 670 0026 12D0     		beq	.L56
+ 298:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     {
+ 299:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       case USB_CONN_STATE_ADDRESSED:
+ 300:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         if(config_value)
+ 301:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 302:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->dev_config = config_value;
+ 303:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->conn_state = USB_CONN_STATE_CONFIGURED;
+ 304:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->init_handler(udev);
+ 305:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 306:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 307:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         else
+ 308:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 309:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 310:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 311:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 312:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         break;
+ 313:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       case USB_CONN_STATE_CONFIGURED:
+ 314:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         if(config_value == 0)
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 21
+
+
+ 315:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 316:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->conn_state = USB_CONN_STATE_ADDRESSED;
+ 317:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->dev_config = config_value;
+ 318:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->clear_handler(udev);
+ 319:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 320:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 321:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         else if(config_value == udev->dev_config)
+ 322:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 323:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->clear_handler(udev);
+ 324:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->dev_config = config_value;
+ 325:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->init_handler(udev);
+ 326:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 327:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 328:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         else
+ 329:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 330:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 331:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 332:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         break;
+ 333:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       default:
+ 334:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_unsupport(udev);
+ 671              		.loc 1 334 9 is_stmt 1 view .LVU214
+ 672 0028 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 673              	.LVL74:
+ 335:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         break;
+ 674              		.loc 1 335 9 view .LVU215
+ 675 002c 35E0     		b	.L59
+ 676              	.LVL75:
+ 677              	.L55:
+ 300:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 678              		.loc 1 300 9 view .LVU216
+ 300:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 679              		.loc 1 300 11 is_stmt 0 view .LVU217
+ 680 002e 5BB1     		cbz	r3, .L58
+ 302:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->conn_state = USB_CONN_STATE_CONFIGURED;
+ 681              		.loc 1 302 11 is_stmt 1 view .LVU218
+ 302:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->conn_state = USB_CONN_STATE_CONFIGURED;
+ 682              		.loc 1 302 28 is_stmt 0 view .LVU219
+ 683 0030 80F8E932 		strb	r3, [r0, #745]
+ 303:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->init_handler(udev);
+ 684              		.loc 1 303 11 is_stmt 1 view .LVU220
+ 303:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->init_handler(udev);
+ 685              		.loc 1 303 28 is_stmt 0 view .LVU221
+ 686 0034 0323     		movs	r3, #3
+ 687 0036 80F8E432 		strb	r3, [r0, #740]
+ 304:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 688              		.loc 1 304 11 is_stmt 1 view .LVU222
+ 304:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 689              		.loc 1 304 15 is_stmt 0 view .LVU223
+ 690 003a 4368     		ldr	r3, [r0, #4]
+ 304:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 691              		.loc 1 304 30 view .LVU224
+ 692 003c 1B68     		ldr	r3, [r3]
+ 304:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 693              		.loc 1 304 11 view .LVU225
+ 694 003e 9847     		blx	r3
+ 695              	.LVL76:
+ 305:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 22
+
+
+ 696              		.loc 1 305 11 is_stmt 1 view .LVU226
+ 697 0040 2046     		mov	r0, r4
+ 698 0042 FFF7FEFF 		bl	usbd_ctrl_send_status
+ 699              	.LVL77:
+ 700 0046 28E0     		b	.L59
+ 701              	.LVL78:
+ 702              	.L58:
+ 309:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 703              		.loc 1 309 11 view .LVU227
+ 704 0048 FFF7FEFF 		bl	usbd_ctrl_send_status
+ 705              	.LVL79:
+ 309:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 706              		.loc 1 309 11 is_stmt 0 view .LVU228
+ 707 004c 25E0     		b	.L59
+ 708              	.LVL80:
+ 709              	.L56:
+ 314:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 710              		.loc 1 314 9 is_stmt 1 view .LVU229
+ 314:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 711              		.loc 1 314 11 is_stmt 0 view .LVU230
+ 712 004e 5BB9     		cbnz	r3, .L60
+ 316:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->dev_config = config_value;
+ 713              		.loc 1 316 11 is_stmt 1 view .LVU231
+ 316:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->dev_config = config_value;
+ 714              		.loc 1 316 28 is_stmt 0 view .LVU232
+ 715 0050 0222     		movs	r2, #2
+ 716 0052 80F8E422 		strb	r2, [r0, #740]
+ 317:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->clear_handler(udev);
+ 717              		.loc 1 317 11 is_stmt 1 view .LVU233
+ 317:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->clear_handler(udev);
+ 718              		.loc 1 317 28 is_stmt 0 view .LVU234
+ 719 0056 80F8E932 		strb	r3, [r0, #745]
+ 318:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 720              		.loc 1 318 11 is_stmt 1 view .LVU235
+ 318:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 721              		.loc 1 318 15 is_stmt 0 view .LVU236
+ 722 005a 4368     		ldr	r3, [r0, #4]
+ 318:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 723              		.loc 1 318 30 view .LVU237
+ 724 005c 5B68     		ldr	r3, [r3, #4]
+ 318:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 725              		.loc 1 318 11 view .LVU238
+ 726 005e 9847     		blx	r3
+ 727              	.LVL81:
+ 319:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 728              		.loc 1 319 11 is_stmt 1 view .LVU239
+ 729 0060 2046     		mov	r0, r4
+ 730 0062 FFF7FEFF 		bl	usbd_ctrl_send_status
+ 731              	.LVL82:
+ 732 0066 18E0     		b	.L59
+ 733              	.LVL83:
+ 734              	.L60:
+ 321:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 735              		.loc 1 321 14 view .LVU240
+ 321:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 736              		.loc 1 321 37 is_stmt 0 view .LVU241
+ 737 0068 90F8E922 		ldrb	r2, [r0, #745]	@ zero_extendqisi2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 23
+
+
+ 321:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 738              		.loc 1 321 16 view .LVU242
+ 739 006c 9342     		cmp	r3, r2
+ 740 006e 0ED1     		bne	.L61
+ 323:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->dev_config = config_value;
+ 741              		.loc 1 323 11 is_stmt 1 view .LVU243
+ 323:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->dev_config = config_value;
+ 742              		.loc 1 323 15 is_stmt 0 view .LVU244
+ 743 0070 4368     		ldr	r3, [r0, #4]
+ 323:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->dev_config = config_value;
+ 744              		.loc 1 323 30 view .LVU245
+ 745 0072 5B68     		ldr	r3, [r3, #4]
+ 323:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->dev_config = config_value;
+ 746              		.loc 1 323 11 view .LVU246
+ 747 0074 9847     		blx	r3
+ 748              	.LVL84:
+ 324:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->init_handler(udev);
+ 749              		.loc 1 324 11 is_stmt 1 view .LVU247
+ 324:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->init_handler(udev);
+ 750              		.loc 1 324 28 is_stmt 0 view .LVU248
+ 751 0076 0A4B     		ldr	r3, .L64
+ 752 0078 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 753 007a 84F8E932 		strb	r3, [r4, #745]
+ 325:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 754              		.loc 1 325 11 is_stmt 1 view .LVU249
+ 325:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 755              		.loc 1 325 15 is_stmt 0 view .LVU250
+ 756 007e 6368     		ldr	r3, [r4, #4]
+ 325:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 757              		.loc 1 325 30 view .LVU251
+ 758 0080 1B68     		ldr	r3, [r3]
+ 325:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 759              		.loc 1 325 11 view .LVU252
+ 760 0082 2046     		mov	r0, r4
+ 761 0084 9847     		blx	r3
+ 762              	.LVL85:
+ 326:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 763              		.loc 1 326 11 is_stmt 1 view .LVU253
+ 764 0086 2046     		mov	r0, r4
+ 765 0088 FFF7FEFF 		bl	usbd_ctrl_send_status
+ 766              	.LVL86:
+ 767 008c 05E0     		b	.L59
+ 768              	.LVL87:
+ 769              	.L61:
+ 330:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 770              		.loc 1 330 11 view .LVU254
+ 771 008e FFF7FEFF 		bl	usbd_ctrl_send_status
+ 772              	.LVL88:
+ 330:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 773              		.loc 1 330 11 is_stmt 0 view .LVU255
+ 774 0092 02E0     		b	.L59
+ 775              	.LVL89:
+ 776              	.L54:
+ 336:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     }
+ 337:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 338:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   else
+ 339:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 24
+
+
+ 340:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     usbd_ctrl_unsupport(udev);
+ 777              		.loc 1 340 5 is_stmt 1 view .LVU256
+ 778 0094 2046     		mov	r0, r4
+ 779              	.LVL90:
+ 780              		.loc 1 340 5 is_stmt 0 view .LVU257
+ 781 0096 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 782              	.LVL91:
+ 783              	.L59:
+ 341:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 342:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   return ret;
+ 784              		.loc 1 342 3 is_stmt 1 view .LVU258
+ 343:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 785              		.loc 1 343 1 is_stmt 0 view .LVU259
+ 786 009a 0020     		movs	r0, #0
+ 787 009c 10BD     		pop	{r4, pc}
+ 788              	.LVL92:
+ 789              	.L65:
+ 790              		.loc 1 343 1 view .LVU260
+ 791 009e 00BF     		.align	2
+ 792              	.L64:
+ 793 00a0 00000000 		.word	.LANCHOR0
+ 794              		.cfi_endproc
+ 795              	.LFE143:
+ 797              		.section	.text.usbd_setup_request_parse,"ax",%progbits
+ 798              		.align	1
+ 799              		.global	usbd_setup_request_parse
+ 800              		.syntax unified
+ 801              		.thumb
+ 802              		.thumb_func
+ 804              	usbd_setup_request_parse:
+ 805              	.LVL93:
+ 806              	.LFB136:
+  56:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->bmRequestType         = *(uint8_t *) buf;
+ 807              		.loc 1 56 1 is_stmt 1 view -0
+ 808              		.cfi_startproc
+ 809              		@ args = 0, pretend = 0, frame = 0
+ 810              		@ frame_needed = 0, uses_anonymous_args = 0
+ 811              		@ link register save eliminated.
+  57:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->bRequest              = *(uint8_t *) (buf + 1);
+ 812              		.loc 1 57 3 view .LVU262
+  57:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->bRequest              = *(uint8_t *) (buf + 1);
+ 813              		.loc 1 57 34 is_stmt 0 view .LVU263
+ 814 0000 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+  57:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->bRequest              = *(uint8_t *) (buf + 1);
+ 815              		.loc 1 57 32 view .LVU264
+ 816 0002 0370     		strb	r3, [r0]
+  58:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->wValue                = SWAPBYTE(buf + 2);
+ 817              		.loc 1 58 3 is_stmt 1 view .LVU265
+  58:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->wValue                = SWAPBYTE(buf + 2);
+ 818              		.loc 1 58 32 is_stmt 0 view .LVU266
+ 819 0004 4B78     		ldrb	r3, [r1, #1]	@ zero_extendqisi2
+ 820 0006 4370     		strb	r3, [r0, #1]
+  59:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->wIndex                = SWAPBYTE(buf + 4);
+ 821              		.loc 1 59 3 is_stmt 1 view .LVU267
+  59:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->wIndex                = SWAPBYTE(buf + 4);
+ 822              		.loc 1 59 34 is_stmt 0 view .LVU268
+ 823 0008 8B78     		ldrb	r3, [r1, #2]	@ zero_extendqisi2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 25
+
+
+ 824 000a CA78     		ldrb	r2, [r1, #3]	@ zero_extendqisi2
+ 825 000c 03EB0223 		add	r3, r3, r2, lsl #8
+  59:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->wIndex                = SWAPBYTE(buf + 4);
+ 826              		.loc 1 59 32 view .LVU269
+ 827 0010 4380     		strh	r3, [r0, #2]	@ movhi
+  60:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->wLength               = SWAPBYTE(buf + 6);
+ 828              		.loc 1 60 3 is_stmt 1 view .LVU270
+  60:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->wLength               = SWAPBYTE(buf + 6);
+ 829              		.loc 1 60 34 is_stmt 0 view .LVU271
+ 830 0012 0B79     		ldrb	r3, [r1, #4]	@ zero_extendqisi2
+ 831 0014 4A79     		ldrb	r2, [r1, #5]	@ zero_extendqisi2
+ 832 0016 03EB0223 		add	r3, r3, r2, lsl #8
+  60:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   setup->wLength               = SWAPBYTE(buf + 6);
+ 833              		.loc 1 60 32 view .LVU272
+ 834 001a 8380     		strh	r3, [r0, #4]	@ movhi
+  61:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 835              		.loc 1 61 3 is_stmt 1 view .LVU273
+  61:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 836              		.loc 1 61 34 is_stmt 0 view .LVU274
+ 837 001c 8B79     		ldrb	r3, [r1, #6]	@ zero_extendqisi2
+ 838 001e CA79     		ldrb	r2, [r1, #7]	@ zero_extendqisi2
+ 839 0020 03EB0223 		add	r3, r3, r2, lsl #8
+  61:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 840              		.loc 1 61 32 view .LVU275
+ 841 0024 C380     		strh	r3, [r0, #6]	@ movhi
+  62:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 842              		.loc 1 62 1 view .LVU276
+ 843 0026 7047     		bx	lr
+ 844              		.cfi_endproc
+ 845              	.LFE136:
+ 847              		.section	.text.usbd_device_request,"ax",%progbits
+ 848              		.align	1
+ 849              		.global	usbd_device_request
+ 850              		.syntax unified
+ 851              		.thumb
+ 852              		.thumb_func
+ 854              	usbd_device_request:
+ 855              	.LVL94:
+ 856              	.LFB144:
+ 344:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 345:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+ 346:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief  standard usb device requests
+ 347:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  udev: to the structure of usbd_core_type
+ 348:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @retval status of usb_sts_type
+ 349:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+ 350:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** usb_sts_type usbd_device_request(usbd_core_type *udev)
+ 351:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** {
+ 857              		.loc 1 351 1 is_stmt 1 view -0
+ 858              		.cfi_startproc
+ 859              		@ args = 0, pretend = 0, frame = 0
+ 860              		@ frame_needed = 0, uses_anonymous_args = 0
+ 861              		.loc 1 351 1 is_stmt 0 view .LVU278
+ 862 0000 08B5     		push	{r3, lr}
+ 863              	.LCFI7:
+ 864              		.cfi_def_cfa_offset 8
+ 865              		.cfi_offset 3, -8
+ 866              		.cfi_offset 14, -4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 26
+
+
+ 352:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 867              		.loc 1 352 3 is_stmt 1 view .LVU279
+ 868              	.LVL95:
+ 353:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_setup_type *setup = &udev->setup;
+ 869              		.loc 1 353 3 view .LVU280
+ 354:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   if((setup->bmRequestType & USB_REQ_TYPE_RESERVED) != USB_REQ_TYPE_STANDARD)
+ 870              		.loc 1 354 3 view .LVU281
+ 871              		.loc 1 354 12 is_stmt 0 view .LVU282
+ 872 0002 90F8CC32 		ldrb	r3, [r0, #716]	@ zero_extendqisi2
+ 873              		.loc 1 354 5 view .LVU283
+ 874 0006 13F0600F 		tst	r3, #96
+ 875 000a 0AD1     		bne	.L80
+ 355:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 356:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     udev->class_handler->setup_handler(udev, &udev->setup);
+ 357:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     return ret;
+ 358:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 359:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   switch(udev->setup.bRequest)
+ 876              		.loc 1 359 3 is_stmt 1 view .LVU284
+ 877              		.loc 1 359 21 is_stmt 0 view .LVU285
+ 878 000c 90F8CD32 		ldrb	r3, [r0, #717]	@ zero_extendqisi2
+ 879              		.loc 1 359 3 view .LVU286
+ 880 0010 092B     		cmp	r3, #9
+ 881 0012 22D8     		bhi	.L70
+ 882 0014 DFE803F0 		tbb	[pc, r3]
+ 883              	.L72:
+ 884 0018 0C       		.byte	(.L78-.L72)/2
+ 885 0019 0F       		.byte	(.L77-.L72)/2
+ 886 001a 21       		.byte	(.L70-.L72)/2
+ 887 001b 12       		.byte	(.L76-.L72)/2
+ 888 001c 21       		.byte	(.L70-.L72)/2
+ 889 001d 15       		.byte	(.L75-.L72)/2
+ 890 001e 18       		.byte	(.L74-.L72)/2
+ 891 001f 21       		.byte	(.L70-.L72)/2
+ 892 0020 1B       		.byte	(.L73-.L72)/2
+ 893 0021 1E       		.byte	(.L71-.L72)/2
+ 894              		.p2align 1
+ 895              	.L80:
+ 356:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     return ret;
+ 896              		.loc 1 356 5 is_stmt 1 view .LVU287
+ 356:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     return ret;
+ 897              		.loc 1 356 9 is_stmt 0 view .LVU288
+ 898 0022 4368     		ldr	r3, [r0, #4]
+ 356:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     return ret;
+ 899              		.loc 1 356 24 view .LVU289
+ 900 0024 9B68     		ldr	r3, [r3, #8]
+ 356:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     return ret;
+ 901              		.loc 1 356 5 view .LVU290
+ 902 0026 00F53371 		add	r1, r0, #716
+ 903 002a 9847     		blx	r3
+ 904              	.LVL96:
+ 357:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 905              		.loc 1 357 5 is_stmt 1 view .LVU291
+ 906              	.L69:
+ 360:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 361:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_GET_STATUS:
+ 362:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_get_status(udev);
+ 363:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 27
+
+
+ 364:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_CLEAR_FEATURE:
+ 365:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_clear_feature(udev);
+ 366:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 367:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_SET_FEATURE:
+ 368:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_set_feature(udev);
+ 369:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 370:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_SET_ADDRESS:
+ 371:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_set_address(udev);
+ 372:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 373:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_GET_DESCRIPTOR:
+ 374:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_get_descriptor(udev);
+ 375:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 376:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_GET_CONFIGURATION:
+ 377:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_get_configuration(udev);
+ 378:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 379:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_SET_CONFIGURATION:
+ 380:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_set_configuration(udev);
+ 381:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 382:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     default:
+ 383:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_unsupport(udev);
+ 384:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 385:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 386:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   return ret;
+ 387:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 907              		.loc 1 387 1 is_stmt 0 view .LVU292
+ 908 002c 0020     		movs	r0, #0
+ 909 002e 08BD     		pop	{r3, pc}
+ 910              	.LVL97:
+ 911              	.L78:
+ 362:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 912              		.loc 1 362 7 is_stmt 1 view .LVU293
+ 913 0030 FFF7FEFF 		bl	usbd_get_status
+ 914              	.LVL98:
+ 363:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_CLEAR_FEATURE:
+ 915              		.loc 1 363 7 view .LVU294
+ 916 0034 FAE7     		b	.L69
+ 917              	.LVL99:
+ 918              	.L77:
+ 365:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 919              		.loc 1 365 7 view .LVU295
+ 920 0036 FFF7FEFF 		bl	usbd_clear_feature
+ 921              	.LVL100:
+ 366:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_SET_FEATURE:
+ 922              		.loc 1 366 7 view .LVU296
+ 923 003a F7E7     		b	.L69
+ 924              	.LVL101:
+ 925              	.L76:
+ 368:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 926              		.loc 1 368 7 view .LVU297
+ 927 003c FFF7FEFF 		bl	usbd_set_feature
+ 928              	.LVL102:
+ 369:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_SET_ADDRESS:
+ 929              		.loc 1 369 7 view .LVU298
+ 930 0040 F4E7     		b	.L69
+ 931              	.LVL103:
+ 932              	.L75:
+ 371:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 28
+
+
+ 933              		.loc 1 371 7 view .LVU299
+ 934 0042 FFF7FEFF 		bl	usbd_set_address
+ 935              	.LVL104:
+ 372:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_GET_DESCRIPTOR:
+ 936              		.loc 1 372 7 view .LVU300
+ 937 0046 F1E7     		b	.L69
+ 938              	.LVL105:
+ 939              	.L74:
+ 374:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 940              		.loc 1 374 7 view .LVU301
+ 941 0048 FFF7FEFF 		bl	usbd_get_descriptor
+ 942              	.LVL106:
+ 375:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_GET_CONFIGURATION:
+ 943              		.loc 1 375 7 view .LVU302
+ 944 004c EEE7     		b	.L69
+ 945              	.LVL107:
+ 946              	.L73:
+ 377:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 947              		.loc 1 377 7 view .LVU303
+ 948 004e FFF7FEFF 		bl	usbd_get_configuration
+ 949              	.LVL108:
+ 378:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_SET_CONFIGURATION:
+ 950              		.loc 1 378 7 view .LVU304
+ 951 0052 EBE7     		b	.L69
+ 952              	.LVL109:
+ 953              	.L71:
+ 380:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 954              		.loc 1 380 7 view .LVU305
+ 955 0054 FFF7FEFF 		bl	usbd_set_configuration
+ 956              	.LVL110:
+ 381:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     default:
+ 957              		.loc 1 381 7 view .LVU306
+ 958 0058 E8E7     		b	.L69
+ 959              	.LVL111:
+ 960              	.L70:
+ 383:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 961              		.loc 1 383 7 view .LVU307
+ 962 005a FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 963              	.LVL112:
+ 384:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 964              		.loc 1 384 7 view .LVU308
+ 965 005e E5E7     		b	.L69
+ 966              		.cfi_endproc
+ 967              	.LFE144:
+ 969              		.section	.text.usbd_interface_request,"ax",%progbits
+ 970              		.align	1
+ 971              		.global	usbd_interface_request
+ 972              		.syntax unified
+ 973              		.thumb
+ 974              		.thumb_func
+ 976              	usbd_interface_request:
+ 977              	.LVL113:
+ 978              	.LFB145:
+ 388:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 389:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+ 390:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief  standard usb interface requests
+ 391:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  udev: to the structure of usbd_core_type
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 29
+
+
+ 392:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @retval status of usb_sts_type
+ 393:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+ 394:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** usb_sts_type usbd_interface_request(usbd_core_type *udev)
+ 395:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** {
+ 979              		.loc 1 395 1 view -0
+ 980              		.cfi_startproc
+ 981              		@ args = 0, pretend = 0, frame = 0
+ 982              		@ frame_needed = 0, uses_anonymous_args = 0
+ 983              		.loc 1 395 1 is_stmt 0 view .LVU310
+ 984 0000 10B5     		push	{r4, lr}
+ 985              	.LCFI8:
+ 986              		.cfi_def_cfa_offset 8
+ 987              		.cfi_offset 4, -8
+ 988              		.cfi_offset 14, -4
+ 989 0002 0446     		mov	r4, r0
+ 396:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 990              		.loc 1 396 3 is_stmt 1 view .LVU311
+ 991              	.LVL114:
+ 397:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_setup_type *setup = &udev->setup;
+ 992              		.loc 1 397 3 view .LVU312
+ 398:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   switch(udev->conn_state)
+ 993              		.loc 1 398 3 view .LVU313
+ 994              		.loc 1 398 14 is_stmt 0 view .LVU314
+ 995 0004 90F8E432 		ldrb	r3, [r0, #740]	@ zero_extendqisi2
+ 996              		.loc 1 398 3 view .LVU315
+ 997 0008 032B     		cmp	r3, #3
+ 998 000a 0BD1     		bne	.L82
+ 399:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 400:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_CONN_STATE_CONFIGURED:
+ 401:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       udev->class_handler->setup_handler(udev, &udev->setup);
+ 999              		.loc 1 401 7 is_stmt 1 view .LVU316
+ 1000              		.loc 1 401 11 is_stmt 0 view .LVU317
+ 1001 000c 4368     		ldr	r3, [r0, #4]
+ 1002              		.loc 1 401 26 view .LVU318
+ 1003 000e 9B68     		ldr	r3, [r3, #8]
+ 1004              		.loc 1 401 7 view .LVU319
+ 1005 0010 00F53371 		add	r1, r0, #716
+ 1006              	.LVL115:
+ 1007              		.loc 1 401 7 view .LVU320
+ 1008 0014 9847     		blx	r3
+ 1009              	.LVL116:
+ 402:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       if(setup->wLength == 0)
+ 1010              		.loc 1 402 7 is_stmt 1 view .LVU321
+ 1011              		.loc 1 402 15 is_stmt 0 view .LVU322
+ 1012 0016 B4F8D232 		ldrh	r3, [r4, #722]
+ 1013              		.loc 1 402 9 view .LVU323
+ 1014 001a 2BB9     		cbnz	r3, .L83
+ 403:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 404:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         usbd_ctrl_send_status(udev);
+ 1015              		.loc 1 404 9 is_stmt 1 view .LVU324
+ 1016 001c 2046     		mov	r0, r4
+ 1017 001e FFF7FEFF 		bl	usbd_ctrl_send_status
+ 1018              	.LVL117:
+ 1019 0022 01E0     		b	.L83
+ 1020              	.LVL118:
+ 1021              	.L82:
+ 405:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 30
+
+
+ 406:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 407:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     default:
+ 408:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_unsupport(udev);
+ 1022              		.loc 1 408 7 view .LVU325
+ 1023 0024 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 1024              	.LVL119:
+ 409:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 1025              		.loc 1 409 7 view .LVU326
+ 1026              	.L83:
+ 410:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 411:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   return ret;
+ 1027              		.loc 1 411 3 view .LVU327
+ 412:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 1028              		.loc 1 412 1 is_stmt 0 view .LVU328
+ 1029 0028 0020     		movs	r0, #0
+ 1030 002a 10BD     		pop	{r4, pc}
+ 1031              		.loc 1 412 1 view .LVU329
+ 1032              		.cfi_endproc
+ 1033              	.LFE145:
+ 1035              		.section	.text.usbd_endpoint_request,"ax",%progbits
+ 1036              		.align	1
+ 1037              		.global	usbd_endpoint_request
+ 1038              		.syntax unified
+ 1039              		.thumb
+ 1040              		.thumb_func
+ 1042              	usbd_endpoint_request:
+ 1043              	.LVL120:
+ 1044              	.LFB146:
+ 413:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 414:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** /**
+ 415:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @brief  standard usb endpoint requests
+ 416:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @param  udev: to the structure of usbd_core_type
+ 417:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   * @retval status of usb_sts_type
+ 418:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   */
+ 419:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** usb_sts_type usbd_endpoint_request(usbd_core_type *udev)
+ 420:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** {
+ 1045              		.loc 1 420 1 is_stmt 1 view -0
+ 1046              		.cfi_startproc
+ 1047              		@ args = 0, pretend = 0, frame = 0
+ 1048              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1049              		.loc 1 420 1 is_stmt 0 view .LVU331
+ 1050 0000 70B5     		push	{r4, r5, r6, lr}
+ 1051              	.LCFI9:
+ 1052              		.cfi_def_cfa_offset 16
+ 1053              		.cfi_offset 4, -16
+ 1054              		.cfi_offset 5, -12
+ 1055              		.cfi_offset 6, -8
+ 1056              		.cfi_offset 14, -4
+ 1057 0002 0446     		mov	r4, r0
+ 421:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_sts_type ret = USB_OK;
+ 1058              		.loc 1 421 3 is_stmt 1 view .LVU332
+ 1059              	.LVL121:
+ 422:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_setup_type *setup = &udev->setup;
+ 1060              		.loc 1 422 3 view .LVU333
+ 423:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   uint8_t ept_addr = LBYTE(setup->wIndex);
+ 1061              		.loc 1 423 3 view .LVU334
+ 1062              		.loc 1 423 22 is_stmt 0 view .LVU335
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 31
+
+
+ 1063 0004 B0F8D062 		ldrh	r6, [r0, #720]
+ 1064              		.loc 1 423 11 view .LVU336
+ 1065 0008 F5B2     		uxtb	r5, r6
+ 1066              	.LVL122:
+ 424:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   usb_ept_info *ept_info;
+ 1067              		.loc 1 424 3 is_stmt 1 view .LVU337
+ 425:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** 
+ 426:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   if((setup->bmRequestType & USB_REQ_TYPE_RESERVED) == USB_REQ_TYPE_CLASS)
+ 1068              		.loc 1 426 3 view .LVU338
+ 1069              		.loc 1 426 12 is_stmt 0 view .LVU339
+ 1070 000a 90F8CC32 		ldrb	r3, [r0, #716]	@ zero_extendqisi2
+ 1071              		.loc 1 426 5 view .LVU340
+ 1072 000e 03F06003 		and	r3, r3, #96
+ 1073 0012 202B     		cmp	r3, #32
+ 1074 0014 0BD0     		beq	.L110
+ 1075              	.LVL123:
+ 1076              	.L86:
+ 427:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 428:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     udev->class_handler->setup_handler(udev, &udev->setup);
+ 429:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 430:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   switch(setup->bRequest)
+ 1077              		.loc 1 430 3 is_stmt 1 view .LVU341
+ 1078              		.loc 1 430 15 is_stmt 0 view .LVU342
+ 1079 0016 94F8CD32 		ldrb	r3, [r4, #717]	@ zero_extendqisi2
+ 1080              		.loc 1 430 3 view .LVU343
+ 1081 001a 012B     		cmp	r3, #1
+ 1082 001c 41D0     		beq	.L87
+ 1083 001e 032B     		cmp	r3, #3
+ 1084 0020 68D0     		beq	.L88
+ 1085 0022 53B1     		cbz	r3, .L111
+ 431:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   {
+ 432:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_GET_STATUS:
+ 433:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       switch(udev->conn_state)
+ 434:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 435:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_CONN_STATE_ADDRESSED:
+ 436:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           if((ept_addr & 0x7F) != 0)
+ 437:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 438:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             usbd_set_stall(udev, ept_addr);
+ 439:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 440:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 441:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_CONN_STATE_CONFIGURED:
+ 442:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         {
+ 443:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           if((ept_addr & 0x80) != 0)
+ 444:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 445:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****            ept_info = &udev->ept_in[ept_addr & 0x7F];
+ 446:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 447:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           else
+ 448:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 449:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             ept_info = &udev->ept_out[ept_addr & 0x7F];
+ 450:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 451:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           if(ept_info->stall == 1)
+ 452:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 453:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             ept_info->status = 0x0001;
+ 454:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 455:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           else
+ 456:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 457:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             ept_info->status = 0x0000;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 32
+
+
+ 458:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 459:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send(udev, (uint8_t *)(&ept_info->status), 2);
+ 460:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 461:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 462:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         default:
+ 463:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_unsupport(udev);
+ 464:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 465:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 466:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 467:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_CLEAR_FEATURE:
+ 468:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       switch(udev->conn_state)
+ 469:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 470:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_CONN_STATE_ADDRESSED:
+ 471:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           if((ept_addr != 0x00) && (ept_addr != 0x80))
+ 472:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 473:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             usbd_set_stall(udev, ept_addr);
+ 474:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 475:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 476:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_CONN_STATE_CONFIGURED:
+ 477:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           if(setup->wValue == USB_FEATURE_EPT_HALT)
+ 478:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 479:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             if((ept_addr & 0x7F) != 0x00 )
+ 480:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             {
+ 481:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****               usbd_clear_stall(udev, ept_addr);
+ 482:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****               udev->class_handler->setup_handler(udev, &udev->setup);
+ 483:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             }
+ 484:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             usbd_ctrl_send_status(udev);
+ 485:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 486:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 487:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         default:
+ 488:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_unsupport(udev);
+ 489:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 490:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 491:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 492:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     case USB_STD_REQ_SET_FEATURE:
+ 493:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       switch(udev->conn_state)
+ 494:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 495:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_CONN_STATE_ADDRESSED:
+ 496:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           if((ept_addr != 0x00) && (ept_addr != 0x80))
+ 497:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 498:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             usbd_set_stall(udev, ept_addr);
+ 499:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 500:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 501:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         case USB_CONN_STATE_CONFIGURED:
+ 502:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           if(setup->wValue == USB_FEATURE_EPT_HALT)
+ 503:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 504:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             if((ept_addr != 0x00) && (ept_addr != 0x80))
+ 505:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             {
+ 506:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****               usbd_set_stall(udev, ept_addr);
+ 507:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             }
+ 508:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 509:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           udev->class_handler->setup_handler(udev, &udev->setup);
+ 510:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 511:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 512:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         default:
+ 513:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_unsupport(udev);
+ 514:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 33
+
+
+ 515:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 516:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 517:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****     default:
+ 518:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       usbd_ctrl_unsupport(udev);
+ 1086              		.loc 1 518 7 is_stmt 1 view .LVU344
+ 1087 0024 2046     		mov	r0, r4
+ 1088 0026 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 1089              	.LVL124:
+ 519:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       break;
+ 1090              		.loc 1 519 7 view .LVU345
+ 1091              	.L93:
+ 520:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 521:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   return ret;
+ 1092              		.loc 1 521 3 view .LVU346
+ 522:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c **** }
+ 1093              		.loc 1 522 1 is_stmt 0 view .LVU347
+ 1094 002a 0020     		movs	r0, #0
+ 1095 002c 70BD     		pop	{r4, r5, r6, pc}
+ 1096              	.LVL125:
+ 1097              	.L110:
+ 428:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 1098              		.loc 1 428 5 is_stmt 1 view .LVU348
+ 428:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 1099              		.loc 1 428 9 is_stmt 0 view .LVU349
+ 1100 002e 4368     		ldr	r3, [r0, #4]
+ 428:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 1101              		.loc 1 428 24 view .LVU350
+ 1102 0030 9B68     		ldr	r3, [r3, #8]
+ 428:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 1103              		.loc 1 428 5 view .LVU351
+ 1104 0032 00F53371 		add	r1, r0, #716
+ 1105 0036 9847     		blx	r3
+ 1106              	.LVL126:
+ 428:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****   }
+ 1107              		.loc 1 428 5 view .LVU352
+ 1108 0038 EDE7     		b	.L86
+ 1109              	.L111:
+ 433:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 1110              		.loc 1 433 7 is_stmt 1 view .LVU353
+ 433:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 1111              		.loc 1 433 18 is_stmt 0 view .LVU354
+ 1112 003a 94F8E432 		ldrb	r3, [r4, #740]	@ zero_extendqisi2
+ 1113 003e 022B     		cmp	r3, #2
+ 1114 0040 05D0     		beq	.L90
+ 1115 0042 032B     		cmp	r3, #3
+ 1116 0044 0BD0     		beq	.L91
+ 463:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 1117              		.loc 1 463 11 is_stmt 1 view .LVU355
+ 1118 0046 2046     		mov	r0, r4
+ 1119 0048 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 1120              	.LVL127:
+ 464:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 1121              		.loc 1 464 11 view .LVU356
+ 1122 004c EDE7     		b	.L93
+ 1123              	.L90:
+ 436:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1124              		.loc 1 436 11 view .LVU357
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 34
+
+
+ 436:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1125              		.loc 1 436 13 is_stmt 0 view .LVU358
+ 1126 004e 15F07F0F 		tst	r5, #127
+ 1127 0052 EAD0     		beq	.L93
+ 438:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1128              		.loc 1 438 13 is_stmt 1 view .LVU359
+ 1129 0054 2946     		mov	r1, r5
+ 1130 0056 2046     		mov	r0, r4
+ 1131 0058 FFF7FEFF 		bl	usbd_set_stall
+ 1132              	.LVL128:
+ 1133 005c E5E7     		b	.L93
+ 1134              	.L91:
+ 443:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1135              		.loc 1 443 11 view .LVU360
+ 443:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1136              		.loc 1 443 13 is_stmt 0 view .LVU361
+ 1137 005e 16F0800F 		tst	r6, #128
+ 1138 0062 13D1     		bne	.L112
+ 449:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1139              		.loc 1 449 13 is_stmt 1 view .LVU362
+ 449:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1140              		.loc 1 449 48 is_stmt 0 view .LVU363
+ 1141 0064 05F07F01 		and	r1, r5, #127
+ 449:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1142              		.loc 1 449 22 view .LVU364
+ 1143 0068 2C25     		movs	r5, #44
+ 1144              	.LVL129:
+ 449:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1145              		.loc 1 449 22 view .LVU365
+ 1146 006a 05FB01F1 		mul	r1, r5, r1
+ 1147 006e 01F5B471 		add	r1, r1, #360
+ 1148 0072 2144     		add	r1, r1, r4
+ 1149 0074 0431     		adds	r1, r1, #4
+ 1150              	.LVL130:
+ 1151              	.L95:
+ 451:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1152              		.loc 1 451 11 is_stmt 1 view .LVU366
+ 451:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1153              		.loc 1 451 22 is_stmt 0 view .LVU367
+ 1154 0076 4B7B     		ldrb	r3, [r1, #13]	@ zero_extendqisi2
+ 451:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1155              		.loc 1 451 13 view .LVU368
+ 1156 0078 012B     		cmp	r3, #1
+ 1157 007a 10D0     		beq	.L113
+ 457:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1158              		.loc 1 457 13 is_stmt 1 view .LVU369
+ 457:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1159              		.loc 1 457 30 is_stmt 0 view .LVU370
+ 1160 007c 0023     		movs	r3, #0
+ 1161 007e 0B61     		str	r3, [r1, #16]
+ 1162              	.L97:
+ 459:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ 1163              		.loc 1 459 11 is_stmt 1 view .LVU371
+ 1164 0080 0222     		movs	r2, #2
+ 1165 0082 1031     		adds	r1, r1, #16
+ 1166              	.LVL131:
+ 459:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 35
+
+
+ 1167              		.loc 1 459 11 is_stmt 0 view .LVU372
+ 1168 0084 2046     		mov	r0, r4
+ 1169 0086 FFF7FEFF 		bl	usbd_ctrl_send
+ 1170              	.LVL132:
+ 461:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         default:
+ 1171              		.loc 1 461 11 is_stmt 1 view .LVU373
+ 1172 008a CEE7     		b	.L93
+ 1173              	.LVL133:
+ 1174              	.L112:
+ 445:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1175              		.loc 1 445 12 view .LVU374
+ 445:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1176              		.loc 1 445 46 is_stmt 0 view .LVU375
+ 1177 008c 05F07F01 		and	r1, r5, #127
+ 445:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1178              		.loc 1 445 21 view .LVU376
+ 1179 0090 2C25     		movs	r5, #44
+ 1180              	.LVL134:
+ 445:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1181              		.loc 1 445 21 view .LVU377
+ 1182 0092 05FB01F1 		mul	r1, r5, r1
+ 1183 0096 0831     		adds	r1, r1, #8
+ 1184 0098 2144     		add	r1, r1, r4
+ 1185 009a 0431     		adds	r1, r1, #4
+ 1186              	.LVL135:
+ 445:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1187              		.loc 1 445 21 view .LVU378
+ 1188 009c EBE7     		b	.L95
+ 1189              	.L113:
+ 453:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1190              		.loc 1 453 13 is_stmt 1 view .LVU379
+ 453:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1191              		.loc 1 453 30 is_stmt 0 view .LVU380
+ 1192 009e 0B61     		str	r3, [r1, #16]
+ 1193 00a0 EEE7     		b	.L97
+ 1194              	.LVL136:
+ 1195              	.L87:
+ 468:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 1196              		.loc 1 468 7 is_stmt 1 view .LVU381
+ 468:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 1197              		.loc 1 468 18 is_stmt 0 view .LVU382
+ 1198 00a2 94F8E432 		ldrb	r3, [r4, #740]	@ zero_extendqisi2
+ 1199 00a6 022B     		cmp	r3, #2
+ 1200 00a8 05D0     		beq	.L98
+ 1201 00aa 032B     		cmp	r3, #3
+ 1202 00ac 0CD0     		beq	.L99
+ 488:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 1203              		.loc 1 488 11 is_stmt 1 view .LVU383
+ 1204 00ae 2046     		mov	r0, r4
+ 1205 00b0 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 1206              	.LVL137:
+ 489:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 1207              		.loc 1 489 11 view .LVU384
+ 1208 00b4 B9E7     		b	.L93
+ 1209              	.L98:
+ 471:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1210              		.loc 1 471 11 view .LVU385
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 36
+
+
+ 471:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1211              		.loc 1 471 13 is_stmt 0 view .LVU386
+ 1212 00b6 002D     		cmp	r5, #0
+ 1213 00b8 B7D0     		beq	.L93
+ 471:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1214              		.loc 1 471 33 discriminator 1 view .LVU387
+ 1215 00ba 802D     		cmp	r5, #128
+ 1216 00bc B5D0     		beq	.L93
+ 473:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1217              		.loc 1 473 13 is_stmt 1 view .LVU388
+ 1218 00be 2946     		mov	r1, r5
+ 1219 00c0 2046     		mov	r0, r4
+ 1220 00c2 FFF7FEFF 		bl	usbd_set_stall
+ 1221              	.LVL138:
+ 1222 00c6 B0E7     		b	.L93
+ 1223              	.L99:
+ 477:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1224              		.loc 1 477 11 view .LVU389
+ 477:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1225              		.loc 1 477 19 is_stmt 0 view .LVU390
+ 1226 00c8 B4F8CE32 		ldrh	r3, [r4, #718]
+ 477:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1227              		.loc 1 477 13 view .LVU391
+ 1228 00cc 002B     		cmp	r3, #0
+ 1229 00ce ACD1     		bne	.L93
+ 479:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             {
+ 1230              		.loc 1 479 13 is_stmt 1 view .LVU392
+ 479:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             {
+ 1231              		.loc 1 479 15 is_stmt 0 view .LVU393
+ 1232 00d0 15F07F0F 		tst	r5, #127
+ 1233 00d4 03D1     		bne	.L114
+ 1234              	.L101:
+ 484:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1235              		.loc 1 484 13 is_stmt 1 view .LVU394
+ 1236 00d6 2046     		mov	r0, r4
+ 1237 00d8 FFF7FEFF 		bl	usbd_ctrl_send_status
+ 1238              	.LVL139:
+ 1239 00dc A5E7     		b	.L93
+ 1240              	.L114:
+ 481:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****               udev->class_handler->setup_handler(udev, &udev->setup);
+ 1241              		.loc 1 481 15 view .LVU395
+ 1242 00de 2946     		mov	r1, r5
+ 1243 00e0 2046     		mov	r0, r4
+ 1244 00e2 FFF7FEFF 		bl	usbd_clear_stall
+ 1245              	.LVL140:
+ 482:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             }
+ 1246              		.loc 1 482 15 view .LVU396
+ 482:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             }
+ 1247              		.loc 1 482 19 is_stmt 0 view .LVU397
+ 1248 00e6 6368     		ldr	r3, [r4, #4]
+ 482:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             }
+ 1249              		.loc 1 482 34 view .LVU398
+ 1250 00e8 9B68     		ldr	r3, [r3, #8]
+ 482:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             }
+ 1251              		.loc 1 482 15 view .LVU399
+ 1252 00ea 04F53371 		add	r1, r4, #716
+ 1253 00ee 2046     		mov	r0, r4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 37
+
+
+ 1254 00f0 9847     		blx	r3
+ 1255              	.LVL141:
+ 1256 00f2 F0E7     		b	.L101
+ 1257              	.L88:
+ 493:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 1258              		.loc 1 493 7 is_stmt 1 view .LVU400
+ 493:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       {
+ 1259              		.loc 1 493 18 is_stmt 0 view .LVU401
+ 1260 00f4 94F8E432 		ldrb	r3, [r4, #740]	@ zero_extendqisi2
+ 1261 00f8 022B     		cmp	r3, #2
+ 1262 00fa 05D0     		beq	.L102
+ 1263 00fc 032B     		cmp	r3, #3
+ 1264 00fe 0CD0     		beq	.L103
+ 513:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 1265              		.loc 1 513 11 is_stmt 1 view .LVU402
+ 1266 0100 2046     		mov	r0, r4
+ 1267 0102 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 1268              	.LVL142:
+ 514:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****       }
+ 1269              		.loc 1 514 11 view .LVU403
+ 1270 0106 90E7     		b	.L93
+ 1271              	.L102:
+ 496:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1272              		.loc 1 496 11 view .LVU404
+ 496:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1273              		.loc 1 496 13 is_stmt 0 view .LVU405
+ 1274 0108 002D     		cmp	r5, #0
+ 1275 010a 8ED0     		beq	.L93
+ 496:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1276              		.loc 1 496 33 discriminator 1 view .LVU406
+ 1277 010c 802D     		cmp	r5, #128
+ 1278 010e 8CD0     		beq	.L93
+ 498:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           }
+ 1279              		.loc 1 498 13 is_stmt 1 view .LVU407
+ 1280 0110 2946     		mov	r1, r5
+ 1281 0112 2046     		mov	r0, r4
+ 1282 0114 FFF7FEFF 		bl	usbd_set_stall
+ 1283              	.LVL143:
+ 1284 0118 87E7     		b	.L93
+ 1285              	.L103:
+ 502:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1286              		.loc 1 502 11 view .LVU408
+ 502:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1287              		.loc 1 502 19 is_stmt 0 view .LVU409
+ 1288 011a B4F8CE32 		ldrh	r3, [r4, #718]
+ 502:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           {
+ 1289              		.loc 1 502 13 view .LVU410
+ 1290 011e 13B9     		cbnz	r3, .L105
+ 504:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             {
+ 1291              		.loc 1 504 13 is_stmt 1 view .LVU411
+ 504:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             {
+ 1292              		.loc 1 504 15 is_stmt 0 view .LVU412
+ 1293 0120 0DB1     		cbz	r5, .L105
+ 504:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             {
+ 1294              		.loc 1 504 35 discriminator 1 view .LVU413
+ 1295 0122 802D     		cmp	r5, #128
+ 1296 0124 09D1     		bne	.L115
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 38
+
+
+ 1297              	.L105:
+ 509:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 1298              		.loc 1 509 11 is_stmt 1 view .LVU414
+ 509:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 1299              		.loc 1 509 15 is_stmt 0 view .LVU415
+ 1300 0126 6368     		ldr	r3, [r4, #4]
+ 509:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 1301              		.loc 1 509 30 view .LVU416
+ 1302 0128 9B68     		ldr	r3, [r3, #8]
+ 509:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           usbd_ctrl_send_status(udev);
+ 1303              		.loc 1 509 11 view .LVU417
+ 1304 012a 04F53371 		add	r1, r4, #716
+ 1305 012e 2046     		mov	r0, r4
+ 1306 0130 9847     		blx	r3
+ 1307              	.LVL144:
+ 510:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****           break;
+ 1308              		.loc 1 510 11 is_stmt 1 view .LVU418
+ 1309 0132 2046     		mov	r0, r4
+ 1310 0134 FFF7FEFF 		bl	usbd_ctrl_send_status
+ 1311              	.LVL145:
+ 511:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****         default:
+ 1312              		.loc 1 511 11 view .LVU419
+ 1313 0138 77E7     		b	.L93
+ 1314              	.L115:
+ 506:HW_Lib/AT32F435/USB/usb_drivers/src/usbd_sdr.c ****             }
+ 1315              		.loc 1 506 15 view .LVU420
+ 1316 013a 2946     		mov	r1, r5
+ 1317 013c 2046     		mov	r0, r4
+ 1318 013e FFF7FEFF 		bl	usbd_set_stall
+ 1319              	.LVL146:
+ 1320 0142 F0E7     		b	.L105
+ 1321              		.cfi_endproc
+ 1322              	.LFE146:
+ 1324              		.section	.bss.config_value.0,"aw",%nobits
+ 1325              		.set	.LANCHOR0,. + 0
+ 1328              	config_value.0:
+ 1329 0000 00       		.space	1
+ 1330              		.text
+ 1331              	.Letext0:
+ 1332              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1333              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1334              		.file 4 "HW_Lib/AT32F435/drivers/inc/at32f435_437_usb.h"
+ 1335              		.file 5 "HW_Lib/AT32F435/USB/usb_drivers/inc/usb_std.h"
+ 1336              		.file 6 "HW_Lib/AT32F435/USB/usb_drivers/inc/usbd_core.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s 			page 39
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 usbd_sdr.c
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:20     .text.usbd_get_status:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:25     .text.usbd_get_status:00000000 usbd_get_status
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:81     .text.usbd_get_descriptor:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:86     .text.usbd_get_descriptor:00000000 usbd_get_descriptor
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:118    .text.usbd_get_descriptor:00000014 $d
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:195    .text.usbd_get_descriptor:00000056 $d
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:201    .text.usbd_get_descriptor:0000005c $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:320    .text.usbd_get_configuration:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:325    .text.usbd_get_configuration:00000000 usbd_get_configuration
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:396    .text.usbd_clear_feature:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:401    .text.usbd_clear_feature:00000000 usbd_clear_feature
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:472    .text.usbd_set_feature:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:477    .text.usbd_set_feature:00000000 usbd_set_feature
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:532    .text.usbd_set_address:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:537    .text.usbd_set_address:00000000 usbd_set_address
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:623    .text.usbd_set_configuration:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:628    .text.usbd_set_configuration:00000000 usbd_set_configuration
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:793    .text.usbd_set_configuration:000000a0 $d
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:798    .text.usbd_setup_request_parse:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:804    .text.usbd_setup_request_parse:00000000 usbd_setup_request_parse
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:848    .text.usbd_device_request:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:854    .text.usbd_device_request:00000000 usbd_device_request
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:884    .text.usbd_device_request:00000018 $d
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:894    .text.usbd_device_request:00000022 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:970    .text.usbd_interface_request:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:976    .text.usbd_interface_request:00000000 usbd_interface_request
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:1036   .text.usbd_endpoint_request:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:1042   .text.usbd_endpoint_request:00000000 usbd_endpoint_request
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:1328   .bss.config_value.0:00000000 config_value.0
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:1329   .bss.config_value.0:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:125    .text.usbd_get_descriptor:0000001b $d
+C:\Users\8bit\AppData\Local\Temp\ccQmlpM8.s:125    .text.usbd_get_descriptor:0000001c $t
+
+UNDEFINED SYMBOLS
+usbd_ctrl_send
+usbd_ctrl_unsupport
+usbd_ctrl_send_status
+usbd_set_stall
+usbd_clear_stall

@@ -8,6 +8,7 @@
 #include "Srv_SensorMonitor.h"
 #include "shell_port.h"
 
+#define ToBoolStr(x) x ? "true" : "false"
 #define DATAPIPE_TRANS_TIMEOUT_100Ms 100
 
 #if defined MATEKH743_V1_5
@@ -170,15 +171,15 @@ static void TaskSample_Get_SensorState(void)
     if (shell_obj == NULL)
         return;
 
-        shellPrint(shell_obj, "Baro enable state: %d\r\n", SensorMonitor.enabled_reg.bit.baro);
-        shellPrint(shell_obj, "IMU  enable state: %d\r\n", SensorMonitor.enabled_reg.bit.imu);
-        shellPrint(shell_obj, "Mag  enable state: %d\r\n", SensorMonitor.enabled_reg.bit.mag);
-        shellPrint(shell_obj, "Flow enable state: %d\r\n", SensorMonitor.enabled_reg.bit.flow);
-        shellPrint(shell_obj, "-------------------------------------------------------\r\n");
-        shellPrint(shell_obj, "Baro init state: %d\r\n", SensorMonitor.init_state_reg.bit.baro);
-        shellPrint(shell_obj, "IMU  init state: %d\r\n", SensorMonitor.init_state_reg.bit.imu);
-        shellPrint(shell_obj, "Mag  init state: %d\r\n", SensorMonitor.init_state_reg.bit.mag);
-        shellPrint(shell_obj, "Flow init state: %d\r\n", SensorMonitor.init_state_reg.bit.flow);
+    shellPrint(shell_obj, "Baro enable state: %s\r\n", ToBoolStr(SensorMonitor.enabled_reg.bit.baro));
+    shellPrint(shell_obj, "IMU  enable state: %s\r\n", ToBoolStr(SensorMonitor.enabled_reg.bit.imu));
+    shellPrint(shell_obj, "Mag  enable state: %s\r\n", ToBoolStr(SensorMonitor.enabled_reg.bit.mag));
+    shellPrint(shell_obj, "Flow enable state: %s\r\n", ToBoolStr(SensorMonitor.enabled_reg.bit.flow));
+    shellPrint(shell_obj, "---------------------------\r\n");
+    shellPrint(shell_obj, "Baro init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.baro));
+    shellPrint(shell_obj, "IMU  init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.imu));
+    shellPrint(shell_obj, "Mag  init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.mag));
+    shellPrint(shell_obj, "Flow init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.flow));
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, sensor_status, TaskSample_Get_SensorState, show sensor status);
 

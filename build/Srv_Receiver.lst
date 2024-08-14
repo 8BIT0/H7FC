@@ -1,0 +1,2495 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Srv_Receiver.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.SrvReceiver_Create_SPIObj,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	SrvReceiver_Create_SPIObj:
+  26              	.LFB143:
+  27              		.file 1 "Service/Srv_Receiver.c"
+   1:Service/Srv_Receiver.c **** /*
+   2:Service/Srv_Receiver.c ****  * Auther: 8_B!T0
+   3:Service/Srv_Receiver.c ****  *
+   4:Service/Srv_Receiver.c ****  * WARNING:
+   5:Service/Srv_Receiver.c ****  *  SBUS Mode is none tested
+   6:Service/Srv_Receiver.c ****  * 
+   7:Service/Srv_Receiver.c ****  */
+   8:Service/Srv_Receiver.c **** #include "Srv_Receiver.h"
+   9:Service/Srv_Receiver.c **** #include "Bsp_Uart.h"
+  10:Service/Srv_Receiver.c **** #include "Bsp_SPI.h"
+  11:Service/Srv_Receiver.c **** #include "Bsp_GPIO.h"
+  12:Service/Srv_Receiver.c **** #include "error_log.h"
+  13:Service/Srv_Receiver.c **** #include "HW_Def.h"
+  14:Service/Srv_Receiver.c **** #include "Srv_OsCommon.h"
+  15:Service/Srv_Receiver.c **** #include "../debug/debug_util.h"
+  16:Service/Srv_Receiver.c **** 
+  17:Service/Srv_Receiver.c **** static uint8_t SrvReceiver_Buff[SRV_RECEIVER_BUFF_SIZE] __attribute__((section(".Perph_Section")));
+  18:Service/Srv_Receiver.c **** 
+  19:Service/Srv_Receiver.c **** static Error_Handler SrvReceiver_Error_Handle = 0;
+  20:Service/Srv_Receiver.c **** static SrvReceiver_Monitor_TypeDef SrvReceiver_Monitor;
+  21:Service/Srv_Receiver.c **** 
+  22:Service/Srv_Receiver.c **** /* internal function */
+  23:Service/Srv_Receiver.c **** static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *obj, uint8_t *p_data, uint16_
+  24:Service/Srv_Receiver.c **** static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj);
+  25:Service/Srv_Receiver.c **** static void SrvReceiver_Set_Invert(SrvReceiverObj_TypeDef *receiver_obj, uint16_t channel_index);
+  26:Service/Srv_Receiver.c **** 
+  27:Service/Srv_Receiver.c **** /* external function */
+  28:Service/Srv_Receiver.c **** static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance,
+  29:Service/Srv_Receiver.c ****                                            uint32_t rx_dma,
+  30:Service/Srv_Receiver.c ****                                            uint32_t rx_dma_stream,
+  31:Service/Srv_Receiver.c ****                                            uint32_t tx_dma,
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 2
+
+
+  32:Service/Srv_Receiver.c ****                                            uint32_t tx_dma_stream,
+  33:Service/Srv_Receiver.c ****                                            bool swap,
+  34:Service/Srv_Receiver.c ****                                            const BspGPIO_Obj_TypeDef tx_pin,
+  35:Service/Srv_Receiver.c ****                                            const BspGPIO_Obj_TypeDef rx_pin);
+  36:Service/Srv_Receiver.c **** static uint8_t *SrvReceiver_Create_SPIObj(void);
+  37:Service/Srv_Receiver.c **** static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj);
+  38:Service/Srv_Receiver.c **** static SrvReceiverData_TypeDef SrvReceiver_Get_Value(SrvReceiverObj_TypeDef *receiver_obj);
+  39:Service/Srv_Receiver.c **** static bool SrvReceiver_Get_Scope(SrvReceiverObj_TypeDef *receiver_obj, int16_t *max, int16_t *mid,
+  40:Service/Srv_Receiver.c **** 
+  41:Service/Srv_Receiver.c **** SrvReceiver_TypeDef SrvReceiver = {
+  42:Service/Srv_Receiver.c ****     .create_serial_obj = SrvReceiver_Create_UartObj,
+  43:Service/Srv_Receiver.c ****     .create_spi_obj = SrvReceiver_Create_SPIObj,
+  44:Service/Srv_Receiver.c ****     .init = SrvReceiver_Init,
+  45:Service/Srv_Receiver.c ****     .get = SrvReceiver_Get_Value,
+  46:Service/Srv_Receiver.c ****     .invert = SrvReceiver_Set_Invert,
+  47:Service/Srv_Receiver.c ****     .get_scope = SrvReceiver_Get_Scope,
+  48:Service/Srv_Receiver.c **** };
+  49:Service/Srv_Receiver.c **** 
+  50:Service/Srv_Receiver.c **** static Error_Obj_Typedef SrvReceiver_ErrorList[] = {
+  51:Service/Srv_Receiver.c ****     {
+  52:Service/Srv_Receiver.c ****         .out = false,
+  53:Service/Srv_Receiver.c ****         .log = false,
+  54:Service/Srv_Receiver.c ****         .prc_callback = NULL,
+  55:Service/Srv_Receiver.c ****         .code = Receiver_Obj_Error,
+  56:Service/Srv_Receiver.c ****         .desc = "Receiver Object Input Error\r\n",
+  57:Service/Srv_Receiver.c ****         .proc_type = Error_Proc_Ignore,
+  58:Service/Srv_Receiver.c ****         .prc_data_stream = {
+  59:Service/Srv_Receiver.c ****             .p_data = NULL,
+  60:Service/Srv_Receiver.c ****             .size = 0,
+  61:Service/Srv_Receiver.c ****         },
+  62:Service/Srv_Receiver.c ****     },
+  63:Service/Srv_Receiver.c ****     {
+  64:Service/Srv_Receiver.c ****         .out = false,
+  65:Service/Srv_Receiver.c ****         .log = false,
+  66:Service/Srv_Receiver.c ****         .prc_callback = NULL,
+  67:Service/Srv_Receiver.c ****         .code = Receiver_Port_Error,
+  68:Service/Srv_Receiver.c ****         .desc = "Receiver Port Error\r\n",
+  69:Service/Srv_Receiver.c ****         .proc_type = Error_Proc_Ignore,
+  70:Service/Srv_Receiver.c ****         .prc_data_stream = {
+  71:Service/Srv_Receiver.c ****             .p_data = NULL,
+  72:Service/Srv_Receiver.c ****             .size = 0,
+  73:Service/Srv_Receiver.c ****         },
+  74:Service/Srv_Receiver.c ****     },
+  75:Service/Srv_Receiver.c ****     {
+  76:Service/Srv_Receiver.c ****         .out = false,
+  77:Service/Srv_Receiver.c ****         .log = false,
+  78:Service/Srv_Receiver.c ****         .prc_callback = NULL,
+  79:Service/Srv_Receiver.c ****         .code = Receiver_Port_Init_Error,
+  80:Service/Srv_Receiver.c ****         .desc = "Receiver Port Init Error\r\n",
+  81:Service/Srv_Receiver.c ****         .proc_type = Error_Proc_Ignore,
+  82:Service/Srv_Receiver.c ****         .prc_data_stream = {
+  83:Service/Srv_Receiver.c ****             .p_data = NULL,
+  84:Service/Srv_Receiver.c ****             .size = 0,
+  85:Service/Srv_Receiver.c ****         },
+  86:Service/Srv_Receiver.c ****     },
+  87:Service/Srv_Receiver.c ****     {
+  88:Service/Srv_Receiver.c ****         .out = false,
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 3
+
+
+  89:Service/Srv_Receiver.c ****         .log = false,
+  90:Service/Srv_Receiver.c ****         .prc_callback = NULL,
+  91:Service/Srv_Receiver.c ****         .code = Receiver_FrameType_Error,
+  92:Service/Srv_Receiver.c ****         .desc = "Receiver Frame Type Error\r\n",
+  93:Service/Srv_Receiver.c ****         .proc_type = Error_Proc_Ignore,
+  94:Service/Srv_Receiver.c ****         .prc_data_stream = {
+  95:Service/Srv_Receiver.c ****             .p_data = NULL,
+  96:Service/Srv_Receiver.c ****             .size = 0,
+  97:Service/Srv_Receiver.c ****         },
+  98:Service/Srv_Receiver.c ****     },
+  99:Service/Srv_Receiver.c **** };
+ 100:Service/Srv_Receiver.c **** 
+ 101:Service/Srv_Receiver.c **** static uint8_t *SrvReceiver_Create_UartObj(uint32_t serial_instance,
+ 102:Service/Srv_Receiver.c ****                                            uint32_t rx_dma,
+ 103:Service/Srv_Receiver.c ****                                            uint32_t rx_dma_stream,
+ 104:Service/Srv_Receiver.c ****                                            uint32_t tx_dma,
+ 105:Service/Srv_Receiver.c ****                                            uint32_t tx_dma_stream,
+ 106:Service/Srv_Receiver.c ****                                            bool swap,
+ 107:Service/Srv_Receiver.c ****                                            const BspGPIO_Obj_TypeDef tx_pin,
+ 108:Service/Srv_Receiver.c ****                                            const BspGPIO_Obj_TypeDef rx_pin)
+ 109:Service/Srv_Receiver.c **** {
+ 110:Service/Srv_Receiver.c ****     BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
+ 111:Service/Srv_Receiver.c **** 
+ 112:Service/Srv_Receiver.c ****     Uart_Receiver_Obj = (BspUARTObj_TypeDef *)SrvOsCommon.malloc(sizeof(BspUARTObj_TypeDef));
+ 113:Service/Srv_Receiver.c **** 
+ 114:Service/Srv_Receiver.c ****     if (Uart_Receiver_Obj == NULL)
+ 115:Service/Srv_Receiver.c ****     {
+ 116:Service/Srv_Receiver.c ****         SrvOsCommon.free(Uart_Receiver_Obj);
+ 117:Service/Srv_Receiver.c ****         return NULL;
+ 118:Service/Srv_Receiver.c ****     }
+ 119:Service/Srv_Receiver.c **** 
+ 120:Service/Srv_Receiver.c ****     memset(Uart_Receiver_Obj, 0, sizeof(BspUARTObj_TypeDef));
+ 121:Service/Srv_Receiver.c **** 
+ 122:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->instance = (void *)serial_instance;
+ 123:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->tx_io = tx_pin;
+ 124:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->rx_io = rx_pin;
+ 125:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->pin_swap = swap;
+ 126:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->rx_dma = rx_dma;
+ 127:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->rx_stream = rx_dma_stream;
+ 128:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->tx_dma = tx_dma;
+ 129:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->tx_stream = tx_dma_stream;
+ 130:Service/Srv_Receiver.c **** 
+ 131:Service/Srv_Receiver.c ****     return (uint8_t *)Uart_Receiver_Obj;
+ 132:Service/Srv_Receiver.c **** }
+ 133:Service/Srv_Receiver.c **** 
+ 134:Service/Srv_Receiver.c **** static uint8_t *SrvReceiver_Create_SPIObj(void)
+ 135:Service/Srv_Receiver.c **** {
+  28              		.loc 1 135 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+ 136:Service/Srv_Receiver.c ****     return NULL;
+  33              		.loc 1 136 5 view .LVU1
+ 137:Service/Srv_Receiver.c **** }
+  34              		.loc 1 137 1 is_stmt 0 view .LVU2
+  35 0000 0020     		movs	r0, #0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 4
+
+
+  36 0002 7047     		bx	lr
+  37              		.cfi_endproc
+  38              	.LFE143:
+  40              		.section	.text.SrvReceiver_Check,"ax",%progbits
+  41              		.align	1
+  42              		.syntax unified
+  43              		.thumb
+  44              		.thumb_func
+  46              	SrvReceiver_Check:
+  47              	.LVL0:
+  48              	.LFB146:
+ 138:Service/Srv_Receiver.c **** 
+ 139:Service/Srv_Receiver.c **** static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
+ 140:Service/Srv_Receiver.c **** {
+ 141:Service/Srv_Receiver.c ****     bool data_obj_error = false;
+ 142:Service/Srv_Receiver.c ****     BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
+ 143:Service/Srv_Receiver.c **** 
+ 144:Service/Srv_Receiver.c ****     if ((obj == NULL) || (port_obj == NULL))
+ 145:Service/Srv_Receiver.c ****         return false;
+ 146:Service/Srv_Receiver.c **** 
+ 147:Service/Srv_Receiver.c ****     memset(SrvReceiver_Buff, 0, SRV_RECEIVER_BUFF_SIZE);
+ 148:Service/Srv_Receiver.c **** 
+ 149:Service/Srv_Receiver.c ****     /* create error log handle */
+ 150:Service/Srv_Receiver.c ****     SrvReceiver_Error_Handle = ErrorLog.create("SrvReceiver_Error");
+ 151:Service/Srv_Receiver.c **** 
+ 152:Service/Srv_Receiver.c ****     /* regist all error to the error tree */
+ 153:Service/Srv_Receiver.c ****     ErrorLog.registe(SrvReceiver_Error_Handle, SrvReceiver_ErrorList, sizeof(SrvReceiver_ErrorList)
+ 154:Service/Srv_Receiver.c **** 
+ 155:Service/Srv_Receiver.c ****     switch (obj->port_type)
+ 156:Service/Srv_Receiver.c ****     {
+ 157:Service/Srv_Receiver.c ****     case Receiver_Port_Serial:
+ 158:Service/Srv_Receiver.c ****         Uart_Receiver_Obj = (BspUARTObj_TypeDef *)port_obj;
+ 159:Service/Srv_Receiver.c ****         
+ 160:Service/Srv_Receiver.c **** #if defined STM32H743xx
+ 161:Service/Srv_Receiver.c ****         Uart_Receiver_Obj->hdl = SrvOsCommon.malloc(UART_HandleType_Size);
+ 162:Service/Srv_Receiver.c ****         if(Uart_Receiver_Obj->hdl == NULL)
+ 163:Service/Srv_Receiver.c ****         {
+ 164:Service/Srv_Receiver.c ****             SrvOsCommon.free(Uart_Receiver_Obj->hdl);
+ 165:Service/Srv_Receiver.c ****             return false;
+ 166:Service/Srv_Receiver.c ****         }
+ 167:Service/Srv_Receiver.c **** 
+ 168:Service/Srv_Receiver.c ****         Uart_Receiver_Obj->tx_dma_hdl = SrvOsCommon.malloc(UART_DMA_Handle_Size);
+ 169:Service/Srv_Receiver.c ****         if(Uart_Receiver_Obj->tx_dma_hdl)
+ 170:Service/Srv_Receiver.c ****         {
+ 171:Service/Srv_Receiver.c ****             SrvOsCommon.free(Uart_Receiver_Obj->tx_dma_hdl);
+ 172:Service/Srv_Receiver.c ****             SrvOsCommon.free(Uart_Receiver_Obj->hdl);
+ 173:Service/Srv_Receiver.c ****             return false;
+ 174:Service/Srv_Receiver.c ****         }
+ 175:Service/Srv_Receiver.c **** 
+ 176:Service/Srv_Receiver.c ****         Uart_Receiver_Obj->rx_dma_hdl = SrvOsCommon.malloc(UART_DMA_Handle_Size);
+ 177:Service/Srv_Receiver.c ****         if(Uart_Receiver_Obj->rx_dma_hdl)
+ 178:Service/Srv_Receiver.c ****         {
+ 179:Service/Srv_Receiver.c ****             SrvOsCommon.free(Uart_Receiver_Obj->rx_dma_hdl);
+ 180:Service/Srv_Receiver.c ****             SrvOsCommon.free(Uart_Receiver_Obj->tx_dma_hdl);
+ 181:Service/Srv_Receiver.c ****             SrvOsCommon.free(Uart_Receiver_Obj->hdl);
+ 182:Service/Srv_Receiver.c ****             return false;
+ 183:Service/Srv_Receiver.c ****         }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 5
+
+
+ 184:Service/Srv_Receiver.c **** #endif
+ 185:Service/Srv_Receiver.c ****         memset(&SrvReceiver_Monitor, 0, SRVRECEIVER_SIZE);
+ 186:Service/Srv_Receiver.c **** 
+ 187:Service/Srv_Receiver.c ****         switch (obj->Frame_type)
+ 188:Service/Srv_Receiver.c ****         {
+ 189:Service/Srv_Receiver.c ****         case Receiver_Type_Sbus:
+ 190:Service/Srv_Receiver.c ****             Uart_Receiver_Obj->baudrate = SBUS_BAUDRATE;
+ 191:Service/Srv_Receiver.c **** 
+ 192:Service/Srv_Receiver.c ****             /* create data obj */
+ 193:Service/Srv_Receiver.c ****             obj->frame_data_obj = SrvOsCommon.malloc(sizeof(DevSBUSObj_TypeDef));
+ 194:Service/Srv_Receiver.c ****             if (obj->frame_data_obj == NULL)
+ 195:Service/Srv_Receiver.c ****             {
+ 196:Service/Srv_Receiver.c ****                 data_obj_error = true;
+ 197:Service/Srv_Receiver.c ****                 break;
+ 198:Service/Srv_Receiver.c ****             }
+ 199:Service/Srv_Receiver.c **** 
+ 200:Service/Srv_Receiver.c ****             /* init inverter pin */
+ 201:Service/Srv_Receiver.c ****             // obj->inverter_init();
+ 202:Service/Srv_Receiver.c ****             // obj->invert_control();
+ 203:Service/Srv_Receiver.c **** 
+ 204:Service/Srv_Receiver.c ****             /* set max channel num */
+ 205:Service/Srv_Receiver.c ****             obj->channel_num = SBUS_MAX_CHANNEL;
+ 206:Service/Srv_Receiver.c **** 
+ 207:Service/Srv_Receiver.c ****             /* set receiver object frame object */
+ 208:Service/Srv_Receiver.c ****             obj->frame_api = (void *)&DevSBUS;
+ 209:Service/Srv_Receiver.c **** 
+ 210:Service/Srv_Receiver.c ****             if (!((DevSBUS_TypeDef *)(obj->frame_api))->init(To_SBUS_Obj(obj->frame_data_obj)))
+ 211:Service/Srv_Receiver.c ****                 return false;
+ 212:Service/Srv_Receiver.c ****             break;
+ 213:Service/Srv_Receiver.c **** 
+ 214:Service/Srv_Receiver.c ****         case Receiver_Type_CRSF:
+ 215:Service/Srv_Receiver.c ****             Uart_Receiver_Obj->baudrate = CRSF_BAUDRATE;
+ 216:Service/Srv_Receiver.c **** 
+ 217:Service/Srv_Receiver.c ****             /* create data obj */
+ 218:Service/Srv_Receiver.c ****             obj->frame_data_obj = SrvOsCommon.malloc(sizeof(DevCRSFObj_TypeDef));
+ 219:Service/Srv_Receiver.c ****             if (obj->frame_data_obj == NULL)
+ 220:Service/Srv_Receiver.c ****             {
+ 221:Service/Srv_Receiver.c ****                 data_obj_error = true;
+ 222:Service/Srv_Receiver.c ****                 break;
+ 223:Service/Srv_Receiver.c ****             }
+ 224:Service/Srv_Receiver.c **** 
+ 225:Service/Srv_Receiver.c ****             /* for crsf receiver we dont need inverter */
+ 226:Service/Srv_Receiver.c ****             obj->invert_control = NULL;
+ 227:Service/Srv_Receiver.c ****             obj->inverter_init = NULL;
+ 228:Service/Srv_Receiver.c **** 
+ 229:Service/Srv_Receiver.c ****             /* set max channel num */
+ 230:Service/Srv_Receiver.c ****             obj->channel_num = CRSF_MAX_CHANNEL;
+ 231:Service/Srv_Receiver.c **** 
+ 232:Service/Srv_Receiver.c ****             /* set receiver object frame object */
+ 233:Service/Srv_Receiver.c ****             obj->frame_api = &DevCRSF;
+ 234:Service/Srv_Receiver.c **** 
+ 235:Service/Srv_Receiver.c ****             if (!((DevCRSF_TypeDef *)(obj->frame_api))->init((DevCRSFObj_TypeDef *)(obj->frame_data
+ 236:Service/Srv_Receiver.c ****                 return false;
+ 237:Service/Srv_Receiver.c ****             break;
+ 238:Service/Srv_Receiver.c **** 
+ 239:Service/Srv_Receiver.c ****         default:
+ 240:Service/Srv_Receiver.c ****             return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 6
+
+
+ 241:Service/Srv_Receiver.c ****         }
+ 242:Service/Srv_Receiver.c **** 
+ 243:Service/Srv_Receiver.c ****         obj->data.val_list = (uint16_t *)SrvOsCommon.malloc(sizeof(uint16_t) * obj->channel_num);
+ 244:Service/Srv_Receiver.c ****         if (!obj->data.val_list)
+ 245:Service/Srv_Receiver.c ****         {
+ 246:Service/Srv_Receiver.c ****             SrvOsCommon.free(obj->data.val_list);
+ 247:Service/Srv_Receiver.c ****             return false;
+ 248:Service/Srv_Receiver.c ****         }
+ 249:Service/Srv_Receiver.c **** 
+ 250:Service/Srv_Receiver.c ****         obj->port = (SrvReceiver_Port_TypeDef *)SrvOsCommon.malloc(sizeof(SrvReceiver_Port_TypeDef)
+ 251:Service/Srv_Receiver.c ****         if (!obj->port)
+ 252:Service/Srv_Receiver.c ****         {
+ 253:Service/Srv_Receiver.c ****             SrvOsCommon.free(obj->data.val_list);
+ 254:Service/Srv_Receiver.c ****             return false;
+ 255:Service/Srv_Receiver.c ****         }
+ 256:Service/Srv_Receiver.c **** 
+ 257:Service/Srv_Receiver.c ****         if (data_obj_error)
+ 258:Service/Srv_Receiver.c ****         {
+ 259:Service/Srv_Receiver.c ****             ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Obj_Error, (uint8_t *)&SrvReceiver_
+ 260:Service/Srv_Receiver.c ****             return false;
+ 261:Service/Srv_Receiver.c ****         }
+ 262:Service/Srv_Receiver.c **** 
+ 263:Service/Srv_Receiver.c ****         /* set uart init parameter */
+ 264:Service/Srv_Receiver.c ****         Uart_Receiver_Obj->rx_buf = SrvReceiver_Buff;
+ 265:Service/Srv_Receiver.c ****         Uart_Receiver_Obj->rx_size = SRV_RECEIVER_BUFF_SIZE;
+ 266:Service/Srv_Receiver.c ****         Uart_Receiver_Obj->cust_data_addr = (uint32_t)obj;
+ 267:Service/Srv_Receiver.c **** 
+ 268:Service/Srv_Receiver.c ****         /* set uart callback */
+ 269:Service/Srv_Receiver.c ****         Uart_Receiver_Obj->RxCallback = (BspUART_Callback)SrvReceiver_SerialDecode_Callback;
+ 270:Service/Srv_Receiver.c **** 
+ 271:Service/Srv_Receiver.c ****         /* serial port init */
+ 272:Service/Srv_Receiver.c ****         if (!BspUart.init(Uart_Receiver_Obj))
+ 273:Service/Srv_Receiver.c ****         {
+ 274:Service/Srv_Receiver.c ****             ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Port_Init_Error, (uint8_t *)&SrvRec
+ 275:Service/Srv_Receiver.c ****             return false;
+ 276:Service/Srv_Receiver.c ****         }
+ 277:Service/Srv_Receiver.c **** 
+ 278:Service/Srv_Receiver.c ****         obj->port->api = &BspUart;
+ 279:Service/Srv_Receiver.c ****         obj->port->cfg = Uart_Receiver_Obj;
+ 280:Service/Srv_Receiver.c ****         break;
+ 281:Service/Srv_Receiver.c **** 
+ 282:Service/Srv_Receiver.c ****     case Receiver_Port_Spi:
+ 283:Service/Srv_Receiver.c ****         /* spi port init */
+ 284:Service/Srv_Receiver.c ****         break;
+ 285:Service/Srv_Receiver.c **** 
+ 286:Service/Srv_Receiver.c ****     default:
+ 287:Service/Srv_Receiver.c ****         ErrorLog.trigger(SrvReceiver_Error_Handle, Receiver_Obj_Error, (uint8_t *)&SrvReceiver_Moni
+ 288:Service/Srv_Receiver.c ****         return false;
+ 289:Service/Srv_Receiver.c ****     }
+ 290:Service/Srv_Receiver.c **** 
+ 291:Service/Srv_Receiver.c ****     obj->invert_list = 0;
+ 292:Service/Srv_Receiver.c **** 
+ 293:Service/Srv_Receiver.c ****     return true;
+ 294:Service/Srv_Receiver.c **** }
+ 295:Service/Srv_Receiver.c **** 
+ 296:Service/Srv_Receiver.c **** static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_obj, uint8_t *p_data
+ 297:Service/Srv_Receiver.c **** {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 7
+
+
+ 298:Service/Srv_Receiver.c ****     BspUARTObj_TypeDef *uart_obj = NULL;
+ 299:Service/Srv_Receiver.c ****     uint8_t *rx_buff_ptr = NULL;
+ 300:Service/Srv_Receiver.c ****     uint8_t decode_out = 0xFF;
+ 301:Service/Srv_Receiver.c ****     bool sig_update = false;
+ 302:Service/Srv_Receiver.c **** 
+ 303:Service/Srv_Receiver.c ****     if (receiver_obj && receiver_obj->frame_api && receiver_obj->port && receiver_obj->frame_data_o
+ 304:Service/Srv_Receiver.c ****     {
+ 305:Service/Srv_Receiver.c ****         if (receiver_obj->port_type == Receiver_Port_Serial)
+ 306:Service/Srv_Receiver.c ****         {
+ 307:Service/Srv_Receiver.c ****             /* do serial decode funtion */
+ 308:Service/Srv_Receiver.c ****             if (receiver_obj->Frame_type == Receiver_Type_CRSF)
+ 309:Service/Srv_Receiver.c ****             {
+ 310:Service/Srv_Receiver.c ****                 decode_out = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->decode(To_CRSF_Obj(rec
+ 311:Service/Srv_Receiver.c ****                 sig_update = true;
+ 312:Service/Srv_Receiver.c **** 
+ 313:Service/Srv_Receiver.c ****                 switch (decode_out)
+ 314:Service/Srv_Receiver.c ****                 {
+ 315:Service/Srv_Receiver.c ****                     case CRSF_FRAMETYPE_LINK_STATISTICS:
+ 316:Service/Srv_Receiver.c ****                         receiver_obj->data.rssi = ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->g
+ 317:Service/Srv_Receiver.c ****                         receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_
+ 318:Service/Srv_Receiver.c ****                         receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->fram
+ 319:Service/Srv_Receiver.c ****                         break;
+ 320:Service/Srv_Receiver.c **** 
+ 321:Service/Srv_Receiver.c ****                     case CRSF_FRAMETYPE_RC_CHANNELS_PACKED:
+ 322:Service/Srv_Receiver.c ****                         // DebugPin.ctl(Debug_PC8, false);
+ 323:Service/Srv_Receiver.c ****                         ((DevCRSF_TypeDef *)(receiver_obj->frame_api))->get_channel(To_CRSF_Obj(rec
+ 324:Service/Srv_Receiver.c **** 
+ 325:Service/Srv_Receiver.c ****                         for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
+ 326:Service/Srv_Receiver.c ****                         {
+ 327:Service/Srv_Receiver.c ****                             if (receiver_obj->data.val_list[i] < CRSF_DIGITAL_CHANNEL_MIN)
+ 328:Service/Srv_Receiver.c ****                             {
+ 329:Service/Srv_Receiver.c ****                                 receiver_obj->data.val_list[i] = CRSF_DIGITAL_CHANNEL_MIN;
+ 330:Service/Srv_Receiver.c ****                             }
+ 331:Service/Srv_Receiver.c ****                             else if (receiver_obj->data.val_list[i] > CRSF_DIGITAL_CHANNEL_MAX)
+ 332:Service/Srv_Receiver.c ****                             {
+ 333:Service/Srv_Receiver.c ****                                 receiver_obj->data.val_list[i] = CRSF_DIGITAL_CHANNEL_MAX;
+ 334:Service/Srv_Receiver.c ****                             }
+ 335:Service/Srv_Receiver.c **** 
+ 336:Service/Srv_Receiver.c ****                             if (receiver_obj->invert_list && (receiver_obj->invert_list & 1 << i))
+ 337:Service/Srv_Receiver.c ****                             {
+ 338:Service/Srv_Receiver.c ****                                 receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
+ 339:Service/Srv_Receiver.c ****                                 receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->
+ 340:Service/Srv_Receiver.c ****                             }
+ 341:Service/Srv_Receiver.c ****                         }
+ 342:Service/Srv_Receiver.c **** 
+ 343:Service/Srv_Receiver.c ****                         receiver_obj->data.failsafe = false;
+ 344:Service/Srv_Receiver.c ****                         // DebugPin.ctl(Debug_PC8, true);
+ 345:Service/Srv_Receiver.c **** 
+ 346:Service/Srv_Receiver.c ****                         /* set decode time stamp */
+ 347:Service/Srv_Receiver.c ****                         receiver_obj->data.time_stamp = SrvOsCommon.get_os_ms();
+ 348:Service/Srv_Receiver.c ****                         break;
+ 349:Service/Srv_Receiver.c **** 
+ 350:Service/Srv_Receiver.c ****                     default:
+ 351:Service/Srv_Receiver.c ****                         sig_update = false;
+ 352:Service/Srv_Receiver.c ****                         return;
+ 353:Service/Srv_Receiver.c ****                 }
+ 354:Service/Srv_Receiver.c ****             }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 8
+
+
+ 355:Service/Srv_Receiver.c ****             else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
+ 356:Service/Srv_Receiver.c ****             {
+ 357:Service/Srv_Receiver.c ****                 if (((DevSBUS_TypeDef *)(receiver_obj->frame_api))->decode(To_SBUS_Obj(receiver_obj
+ 358:Service/Srv_Receiver.c ****                 {
+ 359:Service/Srv_Receiver.c ****                     sig_update = true;
+ 360:Service/Srv_Receiver.c ****                     for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
+ 361:Service/Srv_Receiver.c ****                     {
+ 362:Service/Srv_Receiver.c ****                         receiver_obj->data.val_list[i] = (To_SBUS_Obj(receiver_obj->frame_data_obj)
+ 363:Service/Srv_Receiver.c **** 
+ 364:Service/Srv_Receiver.c ****                         if (receiver_obj->invert_list && receiver_obj->invert_list & 1 << i)
+ 365:Service/Srv_Receiver.c ****                         {
+ 366:Service/Srv_Receiver.c ****                             receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
+ 367:Service/Srv_Receiver.c ****                             receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data
+ 368:Service/Srv_Receiver.c ****                         }
+ 369:Service/Srv_Receiver.c ****                     }
+ 370:Service/Srv_Receiver.c ****                 }
+ 371:Service/Srv_Receiver.c ****             }
+ 372:Service/Srv_Receiver.c **** 
+ 373:Service/Srv_Receiver.c ****             receiver_obj->re_update = false;            
+ 374:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 375:Service/Srv_Receiver.c ****                 receiver_obj->re_update = true;
+ 376:Service/Srv_Receiver.c **** 
+ 377:Service/Srv_Receiver.c ****             /* clear serial obj received data */
+ 378:Service/Srv_Receiver.c ****             if (receiver_obj->port->cfg)
+ 379:Service/Srv_Receiver.c ****             {
+ 380:Service/Srv_Receiver.c ****                 uart_obj = ((BspUARTObj_TypeDef *)(receiver_obj->port->cfg));
+ 381:Service/Srv_Receiver.c **** 
+ 382:Service/Srv_Receiver.c ****                 rx_buff_ptr = uart_obj->rx_buf;
+ 383:Service/Srv_Receiver.c **** 
+ 384:Service/Srv_Receiver.c ****                 if (rx_buff_ptr)
+ 385:Service/Srv_Receiver.c ****                     memset(rx_buff_ptr, 0, size);
+ 386:Service/Srv_Receiver.c ****             }
+ 387:Service/Srv_Receiver.c ****         }
+ 388:Service/Srv_Receiver.c ****     }
+ 389:Service/Srv_Receiver.c **** }
+ 390:Service/Srv_Receiver.c **** 
+ 391:Service/Srv_Receiver.c **** static bool SrvReceiver_Check(SrvReceiverObj_TypeDef *receiver_obj)
+ 392:Service/Srv_Receiver.c **** {
+  49              		.loc 1 392 1 is_stmt 1 view -0
+  50              		.cfi_startproc
+  51              		@ args = 0, pretend = 0, frame = 8
+  52              		@ frame_needed = 0, uses_anonymous_args = 0
+  53              		.loc 1 392 1 is_stmt 0 view .LVU4
+  54 0000 10B5     		push	{r4, lr}
+  55              	.LCFI0:
+  56              		.cfi_def_cfa_offset 8
+  57              		.cfi_offset 4, -8
+  58              		.cfi_offset 14, -4
+  59 0002 82B0     		sub	sp, sp, #8
+  60              	.LCFI1:
+  61              		.cfi_def_cfa_offset 16
+  62 0004 0446     		mov	r4, r0
+ 393:Service/Srv_Receiver.c ****     volatile uint32_t sys_time = SrvOsCommon.get_os_ms();
+  63              		.loc 1 393 5 is_stmt 1 view .LVU5
+  64              		.loc 1 393 45 is_stmt 0 view .LVU6
+  65 0006 184B     		ldr	r3, .L15
+  66 0008 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 9
+
+
+  67              		.loc 1 393 34 view .LVU7
+  68 000a 9847     		blx	r3
+  69              	.LVL1:
+  70              		.loc 1 393 23 view .LVU8
+  71 000c 0190     		str	r0, [sp, #4]
+ 394:Service/Srv_Receiver.c **** 
+ 395:Service/Srv_Receiver.c ****     /* update check */
+ 396:Service/Srv_Receiver.c ****     /* update frequence less than 10hz switch into failsafe */
+ 397:Service/Srv_Receiver.c ****     if (receiver_obj->data.time_stamp && \
+  72              		.loc 1 397 5 is_stmt 1 view .LVU9
+  73              		.loc 1 397 27 is_stmt 0 view .LVU10
+  74 000e A368     		ldr	r3, [r4, #8]
+  75              		.loc 1 397 8 view .LVU11
+  76 0010 6BB1     		cbz	r3, .L7
+ 398:Service/Srv_Receiver.c ****         ((sys_time - receiver_obj->data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS))
+  77              		.loc 1 398 20 discriminator 1 view .LVU12
+  78 0012 019A     		ldr	r2, [sp, #4]
+  79 0014 D31A     		subs	r3, r2, r3
+ 397:Service/Srv_Receiver.c ****         ((sys_time - receiver_obj->data.time_stamp) > SRV_RECEIVER_UPDATE_TIMEOUT_MS))
+  80              		.loc 1 397 39 discriminator 1 view .LVU13
+  81 0016 642B     		cmp	r3, #100
+  82 0018 01D8     		bhi	.L13
+  83 001a 0022     		movs	r2, #0
+  84 001c 08E0     		b	.L5
+  85              	.L13:
+  86              	.LBB2:
+ 399:Service/Srv_Receiver.c ****     {
+ 400:Service/Srv_Receiver.c ****         volatile uint8_t test;
+  87              		.loc 1 400 9 is_stmt 1 view .LVU14
+ 401:Service/Srv_Receiver.c ****         test ++;
+  88              		.loc 1 401 9 view .LVU15
+  89              		.loc 1 401 14 is_stmt 0 view .LVU16
+  90 001e 9DF80330 		ldrb	r3, [sp, #3]	@ zero_extendqisi2
+  91 0022 0133     		adds	r3, r3, #1
+  92 0024 DBB2     		uxtb	r3, r3
+  93 0026 8DF80330 		strb	r3, [sp, #3]
+ 402:Service/Srv_Receiver.c ****         return false;
+  94              		.loc 1 402 9 is_stmt 1 view .LVU17
+  95              		.loc 1 402 16 is_stmt 0 view .LVU18
+  96 002a 0020     		movs	r0, #0
+  97 002c 15E0     		b	.L4
+  98              	.L7:
+  99              	.LBE2:
+ 100 002e 0022     		movs	r2, #0
+ 101              	.L5:
+ 102              	.LVL2:
+ 103              	.LBB3:
+ 403:Service/Srv_Receiver.c ****     }
+ 404:Service/Srv_Receiver.c **** 
+ 405:Service/Srv_Receiver.c ****     /* range check */
+ 406:Service/Srv_Receiver.c ****     for (uint8_t i = 0; i < receiver_obj->channel_num; i++)
+ 104              		.loc 1 406 25 is_stmt 1 discriminator 1 view .LVU19
+ 105              		.loc 1 406 41 is_stmt 0 discriminator 1 view .LVU20
+ 106 0030 A378     		ldrb	r3, [r4, #2]	@ zero_extendqisi2
+ 107              		.loc 1 406 5 discriminator 1 view .LVU21
+ 108 0032 9342     		cmp	r3, r2
+ 109 0034 0AD9     		bls	.L14
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 10
+
+
+ 407:Service/Srv_Receiver.c ****     {
+ 408:Service/Srv_Receiver.c ****         if ((receiver_obj->data.val_list[i] > CHANNEL_RANGE_MAX) || (receiver_obj->data.val_list[i]
+ 110              		.loc 1 408 9 is_stmt 1 view .LVU22
+ 111              		.loc 1 408 32 is_stmt 0 view .LVU23
+ 112 0036 E368     		ldr	r3, [r4, #12]
+ 113              		.loc 1 408 41 view .LVU24
+ 114 0038 33F81230 		ldrh	r3, [r3, r2, lsl #1]
+ 115              		.loc 1 408 66 view .LVU25
+ 116 003c 643B     		subs	r3, r3, #100
+ 117 003e 9BB2     		uxth	r3, r3
+ 118              		.loc 1 408 12 view .LVU26
+ 119 0040 B3F5E16F 		cmp	r3, #1800
+ 120 0044 08D8     		bhi	.L9
+ 406:Service/Srv_Receiver.c ****     {
+ 121              		.loc 1 406 56 is_stmt 1 discriminator 2 view .LVU27
+ 406:Service/Srv_Receiver.c ****     {
+ 122              		.loc 1 406 57 is_stmt 0 discriminator 2 view .LVU28
+ 123 0046 0132     		adds	r2, r2, #1
+ 124              	.LVL3:
+ 406:Service/Srv_Receiver.c ****     {
+ 125              		.loc 1 406 57 discriminator 2 view .LVU29
+ 126 0048 D2B2     		uxtb	r2, r2
+ 127              	.LVL4:
+ 406:Service/Srv_Receiver.c ****     {
+ 128              		.loc 1 406 57 discriminator 2 view .LVU30
+ 129 004a F1E7     		b	.L5
+ 130              	.L14:
+ 406:Service/Srv_Receiver.c ****     {
+ 131              		.loc 1 406 57 discriminator 2 view .LVU31
+ 132              	.LBE3:
+ 409:Service/Srv_Receiver.c ****             return false;
+ 410:Service/Srv_Receiver.c ****     }
+ 411:Service/Srv_Receiver.c **** 
+ 412:Service/Srv_Receiver.c ****     /* check RSSI Or Statistics Data */
+ 413:Service/Srv_Receiver.c ****     if (receiver_obj->Frame_type == Receiver_Type_CRSF)
+ 133              		.loc 1 413 5 is_stmt 1 view .LVU32
+ 134              		.loc 1 413 21 is_stmt 0 view .LVU33
+ 135 004c 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 136              		.loc 1 413 8 view .LVU34
+ 137 004e 012B     		cmp	r3, #1
+ 138 0050 05D0     		beq	.L10
+ 414:Service/Srv_Receiver.c ****     {
+ 415:Service/Srv_Receiver.c ****         /* check CRSF Statistics Data */
+ 416:Service/Srv_Receiver.c ****         // if ((receiver_obj->data.rssi < SRV_RECEIVER_MIN_RSSI) ||
+ 417:Service/Srv_Receiver.c ****         //     (receiver_obj->data.link_quality < SRV_RECEIVER_MIN_LINKQUALITY) ||
+ 418:Service/Srv_Receiver.c ****         //     (receiver_obj->data.active_antenna < SRV_RECEIVER_MIN_ANTENNA_VALUE))
+ 419:Service/Srv_Receiver.c ****         //    return false;
+ 420:Service/Srv_Receiver.c ****     }
+ 421:Service/Srv_Receiver.c ****     else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
+ 139              		.loc 1 421 10 is_stmt 1 view .LVU35
+ 140              		.loc 1 421 13 is_stmt 0 view .LVU36
+ 141 0052 33B1     		cbz	r3, .L11
+ 422:Service/Srv_Receiver.c ****     {
+ 423:Service/Srv_Receiver.c ****         /* check SBUS Last Byte Functional Bit Or check RSSI */
+ 424:Service/Srv_Receiver.c ****         /* currently we don't have any sbus device for testing */
+ 425:Service/Srv_Receiver.c ****         /* return false currently */
+ 426:Service/Srv_Receiver.c ****         return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 11
+
+
+ 427:Service/Srv_Receiver.c ****     }
+ 428:Service/Srv_Receiver.c **** 
+ 429:Service/Srv_Receiver.c ****     return true;
+ 142              		.loc 1 429 12 view .LVU37
+ 143 0054 0120     		movs	r0, #1
+ 144 0056 00E0     		b	.L4
+ 145              	.L9:
+ 146              	.LBB4:
+ 409:Service/Srv_Receiver.c ****     }
+ 147              		.loc 1 409 20 view .LVU38
+ 148 0058 0020     		movs	r0, #0
+ 149              	.LVL5:
+ 150              	.L4:
+ 409:Service/Srv_Receiver.c ****     }
+ 151              		.loc 1 409 20 view .LVU39
+ 152              	.LBE4:
+ 430:Service/Srv_Receiver.c **** }
+ 153              		.loc 1 430 1 view .LVU40
+ 154 005a 02B0     		add	sp, sp, #8
+ 155              	.LCFI2:
+ 156              		.cfi_remember_state
+ 157              		.cfi_def_cfa_offset 8
+ 158              		@ sp needed
+ 159 005c 10BD     		pop	{r4, pc}
+ 160              	.LVL6:
+ 161              	.L10:
+ 162              	.LCFI3:
+ 163              		.cfi_restore_state
+ 429:Service/Srv_Receiver.c **** }
+ 164              		.loc 1 429 12 view .LVU41
+ 165 005e 0120     		movs	r0, #1
+ 166 0060 FBE7     		b	.L4
+ 167              	.L11:
+ 426:Service/Srv_Receiver.c ****     }
+ 168              		.loc 1 426 16 view .LVU42
+ 169 0062 0020     		movs	r0, #0
+ 170 0064 F9E7     		b	.L4
+ 171              	.L16:
+ 172 0066 00BF     		.align	2
+ 173              	.L15:
+ 174 0068 00000000 		.word	SrvOsCommon
+ 175              		.cfi_endproc
+ 176              	.LFE146:
+ 178              		.section	.text.SrvReceiver_Set_Invert,"ax",%progbits
+ 179              		.align	1
+ 180              		.syntax unified
+ 181              		.thumb
+ 182              		.thumb_func
+ 184              	SrvReceiver_Set_Invert:
+ 185              	.LVL7:
+ 186              	.LFB147:
+ 431:Service/Srv_Receiver.c **** 
+ 432:Service/Srv_Receiver.c **** static void SrvReceiver_Set_Invert(SrvReceiverObj_TypeDef *receiver_obj, uint16_t channel_index)
+ 433:Service/Srv_Receiver.c **** {
+ 187              		.loc 1 433 1 is_stmt 1 view -0
+ 188              		.cfi_startproc
+ 189              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 12
+
+
+ 190              		@ frame_needed = 0, uses_anonymous_args = 0
+ 191              		@ link register save eliminated.
+ 434:Service/Srv_Receiver.c ****     if (receiver_obj && (channel_index < receiver_obj->channel_num))
+ 192              		.loc 1 434 5 view .LVU44
+ 193              		.loc 1 434 8 is_stmt 0 view .LVU45
+ 194 0000 0346     		mov	r3, r0
+ 195 0002 70B1     		cbz	r0, .L17
+ 196              		.loc 1 434 54 discriminator 1 view .LVU46
+ 197 0004 8278     		ldrb	r2, [r0, #2]	@ zero_extendqisi2
+ 198              		.loc 1 434 22 discriminator 1 view .LVU47
+ 199 0006 8A42     		cmp	r2, r1
+ 200 0008 0BD9     		bls	.L17
+ 435:Service/Srv_Receiver.c ****     {
+ 436:Service/Srv_Receiver.c ****         if (receiver_obj->invert_list & (1 << channel_index))
+ 201              		.loc 1 436 9 is_stmt 1 view .LVU48
+ 202              		.loc 1 436 25 is_stmt 0 view .LVU49
+ 203 000a 426A     		ldr	r2, [r0, #36]
+ 204              		.loc 1 436 44 view .LVU50
+ 205 000c 0120     		movs	r0, #1
+ 206              	.LVL8:
+ 207              		.loc 1 436 44 view .LVU51
+ 208 000e 00FA01F1 		lsl	r1, r0, r1
+ 209              	.LVL9:
+ 210              		.loc 1 436 12 view .LVU52
+ 211 0012 0A42     		tst	r2, r1
+ 212 0014 03D0     		beq	.L19
+ 437:Service/Srv_Receiver.c ****         {
+ 438:Service/Srv_Receiver.c ****             receiver_obj->invert_list &= ~(1 << channel_index);
+ 213              		.loc 1 438 13 is_stmt 1 view .LVU53
+ 214              		.loc 1 438 39 is_stmt 0 view .LVU54
+ 215 0016 22EA0102 		bic	r2, r2, r1
+ 216 001a 5A62     		str	r2, [r3, #36]
+ 217 001c 7047     		bx	lr
+ 218              	.L19:
+ 439:Service/Srv_Receiver.c ****         }
+ 440:Service/Srv_Receiver.c ****         else
+ 441:Service/Srv_Receiver.c ****         {
+ 442:Service/Srv_Receiver.c ****             receiver_obj->invert_list |= (1 << channel_index);
+ 219              		.loc 1 442 13 is_stmt 1 view .LVU55
+ 220              		.loc 1 442 39 is_stmt 0 view .LVU56
+ 221 001e 0A43     		orrs	r2, r2, r1
+ 222 0020 5A62     		str	r2, [r3, #36]
+ 223              	.L17:
+ 443:Service/Srv_Receiver.c ****         }
+ 444:Service/Srv_Receiver.c ****     }
+ 445:Service/Srv_Receiver.c **** }
+ 224              		.loc 1 445 1 view .LVU57
+ 225 0022 7047     		bx	lr
+ 226              		.cfi_endproc
+ 227              	.LFE147:
+ 229              		.section	.text.SrvReceiver_Get_Scope,"ax",%progbits
+ 230              		.align	1
+ 231              		.syntax unified
+ 232              		.thumb
+ 233              		.thumb_func
+ 235              	SrvReceiver_Get_Scope:
+ 236              	.LVL10:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 13
+
+
+ 237              	.LFB149:
+ 446:Service/Srv_Receiver.c **** 
+ 447:Service/Srv_Receiver.c **** static SrvReceiverData_TypeDef SrvReceiver_Get_Value(SrvReceiverObj_TypeDef *receiver_obj)
+ 448:Service/Srv_Receiver.c **** {
+ 449:Service/Srv_Receiver.c ****     SrvReceiverData_TypeDef receiver_data_tmp;
+ 450:Service/Srv_Receiver.c **** 
+ 451:Service/Srv_Receiver.c ****     memset(&receiver_data_tmp, 0, sizeof(receiver_data_tmp));
+ 452:Service/Srv_Receiver.c ****     receiver_data_tmp.failsafe = true;
+ 453:Service/Srv_Receiver.c **** 
+ 454:Service/Srv_Receiver.c ****     if (receiver_obj == NULL)
+ 455:Service/Srv_Receiver.c ****         return receiver_data_tmp;
+ 456:Service/Srv_Receiver.c **** 
+ 457:Service/Srv_Receiver.c **** re_do:
+ 458:Service/Srv_Receiver.c ****     receiver_obj->in_use = true;
+ 459:Service/Srv_Receiver.c **** 
+ 460:Service/Srv_Receiver.c ****     if (!SrvReceiver_Check(receiver_obj))
+ 461:Service/Srv_Receiver.c ****         return receiver_data_tmp;
+ 462:Service/Srv_Receiver.c **** 
+ 463:Service/Srv_Receiver.c ****     receiver_data_tmp.failsafe = false;
+ 464:Service/Srv_Receiver.c ****     receiver_data_tmp = receiver_obj->data;
+ 465:Service/Srv_Receiver.c **** 
+ 466:Service/Srv_Receiver.c ****     receiver_obj->in_use = false;
+ 467:Service/Srv_Receiver.c **** 
+ 468:Service/Srv_Receiver.c ****     if (receiver_obj->re_update)
+ 469:Service/Srv_Receiver.c ****     {
+ 470:Service/Srv_Receiver.c ****         receiver_obj->re_update = false;
+ 471:Service/Srv_Receiver.c ****         goto re_do;
+ 472:Service/Srv_Receiver.c ****     }
+ 473:Service/Srv_Receiver.c **** 
+ 474:Service/Srv_Receiver.c ****     return receiver_data_tmp;
+ 475:Service/Srv_Receiver.c **** }
+ 476:Service/Srv_Receiver.c **** 
+ 477:Service/Srv_Receiver.c **** static bool SrvReceiver_Get_Scope(SrvReceiverObj_TypeDef *receiver_obj, int16_t *max, int16_t *mid,
+ 478:Service/Srv_Receiver.c **** {
+ 238              		.loc 1 478 1 is_stmt 1 view -0
+ 239              		.cfi_startproc
+ 240              		@ args = 0, pretend = 0, frame = 0
+ 241              		@ frame_needed = 0, uses_anonymous_args = 0
+ 242              		@ link register save eliminated.
+ 479:Service/Srv_Receiver.c ****     if(receiver_obj && max && mid && min)
+ 243              		.loc 1 479 5 view .LVU59
+ 244              		.loc 1 479 7 is_stmt 0 view .LVU60
+ 245 0000 88B1     		cbz	r0, .L22
+ 246              		.loc 1 479 21 discriminator 1 view .LVU61
+ 247 0002 91B1     		cbz	r1, .L23
+ 248              		.loc 1 479 28 discriminator 2 view .LVU62
+ 249 0004 9AB1     		cbz	r2, .L24
+ 250              		.loc 1 479 35 discriminator 3 view .LVU63
+ 251 0006 A3B1     		cbz	r3, .L25
+ 480:Service/Srv_Receiver.c ****     {
+ 481:Service/Srv_Receiver.c ****         switch((uint8_t)receiver_obj->Frame_type)
+ 252              		.loc 1 481 9 is_stmt 1 view .LVU64
+ 253              		.loc 1 481 37 is_stmt 0 view .LVU65
+ 254 0008 0078     		ldrb	r0, [r0]	@ zero_extendqisi2
+ 255              	.LVL11:
+ 256              		.loc 1 481 9 view .LVU66
+ 257 000a 0128     		cmp	r0, #1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 14
+
+
+ 258 000c 01D0     		beq	.L27
+ 482:Service/Srv_Receiver.c ****         {
+ 483:Service/Srv_Receiver.c ****             case Receiver_Type_CRSF:
+ 484:Service/Srv_Receiver.c ****                 (*max) = CRSF_DIGITAL_CHANNEL_MAX;
+ 485:Service/Srv_Receiver.c ****                 (*mid) = CRSF_DIGITAL_CHANNEL_MID;
+ 486:Service/Srv_Receiver.c ****                 (*min) = CRSF_DIGITAL_CHANNEL_MIN;
+ 487:Service/Srv_Receiver.c ****                 return true;
+ 488:Service/Srv_Receiver.c **** 
+ 489:Service/Srv_Receiver.c ****             case Receiver_Type_Sbus:
+ 490:Service/Srv_Receiver.c ****                 return false;
+ 259              		.loc 1 490 24 view .LVU67
+ 260 000e 0020     		movs	r0, #0
+ 491:Service/Srv_Receiver.c **** 
+ 492:Service/Srv_Receiver.c ****             default:
+ 493:Service/Srv_Receiver.c ****                 return false;  
+ 494:Service/Srv_Receiver.c ****         }
+ 495:Service/Srv_Receiver.c ****     }
+ 496:Service/Srv_Receiver.c **** 
+ 497:Service/Srv_Receiver.c ****     return false;
+ 498:Service/Srv_Receiver.c **** }
+ 261              		.loc 1 498 1 view .LVU68
+ 262 0010 7047     		bx	lr
+ 263              	.L27:
+ 484:Service/Srv_Receiver.c ****                 (*mid) = CRSF_DIGITAL_CHANNEL_MID;
+ 264              		.loc 1 484 17 is_stmt 1 view .LVU69
+ 484:Service/Srv_Receiver.c ****                 (*mid) = CRSF_DIGITAL_CHANNEL_MID;
+ 265              		.loc 1 484 24 is_stmt 0 view .LVU70
+ 266 0012 4FF4E160 		mov	r0, #1800
+ 267 0016 0880     		strh	r0, [r1]	@ movhi
+ 485:Service/Srv_Receiver.c ****                 (*min) = CRSF_DIGITAL_CHANNEL_MIN;
+ 268              		.loc 1 485 17 is_stmt 1 view .LVU71
+ 485:Service/Srv_Receiver.c ****                 (*min) = CRSF_DIGITAL_CHANNEL_MIN;
+ 269              		.loc 1 485 24 is_stmt 0 view .LVU72
+ 270 0018 4FF47871 		mov	r1, #992
+ 271              	.LVL12:
+ 485:Service/Srv_Receiver.c ****                 (*min) = CRSF_DIGITAL_CHANNEL_MIN;
+ 272              		.loc 1 485 24 view .LVU73
+ 273 001c 1180     		strh	r1, [r2]	@ movhi
+ 486:Service/Srv_Receiver.c ****                 return true;
+ 274              		.loc 1 486 17 is_stmt 1 view .LVU74
+ 486:Service/Srv_Receiver.c ****                 return true;
+ 275              		.loc 1 486 24 is_stmt 0 view .LVU75
+ 276 001e B422     		movs	r2, #180
+ 277              	.LVL13:
+ 486:Service/Srv_Receiver.c ****                 return true;
+ 278              		.loc 1 486 24 view .LVU76
+ 279 0020 1A80     		strh	r2, [r3]	@ movhi
+ 487:Service/Srv_Receiver.c **** 
+ 280              		.loc 1 487 17 is_stmt 1 view .LVU77
+ 487:Service/Srv_Receiver.c **** 
+ 281              		.loc 1 487 24 is_stmt 0 view .LVU78
+ 282 0022 0120     		movs	r0, #1
+ 283 0024 7047     		bx	lr
+ 284              	.LVL14:
+ 285              	.L22:
+ 497:Service/Srv_Receiver.c **** }
+ 286              		.loc 1 497 12 view .LVU79
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 15
+
+
+ 287 0026 0020     		movs	r0, #0
+ 288              	.LVL15:
+ 497:Service/Srv_Receiver.c **** }
+ 289              		.loc 1 497 12 view .LVU80
+ 290 0028 7047     		bx	lr
+ 291              	.LVL16:
+ 292              	.L23:
+ 497:Service/Srv_Receiver.c **** }
+ 293              		.loc 1 497 12 view .LVU81
+ 294 002a 0020     		movs	r0, #0
+ 295              	.LVL17:
+ 497:Service/Srv_Receiver.c **** }
+ 296              		.loc 1 497 12 view .LVU82
+ 297 002c 7047     		bx	lr
+ 298              	.LVL18:
+ 299              	.L24:
+ 497:Service/Srv_Receiver.c **** }
+ 300              		.loc 1 497 12 view .LVU83
+ 301 002e 0020     		movs	r0, #0
+ 302              	.LVL19:
+ 497:Service/Srv_Receiver.c **** }
+ 303              		.loc 1 497 12 view .LVU84
+ 304 0030 7047     		bx	lr
+ 305              	.LVL20:
+ 306              	.L25:
+ 497:Service/Srv_Receiver.c **** }
+ 307              		.loc 1 497 12 view .LVU85
+ 308 0032 0020     		movs	r0, #0
+ 309              	.LVL21:
+ 497:Service/Srv_Receiver.c **** }
+ 310              		.loc 1 497 12 view .LVU86
+ 311 0034 7047     		bx	lr
+ 312              		.cfi_endproc
+ 313              	.LFE149:
+ 315              		.section	.text.SrvReceiver_Get_Value,"ax",%progbits
+ 316              		.align	1
+ 317              		.syntax unified
+ 318              		.thumb
+ 319              		.thumb_func
+ 321              	SrvReceiver_Get_Value:
+ 322              	.LVL22:
+ 323              	.LFB148:
+ 448:Service/Srv_Receiver.c ****     SrvReceiverData_TypeDef receiver_data_tmp;
+ 324              		.loc 1 448 1 is_stmt 1 view -0
+ 325              		.cfi_startproc
+ 326              		@ args = 0, pretend = 0, frame = 16
+ 327              		@ frame_needed = 0, uses_anonymous_args = 0
+ 448:Service/Srv_Receiver.c ****     SrvReceiverData_TypeDef receiver_data_tmp;
+ 328              		.loc 1 448 1 is_stmt 0 view .LVU88
+ 329 0000 30B5     		push	{r4, r5, lr}
+ 330              	.LCFI4:
+ 331              		.cfi_def_cfa_offset 12
+ 332              		.cfi_offset 4, -12
+ 333              		.cfi_offset 5, -8
+ 334              		.cfi_offset 14, -4
+ 335 0002 85B0     		sub	sp, sp, #20
+ 336              	.LCFI5:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 16
+
+
+ 337              		.cfi_def_cfa_offset 32
+ 338 0004 0546     		mov	r5, r0
+ 449:Service/Srv_Receiver.c **** 
+ 339              		.loc 1 449 5 is_stmt 1 view .LVU89
+ 451:Service/Srv_Receiver.c ****     receiver_data_tmp.failsafe = true;
+ 340              		.loc 1 451 5 view .LVU90
+ 341 0006 0023     		movs	r3, #0
+ 342 0008 0093     		str	r3, [sp]
+ 343 000a 0193     		str	r3, [sp, #4]
+ 344 000c 0293     		str	r3, [sp, #8]
+ 345 000e 0393     		str	r3, [sp, #12]
+ 452:Service/Srv_Receiver.c **** 
+ 346              		.loc 1 452 5 view .LVU91
+ 452:Service/Srv_Receiver.c **** 
+ 347              		.loc 1 452 32 is_stmt 0 view .LVU92
+ 348 0010 0123     		movs	r3, #1
+ 349 0012 8DF80D30 		strb	r3, [sp, #13]
+ 454:Service/Srv_Receiver.c ****         return receiver_data_tmp;
+ 350              		.loc 1 454 5 is_stmt 1 view .LVU93
+ 454:Service/Srv_Receiver.c ****         return receiver_data_tmp;
+ 351              		.loc 1 454 8 is_stmt 0 view .LVU94
+ 352 0016 0C46     		mov	r4, r1
+ 353 0018 C9B1     		cbz	r1, .L34
+ 354              	.LVL23:
+ 355              	.L29:
+ 458:Service/Srv_Receiver.c **** 
+ 356              		.loc 1 458 5 is_stmt 1 view .LVU95
+ 458:Service/Srv_Receiver.c **** 
+ 357              		.loc 1 458 26 is_stmt 0 view .LVU96
+ 358 001a 0123     		movs	r3, #1
+ 359 001c 84F82130 		strb	r3, [r4, #33]
+ 460:Service/Srv_Receiver.c ****         return receiver_data_tmp;
+ 360              		.loc 1 460 5 is_stmt 1 view .LVU97
+ 460:Service/Srv_Receiver.c ****         return receiver_data_tmp;
+ 361              		.loc 1 460 10 is_stmt 0 view .LVU98
+ 362 0020 2046     		mov	r0, r4
+ 363 0022 FFF7FEFF 		bl	SrvReceiver_Check
+ 364              	.LVL24:
+ 460:Service/Srv_Receiver.c ****         return receiver_data_tmp;
+ 365              		.loc 1 460 8 view .LVU99
+ 366 0026 C0B1     		cbz	r0, .L35
+ 463:Service/Srv_Receiver.c ****     receiver_data_tmp = receiver_obj->data;
+ 367              		.loc 1 463 5 is_stmt 1 view .LVU100
+ 463:Service/Srv_Receiver.c ****     receiver_data_tmp = receiver_obj->data;
+ 368              		.loc 1 463 32 is_stmt 0 view .LVU101
+ 369 0028 4FF0000C 		mov	ip, #0
+ 370 002c 8DF80DC0 		strb	ip, [sp, #13]
+ 464:Service/Srv_Receiver.c **** 
+ 371              		.loc 1 464 5 is_stmt 1 view .LVU102
+ 464:Service/Srv_Receiver.c **** 
+ 372              		.loc 1 464 23 is_stmt 0 view .LVU103
+ 373 0030 04F10803 		add	r3, r4, #8
+ 374 0034 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 375 0036 0DF1100E 		add	lr, sp, #16
+ 376 003a 0EE90F00 		stmdb	lr, {r0, r1, r2, r3}
+ 466:Service/Srv_Receiver.c **** 
+ 377              		.loc 1 466 5 is_stmt 1 view .LVU104
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 17
+
+
+ 466:Service/Srv_Receiver.c **** 
+ 378              		.loc 1 466 26 is_stmt 0 view .LVU105
+ 379 003e 84F821C0 		strb	ip, [r4, #33]
+ 468:Service/Srv_Receiver.c ****     {
+ 380              		.loc 1 468 5 is_stmt 1 view .LVU106
+ 468:Service/Srv_Receiver.c ****     {
+ 381              		.loc 1 468 21 is_stmt 0 view .LVU107
+ 382 0042 94F82030 		ldrb	r3, [r4, #32]	@ zero_extendqisi2
+ 468:Service/Srv_Receiver.c ****     {
+ 383              		.loc 1 468 8 view .LVU108
+ 384 0046 83B1     		cbz	r3, .L32
+ 470:Service/Srv_Receiver.c ****         goto re_do;
+ 385              		.loc 1 470 9 is_stmt 1 view .LVU109
+ 470:Service/Srv_Receiver.c ****         goto re_do;
+ 386              		.loc 1 470 33 is_stmt 0 view .LVU110
+ 387 0048 84F820C0 		strb	ip, [r4, #32]
+ 471:Service/Srv_Receiver.c ****     }
+ 388              		.loc 1 471 9 is_stmt 1 view .LVU111
+ 389 004c E5E7     		b	.L29
+ 390              	.LVL25:
+ 391              	.L34:
+ 455:Service/Srv_Receiver.c **** 
+ 392              		.loc 1 455 9 view .LVU112
+ 455:Service/Srv_Receiver.c **** 
+ 393              		.loc 1 455 16 is_stmt 0 view .LVU113
+ 394 004e 04AB     		add	r3, sp, #16
+ 395 0050 13E90F00 		ldmdb	r3, {r0, r1, r2, r3}
+ 396              	.LVL26:
+ 455:Service/Srv_Receiver.c **** 
+ 397              		.loc 1 455 16 view .LVU114
+ 398 0054 85E80F00 		stm	r5, {r0, r1, r2, r3}
+ 399 0058 04E0     		b	.L28
+ 400              	.L35:
+ 461:Service/Srv_Receiver.c **** 
+ 401              		.loc 1 461 9 is_stmt 1 view .LVU115
+ 461:Service/Srv_Receiver.c **** 
+ 402              		.loc 1 461 16 is_stmt 0 view .LVU116
+ 403 005a 04AB     		add	r3, sp, #16
+ 404 005c 13E90F00 		ldmdb	r3, {r0, r1, r2, r3}
+ 405 0060 85E80F00 		stm	r5, {r0, r1, r2, r3}
+ 406              	.L28:
+ 475:Service/Srv_Receiver.c **** 
+ 407              		.loc 1 475 1 view .LVU117
+ 408 0064 2846     		mov	r0, r5
+ 409 0066 05B0     		add	sp, sp, #20
+ 410              	.LCFI6:
+ 411              		.cfi_remember_state
+ 412              		.cfi_def_cfa_offset 12
+ 413              		@ sp needed
+ 414 0068 30BD     		pop	{r4, r5, pc}
+ 415              	.LVL27:
+ 416              	.L32:
+ 417              	.LCFI7:
+ 418              		.cfi_restore_state
+ 474:Service/Srv_Receiver.c **** }
+ 419              		.loc 1 474 5 is_stmt 1 view .LVU118
+ 474:Service/Srv_Receiver.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 18
+
+
+ 420              		.loc 1 474 12 is_stmt 0 view .LVU119
+ 421 006a 04AB     		add	r3, sp, #16
+ 422 006c 13E90F00 		ldmdb	r3, {r0, r1, r2, r3}
+ 423 0070 85E80F00 		stm	r5, {r0, r1, r2, r3}
+ 424 0074 F6E7     		b	.L28
+ 425              		.cfi_endproc
+ 426              	.LFE148:
+ 428              		.section	.rodata.SrvReceiver_Init.str1.4,"aMS",%progbits,1
+ 429              		.align	2
+ 430              	.LC0:
+ 431 0000 53727652 		.ascii	"SrvReceiver_Error\000"
+ 431      65636569 
+ 431      7665725F 
+ 431      4572726F 
+ 431      7200
+ 432              		.section	.text.SrvReceiver_Init,"ax",%progbits
+ 433              		.align	1
+ 434              		.syntax unified
+ 435              		.thumb
+ 436              		.thumb_func
+ 438              	SrvReceiver_Init:
+ 439              	.LVL28:
+ 440              	.LFB144:
+ 140:Service/Srv_Receiver.c ****     bool data_obj_error = false;
+ 441              		.loc 1 140 1 is_stmt 1 view -0
+ 442              		.cfi_startproc
+ 443              		@ args = 0, pretend = 0, frame = 0
+ 444              		@ frame_needed = 0, uses_anonymous_args = 0
+ 140:Service/Srv_Receiver.c ****     bool data_obj_error = false;
+ 445              		.loc 1 140 1 is_stmt 0 view .LVU121
+ 446 0000 70B5     		push	{r4, r5, r6, lr}
+ 447              	.LCFI8:
+ 448              		.cfi_def_cfa_offset 16
+ 449              		.cfi_offset 4, -16
+ 450              		.cfi_offset 5, -12
+ 451              		.cfi_offset 6, -8
+ 452              		.cfi_offset 14, -4
+ 141:Service/Srv_Receiver.c ****     BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
+ 453              		.loc 1 141 5 is_stmt 1 view .LVU122
+ 454              	.LVL29:
+ 142:Service/Srv_Receiver.c **** 
+ 455              		.loc 1 142 5 view .LVU123
+ 144:Service/Srv_Receiver.c ****         return false;
+ 456              		.loc 1 144 5 view .LVU124
+ 144:Service/Srv_Receiver.c ****         return false;
+ 457              		.loc 1 144 8 is_stmt 0 view .LVU125
+ 458 0002 0028     		cmp	r0, #0
+ 459 0004 00F0A180 		beq	.L48
+ 460 0008 0C46     		mov	r4, r1
+ 461 000a 0546     		mov	r5, r0
+ 144:Service/Srv_Receiver.c ****         return false;
+ 462              		.loc 1 144 23 discriminator 1 view .LVU126
+ 463 000c 0029     		cmp	r1, #0
+ 464 000e 00F09E80 		beq	.L49
+ 147:Service/Srv_Receiver.c **** 
+ 465              		.loc 1 147 5 is_stmt 1 view .LVU127
+ 466 0012 4FF48072 		mov	r2, #256
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 19
+
+
+ 467 0016 0021     		movs	r1, #0
+ 468              	.LVL30:
+ 147:Service/Srv_Receiver.c **** 
+ 469              		.loc 1 147 5 is_stmt 0 view .LVU128
+ 470 0018 4E48     		ldr	r0, .L59
+ 471              	.LVL31:
+ 147:Service/Srv_Receiver.c **** 
+ 472              		.loc 1 147 5 view .LVU129
+ 473 001a FFF7FEFF 		bl	memset
+ 474              	.LVL32:
+ 150:Service/Srv_Receiver.c **** 
+ 475              		.loc 1 150 5 is_stmt 1 view .LVU130
+ 150:Service/Srv_Receiver.c **** 
+ 476              		.loc 1 150 40 is_stmt 0 view .LVU131
+ 477 001e 4E4E     		ldr	r6, .L59+4
+ 478 0020 3368     		ldr	r3, [r6]
+ 150:Service/Srv_Receiver.c **** 
+ 479              		.loc 1 150 32 view .LVU132
+ 480 0022 4E48     		ldr	r0, .L59+8
+ 481 0024 9847     		blx	r3
+ 482              	.LVL33:
+ 150:Service/Srv_Receiver.c **** 
+ 483              		.loc 1 150 30 view .LVU133
+ 484 0026 4E4B     		ldr	r3, .L59+12
+ 485 0028 1860     		str	r0, [r3]
+ 153:Service/Srv_Receiver.c **** 
+ 486              		.loc 1 153 5 is_stmt 1 view .LVU134
+ 153:Service/Srv_Receiver.c **** 
+ 487              		.loc 1 153 13 is_stmt 0 view .LVU135
+ 488 002a 7368     		ldr	r3, [r6, #4]
+ 153:Service/Srv_Receiver.c **** 
+ 489              		.loc 1 153 5 view .LVU136
+ 490 002c 0422     		movs	r2, #4
+ 491 002e 4D49     		ldr	r1, .L59+16
+ 492 0030 9847     		blx	r3
+ 493              	.LVL34:
+ 155:Service/Srv_Receiver.c ****     {
+ 494              		.loc 1 155 5 is_stmt 1 view .LVU137
+ 155:Service/Srv_Receiver.c ****     {
+ 495              		.loc 1 155 16 is_stmt 0 view .LVU138
+ 496 0032 6B78     		ldrb	r3, [r5, #1]	@ zero_extendqisi2
+ 155:Service/Srv_Receiver.c ****     {
+ 497              		.loc 1 155 5 view .LVU139
+ 498 0034 012B     		cmp	r3, #1
+ 499 0036 0BD0     		beq	.L38
+ 500 0038 022B     		cmp	r3, #2
+ 501 003a 60D0     		beq	.L39
+ 287:Service/Srv_Receiver.c ****         return false;
+ 502              		.loc 1 287 9 is_stmt 1 view .LVU140
+ 287:Service/Srv_Receiver.c ****         return false;
+ 503              		.loc 1 287 17 is_stmt 0 view .LVU141
+ 504 003c 464B     		ldr	r3, .L59+4
+ 505 003e 9C68     		ldr	r4, [r3, #8]
+ 506              	.LVL35:
+ 287:Service/Srv_Receiver.c ****         return false;
+ 507              		.loc 1 287 9 view .LVU142
+ 508 0040 1E23     		movs	r3, #30
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 20
+
+
+ 509 0042 494A     		ldr	r2, .L59+20
+ 510 0044 0121     		movs	r1, #1
+ 511 0046 4648     		ldr	r0, .L59+12
+ 512 0048 0068     		ldr	r0, [r0]
+ 513 004a A047     		blx	r4
+ 514              	.LVL36:
+ 288:Service/Srv_Receiver.c ****     }
+ 515              		.loc 1 288 9 is_stmt 1 view .LVU143
+ 288:Service/Srv_Receiver.c ****     }
+ 516              		.loc 1 288 16 is_stmt 0 view .LVU144
+ 517 004c 0026     		movs	r6, #0
+ 518 004e 7FE0     		b	.L37
+ 519              	.LVL37:
+ 520              	.L38:
+ 158:Service/Srv_Receiver.c ****         
+ 521              		.loc 1 158 9 is_stmt 1 view .LVU145
+ 185:Service/Srv_Receiver.c **** 
+ 522              		.loc 1 185 9 view .LVU146
+ 523 0050 1E22     		movs	r2, #30
+ 524 0052 0021     		movs	r1, #0
+ 525 0054 4448     		ldr	r0, .L59+20
+ 526 0056 FFF7FEFF 		bl	memset
+ 527              	.LVL38:
+ 187:Service/Srv_Receiver.c ****         {
+ 528              		.loc 1 187 9 view .LVU147
+ 187:Service/Srv_Receiver.c ****         {
+ 529              		.loc 1 187 20 is_stmt 0 view .LVU148
+ 530 005a 2B78     		ldrb	r3, [r5]	@ zero_extendqisi2
+ 531 005c 1BB1     		cbz	r3, .L41
+ 532 005e 012B     		cmp	r3, #1
+ 533 0060 15D0     		beq	.L42
+ 534 0062 0026     		movs	r6, #0
+ 535 0064 74E0     		b	.L37
+ 536              	.L41:
+ 190:Service/Srv_Receiver.c **** 
+ 537              		.loc 1 190 13 is_stmt 1 view .LVU149
+ 190:Service/Srv_Receiver.c **** 
+ 538              		.loc 1 190 41 is_stmt 0 view .LVU150
+ 539 0066 414B     		ldr	r3, .L59+24
+ 540 0068 2360     		str	r3, [r4]
+ 193:Service/Srv_Receiver.c ****             if (obj->frame_data_obj == NULL)
+ 541              		.loc 1 193 13 is_stmt 1 view .LVU151
+ 193:Service/Srv_Receiver.c ****             if (obj->frame_data_obj == NULL)
+ 542              		.loc 1 193 46 is_stmt 0 view .LVU152
+ 543 006a 414B     		ldr	r3, .L59+28
+ 544 006c 9B6A     		ldr	r3, [r3, #40]
+ 193:Service/Srv_Receiver.c ****             if (obj->frame_data_obj == NULL)
+ 545              		.loc 1 193 35 view .LVU153
+ 546 006e 2120     		movs	r0, #33
+ 547 0070 9847     		blx	r3
+ 548              	.LVL39:
+ 193:Service/Srv_Receiver.c ****             if (obj->frame_data_obj == NULL)
+ 549              		.loc 1 193 33 view .LVU154
+ 550 0072 6860     		str	r0, [r5, #4]
+ 194:Service/Srv_Receiver.c ****             {
+ 551              		.loc 1 194 13 is_stmt 1 view .LVU155
+ 194:Service/Srv_Receiver.c ****             {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 21
+
+
+ 552              		.loc 1 194 16 is_stmt 0 view .LVU156
+ 553 0074 0028     		cmp	r0, #0
+ 554 0076 46D0     		beq	.L50
+ 205:Service/Srv_Receiver.c **** 
+ 555              		.loc 1 205 13 is_stmt 1 view .LVU157
+ 205:Service/Srv_Receiver.c **** 
+ 556              		.loc 1 205 30 is_stmt 0 view .LVU158
+ 557 0078 1023     		movs	r3, #16
+ 558 007a AB70     		strb	r3, [r5, #2]
+ 208:Service/Srv_Receiver.c **** 
+ 559              		.loc 1 208 13 is_stmt 1 view .LVU159
+ 208:Service/Srv_Receiver.c **** 
+ 560              		.loc 1 208 28 is_stmt 0 view .LVU160
+ 561 007c 3D4B     		ldr	r3, .L59+32
+ 562 007e AB61     		str	r3, [r5, #24]
+ 210:Service/Srv_Receiver.c ****                 return false;
+ 563              		.loc 1 210 13 is_stmt 1 view .LVU161
+ 210:Service/Srv_Receiver.c ****                 return false;
+ 564              		.loc 1 210 55 is_stmt 0 view .LVU162
+ 565 0080 1B68     		ldr	r3, [r3]
+ 210:Service/Srv_Receiver.c ****                 return false;
+ 566              		.loc 1 210 19 view .LVU163
+ 567 0082 9847     		blx	r3
+ 568              	.LVL40:
+ 210:Service/Srv_Receiver.c ****                 return false;
+ 569              		.loc 1 210 16 view .LVU164
+ 570 0084 0646     		mov	r6, r0
+ 571 0086 0028     		cmp	r0, #0
+ 572 0088 62D0     		beq	.L37
+ 141:Service/Srv_Receiver.c ****     BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
+ 573              		.loc 1 141 10 view .LVU165
+ 574 008a 0026     		movs	r6, #0
+ 575 008c 15E0     		b	.L43
+ 576              	.L42:
+ 215:Service/Srv_Receiver.c **** 
+ 577              		.loc 1 215 13 is_stmt 1 view .LVU166
+ 215:Service/Srv_Receiver.c **** 
+ 578              		.loc 1 215 41 is_stmt 0 view .LVU167
+ 579 008e 3A4B     		ldr	r3, .L59+36
+ 580 0090 2360     		str	r3, [r4]
+ 218:Service/Srv_Receiver.c ****             if (obj->frame_data_obj == NULL)
+ 581              		.loc 1 218 13 is_stmt 1 view .LVU168
+ 218:Service/Srv_Receiver.c ****             if (obj->frame_data_obj == NULL)
+ 582              		.loc 1 218 46 is_stmt 0 view .LVU169
+ 583 0092 374B     		ldr	r3, .L59+28
+ 584 0094 9B6A     		ldr	r3, [r3, #40]
+ 218:Service/Srv_Receiver.c ****             if (obj->frame_data_obj == NULL)
+ 585              		.loc 1 218 35 view .LVU170
+ 586 0096 7C20     		movs	r0, #124
+ 587 0098 9847     		blx	r3
+ 588              	.LVL41:
+ 218:Service/Srv_Receiver.c ****             if (obj->frame_data_obj == NULL)
+ 589              		.loc 1 218 33 view .LVU171
+ 590 009a 6860     		str	r0, [r5, #4]
+ 219:Service/Srv_Receiver.c ****             {
+ 591              		.loc 1 219 13 is_stmt 1 view .LVU172
+ 219:Service/Srv_Receiver.c ****             {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 22
+
+
+ 592              		.loc 1 219 16 is_stmt 0 view .LVU173
+ 593 009c 0028     		cmp	r0, #0
+ 594 009e 34D0     		beq	.L52
+ 226:Service/Srv_Receiver.c ****             obj->inverter_init = NULL;
+ 595              		.loc 1 226 13 is_stmt 1 view .LVU174
+ 226:Service/Srv_Receiver.c ****             obj->inverter_init = NULL;
+ 596              		.loc 1 226 33 is_stmt 0 view .LVU175
+ 597 00a0 0023     		movs	r3, #0
+ 598 00a2 AB63     		str	r3, [r5, #56]
+ 227:Service/Srv_Receiver.c **** 
+ 599              		.loc 1 227 13 is_stmt 1 view .LVU176
+ 227:Service/Srv_Receiver.c **** 
+ 600              		.loc 1 227 32 is_stmt 0 view .LVU177
+ 601 00a4 6B63     		str	r3, [r5, #52]
+ 230:Service/Srv_Receiver.c **** 
+ 602              		.loc 1 230 13 is_stmt 1 view .LVU178
+ 230:Service/Srv_Receiver.c **** 
+ 603              		.loc 1 230 30 is_stmt 0 view .LVU179
+ 604 00a6 1023     		movs	r3, #16
+ 605 00a8 AB70     		strb	r3, [r5, #2]
+ 233:Service/Srv_Receiver.c **** 
+ 606              		.loc 1 233 13 is_stmt 1 view .LVU180
+ 233:Service/Srv_Receiver.c **** 
+ 607              		.loc 1 233 28 is_stmt 0 view .LVU181
+ 608 00aa 344B     		ldr	r3, .L59+40
+ 609 00ac AB61     		str	r3, [r5, #24]
+ 235:Service/Srv_Receiver.c ****                 return false;
+ 610              		.loc 1 235 13 is_stmt 1 view .LVU182
+ 235:Service/Srv_Receiver.c ****                 return false;
+ 611              		.loc 1 235 55 is_stmt 0 view .LVU183
+ 612 00ae 1B68     		ldr	r3, [r3]
+ 235:Service/Srv_Receiver.c ****                 return false;
+ 613              		.loc 1 235 19 view .LVU184
+ 614 00b0 9847     		blx	r3
+ 615              	.LVL42:
+ 235:Service/Srv_Receiver.c ****                 return false;
+ 616              		.loc 1 235 16 view .LVU185
+ 617 00b2 0646     		mov	r6, r0
+ 618 00b4 0028     		cmp	r0, #0
+ 619 00b6 4BD0     		beq	.L37
+ 141:Service/Srv_Receiver.c ****     BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
+ 620              		.loc 1 141 10 view .LVU186
+ 621 00b8 0026     		movs	r6, #0
+ 622              	.L43:
+ 623              	.LVL43:
+ 243:Service/Srv_Receiver.c ****         if (!obj->data.val_list)
+ 624              		.loc 1 243 9 is_stmt 1 view .LVU187
+ 243:Service/Srv_Receiver.c ****         if (!obj->data.val_list)
+ 625              		.loc 1 243 53 is_stmt 0 view .LVU188
+ 626 00ba 2D4B     		ldr	r3, .L59+28
+ 627 00bc 9B6A     		ldr	r3, [r3, #40]
+ 243:Service/Srv_Receiver.c ****         if (!obj->data.val_list)
+ 628              		.loc 1 243 83 view .LVU189
+ 629 00be A878     		ldrb	r0, [r5, #2]	@ zero_extendqisi2
+ 243:Service/Srv_Receiver.c ****         if (!obj->data.val_list)
+ 630              		.loc 1 243 42 view .LVU190
+ 631 00c0 4000     		lsls	r0, r0, #1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 23
+
+
+ 632 00c2 9847     		blx	r3
+ 633              	.LVL44:
+ 243:Service/Srv_Receiver.c ****         if (!obj->data.val_list)
+ 634              		.loc 1 243 28 view .LVU191
+ 635 00c4 E860     		str	r0, [r5, #12]
+ 244:Service/Srv_Receiver.c ****         {
+ 636              		.loc 1 244 9 is_stmt 1 view .LVU192
+ 244:Service/Srv_Receiver.c ****         {
+ 637              		.loc 1 244 12 is_stmt 0 view .LVU193
+ 638 00c6 10B3     		cbz	r0, .L55
+ 250:Service/Srv_Receiver.c ****         if (!obj->port)
+ 639              		.loc 1 250 9 is_stmt 1 view .LVU194
+ 250:Service/Srv_Receiver.c ****         if (!obj->port)
+ 640              		.loc 1 250 60 is_stmt 0 view .LVU195
+ 641 00c8 294B     		ldr	r3, .L59+28
+ 642 00ca 9B6A     		ldr	r3, [r3, #40]
+ 250:Service/Srv_Receiver.c ****         if (!obj->port)
+ 643              		.loc 1 250 49 view .LVU196
+ 644 00cc 0820     		movs	r0, #8
+ 645 00ce 9847     		blx	r3
+ 646              	.LVL45:
+ 250:Service/Srv_Receiver.c ****         if (!obj->port)
+ 647              		.loc 1 250 19 view .LVU197
+ 648 00d0 E861     		str	r0, [r5, #28]
+ 251:Service/Srv_Receiver.c ****         {
+ 649              		.loc 1 251 9 is_stmt 1 view .LVU198
+ 251:Service/Srv_Receiver.c ****         {
+ 650              		.loc 1 251 12 is_stmt 0 view .LVU199
+ 651 00d2 08B3     		cbz	r0, .L56
+ 257:Service/Srv_Receiver.c ****         {
+ 652              		.loc 1 257 9 is_stmt 1 view .LVU200
+ 257:Service/Srv_Receiver.c ****         {
+ 653              		.loc 1 257 12 is_stmt 0 view .LVU201
+ 654 00d4 36BB     		cbnz	r6, .L57
+ 264:Service/Srv_Receiver.c ****         Uart_Receiver_Obj->rx_size = SRV_RECEIVER_BUFF_SIZE;
+ 655              		.loc 1 264 9 is_stmt 1 view .LVU202
+ 264:Service/Srv_Receiver.c ****         Uart_Receiver_Obj->rx_size = SRV_RECEIVER_BUFF_SIZE;
+ 656              		.loc 1 264 35 is_stmt 0 view .LVU203
+ 657 00d6 1F4B     		ldr	r3, .L59
+ 658 00d8 2364     		str	r3, [r4, #64]
+ 265:Service/Srv_Receiver.c ****         Uart_Receiver_Obj->cust_data_addr = (uint32_t)obj;
+ 659              		.loc 1 265 9 is_stmt 1 view .LVU204
+ 265:Service/Srv_Receiver.c ****         Uart_Receiver_Obj->cust_data_addr = (uint32_t)obj;
+ 660              		.loc 1 265 36 is_stmt 0 view .LVU205
+ 661 00da 4FF48073 		mov	r3, #256
+ 662 00de A4F84430 		strh	r3, [r4, #68]	@ movhi
+ 266:Service/Srv_Receiver.c **** 
+ 663              		.loc 1 266 9 is_stmt 1 view .LVU206
+ 266:Service/Srv_Receiver.c **** 
+ 664              		.loc 1 266 43 is_stmt 0 view .LVU207
+ 665 00e2 A564     		str	r5, [r4, #72]
+ 269:Service/Srv_Receiver.c **** 
+ 666              		.loc 1 269 9 is_stmt 1 view .LVU208
+ 269:Service/Srv_Receiver.c **** 
+ 667              		.loc 1 269 39 is_stmt 0 view .LVU209
+ 668 00e4 264B     		ldr	r3, .L59+44
+ 669 00e6 E363     		str	r3, [r4, #60]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 24
+
+
+ 272:Service/Srv_Receiver.c ****         {
+ 670              		.loc 1 272 9 is_stmt 1 view .LVU210
+ 272:Service/Srv_Receiver.c ****         {
+ 671              		.loc 1 272 21 is_stmt 0 view .LVU211
+ 672 00e8 264B     		ldr	r3, .L59+48
+ 673 00ea 1B68     		ldr	r3, [r3]
+ 272:Service/Srv_Receiver.c ****         {
+ 674              		.loc 1 272 14 view .LVU212
+ 675 00ec 2046     		mov	r0, r4
+ 676 00ee 9847     		blx	r3
+ 677              	.LVL46:
+ 272:Service/Srv_Receiver.c ****         {
+ 678              		.loc 1 272 12 view .LVU213
+ 679 00f0 0646     		mov	r6, r0
+ 680              	.LVL47:
+ 272:Service/Srv_Receiver.c ****         {
+ 681              		.loc 1 272 12 view .LVU214
+ 682 00f2 08B3     		cbz	r0, .L58
+ 278:Service/Srv_Receiver.c ****         obj->port->cfg = Uart_Receiver_Obj;
+ 683              		.loc 1 278 9 is_stmt 1 view .LVU215
+ 278:Service/Srv_Receiver.c ****         obj->port->cfg = Uart_Receiver_Obj;
+ 684              		.loc 1 278 12 is_stmt 0 view .LVU216
+ 685 00f4 EB69     		ldr	r3, [r5, #28]
+ 278:Service/Srv_Receiver.c ****         obj->port->cfg = Uart_Receiver_Obj;
+ 686              		.loc 1 278 24 view .LVU217
+ 687 00f6 234A     		ldr	r2, .L59+48
+ 688 00f8 1A60     		str	r2, [r3]
+ 279:Service/Srv_Receiver.c ****         break;
+ 689              		.loc 1 279 9 is_stmt 1 view .LVU218
+ 279:Service/Srv_Receiver.c ****         break;
+ 690              		.loc 1 279 12 is_stmt 0 view .LVU219
+ 691 00fa EB69     		ldr	r3, [r5, #28]
+ 279:Service/Srv_Receiver.c ****         break;
+ 692              		.loc 1 279 24 view .LVU220
+ 693 00fc 5C60     		str	r4, [r3, #4]
+ 280:Service/Srv_Receiver.c **** 
+ 694              		.loc 1 280 9 is_stmt 1 view .LVU221
+ 695              	.LVL48:
+ 696              	.L39:
+ 291:Service/Srv_Receiver.c **** 
+ 697              		.loc 1 291 5 view .LVU222
+ 291:Service/Srv_Receiver.c **** 
+ 698              		.loc 1 291 22 is_stmt 0 view .LVU223
+ 699 00fe 0023     		movs	r3, #0
+ 700 0100 6B62     		str	r3, [r5, #36]
+ 293:Service/Srv_Receiver.c **** }
+ 701              		.loc 1 293 5 is_stmt 1 view .LVU224
+ 293:Service/Srv_Receiver.c **** }
+ 702              		.loc 1 293 12 is_stmt 0 view .LVU225
+ 703 0102 0126     		movs	r6, #1
+ 704 0104 24E0     		b	.L37
+ 705              	.LVL49:
+ 706              	.L50:
+ 196:Service/Srv_Receiver.c ****                 break;
+ 707              		.loc 1 196 32 view .LVU226
+ 708 0106 0126     		movs	r6, #1
+ 709 0108 D7E7     		b	.L43
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 25
+
+
+ 710              	.L52:
+ 221:Service/Srv_Receiver.c ****                 break;
+ 711              		.loc 1 221 32 view .LVU227
+ 712 010a 0126     		movs	r6, #1
+ 713 010c D5E7     		b	.L43
+ 714              	.LVL50:
+ 715              	.L55:
+ 246:Service/Srv_Receiver.c ****             return false;
+ 716              		.loc 1 246 13 is_stmt 1 view .LVU228
+ 246:Service/Srv_Receiver.c ****             return false;
+ 717              		.loc 1 246 24 is_stmt 0 view .LVU229
+ 718 010e 184B     		ldr	r3, .L59+28
+ 719 0110 DB6A     		ldr	r3, [r3, #44]
+ 246:Service/Srv_Receiver.c ****             return false;
+ 720              		.loc 1 246 13 view .LVU230
+ 721 0112 9847     		blx	r3
+ 722              	.LVL51:
+ 247:Service/Srv_Receiver.c ****         }
+ 723              		.loc 1 247 13 is_stmt 1 view .LVU231
+ 247:Service/Srv_Receiver.c ****         }
+ 724              		.loc 1 247 20 is_stmt 0 view .LVU232
+ 725 0114 0026     		movs	r6, #0
+ 726              	.LVL52:
+ 247:Service/Srv_Receiver.c ****         }
+ 727              		.loc 1 247 20 view .LVU233
+ 728 0116 1BE0     		b	.L37
+ 729              	.LVL53:
+ 730              	.L56:
+ 253:Service/Srv_Receiver.c ****             return false;
+ 731              		.loc 1 253 13 is_stmt 1 view .LVU234
+ 253:Service/Srv_Receiver.c ****             return false;
+ 732              		.loc 1 253 24 is_stmt 0 view .LVU235
+ 733 0118 154B     		ldr	r3, .L59+28
+ 734 011a DB6A     		ldr	r3, [r3, #44]
+ 253:Service/Srv_Receiver.c ****             return false;
+ 735              		.loc 1 253 13 view .LVU236
+ 736 011c E868     		ldr	r0, [r5, #12]
+ 737 011e 9847     		blx	r3
+ 738              	.LVL54:
+ 254:Service/Srv_Receiver.c ****         }
+ 739              		.loc 1 254 13 is_stmt 1 view .LVU237
+ 254:Service/Srv_Receiver.c ****         }
+ 740              		.loc 1 254 20 is_stmt 0 view .LVU238
+ 741 0120 0026     		movs	r6, #0
+ 742              	.LVL55:
+ 254:Service/Srv_Receiver.c ****         }
+ 743              		.loc 1 254 20 view .LVU239
+ 744 0122 15E0     		b	.L37
+ 745              	.LVL56:
+ 746              	.L57:
+ 259:Service/Srv_Receiver.c ****             return false;
+ 747              		.loc 1 259 13 is_stmt 1 view .LVU240
+ 259:Service/Srv_Receiver.c ****             return false;
+ 748              		.loc 1 259 21 is_stmt 0 view .LVU241
+ 749 0124 0C4B     		ldr	r3, .L59+4
+ 750 0126 9C68     		ldr	r4, [r3, #8]
+ 751              	.LVL57:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 26
+
+
+ 259:Service/Srv_Receiver.c ****             return false;
+ 752              		.loc 1 259 13 view .LVU242
+ 753 0128 1E23     		movs	r3, #30
+ 754 012a 0F4A     		ldr	r2, .L59+20
+ 755 012c 0121     		movs	r1, #1
+ 756 012e 0C48     		ldr	r0, .L59+12
+ 757 0130 0068     		ldr	r0, [r0]
+ 758 0132 A047     		blx	r4
+ 759              	.LVL58:
+ 260:Service/Srv_Receiver.c ****         }
+ 760              		.loc 1 260 13 is_stmt 1 view .LVU243
+ 260:Service/Srv_Receiver.c ****         }
+ 761              		.loc 1 260 20 is_stmt 0 view .LVU244
+ 762 0134 0026     		movs	r6, #0
+ 763              	.LVL59:
+ 260:Service/Srv_Receiver.c ****         }
+ 764              		.loc 1 260 20 view .LVU245
+ 765 0136 0BE0     		b	.L37
+ 766              	.LVL60:
+ 767              	.L58:
+ 274:Service/Srv_Receiver.c ****             return false;
+ 768              		.loc 1 274 13 is_stmt 1 view .LVU246
+ 274:Service/Srv_Receiver.c ****             return false;
+ 769              		.loc 1 274 21 is_stmt 0 view .LVU247
+ 770 0138 074B     		ldr	r3, .L59+4
+ 771 013a 9C68     		ldr	r4, [r3, #8]
+ 772              	.LVL61:
+ 274:Service/Srv_Receiver.c ****             return false;
+ 773              		.loc 1 274 13 view .LVU248
+ 774 013c 1E23     		movs	r3, #30
+ 775 013e 0A4A     		ldr	r2, .L59+20
+ 776 0140 0321     		movs	r1, #3
+ 777 0142 0748     		ldr	r0, .L59+12
+ 778 0144 0068     		ldr	r0, [r0]
+ 779 0146 A047     		blx	r4
+ 780              	.LVL62:
+ 275:Service/Srv_Receiver.c ****         }
+ 781              		.loc 1 275 13 is_stmt 1 view .LVU249
+ 275:Service/Srv_Receiver.c ****         }
+ 782              		.loc 1 275 20 is_stmt 0 view .LVU250
+ 783 0148 02E0     		b	.L37
+ 784              	.LVL63:
+ 785              	.L48:
+ 145:Service/Srv_Receiver.c **** 
+ 786              		.loc 1 145 16 view .LVU251
+ 787 014a 0026     		movs	r6, #0
+ 788 014c 00E0     		b	.L37
+ 789              	.L49:
+ 145:Service/Srv_Receiver.c **** 
+ 790              		.loc 1 145 16 view .LVU252
+ 791 014e 0026     		movs	r6, #0
+ 792              	.LVL64:
+ 793              	.L37:
+ 294:Service/Srv_Receiver.c **** 
+ 794              		.loc 1 294 1 view .LVU253
+ 795 0150 3046     		mov	r0, r6
+ 796 0152 70BD     		pop	{r4, r5, r6, pc}
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 27
+
+
+ 797              	.L60:
+ 798              		.align	2
+ 799              	.L59:
+ 800 0154 00000000 		.word	.LANCHOR0
+ 801 0158 00000000 		.word	ErrorLog
+ 802 015c 00000000 		.word	.LC0
+ 803 0160 00000000 		.word	.LANCHOR1
+ 804 0164 00000000 		.word	.LANCHOR2
+ 805 0168 00000000 		.word	.LANCHOR3
+ 806 016c A0860100 		.word	100000
+ 807 0170 00000000 		.word	SrvOsCommon
+ 808 0174 00000000 		.word	DevSBUS
+ 809 0178 A0680600 		.word	420000
+ 810 017c 00000000 		.word	DevCRSF
+ 811 0180 00000000 		.word	SrvReceiver_SerialDecode_Callback
+ 812 0184 00000000 		.word	BspUart
+ 813              		.cfi_endproc
+ 814              	.LFE144:
+ 816              		.section	.text.SrvReceiver_SerialDecode_Callback,"ax",%progbits
+ 817              		.align	1
+ 818              		.syntax unified
+ 819              		.thumb
+ 820              		.thumb_func
+ 822              	SrvReceiver_SerialDecode_Callback:
+ 823              	.LVL65:
+ 824              	.LFB145:
+ 297:Service/Srv_Receiver.c ****     BspUARTObj_TypeDef *uart_obj = NULL;
+ 825              		.loc 1 297 1 is_stmt 1 view -0
+ 826              		.cfi_startproc
+ 827              		@ args = 0, pretend = 0, frame = 40
+ 828              		@ frame_needed = 0, uses_anonymous_args = 0
+ 298:Service/Srv_Receiver.c ****     uint8_t *rx_buff_ptr = NULL;
+ 829              		.loc 1 298 5 view .LVU255
+ 299:Service/Srv_Receiver.c ****     uint8_t decode_out = 0xFF;
+ 830              		.loc 1 299 5 view .LVU256
+ 300:Service/Srv_Receiver.c ****     bool sig_update = false;
+ 831              		.loc 1 300 5 view .LVU257
+ 301:Service/Srv_Receiver.c **** 
+ 832              		.loc 1 301 5 view .LVU258
+ 303:Service/Srv_Receiver.c ****     {
+ 833              		.loc 1 303 5 view .LVU259
+ 303:Service/Srv_Receiver.c ****     {
+ 834              		.loc 1 303 8 is_stmt 0 view .LVU260
+ 835 0000 0028     		cmp	r0, #0
+ 836 0002 00F0B080 		beq	.L78
+ 297:Service/Srv_Receiver.c ****     BspUARTObj_TypeDef *uart_obj = NULL;
+ 837              		.loc 1 297 1 discriminator 1 view .LVU261
+ 838 0006 70B5     		push	{r4, r5, r6, lr}
+ 839              	.LCFI9:
+ 840              		.cfi_def_cfa_offset 16
+ 841              		.cfi_offset 4, -16
+ 842              		.cfi_offset 5, -12
+ 843              		.cfi_offset 6, -8
+ 844              		.cfi_offset 14, -4
+ 845 0008 8AB0     		sub	sp, sp, #40
+ 846              	.LCFI10:
+ 847              		.cfi_def_cfa_offset 56
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 28
+
+
+ 848 000a 1546     		mov	r5, r2
+ 849 000c 0446     		mov	r4, r0
+ 303:Service/Srv_Receiver.c ****     {
+ 850              		.loc 1 303 37 discriminator 1 view .LVU262
+ 851 000e 8369     		ldr	r3, [r0, #24]
+ 303:Service/Srv_Receiver.c ****     {
+ 852              		.loc 1 303 22 discriminator 1 view .LVU263
+ 853 0010 33B1     		cbz	r3, .L61
+ 303:Service/Srv_Receiver.c ****     {
+ 854              		.loc 1 303 64 discriminator 2 view .LVU264
+ 855 0012 C269     		ldr	r2, [r0, #28]
+ 856              	.LVL66:
+ 303:Service/Srv_Receiver.c ****     {
+ 857              		.loc 1 303 49 discriminator 2 view .LVU265
+ 858 0014 22B1     		cbz	r2, .L61
+ 303:Service/Srv_Receiver.c ****     {
+ 859              		.loc 1 303 86 discriminator 3 view .LVU266
+ 860 0016 4068     		ldr	r0, [r0, #4]
+ 861              	.LVL67:
+ 303:Service/Srv_Receiver.c ****     {
+ 862              		.loc 1 303 71 discriminator 3 view .LVU267
+ 863 0018 10B1     		cbz	r0, .L61
+ 305:Service/Srv_Receiver.c ****         {
+ 864              		.loc 1 305 9 is_stmt 1 view .LVU268
+ 305:Service/Srv_Receiver.c ****         {
+ 865              		.loc 1 305 25 is_stmt 0 view .LVU269
+ 866 001a 6278     		ldrb	r2, [r4, #1]	@ zero_extendqisi2
+ 305:Service/Srv_Receiver.c ****         {
+ 867              		.loc 1 305 12 view .LVU270
+ 868 001c 012A     		cmp	r2, #1
+ 869 001e 01D0     		beq	.L81
+ 870              	.LVL68:
+ 871              	.L61:
+ 389:Service/Srv_Receiver.c **** 
+ 872              		.loc 1 389 1 view .LVU271
+ 873 0020 0AB0     		add	sp, sp, #40
+ 874              	.LCFI11:
+ 875              		.cfi_remember_state
+ 876              		.cfi_def_cfa_offset 16
+ 877              		@ sp needed
+ 878 0022 70BD     		pop	{r4, r5, r6, pc}
+ 879              	.LVL69:
+ 880              	.L81:
+ 881              	.LCFI12:
+ 882              		.cfi_restore_state
+ 308:Service/Srv_Receiver.c ****             {
+ 883              		.loc 1 308 13 is_stmt 1 view .LVU272
+ 308:Service/Srv_Receiver.c ****             {
+ 884              		.loc 1 308 29 is_stmt 0 view .LVU273
+ 885 0024 2278     		ldrb	r2, [r4]	@ zero_extendqisi2
+ 308:Service/Srv_Receiver.c ****             {
+ 886              		.loc 1 308 16 view .LVU274
+ 887 0026 012A     		cmp	r2, #1
+ 888 0028 10D0     		beq	.L82
+ 355:Service/Srv_Receiver.c ****             {
+ 889              		.loc 1 355 18 is_stmt 1 view .LVU275
+ 355:Service/Srv_Receiver.c ****             {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 29
+
+
+ 890              		.loc 1 355 21 is_stmt 0 view .LVU276
+ 891 002a 002A     		cmp	r2, #0
+ 892 002c 68D0     		beq	.L72
+ 373:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 893              		.loc 1 373 13 is_stmt 1 view .LVU277
+ 373:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 894              		.loc 1 373 37 is_stmt 0 view .LVU278
+ 895 002e 0023     		movs	r3, #0
+ 896 0030 84F82030 		strb	r3, [r4, #32]
+ 374:Service/Srv_Receiver.c ****                 receiver_obj->re_update = true;
+ 897              		.loc 1 374 13 is_stmt 1 view .LVU279
+ 898              	.LVL70:
+ 899              	.L73:
+ 378:Service/Srv_Receiver.c ****             {
+ 900              		.loc 1 378 13 view .LVU280
+ 378:Service/Srv_Receiver.c ****             {
+ 901              		.loc 1 378 29 is_stmt 0 view .LVU281
+ 902 0034 E369     		ldr	r3, [r4, #28]
+ 378:Service/Srv_Receiver.c ****             {
+ 903              		.loc 1 378 35 view .LVU282
+ 904 0036 5B68     		ldr	r3, [r3, #4]
+ 378:Service/Srv_Receiver.c ****             {
+ 905              		.loc 1 378 16 view .LVU283
+ 906 0038 002B     		cmp	r3, #0
+ 907 003a F1D0     		beq	.L61
+ 380:Service/Srv_Receiver.c **** 
+ 908              		.loc 1 380 17 is_stmt 1 view .LVU284
+ 909              	.LVL71:
+ 382:Service/Srv_Receiver.c **** 
+ 910              		.loc 1 382 17 view .LVU285
+ 382:Service/Srv_Receiver.c **** 
+ 911              		.loc 1 382 29 is_stmt 0 view .LVU286
+ 912 003c 186C     		ldr	r0, [r3, #64]
+ 913              	.LVL72:
+ 384:Service/Srv_Receiver.c ****                     memset(rx_buff_ptr, 0, size);
+ 914              		.loc 1 384 17 is_stmt 1 view .LVU287
+ 384:Service/Srv_Receiver.c ****                     memset(rx_buff_ptr, 0, size);
+ 915              		.loc 1 384 20 is_stmt 0 view .LVU288
+ 916 003e 0028     		cmp	r0, #0
+ 917 0040 EED0     		beq	.L61
+ 385:Service/Srv_Receiver.c ****             }
+ 918              		.loc 1 385 21 is_stmt 1 view .LVU289
+ 919 0042 2A46     		mov	r2, r5
+ 920 0044 0021     		movs	r1, #0
+ 921 0046 FFF7FEFF 		bl	memset
+ 922              	.LVL73:
+ 385:Service/Srv_Receiver.c ****             }
+ 923              		.loc 1 385 21 is_stmt 0 view .LVU290
+ 924 004a E9E7     		b	.L61
+ 925              	.LVL74:
+ 926              	.L82:
+ 310:Service/Srv_Receiver.c ****                 sig_update = true;
+ 927              		.loc 1 310 17 is_stmt 1 view .LVU291
+ 310:Service/Srv_Receiver.c ****                 sig_update = true;
+ 928              		.loc 1 310 76 is_stmt 0 view .LVU292
+ 929 004c 5B68     		ldr	r3, [r3, #4]
+ 310:Service/Srv_Receiver.c ****                 sig_update = true;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 30
+
+
+ 930              		.loc 1 310 31 view .LVU293
+ 931 004e 2A46     		mov	r2, r5
+ 932 0050 9847     		blx	r3
+ 933              	.LVL75:
+ 311:Service/Srv_Receiver.c **** 
+ 934              		.loc 1 311 17 is_stmt 1 view .LVU294
+ 313:Service/Srv_Receiver.c ****                 {
+ 935              		.loc 1 313 17 view .LVU295
+ 936 0052 1428     		cmp	r0, #20
+ 937 0054 08D0     		beq	.L64
+ 938 0056 1628     		cmp	r0, #22
+ 939 0058 E2D1     		bne	.L61
+ 323:Service/Srv_Receiver.c **** 
+ 940              		.loc 1 323 25 view .LVU296
+ 323:Service/Srv_Receiver.c **** 
+ 941              		.loc 1 323 58 is_stmt 0 view .LVU297
+ 942 005a A369     		ldr	r3, [r4, #24]
+ 323:Service/Srv_Receiver.c **** 
+ 943              		.loc 1 323 71 view .LVU298
+ 944 005c 9B68     		ldr	r3, [r3, #8]
+ 323:Service/Srv_Receiver.c **** 
+ 945              		.loc 1 323 26 view .LVU299
+ 946 005e E168     		ldr	r1, [r4, #12]
+ 947 0060 6068     		ldr	r0, [r4, #4]
+ 948              	.LVL76:
+ 323:Service/Srv_Receiver.c **** 
+ 949              		.loc 1 323 26 view .LVU300
+ 950 0062 9847     		blx	r3
+ 951              	.LVL77:
+ 325:Service/Srv_Receiver.c ****                         {
+ 952              		.loc 1 325 25 is_stmt 1 view .LVU301
+ 953              	.LBB5:
+ 325:Service/Srv_Receiver.c ****                         {
+ 954              		.loc 1 325 30 view .LVU302
+ 325:Service/Srv_Receiver.c ****                         {
+ 955              		.loc 1 325 38 is_stmt 0 view .LVU303
+ 956 0064 0023     		movs	r3, #0
+ 325:Service/Srv_Receiver.c ****                         {
+ 957              		.loc 1 325 25 view .LVU304
+ 958 0066 24E0     		b	.L67
+ 959              	.LVL78:
+ 960              	.L64:
+ 325:Service/Srv_Receiver.c ****                         {
+ 961              		.loc 1 325 25 view .LVU305
+ 962              	.LBE5:
+ 316:Service/Srv_Receiver.c ****                         receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_
+ 963              		.loc 1 316 25 is_stmt 1 view .LVU306
+ 316:Service/Srv_Receiver.c ****                         receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_
+ 964              		.loc 1 316 84 is_stmt 0 view .LVU307
+ 965 0068 A369     		ldr	r3, [r4, #24]
+ 316:Service/Srv_Receiver.c ****                         receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_
+ 966              		.loc 1 316 97 view .LVU308
+ 967 006a DB68     		ldr	r3, [r3, #12]
+ 316:Service/Srv_Receiver.c ****                         receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_
+ 968              		.loc 1 316 52 view .LVU309
+ 969 006c 6168     		ldr	r1, [r4, #4]
+ 970 006e 01A8     		add	r0, sp, #4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 31
+
+
+ 971              	.LVL79:
+ 316:Service/Srv_Receiver.c ****                         receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_
+ 972              		.loc 1 316 52 view .LVU310
+ 973 0070 9847     		blx	r3
+ 974              	.LVL80:
+ 316:Service/Srv_Receiver.c ****                         receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_
+ 975              		.loc 1 316 156 view .LVU311
+ 976 0072 9DF80B30 		ldrb	r3, [sp, #11]	@ zero_extendqisi2
+ 316:Service/Srv_Receiver.c ****                         receiver_obj->data.link_quality = ((DevCRSF_TypeDef *)(receiver_obj->frame_
+ 977              		.loc 1 316 49 view .LVU312
+ 978 0076 2382     		strh	r3, [r4, #16]	@ movhi
+ 317:Service/Srv_Receiver.c ****                         receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->fram
+ 979              		.loc 1 317 25 is_stmt 1 view .LVU313
+ 317:Service/Srv_Receiver.c ****                         receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->fram
+ 980              		.loc 1 317 92 is_stmt 0 view .LVU314
+ 981 0078 A369     		ldr	r3, [r4, #24]
+ 317:Service/Srv_Receiver.c ****                         receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->fram
+ 982              		.loc 1 317 105 view .LVU315
+ 983 007a DB68     		ldr	r3, [r3, #12]
+ 317:Service/Srv_Receiver.c ****                         receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->fram
+ 984              		.loc 1 317 60 view .LVU316
+ 985 007c 6168     		ldr	r1, [r4, #4]
+ 986 007e 04A8     		add	r0, sp, #16
+ 987 0080 9847     		blx	r3
+ 988              	.LVL81:
+ 317:Service/Srv_Receiver.c ****                         receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->fram
+ 989              		.loc 1 317 164 view .LVU317
+ 990 0082 9DF81830 		ldrb	r3, [sp, #24]	@ zero_extendqisi2
+ 317:Service/Srv_Receiver.c ****                         receiver_obj->data.active_antenna = ((DevCRSF_TypeDef *)(receiver_obj->fram
+ 991              		.loc 1 317 57 view .LVU318
+ 992 0086 6382     		strh	r3, [r4, #18]	@ movhi
+ 318:Service/Srv_Receiver.c ****                         break;
+ 993              		.loc 1 318 25 is_stmt 1 view .LVU319
+ 318:Service/Srv_Receiver.c ****                         break;
+ 994              		.loc 1 318 94 is_stmt 0 view .LVU320
+ 995 0088 A369     		ldr	r3, [r4, #24]
+ 318:Service/Srv_Receiver.c ****                         break;
+ 996              		.loc 1 318 107 view .LVU321
+ 997 008a DB68     		ldr	r3, [r3, #12]
+ 318:Service/Srv_Receiver.c ****                         break;
+ 998              		.loc 1 318 62 view .LVU322
+ 999 008c 6168     		ldr	r1, [r4, #4]
+ 1000 008e 07A8     		add	r0, sp, #28
+ 1001 0090 9847     		blx	r3
+ 1002              	.LVL82:
+ 318:Service/Srv_Receiver.c ****                         break;
+ 1003              		.loc 1 318 166 view .LVU323
+ 1004 0092 9DF82030 		ldrb	r3, [sp, #32]	@ zero_extendqisi2
+ 318:Service/Srv_Receiver.c ****                         break;
+ 1005              		.loc 1 318 59 view .LVU324
+ 1006 0096 2375     		strb	r3, [r4, #20]
+ 319:Service/Srv_Receiver.c **** 
+ 1007              		.loc 1 319 25 is_stmt 1 view .LVU325
+ 373:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 1008              		.loc 1 373 13 view .LVU326
+ 373:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 1009              		.loc 1 373 37 is_stmt 0 view .LVU327
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 32
+
+
+ 1010 0098 0023     		movs	r3, #0
+ 1011 009a 84F82030 		strb	r3, [r4, #32]
+ 374:Service/Srv_Receiver.c ****                 receiver_obj->re_update = true;
+ 1012              		.loc 1 374 13 is_stmt 1 view .LVU328
+ 1013 009e 59E0     		b	.L66
+ 1014              	.LVL83:
+ 1015              	.L68:
+ 1016              	.LBB6:
+ 331:Service/Srv_Receiver.c ****                             {
+ 1017              		.loc 1 331 34 view .LVU329
+ 331:Service/Srv_Receiver.c ****                             {
+ 1018              		.loc 1 331 37 is_stmt 0 view .LVU330
+ 1019 00a0 B1F5E16F 		cmp	r1, #1800
+ 1020 00a4 11D9     		bls	.L69
+ 333:Service/Srv_Receiver.c ****                             }
+ 1021              		.loc 1 333 33 is_stmt 1 view .LVU331
+ 333:Service/Srv_Receiver.c ****                             }
+ 1022              		.loc 1 333 64 is_stmt 0 view .LVU332
+ 1023 00a6 4FF4E161 		mov	r1, #1800
+ 1024 00aa 1152     		strh	r1, [r2, r0]	@ movhi
+ 1025 00ac 0DE0     		b	.L69
+ 1026              	.L70:
+ 325:Service/Srv_Receiver.c ****                         {
+ 1027              		.loc 1 325 76 is_stmt 1 discriminator 2 view .LVU333
+ 325:Service/Srv_Receiver.c ****                         {
+ 1028              		.loc 1 325 77 is_stmt 0 discriminator 2 view .LVU334
+ 1029 00ae 0133     		adds	r3, r3, #1
+ 1030              	.LVL84:
+ 325:Service/Srv_Receiver.c ****                         {
+ 1031              		.loc 1 325 77 discriminator 2 view .LVU335
+ 1032 00b0 DBB2     		uxtb	r3, r3
+ 1033              	.LVL85:
+ 1034              	.L67:
+ 325:Service/Srv_Receiver.c ****                         {
+ 1035              		.loc 1 325 45 is_stmt 1 discriminator 1 view .LVU336
+ 325:Service/Srv_Receiver.c ****                         {
+ 1036              		.loc 1 325 61 is_stmt 0 discriminator 1 view .LVU337
+ 1037 00b2 A278     		ldrb	r2, [r4, #2]	@ zero_extendqisi2
+ 325:Service/Srv_Receiver.c ****                         {
+ 1038              		.loc 1 325 25 discriminator 1 view .LVU338
+ 1039 00b4 9A42     		cmp	r2, r3
+ 1040 00b6 1AD9     		bls	.L83
+ 327:Service/Srv_Receiver.c ****                             {
+ 1041              		.loc 1 327 29 is_stmt 1 view .LVU339
+ 327:Service/Srv_Receiver.c ****                             {
+ 1042              		.loc 1 327 51 is_stmt 0 view .LVU340
+ 1043 00b8 E268     		ldr	r2, [r4, #12]
+ 327:Service/Srv_Receiver.c ****                             {
+ 1044              		.loc 1 327 60 view .LVU341
+ 1045 00ba 5800     		lsls	r0, r3, #1
+ 1046 00bc 32F81310 		ldrh	r1, [r2, r3, lsl #1]
+ 327:Service/Srv_Receiver.c ****                             {
+ 1047              		.loc 1 327 32 view .LVU342
+ 1048 00c0 B329     		cmp	r1, #179
+ 1049 00c2 EDD8     		bhi	.L68
+ 329:Service/Srv_Receiver.c ****                             }
+ 1050              		.loc 1 329 33 is_stmt 1 view .LVU343
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 33
+
+
+ 329:Service/Srv_Receiver.c ****                             }
+ 1051              		.loc 1 329 64 is_stmt 0 view .LVU344
+ 1052 00c4 B421     		movs	r1, #180
+ 1053 00c6 22F81310 		strh	r1, [r2, r3, lsl #1]	@ movhi
+ 1054              	.L69:
+ 336:Service/Srv_Receiver.c ****                             {
+ 1055              		.loc 1 336 29 is_stmt 1 view .LVU345
+ 336:Service/Srv_Receiver.c ****                             {
+ 1056              		.loc 1 336 45 is_stmt 0 view .LVU346
+ 1057 00ca 626A     		ldr	r2, [r4, #36]
+ 336:Service/Srv_Receiver.c ****                             {
+ 1058              		.loc 1 336 32 view .LVU347
+ 1059 00cc 002A     		cmp	r2, #0
+ 1060 00ce EED0     		beq	.L70
+ 336:Service/Srv_Receiver.c ****                             {
+ 1061              		.loc 1 336 93 discriminator 1 view .LVU348
+ 1062 00d0 0121     		movs	r1, #1
+ 1063 00d2 9940     		lsls	r1, r1, r3
+ 336:Service/Srv_Receiver.c ****                             {
+ 1064              		.loc 1 336 59 discriminator 1 view .LVU349
+ 1065 00d4 0A42     		tst	r2, r1
+ 1066 00d6 EAD0     		beq	.L70
+ 338:Service/Srv_Receiver.c ****                                 receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->
+ 1067              		.loc 1 338 33 is_stmt 1 view .LVU350
+ 338:Service/Srv_Receiver.c ****                                 receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->
+ 1068              		.loc 1 338 51 is_stmt 0 view .LVU351
+ 1069 00d8 E168     		ldr	r1, [r4, #12]
+ 338:Service/Srv_Receiver.c ****                                 receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->
+ 1070              		.loc 1 338 64 view .LVU352
+ 1071 00da 0A5A     		ldrh	r2, [r1, r0]
+ 1072 00dc A2F57A72 		sub	r2, r2, #1000
+ 1073 00e0 0A52     		strh	r2, [r1, r0]	@ movhi
+ 339:Service/Srv_Receiver.c ****                             }
+ 1074              		.loc 1 339 33 is_stmt 1 view .LVU353
+ 339:Service/Srv_Receiver.c ****                             }
+ 1075              		.loc 1 339 104 is_stmt 0 view .LVU354
+ 1076 00e2 E168     		ldr	r1, [r4, #12]
+ 339:Service/Srv_Receiver.c ****                             }
+ 1077              		.loc 1 339 113 view .LVU355
+ 1078 00e4 0A5A     		ldrh	r2, [r1, r0]
+ 339:Service/Srv_Receiver.c ****                             }
+ 1079              		.loc 1 339 84 view .LVU356
+ 1080 00e6 C2F57A72 		rsb	r2, r2, #1000
+ 339:Service/Srv_Receiver.c ****                             }
+ 1081              		.loc 1 339 64 view .LVU357
+ 1082 00ea 0A52     		strh	r2, [r1, r0]	@ movhi
+ 1083 00ec DFE7     		b	.L70
+ 1084              	.L83:
+ 339:Service/Srv_Receiver.c ****                             }
+ 1085              		.loc 1 339 64 view .LVU358
+ 1086              	.LBE6:
+ 343:Service/Srv_Receiver.c ****                         // DebugPin.ctl(Debug_PC8, true);
+ 1087              		.loc 1 343 25 is_stmt 1 view .LVU359
+ 343:Service/Srv_Receiver.c ****                         // DebugPin.ctl(Debug_PC8, true);
+ 1088              		.loc 1 343 53 is_stmt 0 view .LVU360
+ 1089 00ee 0026     		movs	r6, #0
+ 1090 00f0 6675     		strb	r6, [r4, #21]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 34
+
+
+ 347:Service/Srv_Receiver.c ****                         break;
+ 1091              		.loc 1 347 25 is_stmt 1 view .LVU361
+ 347:Service/Srv_Receiver.c ****                         break;
+ 1092              		.loc 1 347 68 is_stmt 0 view .LVU362
+ 1093 00f2 1D4B     		ldr	r3, .L85
+ 1094              	.LVL86:
+ 347:Service/Srv_Receiver.c ****                         break;
+ 1095              		.loc 1 347 68 view .LVU363
+ 1096 00f4 1B68     		ldr	r3, [r3]
+ 347:Service/Srv_Receiver.c ****                         break;
+ 1097              		.loc 1 347 57 view .LVU364
+ 1098 00f6 9847     		blx	r3
+ 1099              	.LVL87:
+ 347:Service/Srv_Receiver.c ****                         break;
+ 1100              		.loc 1 347 55 view .LVU365
+ 1101 00f8 A060     		str	r0, [r4, #8]
+ 348:Service/Srv_Receiver.c **** 
+ 1102              		.loc 1 348 25 is_stmt 1 view .LVU366
+ 373:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 1103              		.loc 1 373 13 view .LVU367
+ 373:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 1104              		.loc 1 373 37 is_stmt 0 view .LVU368
+ 1105 00fa 84F82060 		strb	r6, [r4, #32]
+ 374:Service/Srv_Receiver.c ****                 receiver_obj->re_update = true;
+ 1106              		.loc 1 374 13 is_stmt 1 view .LVU369
+ 1107 00fe 29E0     		b	.L66
+ 1108              	.LVL88:
+ 1109              	.L72:
+ 357:Service/Srv_Receiver.c ****                 {
+ 1110              		.loc 1 357 17 view .LVU370
+ 357:Service/Srv_Receiver.c ****                 {
+ 1111              		.loc 1 357 67 is_stmt 0 view .LVU371
+ 1112 0100 5B68     		ldr	r3, [r3, #4]
+ 357:Service/Srv_Receiver.c ****                 {
+ 1113              		.loc 1 357 22 view .LVU372
+ 1114 0102 2A46     		mov	r2, r5
+ 1115 0104 9847     		blx	r3
+ 1116              	.LVL89:
+ 357:Service/Srv_Receiver.c ****                 {
+ 1117              		.loc 1 357 20 view .LVU373
+ 1118 0106 0346     		mov	r3, r0
+ 1119 0108 28B1     		cbz	r0, .L74
+ 373:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 1120              		.loc 1 373 13 is_stmt 1 view .LVU374
+ 373:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 1121              		.loc 1 373 37 is_stmt 0 view .LVU375
+ 1122 010a 0023     		movs	r3, #0
+ 1123 010c 84F82030 		strb	r3, [r4, #32]
+ 374:Service/Srv_Receiver.c ****                 receiver_obj->re_update = true;
+ 1124              		.loc 1 374 13 is_stmt 1 view .LVU376
+ 1125 0110 90E7     		b	.L73
+ 1126              	.LVL90:
+ 1127              	.L75:
+ 1128              	.LBB7:
+ 360:Service/Srv_Receiver.c ****                     {
+ 1129              		.loc 1 360 72 discriminator 2 view .LVU377
+ 360:Service/Srv_Receiver.c ****                     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 35
+
+
+ 1130              		.loc 1 360 73 is_stmt 0 discriminator 2 view .LVU378
+ 1131 0112 0133     		adds	r3, r3, #1
+ 1132              	.LVL91:
+ 360:Service/Srv_Receiver.c ****                     {
+ 1133              		.loc 1 360 73 discriminator 2 view .LVU379
+ 1134 0114 DBB2     		uxtb	r3, r3
+ 1135              	.LVL92:
+ 1136              	.L74:
+ 360:Service/Srv_Receiver.c ****                     {
+ 1137              		.loc 1 360 41 is_stmt 1 discriminator 1 view .LVU380
+ 360:Service/Srv_Receiver.c ****                     {
+ 1138              		.loc 1 360 57 is_stmt 0 discriminator 1 view .LVU381
+ 1139 0116 A278     		ldrb	r2, [r4, #2]	@ zero_extendqisi2
+ 360:Service/Srv_Receiver.c ****                     {
+ 1140              		.loc 1 360 21 discriminator 1 view .LVU382
+ 1141 0118 9A42     		cmp	r2, r3
+ 1142 011a 18D9     		bls	.L84
+ 362:Service/Srv_Receiver.c **** 
+ 1143              		.loc 1 362 25 is_stmt 1 view .LVU383
+ 362:Service/Srv_Receiver.c **** 
+ 1144              		.loc 1 362 59 is_stmt 0 view .LVU384
+ 1145 011c 6168     		ldr	r1, [r4, #4]
+ 362:Service/Srv_Receiver.c **** 
+ 1146              		.loc 1 362 43 view .LVU385
+ 1147 011e E268     		ldr	r2, [r4, #12]
+ 362:Service/Srv_Receiver.c **** 
+ 1148              		.loc 1 362 52 view .LVU386
+ 1149 0120 5800     		lsls	r0, r3, #1
+ 362:Service/Srv_Receiver.c **** 
+ 1150              		.loc 1 362 106 view .LVU387
+ 1151 0122 31F81310 		ldrh	r1, [r1, r3, lsl #1]	@ unaligned
+ 362:Service/Srv_Receiver.c **** 
+ 1152              		.loc 1 362 56 view .LVU388
+ 1153 0126 22F81310 		strh	r1, [r2, r3, lsl #1]	@ movhi
+ 364:Service/Srv_Receiver.c ****                         {
+ 1154              		.loc 1 364 25 is_stmt 1 view .LVU389
+ 364:Service/Srv_Receiver.c ****                         {
+ 1155              		.loc 1 364 41 is_stmt 0 view .LVU390
+ 1156 012a 626A     		ldr	r2, [r4, #36]
+ 364:Service/Srv_Receiver.c ****                         {
+ 1157              		.loc 1 364 28 view .LVU391
+ 1158 012c 002A     		cmp	r2, #0
+ 1159 012e F0D0     		beq	.L75
+ 364:Service/Srv_Receiver.c ****                         {
+ 1160              		.loc 1 364 88 discriminator 1 view .LVU392
+ 1161 0130 0121     		movs	r1, #1
+ 1162 0132 9940     		lsls	r1, r1, r3
+ 364:Service/Srv_Receiver.c ****                         {
+ 1163              		.loc 1 364 55 discriminator 1 view .LVU393
+ 1164 0134 0A42     		tst	r2, r1
+ 1165 0136 ECD0     		beq	.L75
+ 366:Service/Srv_Receiver.c ****                             receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data
+ 1166              		.loc 1 366 29 is_stmt 1 view .LVU394
+ 366:Service/Srv_Receiver.c ****                             receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data
+ 1167              		.loc 1 366 47 is_stmt 0 view .LVU395
+ 1168 0138 E168     		ldr	r1, [r4, #12]
+ 366:Service/Srv_Receiver.c ****                             receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 36
+
+
+ 1169              		.loc 1 366 60 view .LVU396
+ 1170 013a 0A5A     		ldrh	r2, [r1, r0]
+ 1171 013c A2F57A72 		sub	r2, r2, #1000
+ 1172 0140 0A52     		strh	r2, [r1, r0]	@ movhi
+ 367:Service/Srv_Receiver.c ****                         }
+ 1173              		.loc 1 367 29 is_stmt 1 view .LVU397
+ 367:Service/Srv_Receiver.c ****                         }
+ 1174              		.loc 1 367 100 is_stmt 0 view .LVU398
+ 1175 0142 E168     		ldr	r1, [r4, #12]
+ 367:Service/Srv_Receiver.c ****                         }
+ 1176              		.loc 1 367 109 view .LVU399
+ 1177 0144 0A5A     		ldrh	r2, [r1, r0]
+ 367:Service/Srv_Receiver.c ****                         }
+ 1178              		.loc 1 367 80 view .LVU400
+ 1179 0146 C2F57A72 		rsb	r2, r2, #1000
+ 367:Service/Srv_Receiver.c ****                         }
+ 1180              		.loc 1 367 60 view .LVU401
+ 1181 014a 0A52     		strh	r2, [r1, r0]	@ movhi
+ 1182 014c E1E7     		b	.L75
+ 1183              	.L84:
+ 1184              	.LVL93:
+ 367:Service/Srv_Receiver.c ****                         }
+ 1185              		.loc 1 367 60 view .LVU402
+ 1186              	.LBE7:
+ 373:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 1187              		.loc 1 373 13 is_stmt 1 view .LVU403
+ 373:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 1188              		.loc 1 373 37 is_stmt 0 view .LVU404
+ 1189 014e 0023     		movs	r3, #0
+ 1190              	.LVL94:
+ 373:Service/Srv_Receiver.c ****             if (sig_update && receiver_obj->in_use)
+ 1191              		.loc 1 373 37 view .LVU405
+ 1192 0150 84F82030 		strb	r3, [r4, #32]
+ 374:Service/Srv_Receiver.c ****                 receiver_obj->re_update = true;
+ 1193              		.loc 1 374 13 is_stmt 1 view .LVU406
+ 1194              	.LVL95:
+ 1195              	.L66:
+ 374:Service/Srv_Receiver.c ****                 receiver_obj->re_update = true;
+ 1196              		.loc 1 374 43 is_stmt 0 discriminator 1 view .LVU407
+ 1197 0154 94F82130 		ldrb	r3, [r4, #33]	@ zero_extendqisi2
+ 374:Service/Srv_Receiver.c ****                 receiver_obj->re_update = true;
+ 1198              		.loc 1 374 28 discriminator 1 view .LVU408
+ 1199 0158 002B     		cmp	r3, #0
+ 1200 015a 3FF46BAF 		beq	.L73
+ 375:Service/Srv_Receiver.c **** 
+ 1201              		.loc 1 375 17 is_stmt 1 view .LVU409
+ 375:Service/Srv_Receiver.c **** 
+ 1202              		.loc 1 375 41 is_stmt 0 view .LVU410
+ 1203 015e 0123     		movs	r3, #1
+ 1204 0160 84F82030 		strb	r3, [r4, #32]
+ 1205 0164 66E7     		b	.L73
+ 1206              	.LVL96:
+ 1207              	.L78:
+ 1208              	.LCFI13:
+ 1209              		.cfi_def_cfa_offset 0
+ 1210              		.cfi_restore 4
+ 1211              		.cfi_restore 5
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 37
+
+
+ 1212              		.cfi_restore 6
+ 1213              		.cfi_restore 14
+ 375:Service/Srv_Receiver.c **** 
+ 1214              		.loc 1 375 41 view .LVU411
+ 1215 0166 7047     		bx	lr
+ 1216              	.L86:
+ 1217              		.align	2
+ 1218              	.L85:
+ 1219 0168 00000000 		.word	SrvOsCommon
+ 1220              		.cfi_endproc
+ 1221              	.LFE145:
+ 1223              		.section	.text.SrvReceiver_Create_UartObj,"ax",%progbits
+ 1224              		.align	1
+ 1225              		.syntax unified
+ 1226              		.thumb
+ 1227              		.thumb_func
+ 1229              	SrvReceiver_Create_UartObj:
+ 1230              	.LVL97:
+ 1231              	.LFB142:
+ 109:Service/Srv_Receiver.c ****     BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
+ 1232              		.loc 1 109 1 is_stmt 1 view -0
+ 1233              		.cfi_startproc
+ 1234              		@ args = 32, pretend = 0, frame = 0
+ 1235              		@ frame_needed = 0, uses_anonymous_args = 0
+ 109:Service/Srv_Receiver.c ****     BspUARTObj_TypeDef *Uart_Receiver_Obj = NULL;
+ 1236              		.loc 1 109 1 is_stmt 0 view .LVU413
+ 1237 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 1238              	.LCFI14:
+ 1239              		.cfi_def_cfa_offset 24
+ 1240              		.cfi_offset 4, -24
+ 1241              		.cfi_offset 5, -20
+ 1242              		.cfi_offset 6, -16
+ 1243              		.cfi_offset 7, -12
+ 1244              		.cfi_offset 8, -8
+ 1245              		.cfi_offset 14, -4
+ 1246 0004 8046     		mov	r8, r0
+ 1247 0006 0F46     		mov	r7, r1
+ 1248 0008 1646     		mov	r6, r2
+ 1249 000a 1D46     		mov	r5, r3
+ 110:Service/Srv_Receiver.c **** 
+ 1250              		.loc 1 110 5 is_stmt 1 view .LVU414
+ 1251              	.LVL98:
+ 112:Service/Srv_Receiver.c **** 
+ 1252              		.loc 1 112 5 view .LVU415
+ 112:Service/Srv_Receiver.c **** 
+ 1253              		.loc 1 112 58 is_stmt 0 view .LVU416
+ 1254 000c 144B     		ldr	r3, .L92
+ 1255              	.LVL99:
+ 112:Service/Srv_Receiver.c **** 
+ 1256              		.loc 1 112 58 view .LVU417
+ 1257 000e 9B6A     		ldr	r3, [r3, #40]
+ 112:Service/Srv_Receiver.c **** 
+ 1258              		.loc 1 112 47 view .LVU418
+ 1259 0010 7020     		movs	r0, #112
+ 1260              	.LVL100:
+ 112:Service/Srv_Receiver.c **** 
+ 1261              		.loc 1 112 47 view .LVU419
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 38
+
+
+ 1262 0012 9847     		blx	r3
+ 1263              	.LVL101:
+ 114:Service/Srv_Receiver.c ****     {
+ 1264              		.loc 1 114 5 is_stmt 1 view .LVU420
+ 114:Service/Srv_Receiver.c ****     {
+ 1265              		.loc 1 114 8 is_stmt 0 view .LVU421
+ 1266 0014 0446     		mov	r4, r0
+ 1267 0016 F0B1     		cbz	r0, .L91
+ 120:Service/Srv_Receiver.c **** 
+ 1268              		.loc 1 120 5 is_stmt 1 view .LVU422
+ 1269 0018 7022     		movs	r2, #112
+ 1270 001a 0021     		movs	r1, #0
+ 1271 001c FFF7FEFF 		bl	memset
+ 1272              	.LVL102:
+ 122:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->tx_io = tx_pin;
+ 1273              		.loc 1 122 5 view .LVU423
+ 122:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->tx_io = tx_pin;
+ 1274              		.loc 1 122 33 is_stmt 0 view .LVU424
+ 1275 0020 C4F80880 		str	r8, [r4, #8]
+ 123:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->rx_io = rx_pin;
+ 1276              		.loc 1 123 5 is_stmt 1 view .LVU425
+ 123:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->rx_io = rx_pin;
+ 1277              		.loc 1 123 30 is_stmt 0 view .LVU426
+ 1278 0024 04F1200C 		add	ip, r4, #32
+ 1279 0028 08AB     		add	r3, sp, #32
+ 1280 002a 93E80700 		ldm	r3, {r0, r1, r2}
+ 1281 002e 8CE80700 		stm	ip, {r0, r1, r2}
+ 124:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->pin_swap = swap;
+ 1282              		.loc 1 124 5 is_stmt 1 view .LVU427
+ 124:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->pin_swap = swap;
+ 1283              		.loc 1 124 30 is_stmt 0 view .LVU428
+ 1284 0032 04F12C0C 		add	ip, r4, #44
+ 1285 0036 0BAB     		add	r3, sp, #44
+ 1286 0038 93E80700 		ldm	r3, {r0, r1, r2}
+ 1287 003c 8CE80700 		stm	ip, {r0, r1, r2}
+ 125:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->rx_dma = rx_dma;
+ 1288              		.loc 1 125 5 is_stmt 1 view .LVU429
+ 125:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->rx_dma = rx_dma;
+ 1289              		.loc 1 125 33 is_stmt 0 view .LVU430
+ 1290 0040 9DF81C30 		ldrb	r3, [sp, #28]	@ zero_extendqisi2
+ 1291 0044 2371     		strb	r3, [r4, #4]
+ 126:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->rx_stream = rx_dma_stream;
+ 1292              		.loc 1 126 5 is_stmt 1 view .LVU431
+ 126:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->rx_stream = rx_dma_stream;
+ 1293              		.loc 1 126 31 is_stmt 0 view .LVU432
+ 1294 0046 2776     		strb	r7, [r4, #24]
+ 127:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->tx_dma = tx_dma;
+ 1295              		.loc 1 127 5 is_stmt 1 view .LVU433
+ 127:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->tx_dma = tx_dma;
+ 1296              		.loc 1 127 34 is_stmt 0 view .LVU434
+ 1297 0048 6676     		strb	r6, [r4, #25]
+ 128:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->tx_stream = tx_dma_stream;
+ 1298              		.loc 1 128 5 is_stmt 1 view .LVU435
+ 128:Service/Srv_Receiver.c ****     Uart_Receiver_Obj->tx_stream = tx_dma_stream;
+ 1299              		.loc 1 128 31 is_stmt 0 view .LVU436
+ 1300 004a 2574     		strb	r5, [r4, #16]
+ 129:Service/Srv_Receiver.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 39
+
+
+ 1301              		.loc 1 129 5 is_stmt 1 view .LVU437
+ 129:Service/Srv_Receiver.c **** 
+ 1302              		.loc 1 129 34 is_stmt 0 view .LVU438
+ 1303 004c 069B     		ldr	r3, [sp, #24]
+ 1304 004e 6374     		strb	r3, [r4, #17]
+ 131:Service/Srv_Receiver.c **** }
+ 1305              		.loc 1 131 5 is_stmt 1 view .LVU439
+ 1306              	.L87:
+ 132:Service/Srv_Receiver.c **** 
+ 1307              		.loc 1 132 1 is_stmt 0 view .LVU440
+ 1308 0050 2046     		mov	r0, r4
+ 1309 0052 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 1310              	.LVL103:
+ 1311              	.L91:
+ 116:Service/Srv_Receiver.c ****         return NULL;
+ 1312              		.loc 1 116 9 is_stmt 1 view .LVU441
+ 116:Service/Srv_Receiver.c ****         return NULL;
+ 1313              		.loc 1 116 20 is_stmt 0 view .LVU442
+ 1314 0056 024B     		ldr	r3, .L92
+ 1315 0058 DB6A     		ldr	r3, [r3, #44]
+ 116:Service/Srv_Receiver.c ****         return NULL;
+ 1316              		.loc 1 116 9 view .LVU443
+ 1317 005a 9847     		blx	r3
+ 1318              	.LVL104:
+ 117:Service/Srv_Receiver.c ****     }
+ 1319              		.loc 1 117 9 is_stmt 1 view .LVU444
+ 117:Service/Srv_Receiver.c ****     }
+ 1320              		.loc 1 117 16 is_stmt 0 view .LVU445
+ 1321 005c F8E7     		b	.L87
+ 1322              	.L93:
+ 1323 005e 00BF     		.align	2
+ 1324              	.L92:
+ 1325 0060 00000000 		.word	SrvOsCommon
+ 1326              		.cfi_endproc
+ 1327              	.LFE142:
+ 1329              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 1330              		.align	2
+ 1331              	.LC1:
+ 1332 0000 52656365 		.ascii	"Receiver Object Input Error\015\012\000"
+ 1332      69766572 
+ 1332      204F626A 
+ 1332      65637420 
+ 1332      496E7075 
+ 1333 001e 0000     		.align	2
+ 1334              	.LC2:
+ 1335 0020 52656365 		.ascii	"Receiver Port Error\015\012\000"
+ 1335      69766572 
+ 1335      20506F72 
+ 1335      74204572 
+ 1335      726F720D 
+ 1336 0036 0000     		.align	2
+ 1337              	.LC3:
+ 1338 0038 52656365 		.ascii	"Receiver Port Init Error\015\012\000"
+ 1338      69766572 
+ 1338      20506F72 
+ 1338      7420496E 
+ 1338      69742045 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 40
+
+
+ 1339 0053 00       		.align	2
+ 1340              	.LC4:
+ 1341 0054 52656365 		.ascii	"Receiver Frame Type Error\015\012\000"
+ 1341      69766572 
+ 1341      20467261 
+ 1341      6D652054 
+ 1341      79706520 
+ 1342              		.global	SrvReceiver
+ 1343              		.section	.Perph_Section,"aw"
+ 1344              		.align	2
+ 1345              		.set	.LANCHOR0,. + 0
+ 1348              	SrvReceiver_Buff:
+ 1349 0000 00000000 		.space	256
+ 1349      00000000 
+ 1349      00000000 
+ 1349      00000000 
+ 1349      00000000 
+ 1350              		.section	.bss.SrvReceiver_Error_Handle,"aw",%nobits
+ 1351              		.align	2
+ 1352              		.set	.LANCHOR1,. + 0
+ 1355              	SrvReceiver_Error_Handle:
+ 1356 0000 00000000 		.space	4
+ 1357              		.section	.bss.SrvReceiver_Monitor,"aw",%nobits
+ 1358              		.align	2
+ 1359              		.set	.LANCHOR3,. + 0
+ 1362              	SrvReceiver_Monitor:
+ 1363 0000 00000000 		.space	30
+ 1363      00000000 
+ 1363      00000000 
+ 1363      00000000 
+ 1363      00000000 
+ 1364              		.section	.data.SrvReceiver,"aw"
+ 1365              		.align	2
+ 1368              	SrvReceiver:
+ 1369 0000 00000000 		.word	SrvReceiver_Create_UartObj
+ 1370 0004 00000000 		.word	SrvReceiver_Create_SPIObj
+ 1371 0008 00000000 		.word	SrvReceiver_Init
+ 1372 000c 00000000 		.word	SrvReceiver_Get_Value
+ 1373 0010 00000000 		.word	SrvReceiver_Set_Invert
+ 1374 0014 00000000 		.word	SrvReceiver_Get_Scope
+ 1375              		.section	.data.SrvReceiver_ErrorList,"aw"
+ 1376              		.align	2
+ 1377              		.set	.LANCHOR2,. + 0
+ 1380              	SrvReceiver_ErrorList:
+ 1381 0000 0100     		.short	1
+ 1382 0002 02       		.byte	2
+ 1383 0003 00       		.space	1
+ 1384 0004 00000000 		.word	.LC1
+ 1385 0008 00       		.byte	0
+ 1386 0009 00       		.byte	0
+ 1387 000a 00000000 		.4byte	0
+ 1388 000e 00000000 		.4byte	0
+ 1389 0012 0000     		.short	0
+ 1390 0014 00000000 		.space	4
+ 1391 0018 0200     		.short	2
+ 1392 001a 02       		.byte	2
+ 1393 001b 00       		.space	1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 41
+
+
+ 1394 001c 20000000 		.word	.LC2
+ 1395 0020 00       		.byte	0
+ 1396 0021 00       		.byte	0
+ 1397 0022 00000000 		.4byte	0
+ 1398 0026 00000000 		.4byte	0
+ 1399 002a 0000     		.short	0
+ 1400 002c 00000000 		.space	4
+ 1401 0030 0300     		.short	3
+ 1402 0032 02       		.byte	2
+ 1403 0033 00       		.space	1
+ 1404 0034 38000000 		.word	.LC3
+ 1405 0038 00       		.byte	0
+ 1406 0039 00       		.byte	0
+ 1407 003a 00000000 		.4byte	0
+ 1408 003e 00000000 		.4byte	0
+ 1409 0042 0000     		.short	0
+ 1410 0044 00000000 		.space	4
+ 1411 0048 0400     		.short	4
+ 1412 004a 02       		.byte	2
+ 1413 004b 00       		.space	1
+ 1414 004c 54000000 		.word	.LC4
+ 1415 0050 00       		.byte	0
+ 1416 0051 00       		.byte	0
+ 1417 0052 00000000 		.4byte	0
+ 1418 0056 00000000 		.4byte	0
+ 1419 005a 0000     		.short	0
+ 1420 005c 00000000 		.space	4
+ 1421              		.text
+ 1422              	.Letext0:
+ 1423              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi\
+ 1424              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1425              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1426              		.file 5 "System/FreeRTOS/include/portable.h"
+ 1427              		.file 6 "Service/Srv_OsCommon.h"
+ 1428              		.file 7 "Device/Dev_Sbus.h"
+ 1429              		.file 8 "Device/Dev_CRSF.h"
+ 1430              		.file 9 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 1431              		.file 10 "HW_Lib/Port_Def/Bsp_GPIO_Port_Def.h"
+ 1432              		.file 11 "HW_Lib/Port_Def/Bsp_Uart_Port_Def.h"
+ 1433              		.file 12 "HW_Lib/AT32F435/bsp/Bsp_Uart.h"
+ 1434              		.file 13 "Service/control_data.h"
+ 1435              		.file 14 "Service/Srv_Receiver.h"
+ 1436              		.file 15 "DataStructure/linked_list.h"
+ 1437              		.file 16 "common/Error_Log/error_log.h"
+ 1438              		.file 17 "common/Error_Log/../../common/gen_physic_def/imu_data.h"
+ 1439              		.file 18 "System/FreeRTOS/FreeRTOSConfig.h"
+ 1440              		.file 19 "<built-in>"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s 			page 42
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Srv_Receiver.c
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:20     .text.SrvReceiver_Create_SPIObj:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:25     .text.SrvReceiver_Create_SPIObj:00000000 SrvReceiver_Create_SPIObj
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:41     .text.SrvReceiver_Check:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:46     .text.SrvReceiver_Check:00000000 SrvReceiver_Check
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:174    .text.SrvReceiver_Check:00000068 $d
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:179    .text.SrvReceiver_Set_Invert:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:184    .text.SrvReceiver_Set_Invert:00000000 SrvReceiver_Set_Invert
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:230    .text.SrvReceiver_Get_Scope:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:235    .text.SrvReceiver_Get_Scope:00000000 SrvReceiver_Get_Scope
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:316    .text.SrvReceiver_Get_Value:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:321    .text.SrvReceiver_Get_Value:00000000 SrvReceiver_Get_Value
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:429    .rodata.SrvReceiver_Init.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:433    .text.SrvReceiver_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:438    .text.SrvReceiver_Init:00000000 SrvReceiver_Init
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:800    .text.SrvReceiver_Init:00000154 $d
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:822    .text.SrvReceiver_SerialDecode_Callback:00000000 SrvReceiver_SerialDecode_Callback
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:817    .text.SrvReceiver_SerialDecode_Callback:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1219   .text.SrvReceiver_SerialDecode_Callback:00000168 $d
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1224   .text.SrvReceiver_Create_UartObj:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1229   .text.SrvReceiver_Create_UartObj:00000000 SrvReceiver_Create_UartObj
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1325   .text.SrvReceiver_Create_UartObj:00000060 $d
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1330   .rodata.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1368   .data.SrvReceiver:00000000 SrvReceiver
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1344   .Perph_Section:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1348   .Perph_Section:00000000 SrvReceiver_Buff
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1351   .bss.SrvReceiver_Error_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1355   .bss.SrvReceiver_Error_Handle:00000000 SrvReceiver_Error_Handle
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1358   .bss.SrvReceiver_Monitor:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1362   .bss.SrvReceiver_Monitor:00000000 SrvReceiver_Monitor
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1365   .data.SrvReceiver:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1376   .data.SrvReceiver_ErrorList:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccdBNnKC.s:1380   .data.SrvReceiver_ErrorList:00000000 SrvReceiver_ErrorList
+
+UNDEFINED SYMBOLS
+SrvOsCommon
+memset
+ErrorLog
+DevSBUS
+DevCRSF
+BspUart

@@ -1,0 +1,268 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Srv_BlackBox_Com.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.SrvCom_BlackBox_Init,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	SrvCom_BlackBox_Init:
+  26              	.LVL0:
+  27              	.LFB139:
+  28              		.file 1 "Service/Srv_BlackBox_Com.c"
+   1:Service/Srv_BlackBox_Com.c **** #include "Srv_BlackBox_Def.h"
+   2:Service/Srv_BlackBox_Com.c **** 
+   3:Service/Srv_BlackBox_Com.c **** #define COM_BLACKBOX_BAUDRATE 921600
+   4:Service/Srv_BlackBox_Com.c **** 
+   5:Service/Srv_BlackBox_Com.c **** /* external function */
+   6:Service/Srv_BlackBox_Com.c **** static uint32_t SrvCom_BlackBox_Init(SrvBlackBox_Log_Callback callback);
+   7:Service/Srv_BlackBox_Com.c **** static bool SrvCom_BlackBox_PushData(uint8_t *p_data, uint16_t len);
+   8:Service/Srv_BlackBox_Com.c **** static bool SrvCom_BlackBox_Read(uint32_t addr_offset, uint8_t *p_data, uint16_t len);
+   9:Service/Srv_BlackBox_Com.c **** static bool SrvCom_BlackBox_GetInfo(uint32_t *cnt, uint32_t *size, bool *enable_state);
+  10:Service/Srv_BlackBox_Com.c **** static bool SrvCom_BlackBox_Enable(void);
+  11:Service/Srv_BlackBox_Com.c **** static bool SrvCom_BlackBox_Disable(void);
+  12:Service/Srv_BlackBox_Com.c **** 
+  13:Service/Srv_BlackBox_Com.c **** SrvBlackBox_TypeDef SrvCom_BlackBox = {
+  14:Service/Srv_BlackBox_Com.c ****     .init = SrvCom_BlackBox_Init,
+  15:Service/Srv_BlackBox_Com.c ****     .push = SrvCom_BlackBox_PushData,
+  16:Service/Srv_BlackBox_Com.c ****     .read = SrvCom_BlackBox_Read,
+  17:Service/Srv_BlackBox_Com.c ****     .enable = SrvCom_BlackBox_Enable,
+  18:Service/Srv_BlackBox_Com.c ****     .disable = SrvCom_BlackBox_Disable,
+  19:Service/Srv_BlackBox_Com.c ****     .get_info = SrvCom_BlackBox_GetInfo,
+  20:Service/Srv_BlackBox_Com.c **** };
+  21:Service/Srv_BlackBox_Com.c **** 
+  22:Service/Srv_BlackBox_Com.c **** static uint32_t SrvCom_BlackBox_Init(SrvBlackBox_Log_Callback callback)
+  23:Service/Srv_BlackBox_Com.c **** {
+  29              		.loc 1 23 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  24:Service/Srv_BlackBox_Com.c ****     return 0;
+  34              		.loc 1 24 5 view .LVU1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s 			page 2
+
+
+  25:Service/Srv_BlackBox_Com.c **** }
+  35              		.loc 1 25 1 is_stmt 0 view .LVU2
+  36 0000 0020     		movs	r0, #0
+  37              	.LVL1:
+  38              		.loc 1 25 1 view .LVU3
+  39 0002 7047     		bx	lr
+  40              		.cfi_endproc
+  41              	.LFE139:
+  43              		.section	.text.SrvCom_BlackBox_PushData,"ax",%progbits
+  44              		.align	1
+  45              		.syntax unified
+  46              		.thumb
+  47              		.thumb_func
+  49              	SrvCom_BlackBox_PushData:
+  50              	.LVL2:
+  51              	.LFB140:
+  26:Service/Srv_BlackBox_Com.c **** 
+  27:Service/Srv_BlackBox_Com.c **** static bool SrvCom_BlackBox_PushData(uint8_t *p_data, uint16_t len)
+  28:Service/Srv_BlackBox_Com.c **** {
+  52              		.loc 1 28 1 is_stmt 1 view -0
+  53              		.cfi_startproc
+  54              		@ args = 0, pretend = 0, frame = 0
+  55              		@ frame_needed = 0, uses_anonymous_args = 0
+  56              		@ link register save eliminated.
+  29:Service/Srv_BlackBox_Com.c ****     return false;
+  57              		.loc 1 29 5 view .LVU5
+  30:Service/Srv_BlackBox_Com.c **** }
+  58              		.loc 1 30 1 is_stmt 0 view .LVU6
+  59 0000 0020     		movs	r0, #0
+  60              	.LVL3:
+  61              		.loc 1 30 1 view .LVU7
+  62 0002 7047     		bx	lr
+  63              		.cfi_endproc
+  64              	.LFE140:
+  66              		.section	.text.SrvCom_BlackBox_Read,"ax",%progbits
+  67              		.align	1
+  68              		.syntax unified
+  69              		.thumb
+  70              		.thumb_func
+  72              	SrvCom_BlackBox_Read:
+  73              	.LVL4:
+  74              	.LFB141:
+  31:Service/Srv_BlackBox_Com.c **** 
+  32:Service/Srv_BlackBox_Com.c **** static bool SrvCom_BlackBox_Read(uint32_t addr_offset, uint8_t *p_data, uint16_t len)
+  33:Service/Srv_BlackBox_Com.c **** {
+  75              		.loc 1 33 1 is_stmt 1 view -0
+  76              		.cfi_startproc
+  77              		@ args = 0, pretend = 0, frame = 0
+  78              		@ frame_needed = 0, uses_anonymous_args = 0
+  79              		@ link register save eliminated.
+  34:Service/Srv_BlackBox_Com.c ****     return false;
+  80              		.loc 1 34 5 view .LVU9
+  35:Service/Srv_BlackBox_Com.c **** }
+  81              		.loc 1 35 1 is_stmt 0 view .LVU10
+  82 0000 0020     		movs	r0, #0
+  83              	.LVL5:
+  84              		.loc 1 35 1 view .LVU11
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s 			page 3
+
+
+  85 0002 7047     		bx	lr
+  86              		.cfi_endproc
+  87              	.LFE141:
+  89              		.section	.text.SrvCom_BlackBox_Enable,"ax",%progbits
+  90              		.align	1
+  91              		.syntax unified
+  92              		.thumb
+  93              		.thumb_func
+  95              	SrvCom_BlackBox_Enable:
+  96              	.LFB142:
+  36:Service/Srv_BlackBox_Com.c **** 
+  37:Service/Srv_BlackBox_Com.c **** static bool SrvCom_BlackBox_Enable(void)
+  38:Service/Srv_BlackBox_Com.c **** {
+  97              		.loc 1 38 1 is_stmt 1 view -0
+  98              		.cfi_startproc
+  99              		@ args = 0, pretend = 0, frame = 0
+ 100              		@ frame_needed = 0, uses_anonymous_args = 0
+ 101              		@ link register save eliminated.
+  39:Service/Srv_BlackBox_Com.c ****     return false;
+ 102              		.loc 1 39 5 view .LVU13
+  40:Service/Srv_BlackBox_Com.c **** }
+ 103              		.loc 1 40 1 is_stmt 0 view .LVU14
+ 104 0000 0020     		movs	r0, #0
+ 105 0002 7047     		bx	lr
+ 106              		.cfi_endproc
+ 107              	.LFE142:
+ 109              		.section	.text.SrvCom_BlackBox_Disable,"ax",%progbits
+ 110              		.align	1
+ 111              		.syntax unified
+ 112              		.thumb
+ 113              		.thumb_func
+ 115              	SrvCom_BlackBox_Disable:
+ 116              	.LFB143:
+  41:Service/Srv_BlackBox_Com.c **** 
+  42:Service/Srv_BlackBox_Com.c **** static bool SrvCom_BlackBox_Disable(void)
+  43:Service/Srv_BlackBox_Com.c **** {
+ 117              		.loc 1 43 1 is_stmt 1 view -0
+ 118              		.cfi_startproc
+ 119              		@ args = 0, pretend = 0, frame = 0
+ 120              		@ frame_needed = 0, uses_anonymous_args = 0
+ 121              		@ link register save eliminated.
+  44:Service/Srv_BlackBox_Com.c ****     return false;
+ 122              		.loc 1 44 5 view .LVU16
+  45:Service/Srv_BlackBox_Com.c **** }
+ 123              		.loc 1 45 1 is_stmt 0 view .LVU17
+ 124 0000 0020     		movs	r0, #0
+ 125 0002 7047     		bx	lr
+ 126              		.cfi_endproc
+ 127              	.LFE143:
+ 129              		.section	.text.SrvCom_BlackBox_GetInfo,"ax",%progbits
+ 130              		.align	1
+ 131              		.syntax unified
+ 132              		.thumb
+ 133              		.thumb_func
+ 135              	SrvCom_BlackBox_GetInfo:
+ 136              	.LVL6:
+ 137              	.LFB144:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s 			page 4
+
+
+  46:Service/Srv_BlackBox_Com.c **** 
+  47:Service/Srv_BlackBox_Com.c **** static bool SrvCom_BlackBox_GetInfo(uint32_t *cnt, uint32_t *size, bool *enable_state)
+  48:Service/Srv_BlackBox_Com.c **** {
+ 138              		.loc 1 48 1 is_stmt 1 view -0
+ 139              		.cfi_startproc
+ 140              		@ args = 0, pretend = 0, frame = 0
+ 141              		@ frame_needed = 0, uses_anonymous_args = 0
+ 142              		@ link register save eliminated.
+  49:Service/Srv_BlackBox_Com.c ****     if (cnt && size && enable_state)
+ 143              		.loc 1 49 5 view .LVU19
+ 144              		.loc 1 49 8 is_stmt 0 view .LVU20
+ 145 0000 28B1     		cbz	r0, .L7
+ 146              		.loc 1 49 13 discriminator 1 view .LVU21
+ 147 0002 21B1     		cbz	r1, .L7
+ 148              		.loc 1 49 21 discriminator 2 view .LVU22
+ 149 0004 1AB1     		cbz	r2, .L7
+  50:Service/Srv_BlackBox_Com.c ****     {
+  51:Service/Srv_BlackBox_Com.c ****         *cnt = 0;
+ 150              		.loc 1 51 9 is_stmt 1 view .LVU23
+ 151              		.loc 1 51 14 is_stmt 0 view .LVU24
+ 152 0006 0023     		movs	r3, #0
+ 153 0008 0360     		str	r3, [r0]
+  52:Service/Srv_BlackBox_Com.c ****         *size = 0;
+ 154              		.loc 1 52 9 is_stmt 1 view .LVU25
+ 155              		.loc 1 52 15 is_stmt 0 view .LVU26
+ 156 000a 0B60     		str	r3, [r1]
+  53:Service/Srv_BlackBox_Com.c ****         *enable_state = 0;
+ 157              		.loc 1 53 9 is_stmt 1 view .LVU27
+ 158              		.loc 1 53 23 is_stmt 0 view .LVU28
+ 159 000c 1370     		strb	r3, [r2]
+ 160              	.L7:
+  54:Service/Srv_BlackBox_Com.c ****     }
+  55:Service/Srv_BlackBox_Com.c **** 
+  56:Service/Srv_BlackBox_Com.c ****     return false;
+ 161              		.loc 1 56 5 is_stmt 1 view .LVU29
+  57:Service/Srv_BlackBox_Com.c **** }
+ 162              		.loc 1 57 1 is_stmt 0 view .LVU30
+ 163 000e 0020     		movs	r0, #0
+ 164              	.LVL7:
+ 165              		.loc 1 57 1 view .LVU31
+ 166 0010 7047     		bx	lr
+ 167              		.cfi_endproc
+ 168              	.LFE144:
+ 170              		.global	SrvCom_BlackBox
+ 171              		.section	.data.SrvCom_BlackBox,"aw"
+ 172              		.align	2
+ 175              	SrvCom_BlackBox:
+ 176 0000 00000000 		.word	SrvCom_BlackBox_Init
+ 177 0004 00000000 		.word	SrvCom_BlackBox_Enable
+ 178 0008 00000000 		.word	SrvCom_BlackBox_Disable
+ 179 000c 00000000 		.word	SrvCom_BlackBox_PushData
+ 180 0010 00000000 		.word	SrvCom_BlackBox_Read
+ 181 0014 00000000 		.word	SrvCom_BlackBox_GetInfo
+ 182              		.text
+ 183              	.Letext0:
+ 184              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 185              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s 			page 5
+
+
+ 186              		.file 4 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 187              		.file 5 "common/Error_Log/../../common/gen_physic_def/imu_data.h"
+ 188              		.file 6 "Service/Srv_BlackBox_Def.h"
+ 189              		.file 7 "System/FreeRTOS/FreeRTOSConfig.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Srv_BlackBox_Com.c
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:20     .text.SrvCom_BlackBox_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:25     .text.SrvCom_BlackBox_Init:00000000 SrvCom_BlackBox_Init
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:44     .text.SrvCom_BlackBox_PushData:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:49     .text.SrvCom_BlackBox_PushData:00000000 SrvCom_BlackBox_PushData
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:67     .text.SrvCom_BlackBox_Read:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:72     .text.SrvCom_BlackBox_Read:00000000 SrvCom_BlackBox_Read
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:90     .text.SrvCom_BlackBox_Enable:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:95     .text.SrvCom_BlackBox_Enable:00000000 SrvCom_BlackBox_Enable
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:110    .text.SrvCom_BlackBox_Disable:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:115    .text.SrvCom_BlackBox_Disable:00000000 SrvCom_BlackBox_Disable
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:130    .text.SrvCom_BlackBox_GetInfo:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:135    .text.SrvCom_BlackBox_GetInfo:00000000 SrvCom_BlackBox_GetInfo
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:175    .data.SrvCom_BlackBox:00000000 SrvCom_BlackBox
+C:\Users\8bit\AppData\Local\Temp\ccmXpYzD.s:172    .data.SrvCom_BlackBox:00000000 $d
+
+NO UNDEFINED SYMBOLS

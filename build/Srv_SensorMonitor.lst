@@ -1,0 +1,3643 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Srv_SensorMonitor.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.SrvSensorMonitor_Get_FreqVal,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	SrvSensorMonitor_Get_FreqVal:
+  26              	.LVL0:
+  27              	.LFB143:
+  28              		.file 1 "Service/Srv_SensorMonitor.c"
+   1:Service/Srv_SensorMonitor.c **** #include "Srv_SensorMonitor.h"
+   2:Service/Srv_SensorMonitor.c **** #include "Bsp_Timer.h"
+   3:Service/Srv_SensorMonitor.c **** #include "Srv_OsCommon.h"
+   4:Service/Srv_SensorMonitor.c **** #include "debug_util.h"
+   5:Service/Srv_SensorMonitor.c **** #include "HW_Def.h"
+   6:Service/Srv_SensorMonitor.c **** 
+   7:Service/Srv_SensorMonitor.c **** /* 
+   8:Service/Srv_SensorMonitor.c ****  * for sensor statistic function a timer is essenial
+   9:Service/Srv_SensorMonitor.c ****  */
+  10:Service/Srv_SensorMonitor.c **** #define SrvSensorMonitor_GetSampleInterval(period) (1000 / period)
+  11:Service/Srv_SensorMonitor.c **** 
+  12:Service/Srv_SensorMonitor.c **** #define FLOW_TYPE Flow_3901U
+  13:Service/Srv_SensorMonitor.c **** #if defined MATEKH743_V1_5
+  14:Service/Srv_SensorMonitor.c **** #define BARO_TYPE Baro_Type_DPS310
+  15:Service/Srv_SensorMonitor.c **** #define BARO_BUS_TYPE SrvBaro_Bus_IIC
+  16:Service/Srv_SensorMonitor.c **** #elif defined BATEAT32F435_AIO
+  17:Service/Srv_SensorMonitor.c **** #define BARO_TYPE Baro_Type_BMP280
+  18:Service/Srv_SensorMonitor.c **** #define BARO_BUS_TYPE SrvBaro_Bus_SPI
+  19:Service/Srv_SensorMonitor.c **** #elif defined CCRC_AT32_20
+  20:Service/Srv_SensorMonitor.c **** #define BARO_TYPE Baro_Type_BMP280
+  21:Service/Srv_SensorMonitor.c **** #define BARO_BUS_TYPE SrvBaro_Bus_IIC
+  22:Service/Srv_SensorMonitor.c **** #endif
+  23:Service/Srv_SensorMonitor.c **** 
+  24:Service/Srv_SensorMonitor.c **** #define MONITOR_TAG "[ SENSOR MONITOR INFO ] "
+  25:Service/Srv_SensorMonitor.c **** #define MONITOR_INFO(fmt, ...) Debug_Print(&DebugPort, MONITOR_TAG, fmt, ##__VA_ARGS__)
+  26:Service/Srv_SensorMonitor.c **** 
+  27:Service/Srv_SensorMonitor.c **** /* internal function */
+  28:Service/Srv_SensorMonitor.c **** static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum);
+  29:Service/Srv_SensorMonitor.c **** 
+  30:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 2
+
+
+  31:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Mag_Init(void);
+  32:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Baro_Init(void);
+  33:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Flow_Init(void);
+  34:Service/Srv_SensorMonitor.c **** 
+  35:Service/Srv_SensorMonitor.c **** /* external function */
+  36:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj);
+  37:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj);
+  38:Service/Srv_SensorMonitor.c **** static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj_TypeDef *obj);
+  39:Service/Srv_SensorMonitor.c **** static GenCalib_State_TypeList SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, 
+  40:Service/Srv_SensorMonitor.c **** static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, 
+  41:Service/Srv_SensorMonitor.c **** static SrvBaro_UnionData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj);
+  42:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_IMU_Get_Num(SrvSensorMonitorObj_TypeDef *obj, uint8_t *num);
+  43:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Get_IMU_Range(SrvSensorMonitorObj_TypeDef *obj, SrvIMU_Module_Type typ
+  44:Service/Srv_SensorMonitor.c **** 
+  45:Service/Srv_SensorMonitor.c **** SrvSensorMonitor_TypeDef SrvSensorMonitor = {
+  46:Service/Srv_SensorMonitor.c ****     .init = SrvSensorMonitor_Init,
+  47:Service/Srv_SensorMonitor.c ****     .sample_ctl = SrvSensorMonitor_SampleCTL,
+  48:Service/Srv_SensorMonitor.c ****     .get_imu_num = SrvSensorMonitor_IMU_Get_Num,
+  49:Service/Srv_SensorMonitor.c ****     .get_imu_range = SrvSensorMonitor_Get_IMU_Range,
+  50:Service/Srv_SensorMonitor.c ****     .get_imu_data = SrvSensorMonitor_Get_IMUData,
+  51:Service/Srv_SensorMonitor.c ****     .get_baro_data = SrvSensorMonitor_Get_BaroData,
+  52:Service/Srv_SensorMonitor.c ****     .set_calib = SrvSensorMonitor_Set_Module_Calib,
+  53:Service/Srv_SensorMonitor.c ****     .get_calib = SrvSensorMonitor_Get_Module_Calib,
+  54:Service/Srv_SensorMonitor.c **** };
+  55:Service/Srv_SensorMonitor.c **** 
+  56:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
+  57:Service/Srv_SensorMonitor.c **** {
+  58:Service/Srv_SensorMonitor.c ****     uint8_t enable_sensor_num = 0;
+  59:Service/Srv_SensorMonitor.c ****     uint16_t list_index = 0;
+  60:Service/Srv_SensorMonitor.c **** 
+  61:Service/Srv_SensorMonitor.c ****     if (obj)
+  62:Service/Srv_SensorMonitor.c ****     {
+  63:Service/Srv_SensorMonitor.c ****         enable_sensor_num = Get_OnSet_Bit_Num(obj->enabled_reg.val);
+  64:Service/Srv_SensorMonitor.c ****         
+  65:Service/Srv_SensorMonitor.c ****         obj->statistic_list = SrvOsCommon.malloc(enable_sensor_num * sizeof(SrvSensorMonitor_Statis
+  66:Service/Srv_SensorMonitor.c ****         if (obj->statistic_list == NULL)
+  67:Service/Srv_SensorMonitor.c ****         {
+  68:Service/Srv_SensorMonitor.c ****             SrvOsCommon.free(obj->statistic_list);
+  69:Service/Srv_SensorMonitor.c ****             return false;
+  70:Service/Srv_SensorMonitor.c ****         }
+  71:Service/Srv_SensorMonitor.c **** 
+  72:Service/Srv_SensorMonitor.c ****         /* enabled on imu must be essential */
+  73:Service/Srv_SensorMonitor.c ****         if (obj->enabled_reg.bit.imu && SrvSensorMonitor_IMU_Init(obj))
+  74:Service/Srv_SensorMonitor.c ****         {
+  75:Service/Srv_SensorMonitor.c ****             if (list_index > enable_sensor_num)
+  76:Service/Srv_SensorMonitor.c ****                 return false;
+  77:Service/Srv_SensorMonitor.c **** 
+  78:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.imu = true;
+  79:Service/Srv_SensorMonitor.c ****             obj->statistic_imu = &obj->statistic_list[list_index];
+  80:Service/Srv_SensorMonitor.c ****             obj->statistic_imu->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.imu);
+  81:Service/Srv_SensorMonitor.c ****             obj->statistic_imu->is_calid = Calib_None; 
+  82:Service/Srv_SensorMonitor.c ****             list_index ++;
+  83:Service/Srv_SensorMonitor.c ****         }
+  84:Service/Srv_SensorMonitor.c ****         else
+  85:Service/Srv_SensorMonitor.c ****         {
+  86:Service/Srv_SensorMonitor.c ****             if (obj->enabled_reg.bit.imu)
+  87:Service/Srv_SensorMonitor.c ****                 obj->init_state_reg.bit.imu = false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 3
+
+
+  88:Service/Srv_SensorMonitor.c **** 
+  89:Service/Srv_SensorMonitor.c ****             return false;
+  90:Service/Srv_SensorMonitor.c ****         }
+  91:Service/Srv_SensorMonitor.c **** 
+  92:Service/Srv_SensorMonitor.c ****         if (obj->enabled_reg.bit.mag && SrvSensorMonitor_Mag_Init())
+  93:Service/Srv_SensorMonitor.c ****         {
+  94:Service/Srv_SensorMonitor.c ****             if (list_index > enable_sensor_num)
+  95:Service/Srv_SensorMonitor.c ****                 return false;
+  96:Service/Srv_SensorMonitor.c **** 
+  97:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.mag = true;
+  98:Service/Srv_SensorMonitor.c ****             obj->statistic_mag = &obj->statistic_list[list_index];
+  99:Service/Srv_SensorMonitor.c ****             obj->statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
+ 100:Service/Srv_SensorMonitor.c ****             obj->statistic_mag->is_calid = Calib_None;
+ 101:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 102:Service/Srv_SensorMonitor.c ****         }
+ 103:Service/Srv_SensorMonitor.c ****         else
+ 104:Service/Srv_SensorMonitor.c ****         {
+ 105:Service/Srv_SensorMonitor.c ****             obj->statistic_mag->is_calid = Calib_None;
+ 106:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.mag = false;
+ 107:Service/Srv_SensorMonitor.c ****         }
+ 108:Service/Srv_SensorMonitor.c **** 
+ 109:Service/Srv_SensorMonitor.c ****         if (obj->enabled_reg.bit.baro && SrvSensorMonitor_Baro_Init())
+ 110:Service/Srv_SensorMonitor.c ****         {
+ 111:Service/Srv_SensorMonitor.c ****             if (list_index > enable_sensor_num)
+ 112:Service/Srv_SensorMonitor.c ****                 return false;
+ 113:Service/Srv_SensorMonitor.c **** 
+ 114:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.baro = true;
+ 115:Service/Srv_SensorMonitor.c ****             obj->statistic_baro = &obj->statistic_list[list_index];
+ 116:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.baro);
+ 117:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->is_calid = Calib_None;
+ 118:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 119:Service/Srv_SensorMonitor.c ****         }
+ 120:Service/Srv_SensorMonitor.c ****         else
+ 121:Service/Srv_SensorMonitor.c ****         {
+ 122:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->is_calid = Calib_None;
+ 123:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.baro = false;
+ 124:Service/Srv_SensorMonitor.c ****         }
+ 125:Service/Srv_SensorMonitor.c **** 
+ 126:Service/Srv_SensorMonitor.c ****         if (obj->enabled_reg.bit.flow && SrvSensorMonitor_Flow_Init())
+ 127:Service/Srv_SensorMonitor.c ****         {
+ 128:Service/Srv_SensorMonitor.c ****             if (list_index > enable_sensor_num)
+ 129:Service/Srv_SensorMonitor.c ****                 return false;
+ 130:Service/Srv_SensorMonitor.c **** 
+ 131:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.flow = true;
+ 132:Service/Srv_SensorMonitor.c ****             obj->statistic_flow = &obj->statistic_list[list_index];
+ 133:Service/Srv_SensorMonitor.c ****             obj->statistic_flow->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.flow);
+ 134:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 135:Service/Srv_SensorMonitor.c ****         }
+ 136:Service/Srv_SensorMonitor.c ****         else
+ 137:Service/Srv_SensorMonitor.c ****         {
+ 138:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.flow = false;
+ 139:Service/Srv_SensorMonitor.c ****         }
+ 140:Service/Srv_SensorMonitor.c **** 
+ 141:Service/Srv_SensorMonitor.c ****         return true;
+ 142:Service/Srv_SensorMonitor.c ****     }
+ 143:Service/Srv_SensorMonitor.c **** 
+ 144:Service/Srv_SensorMonitor.c ****     return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 4
+
+
+ 145:Service/Srv_SensorMonitor.c **** }
+ 146:Service/Srv_SensorMonitor.c **** 
+ 147:Service/Srv_SensorMonitor.c **** static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum)
+ 148:Service/Srv_SensorMonitor.c **** {
+  29              		.loc 1 148 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+ 149:Service/Srv_SensorMonitor.c ****     switch(freq_enum)
+  34              		.loc 1 149 5 view .LVU1
+  35 0000 0928     		cmp	r0, #9
+  36 0002 19D8     		bhi	.L2
+  37 0004 DFE800F0 		tbb	[pc, r0]
+  38              	.L4:
+  39 0008 05       		.byte	(.L13-.L4)/2
+  40 0009 1A       		.byte	(.L14-.L4)/2
+  41 000a 08       		.byte	(.L11-.L4)/2
+  42 000b 0A       		.byte	(.L10-.L4)/2
+  43 000c 0C       		.byte	(.L9-.L4)/2
+  44 000d 0E       		.byte	(.L8-.L4)/2
+  45 000e 10       		.byte	(.L7-.L4)/2
+  46 000f 12       		.byte	(.L6-.L4)/2
+  47 0010 14       		.byte	(.L5-.L4)/2
+  48 0011 16       		.byte	(.L3-.L4)/2
+  49              		.p2align 1
+  50              	.L13:
+  51 0012 4FF47A70 		mov	r0, #1000
+  52              	.LVL1:
+  53              		.loc 1 149 5 is_stmt 0 view .LVU2
+  54 0016 7047     		bx	lr
+  55              	.LVL2:
+  56              	.L11:
+ 150:Service/Srv_SensorMonitor.c ****     {
+ 151:Service/Srv_SensorMonitor.c ****         case SrvSensorMonitor_SampleFreq_1KHz:
+ 152:Service/Srv_SensorMonitor.c ****             return 1000;
+ 153:Service/Srv_SensorMonitor.c **** 
+ 154:Service/Srv_SensorMonitor.c ****         case SrvSensorMonitor_SampleFreq_500Hz:
+ 155:Service/Srv_SensorMonitor.c ****             return 500;
+ 156:Service/Srv_SensorMonitor.c ****         
+ 157:Service/Srv_SensorMonitor.c ****         case SrvSensorMonitor_SampleFreq_250Hz:
+ 158:Service/Srv_SensorMonitor.c ****             return 250;
+  57              		.loc 1 158 13 is_stmt 1 view .LVU3
+  58              		.loc 1 158 20 is_stmt 0 view .LVU4
+  59 0018 FA20     		movs	r0, #250
+  60              	.LVL3:
+  61              		.loc 1 158 20 view .LVU5
+  62 001a 7047     		bx	lr
+  63              	.LVL4:
+  64              	.L10:
+ 159:Service/Srv_SensorMonitor.c **** 
+ 160:Service/Srv_SensorMonitor.c ****         case SrvSensorMonitor_SampleFreq_200Hz:
+ 161:Service/Srv_SensorMonitor.c ****             return 200;
+  65              		.loc 1 161 13 is_stmt 1 view .LVU6
+  66              		.loc 1 161 20 is_stmt 0 view .LVU7
+  67 001c C820     		movs	r0, #200
+  68              	.LVL5:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 5
+
+
+  69              		.loc 1 161 20 view .LVU8
+  70 001e 7047     		bx	lr
+  71              	.LVL6:
+  72              	.L9:
+ 162:Service/Srv_SensorMonitor.c **** 
+ 163:Service/Srv_SensorMonitor.c ****         case SrvSensorMonitor_SampleFreq_100Hz:
+ 164:Service/Srv_SensorMonitor.c ****             return 100;
+  73              		.loc 1 164 13 is_stmt 1 view .LVU9
+  74              		.loc 1 164 20 is_stmt 0 view .LVU10
+  75 0020 6420     		movs	r0, #100
+  76              	.LVL7:
+  77              		.loc 1 164 20 view .LVU11
+  78 0022 7047     		bx	lr
+  79              	.LVL8:
+  80              	.L8:
+ 165:Service/Srv_SensorMonitor.c **** 
+ 166:Service/Srv_SensorMonitor.c ****         case SrvSensorMonitor_SampleFreq_50Hz:
+ 167:Service/Srv_SensorMonitor.c ****             return 50;
+  81              		.loc 1 167 13 is_stmt 1 view .LVU12
+  82              		.loc 1 167 20 is_stmt 0 view .LVU13
+  83 0024 3220     		movs	r0, #50
+  84              	.LVL9:
+  85              		.loc 1 167 20 view .LVU14
+  86 0026 7047     		bx	lr
+  87              	.LVL10:
+  88              	.L7:
+ 168:Service/Srv_SensorMonitor.c **** 
+ 169:Service/Srv_SensorMonitor.c ****         case SrvSensorMonitor_SampleFreq_20Hz:
+ 170:Service/Srv_SensorMonitor.c ****             return 20;
+  89              		.loc 1 170 13 is_stmt 1 view .LVU15
+  90              		.loc 1 170 20 is_stmt 0 view .LVU16
+  91 0028 1420     		movs	r0, #20
+  92              	.LVL11:
+  93              		.loc 1 170 20 view .LVU17
+  94 002a 7047     		bx	lr
+  95              	.LVL12:
+  96              	.L6:
+ 171:Service/Srv_SensorMonitor.c ****         
+ 172:Service/Srv_SensorMonitor.c ****         case SrvSensorMonitor_SampleFreq_10Hz:
+ 173:Service/Srv_SensorMonitor.c ****             return 10;
+  97              		.loc 1 173 13 is_stmt 1 view .LVU18
+  98              		.loc 1 173 20 is_stmt 0 view .LVU19
+  99 002c 0A20     		movs	r0, #10
+ 100              	.LVL13:
+ 101              		.loc 1 173 20 view .LVU20
+ 102 002e 7047     		bx	lr
+ 103              	.LVL14:
+ 104              	.L5:
+ 174:Service/Srv_SensorMonitor.c **** 
+ 175:Service/Srv_SensorMonitor.c ****         case SrvSensorMonitor_SampleFreq_5Hz:
+ 176:Service/Srv_SensorMonitor.c ****             return 5;
+ 105              		.loc 1 176 13 is_stmt 1 view .LVU21
+ 106              		.loc 1 176 20 is_stmt 0 view .LVU22
+ 107 0030 0520     		movs	r0, #5
+ 108              	.LVL15:
+ 109              		.loc 1 176 20 view .LVU23
+ 110 0032 7047     		bx	lr
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 6
+
+
+ 111              	.LVL16:
+ 112              	.L3:
+ 177:Service/Srv_SensorMonitor.c **** 
+ 178:Service/Srv_SensorMonitor.c ****         case SrvSensorMonitor_SampleFreq_1Hz:
+ 179:Service/Srv_SensorMonitor.c ****             return 1;
+ 113              		.loc 1 179 13 is_stmt 1 view .LVU24
+ 114              		.loc 1 179 20 is_stmt 0 view .LVU25
+ 115 0034 0120     		movs	r0, #1
+ 116              	.LVL17:
+ 117              		.loc 1 179 20 view .LVU26
+ 118 0036 7047     		bx	lr
+ 119              	.LVL18:
+ 120              	.L2:
+ 180:Service/Srv_SensorMonitor.c **** 
+ 181:Service/Srv_SensorMonitor.c ****         default:
+ 182:Service/Srv_SensorMonitor.c ****             return 0;
+ 121              		.loc 1 182 13 is_stmt 1 view .LVU27
+ 122              		.loc 1 182 20 is_stmt 0 view .LVU28
+ 123 0038 0020     		movs	r0, #0
+ 124              	.LVL19:
+ 125              		.loc 1 182 20 view .LVU29
+ 126 003a 7047     		bx	lr
+ 127              	.LVL20:
+ 128              	.L14:
+ 155:Service/Srv_SensorMonitor.c ****         
+ 129              		.loc 1 155 20 view .LVU30
+ 130 003c 4FF4FA70 		mov	r0, #500
+ 131              	.LVL21:
+ 183:Service/Srv_SensorMonitor.c ****     }
+ 184:Service/Srv_SensorMonitor.c **** 
+ 185:Service/Srv_SensorMonitor.c ****     return 0;
+ 186:Service/Srv_SensorMonitor.c **** }
+ 132              		.loc 1 186 1 view .LVU31
+ 133 0040 7047     		bx	lr
+ 134              		.cfi_endproc
+ 135              	.LFE143:
+ 137              		.section	.text.SrvSensorMonitor_IMU_Get_Num,"ax",%progbits
+ 138              		.align	1
+ 139              		.syntax unified
+ 140              		.thumb
+ 141              		.thumb_func
+ 143              	SrvSensorMonitor_IMU_Get_Num:
+ 144              	.LVL22:
+ 145              	.LFB147:
+ 187:Service/Srv_SensorMonitor.c **** 
+ 188:Service/Srv_SensorMonitor.c **** static uint32_t SrvSensorMonitor_Get_EnableState(SrvSensorMonitorObj_TypeDef *obj)
+ 189:Service/Srv_SensorMonitor.c **** {
+ 190:Service/Srv_SensorMonitor.c ****     if (obj)
+ 191:Service/Srv_SensorMonitor.c ****         return obj->enabled_reg.val;
+ 192:Service/Srv_SensorMonitor.c **** 
+ 193:Service/Srv_SensorMonitor.c ****     return 0;
+ 194:Service/Srv_SensorMonitor.c **** }
+ 195:Service/Srv_SensorMonitor.c **** 
+ 196:Service/Srv_SensorMonitor.c **** static uint32_t SrvSensorMonitor_Get_InitState(SrvSensorMonitorObj_TypeDef *obj)
+ 197:Service/Srv_SensorMonitor.c **** {
+ 198:Service/Srv_SensorMonitor.c ****     if (obj)
+ 199:Service/Srv_SensorMonitor.c ****         return obj->init_state_reg.val;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 7
+
+
+ 200:Service/Srv_SensorMonitor.c **** 
+ 201:Service/Srv_SensorMonitor.c ****     return 0;
+ 202:Service/Srv_SensorMonitor.c **** }
+ 203:Service/Srv_SensorMonitor.c **** 
+ 204:Service/Srv_SensorMonitor.c **** /******************************************* IMU Section ******************************************
+ 205:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
+ 206:Service/Srv_SensorMonitor.c **** {
+ 207:Service/Srv_SensorMonitor.c ****     SrvIMU_ErrorCode_List init_state;
+ 208:Service/Srv_SensorMonitor.c **** 
+ 209:Service/Srv_SensorMonitor.c ****     if (SrvIMU.init && obj)
+ 210:Service/Srv_SensorMonitor.c ****     {
+ 211:Service/Srv_SensorMonitor.c ****         init_state = SrvIMU.init();
+ 212:Service/Srv_SensorMonitor.c ****         obj->imu_num = 0;
+ 213:Service/Srv_SensorMonitor.c **** 
+ 214:Service/Srv_SensorMonitor.c ****         switch(init_state)
+ 215:Service/Srv_SensorMonitor.c ****         {
+ 216:Service/Srv_SensorMonitor.c ****             case SrvIMU_PriDev_Init_Error:
+ 217:Service/Srv_SensorMonitor.c ****                 MONITOR_INFO("Pri IMU init error\r\n");
+ 218:Service/Srv_SensorMonitor.c ****                 memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+ 219:Service/Srv_SensorMonitor.c ****                 obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
+ 220:Service/Srv_SensorMonitor.c ****                 if (!obj->sec_range_get)
+ 221:Service/Srv_SensorMonitor.c ****                 {
+ 222:Service/Srv_SensorMonitor.c ****                     MONITOR_INFO("IMU get range failed\r\n");
+ 223:Service/Srv_SensorMonitor.c ****                     memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+ 224:Service/Srv_SensorMonitor.c ****                     return false;
+ 225:Service/Srv_SensorMonitor.c ****                 }
+ 226:Service/Srv_SensorMonitor.c **** 
+ 227:Service/Srv_SensorMonitor.c ****                 obj->imu_num = 1;
+ 228:Service/Srv_SensorMonitor.c ****                 /* set sample mode */
+ 229:Service/Srv_SensorMonitor.c ****                 obj->IMU_SampleMode = SrvIMU_Priori_Sec;
+ 230:Service/Srv_SensorMonitor.c ****                 break;
+ 231:Service/Srv_SensorMonitor.c **** 
+ 232:Service/Srv_SensorMonitor.c ****             case SrvIMU_SecDev_Init_Error:
+ 233:Service/Srv_SensorMonitor.c ****                 MONITOR_INFO("Sec IMU init error\r\n");
+ 234:Service/Srv_SensorMonitor.c ****                 memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+ 235:Service/Srv_SensorMonitor.c ****                 obj->pri_range_get = SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range);
+ 236:Service/Srv_SensorMonitor.c ****                 if (!obj->pri_range_get)
+ 237:Service/Srv_SensorMonitor.c ****                 {
+ 238:Service/Srv_SensorMonitor.c ****                     MONITOR_INFO("IMU get range failed\r\n");
+ 239:Service/Srv_SensorMonitor.c ****                     memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+ 240:Service/Srv_SensorMonitor.c ****                     return false;
+ 241:Service/Srv_SensorMonitor.c ****                 }
+ 242:Service/Srv_SensorMonitor.c **** 
+ 243:Service/Srv_SensorMonitor.c ****                 obj->imu_num = 1;
+ 244:Service/Srv_SensorMonitor.c ****                 /* ser sample mode */
+ 245:Service/Srv_SensorMonitor.c ****                 obj->IMU_SampleMode = SrvIMU_Priori_Pri;
+ 246:Service/Srv_SensorMonitor.c ****                 break;
+ 247:Service/Srv_SensorMonitor.c **** 
+ 248:Service/Srv_SensorMonitor.c ****             case SrvIMU_No_Error:
+ 249:Service/Srv_SensorMonitor.c ****                 MONITOR_INFO("All IMU init successed\r\n");
+ 250:Service/Srv_SensorMonitor.c ****                 memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+ 251:Service/Srv_SensorMonitor.c ****                 memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+ 252:Service/Srv_SensorMonitor.c ****                 
+ 253:Service/Srv_SensorMonitor.c ****                 obj->pri_range_get = SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range);
+ 254:Service/Srv_SensorMonitor.c ****                 obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
+ 255:Service/Srv_SensorMonitor.c ****                 
+ 256:Service/Srv_SensorMonitor.c ****                 /* set sample mode */
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 8
+
+
+ 257:Service/Srv_SensorMonitor.c ****                 if (!obj->pri_range_get && !obj->sec_range_get)
+ 258:Service/Srv_SensorMonitor.c ****                 {
+ 259:Service/Srv_SensorMonitor.c ****                     MONITOR_INFO("IMU get range failed\r\n");
+ 260:Service/Srv_SensorMonitor.c ****                     memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+ 261:Service/Srv_SensorMonitor.c ****                     memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+ 262:Service/Srv_SensorMonitor.c ****                     return false;
+ 263:Service/Srv_SensorMonitor.c ****                 }
+ 264:Service/Srv_SensorMonitor.c ****                 else
+ 265:Service/Srv_SensorMonitor.c ****                 {
+ 266:Service/Srv_SensorMonitor.c ****                     if (obj->pri_range_get & obj->sec_range_get)
+ 267:Service/Srv_SensorMonitor.c ****                     {
+ 268:Service/Srv_SensorMonitor.c ****                         obj->imu_num = 2;
+ 269:Service/Srv_SensorMonitor.c ****                         obj->IMU_SampleMode = SrvIMU_Both_Sample;
+ 270:Service/Srv_SensorMonitor.c ****                     }
+ 271:Service/Srv_SensorMonitor.c ****                     else
+ 272:Service/Srv_SensorMonitor.c ****                     {
+ 273:Service/Srv_SensorMonitor.c ****                         obj->imu_num = 1;
+ 274:Service/Srv_SensorMonitor.c ****                         if (obj->pri_range_get)
+ 275:Service/Srv_SensorMonitor.c ****                         {
+ 276:Service/Srv_SensorMonitor.c ****                             obj->IMU_SampleMode = SrvIMU_Priori_Pri;
+ 277:Service/Srv_SensorMonitor.c ****                         }
+ 278:Service/Srv_SensorMonitor.c ****                         else
+ 279:Service/Srv_SensorMonitor.c ****                             obj->IMU_SampleMode = SrvIMU_Priori_Sec;
+ 280:Service/Srv_SensorMonitor.c ****                     }
+ 281:Service/Srv_SensorMonitor.c ****                 }
+ 282:Service/Srv_SensorMonitor.c ****                 break;
+ 283:Service/Srv_SensorMonitor.c **** 
+ 284:Service/Srv_SensorMonitor.c ****             case SrvIMU_AllModule_Init_Error:
+ 285:Service/Srv_SensorMonitor.c ****             default:
+ 286:Service/Srv_SensorMonitor.c ****                 return false;
+ 287:Service/Srv_SensorMonitor.c ****         }
+ 288:Service/Srv_SensorMonitor.c **** 
+ 289:Service/Srv_SensorMonitor.c ****         return true;
+ 290:Service/Srv_SensorMonitor.c ****     }
+ 291:Service/Srv_SensorMonitor.c **** 
+ 292:Service/Srv_SensorMonitor.c ****     return false;
+ 293:Service/Srv_SensorMonitor.c **** }
+ 294:Service/Srv_SensorMonitor.c **** 
+ 295:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_IMU_Get_Num(SrvSensorMonitorObj_TypeDef *obj, uint8_t *num)
+ 296:Service/Srv_SensorMonitor.c **** {
+ 146              		.loc 1 296 1 is_stmt 1 view -0
+ 147              		.cfi_startproc
+ 148              		@ args = 0, pretend = 0, frame = 0
+ 149              		@ frame_needed = 0, uses_anonymous_args = 0
+ 150              		@ link register save eliminated.
+ 297:Service/Srv_SensorMonitor.c ****     if (obj)
+ 151              		.loc 1 297 5 view .LVU33
+ 152              		.loc 1 297 8 is_stmt 0 view .LVU34
+ 153 0000 60B1     		cbz	r0, .L18
+ 298:Service/Srv_SensorMonitor.c ****     {
+ 299:Service/Srv_SensorMonitor.c ****         if (num)
+ 154              		.loc 1 299 9 is_stmt 1 view .LVU35
+ 155              		.loc 1 299 12 is_stmt 0 view .LVU36
+ 156 0002 69B1     		cbz	r1, .L19
+ 300:Service/Srv_SensorMonitor.c ****         {
+ 301:Service/Srv_SensorMonitor.c ****             if (obj->init_state_reg.bit.imu)
+ 157              		.loc 1 301 13 is_stmt 1 view .LVU37
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 9
+
+
+ 158              		.loc 1 301 17 is_stmt 0 view .LVU38
+ 159 0004 0279     		ldrb	r2, [r0, #4]	@ zero_extendqisi2
+ 160              		.loc 1 301 16 view .LVU39
+ 161 0006 12F0010F 		tst	r2, #1
+ 162 000a 02D1     		bne	.L20
+ 302:Service/Srv_SensorMonitor.c ****             {
+ 303:Service/Srv_SensorMonitor.c ****                 (*num) = obj->imu_num;
+ 304:Service/Srv_SensorMonitor.c ****                 return true;
+ 305:Service/Srv_SensorMonitor.c ****             }
+ 306:Service/Srv_SensorMonitor.c ****             else
+ 307:Service/Srv_SensorMonitor.c ****                 (*num) = 0;
+ 163              		.loc 1 307 17 is_stmt 1 view .LVU40
+ 164              		.loc 1 307 24 is_stmt 0 view .LVU41
+ 165 000c 0020     		movs	r0, #0
+ 166              	.LVL23:
+ 167              		.loc 1 307 24 view .LVU42
+ 168 000e 0870     		strb	r0, [r1]
+ 169 0010 7047     		bx	lr
+ 170              	.LVL24:
+ 171              	.L20:
+ 303:Service/Srv_SensorMonitor.c ****                 return true;
+ 172              		.loc 1 303 17 is_stmt 1 view .LVU43
+ 303:Service/Srv_SensorMonitor.c ****                 return true;
+ 173              		.loc 1 303 29 is_stmt 0 view .LVU44
+ 174 0012 90F82030 		ldrb	r3, [r0, #32]	@ zero_extendqisi2
+ 303:Service/Srv_SensorMonitor.c ****                 return true;
+ 175              		.loc 1 303 24 view .LVU45
+ 176 0016 0B70     		strb	r3, [r1]
+ 304:Service/Srv_SensorMonitor.c ****             }
+ 177              		.loc 1 304 17 is_stmt 1 view .LVU46
+ 304:Service/Srv_SensorMonitor.c ****             }
+ 178              		.loc 1 304 24 is_stmt 0 view .LVU47
+ 179 0018 0120     		movs	r0, #1
+ 180              	.LVL25:
+ 304:Service/Srv_SensorMonitor.c ****             }
+ 181              		.loc 1 304 24 view .LVU48
+ 182 001a 7047     		bx	lr
+ 183              	.LVL26:
+ 184              	.L18:
+ 308:Service/Srv_SensorMonitor.c ****         }   
+ 309:Service/Srv_SensorMonitor.c ****     }
+ 310:Service/Srv_SensorMonitor.c **** 
+ 311:Service/Srv_SensorMonitor.c ****     return false;
+ 185              		.loc 1 311 12 view .LVU49
+ 186 001c 0020     		movs	r0, #0
+ 187              	.LVL27:
+ 188              		.loc 1 311 12 view .LVU50
+ 189 001e 7047     		bx	lr
+ 190              	.LVL28:
+ 191              	.L19:
+ 192              		.loc 1 311 12 view .LVU51
+ 193 0020 0020     		movs	r0, #0
+ 194              	.LVL29:
+ 312:Service/Srv_SensorMonitor.c **** }
+ 195              		.loc 1 312 1 view .LVU52
+ 196 0022 7047     		bx	lr
+ 197              		.cfi_endproc
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 10
+
+
+ 198              	.LFE147:
+ 200              		.section	.text.SrvSensorMonitor_Get_IMU_Range,"ax",%progbits
+ 201              		.align	1
+ 202              		.syntax unified
+ 203              		.thumb
+ 204              		.thumb_func
+ 206              	SrvSensorMonitor_Get_IMU_Range:
+ 207              	.LVL30:
+ 208              	.LFB148:
+ 313:Service/Srv_SensorMonitor.c **** 
+ 314:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Get_IMU_Range(SrvSensorMonitorObj_TypeDef *obj, SrvIMU_Module_Type typ
+ 315:Service/Srv_SensorMonitor.c **** {
+ 209              		.loc 1 315 1 is_stmt 1 view -0
+ 210              		.cfi_startproc
+ 211              		@ args = 0, pretend = 0, frame = 0
+ 212              		@ frame_needed = 0, uses_anonymous_args = 0
+ 213              		@ link register save eliminated.
+ 316:Service/Srv_SensorMonitor.c ****     if (obj && range)
+ 214              		.loc 1 316 5 view .LVU54
+ 215              		.loc 1 316 8 is_stmt 0 view .LVU55
+ 216 0000 0346     		mov	r3, r0
+ 217 0002 00B3     		cbz	r0, .L27
+ 218              		.loc 1 316 13 discriminator 1 view .LVU56
+ 219 0004 0AB3     		cbz	r2, .L28
+ 317:Service/Srv_SensorMonitor.c ****     {
+ 318:Service/Srv_SensorMonitor.c ****         switch((uint8_t)type)
+ 220              		.loc 1 318 9 is_stmt 1 view .LVU57
+ 221 0006 0129     		cmp	r1, #1
+ 222 0008 03D0     		beq	.L23
+ 223 000a 0229     		cmp	r1, #2
+ 224 000c 0ED0     		beq	.L24
+ 225 000e 0020     		movs	r0, #0
+ 226              	.LVL31:
+ 227              		.loc 1 318 9 is_stmt 0 view .LVU58
+ 228 0010 7047     		bx	lr
+ 229              	.LVL32:
+ 230              	.L23:
+ 319:Service/Srv_SensorMonitor.c ****         {
+ 320:Service/Srv_SensorMonitor.c ****             case SrvIMU_PriModule:
+ 321:Service/Srv_SensorMonitor.c ****                 if (obj->pri_range_get)
+ 231              		.loc 1 321 17 is_stmt 1 view .LVU59
+ 232              		.loc 1 321 24 is_stmt 0 view .LVU60
+ 233 0012 90F82100 		ldrb	r0, [r0, #33]	@ zero_extendqisi2
+ 234              	.LVL33:
+ 235              		.loc 1 321 20 view .LVU61
+ 236 0016 28B1     		cbz	r0, .L25
+ 322:Service/Srv_SensorMonitor.c ****                 {
+ 323:Service/Srv_SensorMonitor.c ****                     range->Acc = obj->PriIMU_Range.Acc;
+ 237              		.loc 1 323 21 is_stmt 1 view .LVU62
+ 238              		.loc 1 323 51 is_stmt 0 view .LVU63
+ 239 0018 93F82410 		ldrb	r1, [r3, #36]	@ zero_extendqisi2
+ 240              	.LVL34:
+ 241              		.loc 1 323 32 view .LVU64
+ 242 001c 1170     		strb	r1, [r2]
+ 324:Service/Srv_SensorMonitor.c ****                     range->Gyr = obj->PriIMU_Range.Gyr;
+ 243              		.loc 1 324 21 is_stmt 1 view .LVU65
+ 244              		.loc 1 324 51 is_stmt 0 view .LVU66
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 11
+
+
+ 245 001e DB8C     		ldrh	r3, [r3, #38]
+ 246              	.LVL35:
+ 247              		.loc 1 324 32 view .LVU67
+ 248 0020 5380     		strh	r3, [r2, #2]	@ movhi
+ 325:Service/Srv_SensorMonitor.c ****                     return true;
+ 249              		.loc 1 325 21 is_stmt 1 view .LVU68
+ 250              		.loc 1 325 28 is_stmt 0 view .LVU69
+ 251 0022 7047     		bx	lr
+ 252              	.LVL36:
+ 253              	.L25:
+ 326:Service/Srv_SensorMonitor.c ****                 }
+ 327:Service/Srv_SensorMonitor.c **** 
+ 328:Service/Srv_SensorMonitor.c ****                 range->Acc = 0;
+ 254              		.loc 1 328 17 is_stmt 1 view .LVU70
+ 255              		.loc 1 328 28 is_stmt 0 view .LVU71
+ 256 0024 0023     		movs	r3, #0
+ 257              	.LVL37:
+ 258              		.loc 1 328 28 view .LVU72
+ 259 0026 1370     		strb	r3, [r2]
+ 329:Service/Srv_SensorMonitor.c ****                 range->Gyr = 0;
+ 260              		.loc 1 329 17 is_stmt 1 view .LVU73
+ 261              		.loc 1 329 28 is_stmt 0 view .LVU74
+ 262 0028 5380     		strh	r3, [r2, #2]	@ movhi
+ 330:Service/Srv_SensorMonitor.c ****                 return false;
+ 263              		.loc 1 330 17 is_stmt 1 view .LVU75
+ 264              		.loc 1 330 24 is_stmt 0 view .LVU76
+ 265 002a 7047     		bx	lr
+ 266              	.LVL38:
+ 267              	.L24:
+ 331:Service/Srv_SensorMonitor.c **** 
+ 332:Service/Srv_SensorMonitor.c ****             case SrvIMU_SecModule:
+ 333:Service/Srv_SensorMonitor.c ****                 if (obj->sec_range_get)
+ 268              		.loc 1 333 17 is_stmt 1 view .LVU77
+ 269              		.loc 1 333 24 is_stmt 0 view .LVU78
+ 270 002c 90F82200 		ldrb	r0, [r0, #34]	@ zero_extendqisi2
+ 271              	.LVL39:
+ 272              		.loc 1 333 20 view .LVU79
+ 273 0030 28B1     		cbz	r0, .L26
+ 334:Service/Srv_SensorMonitor.c ****                 {
+ 335:Service/Srv_SensorMonitor.c ****                     range->Acc = obj->SecIMU_Range.Acc;
+ 274              		.loc 1 335 21 is_stmt 1 view .LVU80
+ 275              		.loc 1 335 51 is_stmt 0 view .LVU81
+ 276 0032 93F82810 		ldrb	r1, [r3, #40]	@ zero_extendqisi2
+ 277              	.LVL40:
+ 278              		.loc 1 335 32 view .LVU82
+ 279 0036 1170     		strb	r1, [r2]
+ 336:Service/Srv_SensorMonitor.c ****                     range->Gyr = obj->SecIMU_Range.Gyr;
+ 280              		.loc 1 336 21 is_stmt 1 view .LVU83
+ 281              		.loc 1 336 51 is_stmt 0 view .LVU84
+ 282 0038 5B8D     		ldrh	r3, [r3, #42]
+ 283              	.LVL41:
+ 284              		.loc 1 336 32 view .LVU85
+ 285 003a 5380     		strh	r3, [r2, #2]	@ movhi
+ 337:Service/Srv_SensorMonitor.c ****                     return true;
+ 286              		.loc 1 337 21 is_stmt 1 view .LVU86
+ 287              		.loc 1 337 28 is_stmt 0 view .LVU87
+ 288 003c 7047     		bx	lr
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 12
+
+
+ 289              	.LVL42:
+ 290              	.L26:
+ 338:Service/Srv_SensorMonitor.c ****                 }
+ 339:Service/Srv_SensorMonitor.c **** 
+ 340:Service/Srv_SensorMonitor.c ****                 range->Acc = 0;
+ 291              		.loc 1 340 17 is_stmt 1 view .LVU88
+ 292              		.loc 1 340 28 is_stmt 0 view .LVU89
+ 293 003e 0023     		movs	r3, #0
+ 294              	.LVL43:
+ 295              		.loc 1 340 28 view .LVU90
+ 296 0040 1370     		strb	r3, [r2]
+ 341:Service/Srv_SensorMonitor.c ****                 range->Gyr = 0;
+ 297              		.loc 1 341 17 is_stmt 1 view .LVU91
+ 298              		.loc 1 341 28 is_stmt 0 view .LVU92
+ 299 0042 5380     		strh	r3, [r2, #2]	@ movhi
+ 342:Service/Srv_SensorMonitor.c ****                 return false;
+ 300              		.loc 1 342 17 is_stmt 1 view .LVU93
+ 301              		.loc 1 342 24 is_stmt 0 view .LVU94
+ 302 0044 7047     		bx	lr
+ 303              	.LVL44:
+ 304              	.L27:
+ 343:Service/Srv_SensorMonitor.c **** 
+ 344:Service/Srv_SensorMonitor.c ****             default:
+ 345:Service/Srv_SensorMonitor.c ****                 return false;
+ 346:Service/Srv_SensorMonitor.c ****         }
+ 347:Service/Srv_SensorMonitor.c ****     }
+ 348:Service/Srv_SensorMonitor.c **** 
+ 349:Service/Srv_SensorMonitor.c ****     return false;
+ 305              		.loc 1 349 12 view .LVU95
+ 306 0046 0020     		movs	r0, #0
+ 307              	.LVL45:
+ 308              		.loc 1 349 12 view .LVU96
+ 309 0048 7047     		bx	lr
+ 310              	.LVL46:
+ 311              	.L28:
+ 312              		.loc 1 349 12 view .LVU97
+ 313 004a 0020     		movs	r0, #0
+ 314              	.LVL47:
+ 350:Service/Srv_SensorMonitor.c **** }
+ 315              		.loc 1 350 1 view .LVU98
+ 316 004c 7047     		bx	lr
+ 317              		.cfi_endproc
+ 318              	.LFE148:
+ 320              		.section	.text.SrvSensorMonitor_IMU_SampleCTL,"ax",%progbits
+ 321              		.align	1
+ 322              		.syntax unified
+ 323              		.thumb
+ 324              		.thumb_func
+ 326              	SrvSensorMonitor_IMU_SampleCTL:
+ 327              	.LVL48:
+ 328              	.LFB149:
+ 351:Service/Srv_SensorMonitor.c **** 
+ 352:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_IMU_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
+ 353:Service/Srv_SensorMonitor.c **** {
+ 329              		.loc 1 353 1 is_stmt 1 view -0
+ 330              		.cfi_startproc
+ 331              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 13
+
+
+ 332              		@ frame_needed = 0, uses_anonymous_args = 0
+ 333              		.loc 1 353 1 is_stmt 0 view .LVU100
+ 334 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 335              	.LCFI0:
+ 336              		.cfi_def_cfa_offset 32
+ 337              		.cfi_offset 3, -32
+ 338              		.cfi_offset 4, -28
+ 339              		.cfi_offset 5, -24
+ 340              		.cfi_offset 6, -20
+ 341              		.cfi_offset 7, -16
+ 342              		.cfi_offset 8, -12
+ 343              		.cfi_offset 9, -8
+ 344              		.cfi_offset 14, -4
+ 345 0004 0446     		mov	r4, r0
+ 354:Service/Srv_SensorMonitor.c ****     bool state = false;
+ 346              		.loc 1 354 5 is_stmt 1 view .LVU101
+ 347              	.LVL49:
+ 355:Service/Srv_SensorMonitor.c ****     uint32_t sample_interval_ms = 0;
+ 348              		.loc 1 355 5 view .LVU102
+ 356:Service/Srv_SensorMonitor.c ****     uint32_t cur_time = SrvOsCommon.get_os_ms();
+ 349              		.loc 1 356 5 view .LVU103
+ 350              		.loc 1 356 36 is_stmt 0 view .LVU104
+ 351 0006 424B     		ldr	r3, .L52
+ 352 0008 1B68     		ldr	r3, [r3]
+ 353              		.loc 1 356 25 view .LVU105
+ 354 000a 9847     		blx	r3
+ 355              	.LVL50:
+ 357:Service/Srv_SensorMonitor.c ****     uint32_t start_tick = 0;
+ 356              		.loc 1 357 5 is_stmt 1 view .LVU106
+ 358:Service/Srv_SensorMonitor.c ****     uint32_t end_tick = 0;
+ 357              		.loc 1 358 5 view .LVU107
+ 359:Service/Srv_SensorMonitor.c ****     int32_t sample_tick = 0;
+ 358              		.loc 1 359 5 view .LVU108
+ 360:Service/Srv_SensorMonitor.c **** 
+ 361:Service/Srv_SensorMonitor.c ****     if (obj && obj->statistic_imu && obj->enabled_reg.bit.imu && obj->init_state_reg.bit.imu && obj
+ 359              		.loc 1 361 5 view .LVU109
+ 360              		.loc 1 361 8 is_stmt 0 view .LVU110
+ 361 000c 002C     		cmp	r4, #0
+ 362 000e 6AD0     		beq	.L40
+ 363 0010 0546     		mov	r5, r0
+ 364              		.loc 1 361 19 discriminator 1 view .LVU111
+ 365 0012 E368     		ldr	r3, [r4, #12]
+ 366              		.loc 1 361 13 discriminator 1 view .LVU112
+ 367 0014 002B     		cmp	r3, #0
+ 368 0016 6AD0     		beq	.L41
+ 369              		.loc 1 361 35 discriminator 2 view .LVU113
+ 370 0018 2278     		ldrb	r2, [r4]	@ zero_extendqisi2
+ 371 001a 12F0010F 		tst	r2, #1
+ 372 001e 68D0     		beq	.L42
+ 373              		.loc 1 361 63 discriminator 3 view .LVU114
+ 374 0020 2279     		ldrb	r2, [r4, #4]	@ zero_extendqisi2
+ 375 0022 12F0010F 		tst	r2, #1
+ 376 0026 66D0     		beq	.L43
+ 377              		.loc 1 361 115 discriminator 4 view .LVU115
+ 378 0028 9A6A     		ldr	r2, [r3, #40]
+ 379              		.loc 1 361 94 discriminator 4 view .LVU116
+ 380 002a 002A     		cmp	r2, #0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 14
+
+
+ 381 002c 65D0     		beq	.L44
+ 362:Service/Srv_SensorMonitor.c ****     {
+ 363:Service/Srv_SensorMonitor.c ****         sample_interval_ms = SrvSensorMonitor_GetSampleInterval(obj->statistic_imu->set_period);
+ 382              		.loc 1 363 9 is_stmt 1 view .LVU117
+ 383              		.loc 1 363 28 is_stmt 0 view .LVU118
+ 384 002e 4FF47A71 		mov	r1, #1000
+ 385 0032 B1FBF2F7 		udiv	r7, r1, r2
+ 386              	.LVL51:
+ 364:Service/Srv_SensorMonitor.c ****         
+ 365:Service/Srv_SensorMonitor.c ****         if ( SrvIMU.sample && \
+ 387              		.loc 1 365 9 is_stmt 1 view .LVU119
+ 388              		.loc 1 365 20 is_stmt 0 view .LVU120
+ 389 0036 3749     		ldr	r1, .L52+4
+ 390 0038 4968     		ldr	r1, [r1, #4]
+ 391              		.loc 1 365 12 view .LVU121
+ 392 003a 0029     		cmp	r1, #0
+ 393 003c 5FD0     		beq	.L45
+ 366:Service/Srv_SensorMonitor.c ****             SrvIMU.error_proc && 
+ 394              		.loc 1 366 19 discriminator 1 view .LVU122
+ 395 003e 3549     		ldr	r1, .L52+4
+ 396 0040 4969     		ldr	r1, [r1, #20]
+ 365:Service/Srv_SensorMonitor.c ****             SrvIMU.error_proc && 
+ 397              		.loc 1 365 28 discriminator 1 view .LVU123
+ 398 0042 0029     		cmp	r1, #0
+ 399 0044 5DD0     		beq	.L46
+ 367:Service/Srv_SensorMonitor.c ****             ((obj->statistic_imu->start_time == 0) || \
+ 400              		.loc 1 367 33 view .LVU124
+ 401 0046 1968     		ldr	r1, [r3]
+ 366:Service/Srv_SensorMonitor.c ****             SrvIMU.error_proc && 
+ 402              		.loc 1 366 31 view .LVU125
+ 403 0048 29B1     		cbz	r1, .L31
+ 404              		.loc 1 367 52 view .LVU126
+ 405 004a B2F57A7F 		cmp	r2, #1000
+ 406 004e 5AD8     		bhi	.L47
+ 368:Service/Srv_SensorMonitor.c ****              (sample_interval_ms && \
+ 369:Service/Srv_SensorMonitor.c ****              (cur_time >= obj->statistic_imu->nxt_sample_time))))
+ 407              		.loc 1 369 45 view .LVU127
+ 408 0050 5B68     		ldr	r3, [r3, #4]
+ 368:Service/Srv_SensorMonitor.c ****              (sample_interval_ms && \
+ 409              		.loc 1 368 34 view .LVU128
+ 410 0052 8342     		cmp	r3, r0
+ 411 0054 59D8     		bhi	.L48
+ 412              	.L31:
+ 370:Service/Srv_SensorMonitor.c ****         {
+ 371:Service/Srv_SensorMonitor.c **** 
+ 372:Service/Srv_SensorMonitor.c ****             // DebugPin.ctl(Debug_PB5, true);
+ 373:Service/Srv_SensorMonitor.c ****             start_tick = SrvOsCommon.get_systimer_current_tick();
+ 413              		.loc 1 373 13 is_stmt 1 view .LVU129
+ 414              		.loc 1 373 37 is_stmt 0 view .LVU130
+ 415 0056 2E4B     		ldr	r3, .L52
+ 416 0058 DB68     		ldr	r3, [r3, #12]
+ 417              		.loc 1 373 26 view .LVU131
+ 418 005a 9847     		blx	r3
+ 419              	.LVL52:
+ 420              		.loc 1 373 26 view .LVU132
+ 421 005c 8046     		mov	r8, r0
+ 422              	.LVL53:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 15
+
+
+ 374:Service/Srv_SensorMonitor.c **** 
+ 375:Service/Srv_SensorMonitor.c ****             if (SrvIMU.sample(obj->IMU_SampleMode))
+ 423              		.loc 1 375 13 is_stmt 1 view .LVU133
+ 424              		.loc 1 375 23 is_stmt 0 view .LVU134
+ 425 005e 2D4B     		ldr	r3, .L52+4
+ 426 0060 5B68     		ldr	r3, [r3, #4]
+ 427              		.loc 1 375 17 view .LVU135
+ 428 0062 94F82C00 		ldrb	r0, [r4, #44]	@ zero_extendqisi2
+ 429              	.LVL54:
+ 430              		.loc 1 375 17 view .LVU136
+ 431 0066 9847     		blx	r3
+ 432              	.LVL55:
+ 433              		.loc 1 375 16 view .LVU137
+ 434 0068 0646     		mov	r6, r0
+ 435 006a E0B1     		cbz	r0, .L32
+ 376:Service/Srv_SensorMonitor.c ****             { 
+ 377:Service/Srv_SensorMonitor.c ****                 end_tick = SrvOsCommon.get_systimer_current_tick();
+ 436              		.loc 1 377 17 is_stmt 1 view .LVU138
+ 437              		.loc 1 377 39 is_stmt 0 view .LVU139
+ 438 006c 284B     		ldr	r3, .L52
+ 439 006e DB68     		ldr	r3, [r3, #12]
+ 440              		.loc 1 377 28 view .LVU140
+ 441 0070 9847     		blx	r3
+ 442              	.LVL56:
+ 443 0072 8146     		mov	r9, r0
+ 444              	.LVL57:
+ 378:Service/Srv_SensorMonitor.c ****                 SrvIMU.error_proc();
+ 445              		.loc 1 378 17 is_stmt 1 view .LVU141
+ 446              		.loc 1 378 23 is_stmt 0 view .LVU142
+ 447 0074 274B     		ldr	r3, .L52+4
+ 448 0076 5B69     		ldr	r3, [r3, #20]
+ 449              		.loc 1 378 17 view .LVU143
+ 450 0078 9847     		blx	r3
+ 451              	.LVL58:
+ 379:Service/Srv_SensorMonitor.c **** 
+ 380:Service/Srv_SensorMonitor.c ****                 obj->statistic_imu->sample_cnt ++;
+ 452              		.loc 1 380 17 is_stmt 1 view .LVU144
+ 453              		.loc 1 380 20 is_stmt 0 view .LVU145
+ 454 007a E268     		ldr	r2, [r4, #12]
+ 455              		.loc 1 380 35 view .LVU146
+ 456 007c D369     		ldr	r3, [r2, #28]
+ 457              		.loc 1 380 48 view .LVU147
+ 458 007e 0133     		adds	r3, r3, #1
+ 459 0080 D361     		str	r3, [r2, #28]
+ 381:Service/Srv_SensorMonitor.c ****                 obj->statistic_imu->nxt_sample_time = cur_time + sample_interval_ms;
+ 460              		.loc 1 381 17 is_stmt 1 view .LVU148
+ 461              		.loc 1 381 20 is_stmt 0 view .LVU149
+ 462 0082 E368     		ldr	r3, [r4, #12]
+ 463              		.loc 1 381 64 view .LVU150
+ 464 0084 2F44     		add	r7, r7, r5
+ 465              	.LVL59:
+ 466              		.loc 1 381 53 view .LVU151
+ 467 0086 5F60     		str	r7, [r3, #4]
+ 382:Service/Srv_SensorMonitor.c ****                 if (obj->statistic_imu->start_time == 0)
+ 468              		.loc 1 382 17 is_stmt 1 view .LVU152
+ 469              		.loc 1 382 24 is_stmt 0 view .LVU153
+ 470 0088 E368     		ldr	r3, [r4, #12]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 16
+
+
+ 471              		.loc 1 382 39 view .LVU154
+ 472 008a 1A68     		ldr	r2, [r3]
+ 473              		.loc 1 382 20 view .LVU155
+ 474 008c 02B9     		cbnz	r2, .L33
+ 383:Service/Srv_SensorMonitor.c ****                     obj->statistic_imu->start_time = cur_time;
+ 475              		.loc 1 383 21 is_stmt 1 view .LVU156
+ 476              		.loc 1 383 52 is_stmt 0 view .LVU157
+ 477 008e 1D60     		str	r5, [r3]
+ 478              	.L33:
+ 384:Service/Srv_SensorMonitor.c **** 
+ 385:Service/Srv_SensorMonitor.c ****                 state = true;
+ 479              		.loc 1 385 17 is_stmt 1 view .LVU158
+ 480              	.LVL60:
+ 386:Service/Srv_SensorMonitor.c ****             }
+ 387:Service/Srv_SensorMonitor.c ****             else
+ 388:Service/Srv_SensorMonitor.c ****                 end_tick = SrvOsCommon.get_systimer_current_tick();
+ 389:Service/Srv_SensorMonitor.c ****             // DebugPin.ctl(Debug_PB5, false);
+ 390:Service/Srv_SensorMonitor.c **** 
+ 391:Service/Srv_SensorMonitor.c ****             if (state)
+ 481              		.loc 1 391 13 view .LVU159
+ 392:Service/Srv_SensorMonitor.c ****             {
+ 393:Service/Srv_SensorMonitor.c ****                 if (start_tick < end_tick)
+ 482              		.loc 1 393 17 view .LVU160
+ 483              		.loc 1 393 20 is_stmt 0 view .LVU161
+ 484 0090 C845     		cmp	r8, r9
+ 485 0092 0CD3     		bcc	.L34
+ 394:Service/Srv_SensorMonitor.c ****                 {
+ 395:Service/Srv_SensorMonitor.c ****                     sample_tick = end_tick - start_tick;
+ 396:Service/Srv_SensorMonitor.c ****                 }
+ 397:Service/Srv_SensorMonitor.c ****                 else if (start_tick > end_tick)
+ 486              		.loc 1 397 22 is_stmt 1 view .LVU162
+ 487              		.loc 1 397 25 is_stmt 0 view .LVU163
+ 488 0094 C845     		cmp	r8, r9
+ 489 0096 23D9     		bls	.L49
+ 398:Service/Srv_SensorMonitor.c ****                 {
+ 399:Service/Srv_SensorMonitor.c ****                     /* must after timer irq */
+ 400:Service/Srv_SensorMonitor.c ****                     sample_tick = SrvOsCommon.get_systimer_period() - start_tick + end_tick;
+ 490              		.loc 1 400 21 is_stmt 1 view .LVU164
+ 491              		.loc 1 400 46 is_stmt 0 view .LVU165
+ 492 0098 1D4B     		ldr	r3, .L52
+ 493 009a 1B69     		ldr	r3, [r3, #16]
+ 494              		.loc 1 400 35 view .LVU166
+ 495 009c 9847     		blx	r3
+ 496              	.LVL61:
+ 497              		.loc 1 400 69 view .LVU167
+ 498 009e A0EB0808 		sub	r8, r0, r8
+ 499              	.LVL62:
+ 500              		.loc 1 400 82 view .LVU168
+ 501 00a2 C144     		add	r9, r9, r8
+ 502              	.LVL63:
+ 503              		.loc 1 400 82 view .LVU169
+ 504 00a4 05E0     		b	.L36
+ 505              	.LVL64:
+ 506              	.L32:
+ 388:Service/Srv_SensorMonitor.c ****             // DebugPin.ctl(Debug_PB5, false);
+ 507              		.loc 1 388 17 is_stmt 1 view .LVU170
+ 388:Service/Srv_SensorMonitor.c ****             // DebugPin.ctl(Debug_PB5, false);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 17
+
+
+ 508              		.loc 1 388 39 is_stmt 0 view .LVU171
+ 509 00a6 1A4B     		ldr	r3, .L52
+ 510 00a8 DB68     		ldr	r3, [r3, #12]
+ 388:Service/Srv_SensorMonitor.c ****             // DebugPin.ctl(Debug_PB5, false);
+ 511              		.loc 1 388 28 view .LVU172
+ 512 00aa 9847     		blx	r3
+ 513              	.LVL65:
+ 391:Service/Srv_SensorMonitor.c ****             {
+ 514              		.loc 1 391 13 is_stmt 1 view .LVU173
+ 515 00ac 1CE0     		b	.L30
+ 516              	.LVL66:
+ 517              	.L34:
+ 395:Service/Srv_SensorMonitor.c ****                 }
+ 518              		.loc 1 395 21 view .LVU174
+ 395:Service/Srv_SensorMonitor.c ****                 }
+ 519              		.loc 1 395 44 is_stmt 0 view .LVU175
+ 520 00ae A9EB0809 		sub	r9, r9, r8
+ 521              	.LVL67:
+ 522              	.L36:
+ 401:Service/Srv_SensorMonitor.c ****                 }
+ 402:Service/Srv_SensorMonitor.c **** 
+ 403:Service/Srv_SensorMonitor.c ****                 if ((sample_tick <= obj->statistic_imu->min_sampling_overhead) || \
+ 523              		.loc 1 403 17 is_stmt 1 view .LVU176
+ 524              		.loc 1 403 40 is_stmt 0 view .LVU177
+ 525 00b2 E268     		ldr	r2, [r4, #12]
+ 526              		.loc 1 403 55 view .LVU178
+ 527 00b4 1169     		ldr	r1, [r2, #16]
+ 528              		.loc 1 403 34 view .LVU179
+ 529 00b6 4B46     		mov	r3, r9
+ 530              		.loc 1 403 20 view .LVU180
+ 531 00b8 4945     		cmp	r1, r9
+ 532 00ba 00D2     		bcs	.L37
+ 533              		.loc 1 403 80 discriminator 1 view .LVU181
+ 534 00bc 01B9     		cbnz	r1, .L38
+ 535              	.L37:
+ 404:Service/Srv_SensorMonitor.c ****                    (obj->statistic_imu->min_sampling_overhead == 0))
+ 405:Service/Srv_SensorMonitor.c ****                     obj->statistic_imu->min_sampling_overhead = sample_tick;
+ 536              		.loc 1 405 21 is_stmt 1 view .LVU182
+ 537              		.loc 1 405 63 is_stmt 0 view .LVU183
+ 538 00be 1361     		str	r3, [r2, #16]
+ 539              	.LVL68:
+ 540              	.L38:
+ 406:Service/Srv_SensorMonitor.c **** 
+ 407:Service/Srv_SensorMonitor.c ****                 if (sample_tick >= obj->statistic_imu->max_sampling_overhead)
+ 541              		.loc 1 407 17 is_stmt 1 view .LVU184
+ 542              		.loc 1 407 39 is_stmt 0 view .LVU185
+ 543 00c0 E268     		ldr	r2, [r4, #12]
+ 544              		.loc 1 407 54 view .LVU186
+ 545 00c2 D168     		ldr	r1, [r2, #12]
+ 546              		.loc 1 407 20 view .LVU187
+ 547 00c4 8B42     		cmp	r3, r1
+ 548 00c6 00D3     		bcc	.L39
+ 408:Service/Srv_SensorMonitor.c ****                     obj->statistic_imu->max_sampling_overhead = sample_tick;
+ 549              		.loc 1 408 21 is_stmt 1 view .LVU188
+ 550              		.loc 1 408 63 is_stmt 0 view .LVU189
+ 551 00c8 D360     		str	r3, [r2, #12]
+ 552              	.L39:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 18
+
+
+ 409:Service/Srv_SensorMonitor.c **** 
+ 410:Service/Srv_SensorMonitor.c ****                 obj->statistic_imu->avg_sampling_overhead += sample_tick;
+ 553              		.loc 1 410 17 is_stmt 1 view .LVU190
+ 554              		.loc 1 410 20 is_stmt 0 view .LVU191
+ 555 00ca E168     		ldr	r1, [r4, #12]
+ 556              		.loc 1 410 59 view .LVU192
+ 557 00cc 4A69     		ldr	r2, [r1, #20]
+ 558 00ce 1A44     		add	r2, r2, r3
+ 559 00d0 4A61     		str	r2, [r1, #20]
+ 411:Service/Srv_SensorMonitor.c ****                 obj->statistic_imu->avg_sampling_overhead /= 2;
+ 560              		.loc 1 411 17 is_stmt 1 view .LVU193
+ 561              		.loc 1 411 20 is_stmt 0 view .LVU194
+ 562 00d2 E168     		ldr	r1, [r4, #12]
+ 563              		.loc 1 411 59 view .LVU195
+ 564 00d4 4A69     		ldr	r2, [r1, #20]
+ 565 00d6 5208     		lsrs	r2, r2, #1
+ 566 00d8 4A61     		str	r2, [r1, #20]
+ 412:Service/Srv_SensorMonitor.c **** 
+ 413:Service/Srv_SensorMonitor.c ****                 obj->statistic_imu->cur_sampling_overhead = sample_tick;
+ 567              		.loc 1 413 17 is_stmt 1 view .LVU196
+ 568              		.loc 1 413 20 is_stmt 0 view .LVU197
+ 569 00da E268     		ldr	r2, [r4, #12]
+ 570              		.loc 1 413 59 view .LVU198
+ 571 00dc 9360     		str	r3, [r2, #8]
+ 572 00de 03E0     		b	.L30
+ 573              	.LVL69:
+ 574              	.L49:
+ 359:Service/Srv_SensorMonitor.c **** 
+ 575              		.loc 1 359 13 view .LVU199
+ 576 00e0 4FF00009 		mov	r9, #0
+ 577              	.LVL70:
+ 359:Service/Srv_SensorMonitor.c **** 
+ 578              		.loc 1 359 13 view .LVU200
+ 579 00e4 E5E7     		b	.L36
+ 580              	.LVL71:
+ 581              	.L40:
+ 354:Service/Srv_SensorMonitor.c ****     uint32_t sample_interval_ms = 0;
+ 582              		.loc 1 354 10 view .LVU201
+ 583 00e6 0026     		movs	r6, #0
+ 584              	.LVL72:
+ 585              	.L30:
+ 414:Service/Srv_SensorMonitor.c ****             }
+ 415:Service/Srv_SensorMonitor.c ****         }
+ 416:Service/Srv_SensorMonitor.c ****     }
+ 417:Service/Srv_SensorMonitor.c **** 
+ 418:Service/Srv_SensorMonitor.c ****     return state;
+ 586              		.loc 1 418 5 is_stmt 1 view .LVU202
+ 419:Service/Srv_SensorMonitor.c **** }
+ 587              		.loc 1 419 1 is_stmt 0 view .LVU203
+ 588 00e8 3046     		mov	r0, r6
+ 589 00ea BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 590              	.LVL73:
+ 591              	.L41:
+ 354:Service/Srv_SensorMonitor.c ****     uint32_t sample_interval_ms = 0;
+ 592              		.loc 1 354 10 view .LVU204
+ 593 00ee 0026     		movs	r6, #0
+ 594 00f0 FAE7     		b	.L30
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 19
+
+
+ 595              	.L42:
+ 596 00f2 0026     		movs	r6, #0
+ 597 00f4 F8E7     		b	.L30
+ 598              	.L43:
+ 599 00f6 0026     		movs	r6, #0
+ 600 00f8 F6E7     		b	.L30
+ 601              	.L44:
+ 602 00fa 0026     		movs	r6, #0
+ 603 00fc F4E7     		b	.L30
+ 604              	.LVL74:
+ 605              	.L45:
+ 354:Service/Srv_SensorMonitor.c ****     uint32_t sample_interval_ms = 0;
+ 606              		.loc 1 354 10 view .LVU205
+ 607 00fe 0026     		movs	r6, #0
+ 608 0100 F2E7     		b	.L30
+ 609              	.L46:
+ 610 0102 0026     		movs	r6, #0
+ 611 0104 F0E7     		b	.L30
+ 612              	.L47:
+ 613 0106 0026     		movs	r6, #0
+ 614 0108 EEE7     		b	.L30
+ 615              	.L48:
+ 616 010a 0026     		movs	r6, #0
+ 617 010c ECE7     		b	.L30
+ 618              	.L53:
+ 619 010e 00BF     		.align	2
+ 620              	.L52:
+ 621 0110 00000000 		.word	SrvOsCommon
+ 622 0114 00000000 		.word	SrvIMU
+ 623              		.cfi_endproc
+ 624              	.LFE149:
+ 626              		.section	.text.SrvSensorMonitor_Mag_Init,"ax",%progbits
+ 627              		.align	1
+ 628              		.syntax unified
+ 629              		.thumb
+ 630              		.thumb_func
+ 632              	SrvSensorMonitor_Mag_Init:
+ 633              	.LFB151:
+ 420:Service/Srv_SensorMonitor.c **** 
+ 421:Service/Srv_SensorMonitor.c **** static SrvIMU_UnionData_TypeDef SrvSensorMonitor_Get_IMUData(SrvSensorMonitorObj_TypeDef *obj)
+ 422:Service/Srv_SensorMonitor.c **** {
+ 423:Service/Srv_SensorMonitor.c ****     SrvIMU_UnionData_TypeDef imu_data_tmp;
+ 424:Service/Srv_SensorMonitor.c **** 
+ 425:Service/Srv_SensorMonitor.c ****     memset(&imu_data_tmp, 0, sizeof(SrvIMU_UnionData_TypeDef));
+ 426:Service/Srv_SensorMonitor.c **** 
+ 427:Service/Srv_SensorMonitor.c ****     if (obj && obj->enabled_reg.bit.imu && obj->init_state_reg.bit.imu && SrvIMU.get_data)
+ 428:Service/Srv_SensorMonitor.c ****     {
+ 429:Service/Srv_SensorMonitor.c ****         if (SrvIMU.get_data(SrvIMU_FusModule, &imu_data_tmp.data))
+ 430:Service/Srv_SensorMonitor.c ****         {
+ 431:Service/Srv_SensorMonitor.c ****             /*
+ 432:Service/Srv_SensorMonitor.c ****             * adjust imu axis coordinate as 
+ 433:Service/Srv_SensorMonitor.c ****             * x -----> forward
+ 434:Service/Srv_SensorMonitor.c ****             * y -----> right
+ 435:Service/Srv_SensorMonitor.c ****             * z -----> down 
+ 436:Service/Srv_SensorMonitor.c ****             **/
+ 437:Service/Srv_SensorMonitor.c ****             for (uint8_t chk = 0; chk < sizeof(SrvIMU_UnionData_TypeDef) - sizeof(uint16_t); chk++)
+ 438:Service/Srv_SensorMonitor.c ****             {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 20
+
+
+ 439:Service/Srv_SensorMonitor.c ****                 imu_data_tmp.data.chk_sum += imu_data_tmp.buff[chk];
+ 440:Service/Srv_SensorMonitor.c ****             }
+ 441:Service/Srv_SensorMonitor.c **** 
+ 442:Service/Srv_SensorMonitor.c ****             obj->lst_imu_data.data = imu_data_tmp.data;
+ 443:Service/Srv_SensorMonitor.c ****         }
+ 444:Service/Srv_SensorMonitor.c ****         else
+ 445:Service/Srv_SensorMonitor.c ****             imu_data_tmp.data = obj->lst_imu_data.data;
+ 446:Service/Srv_SensorMonitor.c ****     }
+ 447:Service/Srv_SensorMonitor.c ****     else
+ 448:Service/Srv_SensorMonitor.c ****         imu_data_tmp = obj->lst_imu_data;
+ 449:Service/Srv_SensorMonitor.c **** 
+ 450:Service/Srv_SensorMonitor.c ****     return imu_data_tmp;
+ 451:Service/Srv_SensorMonitor.c **** }
+ 452:Service/Srv_SensorMonitor.c **** 
+ 453:Service/Srv_SensorMonitor.c **** /******************************************* Mag Section ******************************************
+ 454:Service/Srv_SensorMonitor.c **** /* still in developing */
+ 455:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Mag_Init(void)
+ 456:Service/Srv_SensorMonitor.c **** {
+ 634              		.loc 1 456 1 is_stmt 1 view -0
+ 635              		.cfi_startproc
+ 636              		@ args = 0, pretend = 0, frame = 0
+ 637              		@ frame_needed = 0, uses_anonymous_args = 0
+ 638              		@ link register save eliminated.
+ 457:Service/Srv_SensorMonitor.c ****     return false;
+ 639              		.loc 1 457 5 view .LVU207
+ 458:Service/Srv_SensorMonitor.c **** }
+ 640              		.loc 1 458 1 is_stmt 0 view .LVU208
+ 641 0000 0020     		movs	r0, #0
+ 642 0002 7047     		bx	lr
+ 643              		.cfi_endproc
+ 644              	.LFE151:
+ 646              		.section	.text.SrvSensorMonitor_Mag_SampleCTL,"ax",%progbits
+ 647              		.align	1
+ 648              		.syntax unified
+ 649              		.thumb
+ 650              		.thumb_func
+ 652              	SrvSensorMonitor_Mag_SampleCTL:
+ 653              	.LVL75:
+ 654              	.LFB152:
+ 459:Service/Srv_SensorMonitor.c **** 
+ 460:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Mag_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
+ 461:Service/Srv_SensorMonitor.c **** {
+ 655              		.loc 1 461 1 is_stmt 1 view -0
+ 656              		.cfi_startproc
+ 657              		@ args = 0, pretend = 0, frame = 0
+ 658              		@ frame_needed = 0, uses_anonymous_args = 0
+ 659              		@ link register save eliminated.
+ 462:Service/Srv_SensorMonitor.c ****     if (obj && obj->enabled_reg.bit.mag && obj->init_state_reg.bit.mag)
+ 660              		.loc 1 462 5 view .LVU210
+ 463:Service/Srv_SensorMonitor.c ****     {
+ 464:Service/Srv_SensorMonitor.c ****         
+ 465:Service/Srv_SensorMonitor.c ****     }
+ 661              		.loc 1 465 5 view .LVU211
+ 466:Service/Srv_SensorMonitor.c **** 
+ 467:Service/Srv_SensorMonitor.c ****     return false;
+ 662              		.loc 1 467 5 view .LVU212
+ 468:Service/Srv_SensorMonitor.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 21
+
+
+ 663              		.loc 1 468 1 is_stmt 0 view .LVU213
+ 664 0000 0020     		movs	r0, #0
+ 665              	.LVL76:
+ 666              		.loc 1 468 1 view .LVU214
+ 667 0002 7047     		bx	lr
+ 668              		.cfi_endproc
+ 669              	.LFE152:
+ 671              		.section	.text.SrvSensorMonitor_Baro_SampleCTL,"ax",%progbits
+ 672              		.align	1
+ 673              		.syntax unified
+ 674              		.thumb
+ 675              		.thumb_func
+ 677              	SrvSensorMonitor_Baro_SampleCTL:
+ 678              	.LVL77:
+ 679              	.LFB155:
+ 469:Service/Srv_SensorMonitor.c **** 
+ 470:Service/Srv_SensorMonitor.c **** static uint32_t SrvSensorMonitor_Get_MagData(SrvSensorMonitorObj_TypeDef *obj)
+ 471:Service/Srv_SensorMonitor.c **** {
+ 472:Service/Srv_SensorMonitor.c ****     return 0;
+ 473:Service/Srv_SensorMonitor.c **** }
+ 474:Service/Srv_SensorMonitor.c **** 
+ 475:Service/Srv_SensorMonitor.c **** /******************************************* Baro Section *****************************************
+ 476:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Baro_Init(void)
+ 477:Service/Srv_SensorMonitor.c **** {
+ 478:Service/Srv_SensorMonitor.c ****     if (SrvBaro.init && (SrvBaro.init(BARO_TYPE, BARO_BUS_TYPE) == SrvBaro_Error_None))
+ 479:Service/Srv_SensorMonitor.c ****     {
+ 480:Service/Srv_SensorMonitor.c ****         MONITOR_INFO("Baro init accomplished\r\n");
+ 481:Service/Srv_SensorMonitor.c ****         return true;
+ 482:Service/Srv_SensorMonitor.c ****     }
+ 483:Service/Srv_SensorMonitor.c **** 
+ 484:Service/Srv_SensorMonitor.c ****     return false;
+ 485:Service/Srv_SensorMonitor.c **** }
+ 486:Service/Srv_SensorMonitor.c **** 
+ 487:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Baro_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
+ 488:Service/Srv_SensorMonitor.c **** {
+ 680              		.loc 1 488 1 is_stmt 1 view -0
+ 681              		.cfi_startproc
+ 682              		@ args = 0, pretend = 0, frame = 0
+ 683              		@ frame_needed = 0, uses_anonymous_args = 0
+ 684              		.loc 1 488 1 is_stmt 0 view .LVU216
+ 685 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 686              	.LCFI1:
+ 687              		.cfi_def_cfa_offset 32
+ 688              		.cfi_offset 3, -32
+ 689              		.cfi_offset 4, -28
+ 690              		.cfi_offset 5, -24
+ 691              		.cfi_offset 6, -20
+ 692              		.cfi_offset 7, -16
+ 693              		.cfi_offset 8, -12
+ 694              		.cfi_offset 9, -8
+ 695              		.cfi_offset 14, -4
+ 696 0004 0446     		mov	r4, r0
+ 489:Service/Srv_SensorMonitor.c ****     bool state = false;
+ 697              		.loc 1 489 5 is_stmt 1 view .LVU217
+ 698              	.LVL78:
+ 490:Service/Srv_SensorMonitor.c ****     uint32_t sample_interval_ms = 0;
+ 699              		.loc 1 490 5 view .LVU218
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 22
+
+
+ 491:Service/Srv_SensorMonitor.c ****     uint32_t cur_time = SrvOsCommon.get_os_ms();
+ 700              		.loc 1 491 5 view .LVU219
+ 701              		.loc 1 491 36 is_stmt 0 view .LVU220
+ 702 0006 3D4B     		ldr	r3, .L78
+ 703 0008 1B68     		ldr	r3, [r3]
+ 704              		.loc 1 491 25 view .LVU221
+ 705 000a 9847     		blx	r3
+ 706              	.LVL79:
+ 492:Service/Srv_SensorMonitor.c ****     uint32_t start_tick = 0;
+ 707              		.loc 1 492 5 is_stmt 1 view .LVU222
+ 493:Service/Srv_SensorMonitor.c ****     uint32_t end_tick = 0;
+ 708              		.loc 1 493 5 view .LVU223
+ 494:Service/Srv_SensorMonitor.c ****     int32_t sample_tick = 0;
+ 709              		.loc 1 494 5 view .LVU224
+ 495:Service/Srv_SensorMonitor.c **** 
+ 496:Service/Srv_SensorMonitor.c ****     if (obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && obj->freq_reg.bit.baro 
+ 710              		.loc 1 496 5 view .LVU225
+ 711              		.loc 1 496 8 is_stmt 0 view .LVU226
+ 712 000c 002C     		cmp	r4, #0
+ 713 000e 63D0     		beq	.L67
+ 714 0010 0546     		mov	r5, r0
+ 715              		.loc 1 496 13 discriminator 1 view .LVU227
+ 716 0012 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 717 0014 13F0040F 		tst	r3, #4
+ 718 0018 60D0     		beq	.L68
+ 719              		.loc 1 496 42 discriminator 2 view .LVU228
+ 720 001a 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 721 001c 13F0040F 		tst	r3, #4
+ 722 0020 60D0     		beq	.L69
+ 723              		.loc 1 496 74 discriminator 3 view .LVU229
+ 724 0022 637A     		ldrb	r3, [r4, #9]	@ zero_extendqisi2
+ 725 0024 13F00F0F 		tst	r3, #15
+ 726 0028 5ED0     		beq	.L70
+ 727              		.loc 1 496 106 discriminator 4 view .LVU230
+ 728 002a 6269     		ldr	r2, [r4, #20]
+ 729              		.loc 1 496 122 discriminator 4 view .LVU231
+ 730 002c 936A     		ldr	r3, [r2, #40]
+ 731              		.loc 1 496 100 discriminator 4 view .LVU232
+ 732 002e 002B     		cmp	r3, #0
+ 733 0030 5CD0     		beq	.L71
+ 497:Service/Srv_SensorMonitor.c ****     {
+ 498:Service/Srv_SensorMonitor.c ****         sample_interval_ms = SrvSensorMonitor_GetSampleInterval(obj->statistic_baro->set_period);
+ 734              		.loc 1 498 9 is_stmt 1 view .LVU233
+ 735              		.loc 1 498 28 is_stmt 0 view .LVU234
+ 736 0032 4FF47A71 		mov	r1, #1000
+ 737 0036 B1FBF3F7 		udiv	r7, r1, r3
+ 738              	.LVL80:
+ 499:Service/Srv_SensorMonitor.c ****     
+ 500:Service/Srv_SensorMonitor.c ****         if (SrvBaro.sample && \
+ 739              		.loc 1 500 9 is_stmt 1 view .LVU235
+ 740              		.loc 1 500 20 is_stmt 0 view .LVU236
+ 741 003a 3149     		ldr	r1, .L78+4
+ 742 003c 4968     		ldr	r1, [r1, #4]
+ 743              		.loc 1 500 12 view .LVU237
+ 744 003e 0029     		cmp	r1, #0
+ 745 0040 56D0     		beq	.L72
+ 501:Service/Srv_SensorMonitor.c ****             ((obj->statistic_baro->start_time == 0) || \
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 23
+
+
+ 746              		.loc 1 501 34 discriminator 1 view .LVU238
+ 747 0042 1168     		ldr	r1, [r2]
+ 500:Service/Srv_SensorMonitor.c ****             ((obj->statistic_baro->start_time == 0) || \
+ 748              		.loc 1 500 28 discriminator 1 view .LVU239
+ 749 0044 29B1     		cbz	r1, .L58
+ 750              		.loc 1 501 53 view .LVU240
+ 751 0046 B3F57A7F 		cmp	r3, #1000
+ 752 004a 53D8     		bhi	.L73
+ 502:Service/Srv_SensorMonitor.c ****              (sample_interval_ms && \
+ 503:Service/Srv_SensorMonitor.c ****              (cur_time >= obj->statistic_baro->nxt_sample_time))))
+ 753              		.loc 1 503 46 view .LVU241
+ 754 004c 5368     		ldr	r3, [r2, #4]
+ 502:Service/Srv_SensorMonitor.c ****              (sample_interval_ms && \
+ 755              		.loc 1 502 34 view .LVU242
+ 756 004e 8342     		cmp	r3, r0
+ 757 0050 52D8     		bhi	.L74
+ 758              	.L58:
+ 504:Service/Srv_SensorMonitor.c ****         {
+ 505:Service/Srv_SensorMonitor.c ****             start_tick = SrvOsCommon.get_systimer_current_tick();
+ 759              		.loc 1 505 13 is_stmt 1 view .LVU243
+ 760              		.loc 1 505 37 is_stmt 0 view .LVU244
+ 761 0052 2A4B     		ldr	r3, .L78
+ 762 0054 DB68     		ldr	r3, [r3, #12]
+ 763              		.loc 1 505 26 view .LVU245
+ 764 0056 9847     		blx	r3
+ 765              	.LVL81:
+ 766              		.loc 1 505 26 view .LVU246
+ 767 0058 8046     		mov	r8, r0
+ 768              	.LVL82:
+ 506:Service/Srv_SensorMonitor.c **** 
+ 507:Service/Srv_SensorMonitor.c ****             // DebugPin.ctl(Debug_PB5, true);
+ 508:Service/Srv_SensorMonitor.c ****             if (SrvBaro.sample())
+ 769              		.loc 1 508 13 is_stmt 1 view .LVU247
+ 770              		.loc 1 508 24 is_stmt 0 view .LVU248
+ 771 005a 294B     		ldr	r3, .L78+4
+ 772 005c 5B68     		ldr	r3, [r3, #4]
+ 773              		.loc 1 508 17 view .LVU249
+ 774 005e 9847     		blx	r3
+ 775              	.LVL83:
+ 776              		.loc 1 508 16 view .LVU250
+ 777 0060 0646     		mov	r6, r0
+ 778 0062 C8B1     		cbz	r0, .L59
+ 509:Service/Srv_SensorMonitor.c ****             {
+ 510:Service/Srv_SensorMonitor.c ****                 end_tick = SrvOsCommon.get_systimer_current_tick();
+ 779              		.loc 1 510 17 is_stmt 1 view .LVU251
+ 780              		.loc 1 510 39 is_stmt 0 view .LVU252
+ 781 0064 254B     		ldr	r3, .L78
+ 782 0066 DB68     		ldr	r3, [r3, #12]
+ 783              		.loc 1 510 28 view .LVU253
+ 784 0068 9847     		blx	r3
+ 785              	.LVL84:
+ 786 006a 8146     		mov	r9, r0
+ 787              	.LVL85:
+ 511:Service/Srv_SensorMonitor.c **** 
+ 512:Service/Srv_SensorMonitor.c ****                 obj->statistic_baro->sample_cnt ++;
+ 788              		.loc 1 512 17 is_stmt 1 view .LVU254
+ 789              		.loc 1 512 20 is_stmt 0 view .LVU255
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 24
+
+
+ 790 006c 6269     		ldr	r2, [r4, #20]
+ 791              		.loc 1 512 36 view .LVU256
+ 792 006e D369     		ldr	r3, [r2, #28]
+ 793              		.loc 1 512 49 view .LVU257
+ 794 0070 0133     		adds	r3, r3, #1
+ 795 0072 D361     		str	r3, [r2, #28]
+ 513:Service/Srv_SensorMonitor.c ****                 obj->statistic_baro->nxt_sample_time = cur_time + sample_interval_ms;
+ 796              		.loc 1 513 17 is_stmt 1 view .LVU258
+ 797              		.loc 1 513 20 is_stmt 0 view .LVU259
+ 798 0074 6369     		ldr	r3, [r4, #20]
+ 799              		.loc 1 513 65 view .LVU260
+ 800 0076 2F44     		add	r7, r7, r5
+ 801              	.LVL86:
+ 802              		.loc 1 513 54 view .LVU261
+ 803 0078 5F60     		str	r7, [r3, #4]
+ 514:Service/Srv_SensorMonitor.c ****                 if (obj->statistic_baro->start_time == 0)
+ 804              		.loc 1 514 17 is_stmt 1 view .LVU262
+ 805              		.loc 1 514 24 is_stmt 0 view .LVU263
+ 806 007a 6369     		ldr	r3, [r4, #20]
+ 807              		.loc 1 514 40 view .LVU264
+ 808 007c 1A68     		ldr	r2, [r3]
+ 809              		.loc 1 514 20 view .LVU265
+ 810 007e 02B9     		cbnz	r2, .L60
+ 515:Service/Srv_SensorMonitor.c ****                     obj->statistic_baro->start_time = cur_time;
+ 811              		.loc 1 515 21 is_stmt 1 view .LVU266
+ 812              		.loc 1 515 53 is_stmt 0 view .LVU267
+ 813 0080 1D60     		str	r5, [r3]
+ 814              	.L60:
+ 516:Service/Srv_SensorMonitor.c **** 
+ 517:Service/Srv_SensorMonitor.c ****                 state = true;
+ 815              		.loc 1 517 17 is_stmt 1 view .LVU268
+ 816              	.LVL87:
+ 518:Service/Srv_SensorMonitor.c ****             }
+ 519:Service/Srv_SensorMonitor.c ****             else
+ 520:Service/Srv_SensorMonitor.c ****                 end_tick = SrvOsCommon.get_systimer_current_tick();
+ 521:Service/Srv_SensorMonitor.c ****             // DebugPin.ctl(Debug_PB5, false);
+ 522:Service/Srv_SensorMonitor.c ****         
+ 523:Service/Srv_SensorMonitor.c ****             if (state)
+ 817              		.loc 1 523 13 view .LVU269
+ 524:Service/Srv_SensorMonitor.c ****             {
+ 525:Service/Srv_SensorMonitor.c ****                 if (start_tick < end_tick)
+ 818              		.loc 1 525 17 view .LVU270
+ 819              		.loc 1 525 20 is_stmt 0 view .LVU271
+ 820 0082 C845     		cmp	r8, r9
+ 821 0084 0CD3     		bcc	.L61
+ 526:Service/Srv_SensorMonitor.c ****                 {
+ 527:Service/Srv_SensorMonitor.c ****                     sample_tick = end_tick - start_tick;
+ 528:Service/Srv_SensorMonitor.c ****                 }
+ 529:Service/Srv_SensorMonitor.c ****                 else if (start_tick > end_tick)
+ 822              		.loc 1 529 22 is_stmt 1 view .LVU272
+ 823              		.loc 1 529 25 is_stmt 0 view .LVU273
+ 824 0086 C845     		cmp	r8, r9
+ 825 0088 23D9     		bls	.L75
+ 530:Service/Srv_SensorMonitor.c ****                 {
+ 531:Service/Srv_SensorMonitor.c ****                     /* must after timer irq */
+ 532:Service/Srv_SensorMonitor.c ****                     sample_tick = SrvOsCommon.get_systimer_period() - start_tick + end_tick;
+ 826              		.loc 1 532 21 is_stmt 1 view .LVU274
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 25
+
+
+ 827              		.loc 1 532 46 is_stmt 0 view .LVU275
+ 828 008a 1C4B     		ldr	r3, .L78
+ 829 008c 1B69     		ldr	r3, [r3, #16]
+ 830              		.loc 1 532 35 view .LVU276
+ 831 008e 9847     		blx	r3
+ 832              	.LVL88:
+ 833              		.loc 1 532 69 view .LVU277
+ 834 0090 A0EB0808 		sub	r8, r0, r8
+ 835              	.LVL89:
+ 836              		.loc 1 532 82 view .LVU278
+ 837 0094 C144     		add	r9, r9, r8
+ 838              	.LVL90:
+ 839              		.loc 1 532 82 view .LVU279
+ 840 0096 05E0     		b	.L63
+ 841              	.LVL91:
+ 842              	.L59:
+ 520:Service/Srv_SensorMonitor.c ****             // DebugPin.ctl(Debug_PB5, false);
+ 843              		.loc 1 520 17 is_stmt 1 view .LVU280
+ 520:Service/Srv_SensorMonitor.c ****             // DebugPin.ctl(Debug_PB5, false);
+ 844              		.loc 1 520 39 is_stmt 0 view .LVU281
+ 845 0098 184B     		ldr	r3, .L78
+ 846 009a DB68     		ldr	r3, [r3, #12]
+ 520:Service/Srv_SensorMonitor.c ****             // DebugPin.ctl(Debug_PB5, false);
+ 847              		.loc 1 520 28 view .LVU282
+ 848 009c 9847     		blx	r3
+ 849              	.LVL92:
+ 523:Service/Srv_SensorMonitor.c ****             {
+ 850              		.loc 1 523 13 is_stmt 1 view .LVU283
+ 851 009e 1EE0     		b	.L57
+ 852              	.LVL93:
+ 853              	.L61:
+ 527:Service/Srv_SensorMonitor.c ****                 }
+ 854              		.loc 1 527 21 view .LVU284
+ 527:Service/Srv_SensorMonitor.c ****                 }
+ 855              		.loc 1 527 44 is_stmt 0 view .LVU285
+ 856 00a0 A9EB0809 		sub	r9, r9, r8
+ 857              	.LVL94:
+ 858              	.L63:
+ 533:Service/Srv_SensorMonitor.c ****                 }
+ 534:Service/Srv_SensorMonitor.c **** 
+ 535:Service/Srv_SensorMonitor.c ****                 if ((sample_tick <= obj->statistic_baro->min_sampling_overhead) || \
+ 859              		.loc 1 535 17 is_stmt 1 view .LVU286
+ 860              		.loc 1 535 40 is_stmt 0 view .LVU287
+ 861 00a4 6269     		ldr	r2, [r4, #20]
+ 862              		.loc 1 535 56 view .LVU288
+ 863 00a6 1169     		ldr	r1, [r2, #16]
+ 864              		.loc 1 535 34 view .LVU289
+ 865 00a8 4B46     		mov	r3, r9
+ 866              		.loc 1 535 20 view .LVU290
+ 867 00aa 4945     		cmp	r1, r9
+ 868 00ac 00D2     		bcs	.L64
+ 869              		.loc 1 535 81 discriminator 1 view .LVU291
+ 870 00ae 01B9     		cbnz	r1, .L65
+ 871              	.L64:
+ 536:Service/Srv_SensorMonitor.c ****                     (obj->statistic_baro->min_sampling_overhead == 0))
+ 537:Service/Srv_SensorMonitor.c ****                     obj->statistic_baro->min_sampling_overhead = sample_tick;
+ 872              		.loc 1 537 21 is_stmt 1 view .LVU292
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 26
+
+
+ 873              		.loc 1 537 64 is_stmt 0 view .LVU293
+ 874 00b0 1361     		str	r3, [r2, #16]
+ 875              	.LVL95:
+ 876              	.L65:
+ 538:Service/Srv_SensorMonitor.c **** 
+ 539:Service/Srv_SensorMonitor.c ****                 if (sample_tick >= obj->statistic_baro->max_sampling_overhead)
+ 877              		.loc 1 539 17 is_stmt 1 view .LVU294
+ 878              		.loc 1 539 39 is_stmt 0 view .LVU295
+ 879 00b2 6269     		ldr	r2, [r4, #20]
+ 880              		.loc 1 539 55 view .LVU296
+ 881 00b4 D168     		ldr	r1, [r2, #12]
+ 882              		.loc 1 539 20 view .LVU297
+ 883 00b6 8B42     		cmp	r3, r1
+ 884 00b8 00D3     		bcc	.L66
+ 540:Service/Srv_SensorMonitor.c ****                     obj->statistic_baro->max_sampling_overhead = sample_tick;
+ 885              		.loc 1 540 21 is_stmt 1 view .LVU298
+ 886              		.loc 1 540 64 is_stmt 0 view .LVU299
+ 887 00ba D360     		str	r3, [r2, #12]
+ 888              	.L66:
+ 541:Service/Srv_SensorMonitor.c **** 
+ 542:Service/Srv_SensorMonitor.c ****                 obj->statistic_baro->avg_sampling_overhead += sample_tick;
+ 889              		.loc 1 542 17 is_stmt 1 view .LVU300
+ 890              		.loc 1 542 20 is_stmt 0 view .LVU301
+ 891 00bc 6169     		ldr	r1, [r4, #20]
+ 892              		.loc 1 542 60 view .LVU302
+ 893 00be 4A69     		ldr	r2, [r1, #20]
+ 894 00c0 1A44     		add	r2, r2, r3
+ 895 00c2 4A61     		str	r2, [r1, #20]
+ 543:Service/Srv_SensorMonitor.c ****                 obj->statistic_baro->avg_sampling_overhead /= 2;
+ 896              		.loc 1 543 17 is_stmt 1 view .LVU303
+ 897              		.loc 1 543 20 is_stmt 0 view .LVU304
+ 898 00c4 6169     		ldr	r1, [r4, #20]
+ 899              		.loc 1 543 60 view .LVU305
+ 900 00c6 4A69     		ldr	r2, [r1, #20]
+ 901 00c8 5208     		lsrs	r2, r2, #1
+ 902 00ca 4A61     		str	r2, [r1, #20]
+ 544:Service/Srv_SensorMonitor.c **** 
+ 545:Service/Srv_SensorMonitor.c ****                 obj->statistic_baro->cur_sampling_overhead = sample_tick;
+ 903              		.loc 1 545 17 is_stmt 1 view .LVU306
+ 904              		.loc 1 545 20 is_stmt 0 view .LVU307
+ 905 00cc 6269     		ldr	r2, [r4, #20]
+ 906              		.loc 1 545 60 view .LVU308
+ 907 00ce 9360     		str	r3, [r2, #8]
+ 908 00d0 05E0     		b	.L57
+ 909              	.LVL96:
+ 910              	.L75:
+ 494:Service/Srv_SensorMonitor.c **** 
+ 911              		.loc 1 494 13 view .LVU309
+ 912 00d2 4FF00009 		mov	r9, #0
+ 913 00d6 E5E7     		b	.L63
+ 914              	.LVL97:
+ 915              	.L67:
+ 489:Service/Srv_SensorMonitor.c ****     uint32_t sample_interval_ms = 0;
+ 916              		.loc 1 489 10 view .LVU310
+ 917 00d8 0026     		movs	r6, #0
+ 918 00da 00E0     		b	.L57
+ 919              	.L68:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 27
+
+
+ 489:Service/Srv_SensorMonitor.c ****     uint32_t sample_interval_ms = 0;
+ 920              		.loc 1 489 10 view .LVU311
+ 921 00dc 0026     		movs	r6, #0
+ 922              	.LVL98:
+ 923              	.L57:
+ 546:Service/Srv_SensorMonitor.c ****             }
+ 547:Service/Srv_SensorMonitor.c ****         }
+ 548:Service/Srv_SensorMonitor.c ****     }
+ 549:Service/Srv_SensorMonitor.c **** 
+ 550:Service/Srv_SensorMonitor.c ****     return state;
+ 924              		.loc 1 550 5 is_stmt 1 view .LVU312
+ 551:Service/Srv_SensorMonitor.c **** }
+ 925              		.loc 1 551 1 is_stmt 0 view .LVU313
+ 926 00de 3046     		mov	r0, r6
+ 927 00e0 BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 928              	.LVL99:
+ 929              	.L69:
+ 489:Service/Srv_SensorMonitor.c ****     uint32_t sample_interval_ms = 0;
+ 930              		.loc 1 489 10 view .LVU314
+ 931 00e4 0026     		movs	r6, #0
+ 932 00e6 FAE7     		b	.L57
+ 933              	.L70:
+ 934 00e8 0026     		movs	r6, #0
+ 935 00ea F8E7     		b	.L57
+ 936              	.L71:
+ 937 00ec 0026     		movs	r6, #0
+ 938 00ee F6E7     		b	.L57
+ 939              	.LVL100:
+ 940              	.L72:
+ 489:Service/Srv_SensorMonitor.c ****     uint32_t sample_interval_ms = 0;
+ 941              		.loc 1 489 10 view .LVU315
+ 942 00f0 0026     		movs	r6, #0
+ 943 00f2 F4E7     		b	.L57
+ 944              	.L73:
+ 945 00f4 0026     		movs	r6, #0
+ 946 00f6 F2E7     		b	.L57
+ 947              	.L74:
+ 948 00f8 0026     		movs	r6, #0
+ 949 00fa F0E7     		b	.L57
+ 950              	.L79:
+ 951              		.align	2
+ 952              	.L78:
+ 953 00fc 00000000 		.word	SrvOsCommon
+ 954 0100 00000000 		.word	SrvBaro
+ 955              		.cfi_endproc
+ 956              	.LFE155:
+ 958              		.section	.text.SrvSensorMonitor_Flow_Init,"ax",%progbits
+ 959              		.align	1
+ 960              		.syntax unified
+ 961              		.thumb
+ 962              		.thumb_func
+ 964              	SrvSensorMonitor_Flow_Init:
+ 965              	.LFB157:
+ 552:Service/Srv_SensorMonitor.c **** 
+ 553:Service/Srv_SensorMonitor.c **** static SrvBaro_UnionData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorObj_TypeDef *obj)
+ 554:Service/Srv_SensorMonitor.c **** {
+ 555:Service/Srv_SensorMonitor.c ****     SrvBaro_UnionData_TypeDef baro_data_tmp;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 28
+
+
+ 556:Service/Srv_SensorMonitor.c **** 
+ 557:Service/Srv_SensorMonitor.c ****     memset(&baro_data_tmp, 0, sizeof(SrvBaro_UnionData_TypeDef));
+ 558:Service/Srv_SensorMonitor.c **** 
+ 559:Service/Srv_SensorMonitor.c ****     if (obj && obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro && SrvBaro.get_data)
+ 560:Service/Srv_SensorMonitor.c ****     {
+ 561:Service/Srv_SensorMonitor.c ****         if (SrvBaro.get_data(&baro_data_tmp))
+ 562:Service/Srv_SensorMonitor.c ****         {
+ 563:Service/Srv_SensorMonitor.c ****             obj->lst_baro_data.data = baro_data_tmp.data;
+ 564:Service/Srv_SensorMonitor.c ****         }
+ 565:Service/Srv_SensorMonitor.c ****         else
+ 566:Service/Srv_SensorMonitor.c ****             baro_data_tmp.data = obj->lst_baro_data.data;
+ 567:Service/Srv_SensorMonitor.c ****     }
+ 568:Service/Srv_SensorMonitor.c **** 
+ 569:Service/Srv_SensorMonitor.c ****     return baro_data_tmp;
+ 570:Service/Srv_SensorMonitor.c **** }
+ 571:Service/Srv_SensorMonitor.c **** 
+ 572:Service/Srv_SensorMonitor.c **** /******************************************* Flow Section *****************************************
+ 573:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Flow_Init(void)
+ 574:Service/Srv_SensorMonitor.c **** {
+ 966              		.loc 1 574 1 is_stmt 1 view -0
+ 967              		.cfi_startproc
+ 968              		@ args = 0, pretend = 0, frame = 0
+ 969              		@ frame_needed = 0, uses_anonymous_args = 0
+ 970 0000 08B5     		push	{r3, lr}
+ 971              	.LCFI2:
+ 972              		.cfi_def_cfa_offset 8
+ 973              		.cfi_offset 3, -8
+ 974              		.cfi_offset 14, -4
+ 575:Service/Srv_SensorMonitor.c ****     return SrvFlow.init(FLOW_TYPE);
+ 975              		.loc 1 575 5 view .LVU317
+ 976              		.loc 1 575 19 is_stmt 0 view .LVU318
+ 977 0002 024B     		ldr	r3, .L82
+ 978 0004 1B68     		ldr	r3, [r3]
+ 979              		.loc 1 575 12 view .LVU319
+ 980 0006 0120     		movs	r0, #1
+ 981 0008 9847     		blx	r3
+ 982              	.LVL101:
+ 576:Service/Srv_SensorMonitor.c **** }
+ 983              		.loc 1 576 1 view .LVU320
+ 984 000a 08BD     		pop	{r3, pc}
+ 985              	.L83:
+ 986              		.align	2
+ 987              	.L82:
+ 988 000c 00000000 		.word	SrvFlow
+ 989              		.cfi_endproc
+ 990              	.LFE157:
+ 992              		.section	.text.SrvSensorMonitor_SampleCTL,"ax",%progbits
+ 993              		.align	1
+ 994              		.syntax unified
+ 995              		.thumb
+ 996              		.thumb_func
+ 998              	SrvSensorMonitor_SampleCTL:
+ 999              	.LVL102:
+ 1000              	.LFB159:
+ 577:Service/Srv_SensorMonitor.c **** 
+ 578:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_Flow_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
+ 579:Service/Srv_SensorMonitor.c **** {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 29
+
+
+ 580:Service/Srv_SensorMonitor.c ****     uint32_t sample_interval_ms = 0;
+ 581:Service/Srv_SensorMonitor.c ****     uint32_t cur_time = 0;
+ 582:Service/Srv_SensorMonitor.c ****     uint32_t start_tick = 0;
+ 583:Service/Srv_SensorMonitor.c ****     uint32_t end_tick = 0;
+ 584:Service/Srv_SensorMonitor.c ****     uint32_t sample_tick = 0;
+ 585:Service/Srv_SensorMonitor.c ****     bool state = false;
+ 586:Service/Srv_SensorMonitor.c **** 
+ 587:Service/Srv_SensorMonitor.c ****     if (obj && obj->enabled_reg.bit.flow && obj->init_state_reg.bit.flow && obj->freq_reg.bit.flow 
+ 588:Service/Srv_SensorMonitor.c ****     {
+ 589:Service/Srv_SensorMonitor.c ****         sample_interval_ms = SrvSensorMonitor_GetSampleInterval(obj->statistic_flow->set_period);
+ 590:Service/Srv_SensorMonitor.c **** 
+ 591:Service/Srv_SensorMonitor.c ****         if (SrvFlow.sample && \
+ 592:Service/Srv_SensorMonitor.c ****             ((obj->statistic_flow->start_time == 0) || \
+ 593:Service/Srv_SensorMonitor.c ****              (sample_interval_ms && \
+ 594:Service/Srv_SensorMonitor.c ****              (cur_time >= obj->statistic_baro->nxt_sample_time))))
+ 595:Service/Srv_SensorMonitor.c ****         {
+ 596:Service/Srv_SensorMonitor.c ****             start_tick = SrvOsCommon.get_systimer_current_tick();
+ 597:Service/Srv_SensorMonitor.c ****             if (SrvFlow.sample(FLOW_TYPE))
+ 598:Service/Srv_SensorMonitor.c ****             {
+ 599:Service/Srv_SensorMonitor.c ****                 end_tick = SrvOsCommon.get_systimer_current_tick();
+ 600:Service/Srv_SensorMonitor.c **** 
+ 601:Service/Srv_SensorMonitor.c ****                 obj->statistic_baro->sample_cnt ++;
+ 602:Service/Srv_SensorMonitor.c ****                 obj->statistic_baro->nxt_sample_time = cur_time + sample_interval_ms;
+ 603:Service/Srv_SensorMonitor.c ****                 if (obj->statistic_baro->start_time == 0)
+ 604:Service/Srv_SensorMonitor.c ****                     obj->statistic_baro->start_time = cur_time;
+ 605:Service/Srv_SensorMonitor.c **** 
+ 606:Service/Srv_SensorMonitor.c ****                 state = true;
+ 607:Service/Srv_SensorMonitor.c ****             }
+ 608:Service/Srv_SensorMonitor.c ****             else
+ 609:Service/Srv_SensorMonitor.c ****                 end_tick = SrvOsCommon.get_systimer_current_tick();
+ 610:Service/Srv_SensorMonitor.c **** 
+ 611:Service/Srv_SensorMonitor.c ****             /* get flow sensor sample over head */
+ 612:Service/Srv_SensorMonitor.c ****             if (state)
+ 613:Service/Srv_SensorMonitor.c ****             {
+ 614:Service/Srv_SensorMonitor.c ****                 if (start_tick < end_tick)
+ 615:Service/Srv_SensorMonitor.c ****                 {
+ 616:Service/Srv_SensorMonitor.c ****                     sample_tick = end_tick - start_tick;
+ 617:Service/Srv_SensorMonitor.c ****                 }
+ 618:Service/Srv_SensorMonitor.c ****                 else if (start_tick > end_tick)
+ 619:Service/Srv_SensorMonitor.c ****                 {
+ 620:Service/Srv_SensorMonitor.c ****                     /* must after timer irq */
+ 621:Service/Srv_SensorMonitor.c ****                     sample_tick = SrvOsCommon.get_systimer_period() - start_tick + end_tick;
+ 622:Service/Srv_SensorMonitor.c ****                 }
+ 623:Service/Srv_SensorMonitor.c **** 
+ 624:Service/Srv_SensorMonitor.c ****                 if ((sample_tick <= obj->statistic_flow->min_sampling_overhead) || \
+ 625:Service/Srv_SensorMonitor.c ****                    (obj->statistic_flow->min_sampling_overhead == 0))
+ 626:Service/Srv_SensorMonitor.c ****                     obj->statistic_flow->min_sampling_overhead = sample_tick;
+ 627:Service/Srv_SensorMonitor.c **** 
+ 628:Service/Srv_SensorMonitor.c ****                 if (sample_tick >= obj->statistic_flow->max_sampling_overhead)
+ 629:Service/Srv_SensorMonitor.c ****                     obj->statistic_flow->max_sampling_overhead = sample_tick;
+ 630:Service/Srv_SensorMonitor.c **** 
+ 631:Service/Srv_SensorMonitor.c ****                 obj->statistic_flow->avg_sampling_overhead += sample_tick;
+ 632:Service/Srv_SensorMonitor.c ****                 obj->statistic_flow->avg_sampling_overhead /= 2;
+ 633:Service/Srv_SensorMonitor.c **** 
+ 634:Service/Srv_SensorMonitor.c ****                 obj->statistic_flow->cur_sampling_overhead = sample_tick;
+ 635:Service/Srv_SensorMonitor.c ****             }
+ 636:Service/Srv_SensorMonitor.c ****         }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 30
+
+
+ 637:Service/Srv_SensorMonitor.c ****     }
+ 638:Service/Srv_SensorMonitor.c **** 
+ 639:Service/Srv_SensorMonitor.c ****     return state;
+ 640:Service/Srv_SensorMonitor.c **** }
+ 641:Service/Srv_SensorMonitor.c **** 
+ 642:Service/Srv_SensorMonitor.c **** 
+ 643:Service/Srv_SensorMonitor.c **** 
+ 644:Service/Srv_SensorMonitor.c **** /* noticed all sensor sampling and processing must finished in 1ms maximum */
+ 645:Service/Srv_SensorMonitor.c **** /* maximum sampling rate is 1KHz currentlly */
+ 646:Service/Srv_SensorMonitor.c **** static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
+ 647:Service/Srv_SensorMonitor.c **** {
+ 1001              		.loc 1 647 1 is_stmt 1 view -0
+ 1002              		.cfi_startproc
+ 1003              		@ args = 0, pretend = 0, frame = 0
+ 1004              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1005              		.loc 1 647 1 is_stmt 0 view .LVU322
+ 1006 0000 70B5     		push	{r4, r5, r6, lr}
+ 1007              	.LCFI3:
+ 1008              		.cfi_def_cfa_offset 16
+ 1009              		.cfi_offset 4, -16
+ 1010              		.cfi_offset 5, -12
+ 1011              		.cfi_offset 6, -8
+ 1012              		.cfi_offset 14, -4
+ 1013 0002 0546     		mov	r5, r0
+ 648:Service/Srv_SensorMonitor.c ****     bool state = false;
+ 1014              		.loc 1 648 5 is_stmt 1 view .LVU323
+ 1015              	.LVL103:
+ 649:Service/Srv_SensorMonitor.c ****     // DebugPin.ctl(Debug_PB5, true);
+ 650:Service/Srv_SensorMonitor.c ****     
+ 651:Service/Srv_SensorMonitor.c ****     /* imu single sampling overhead is about 60us */
+ 652:Service/Srv_SensorMonitor.c ****     state |= SrvSensorMonitor_IMU_SampleCTL(obj);
+ 1016              		.loc 1 652 5 view .LVU324
+ 1017              		.loc 1 652 14 is_stmt 0 view .LVU325
+ 1018 0004 FFF7FEFF 		bl	SrvSensorMonitor_IMU_SampleCTL
+ 1019              	.LVL104:
+ 1020              		.loc 1 652 14 view .LVU326
+ 1021 0008 0446     		mov	r4, r0
+ 1022              	.LVL105:
+ 653:Service/Srv_SensorMonitor.c ****     if (obj->statistic_imu->is_calid == Calib_Start)
+ 1023              		.loc 1 653 5 is_stmt 1 view .LVU327
+ 1024              		.loc 1 653 12 is_stmt 0 view .LVU328
+ 1025 000a EE68     		ldr	r6, [r5, #12]
+ 1026              		.loc 1 653 27 view .LVU329
+ 1027 000c 337E     		ldrb	r3, [r6, #24]	@ zero_extendqisi2
+ 1028              		.loc 1 653 8 view .LVU330
+ 1029 000e 012B     		cmp	r3, #1
+ 1030 0010 1BD0     		beq	.L92
+ 654:Service/Srv_SensorMonitor.c ****     {
+ 655:Service/Srv_SensorMonitor.c ****         if (SrvIMU.set_calib)
+ 656:Service/Srv_SensorMonitor.c ****         {
+ 657:Service/Srv_SensorMonitor.c ****             obj->statistic_imu->is_calid = SrvIMU.set_calib(GYRO_CALIB_CYCLE);
+ 658:Service/Srv_SensorMonitor.c ****         }
+ 659:Service/Srv_SensorMonitor.c ****         else
+ 660:Service/Srv_SensorMonitor.c ****             obj->statistic_imu->is_calid = Calib_Failed;
+ 661:Service/Srv_SensorMonitor.c ****     }
+ 662:Service/Srv_SensorMonitor.c ****     else if (obj->statistic_imu->is_calid != Calib_Failed)
+ 1031              		.loc 1 662 10 is_stmt 1 view .LVU331
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 31
+
+
+ 1032              		.loc 1 662 13 is_stmt 0 view .LVU332
+ 1033 0012 042B     		cmp	r3, #4
+ 1034 0014 03D0     		beq	.L87
+ 663:Service/Srv_SensorMonitor.c ****         obj->statistic_imu->is_calid = SrvIMU.get_calib();
+ 1035              		.loc 1 663 9 is_stmt 1 view .LVU333
+ 1036              		.loc 1 663 46 is_stmt 0 view .LVU334
+ 1037 0016 174B     		ldr	r3, .L94
+ 1038 0018 9B69     		ldr	r3, [r3, #24]
+ 1039              		.loc 1 663 40 view .LVU335
+ 1040 001a 9847     		blx	r3
+ 1041              	.LVL106:
+ 1042              		.loc 1 663 38 view .LVU336
+ 1043 001c 3076     		strb	r0, [r6, #24]
+ 1044              	.L87:
+ 664:Service/Srv_SensorMonitor.c ****     
+ 665:Service/Srv_SensorMonitor.c ****     state |= SrvSensorMonitor_Mag_SampleCTL(obj);
+ 1045              		.loc 1 665 5 is_stmt 1 view .LVU337
+ 1046              		.loc 1 665 14 is_stmt 0 view .LVU338
+ 1047 001e 2846     		mov	r0, r5
+ 1048 0020 FFF7FEFF 		bl	SrvSensorMonitor_Mag_SampleCTL
+ 1049              	.LVL107:
+ 1050              		.loc 1 665 11 view .LVU339
+ 1051 0024 0443     		orrs	r4, r4, r0
+ 1052              	.LVL108:
+ 1053              		.loc 1 665 11 view .LVU340
+ 1054 0026 E4B2     		uxtb	r4, r4
+ 1055              	.LVL109:
+ 666:Service/Srv_SensorMonitor.c **** 
+ 667:Service/Srv_SensorMonitor.c ****     /* baro single sampling overhead is about 230us */
+ 668:Service/Srv_SensorMonitor.c ****     state |= SrvSensorMonitor_Baro_SampleCTL(obj);
+ 1056              		.loc 1 668 5 is_stmt 1 view .LVU341
+ 1057              		.loc 1 668 14 is_stmt 0 view .LVU342
+ 1058 0028 2846     		mov	r0, r5
+ 1059 002a FFF7FEFF 		bl	SrvSensorMonitor_Baro_SampleCTL
+ 1060              	.LVL110:
+ 1061              		.loc 1 668 11 view .LVU343
+ 1062 002e 0443     		orrs	r4, r4, r0
+ 1063              	.LVL111:
+ 1064              		.loc 1 668 11 view .LVU344
+ 1065 0030 E4B2     		uxtb	r4, r4
+ 1066              	.LVL112:
+ 669:Service/Srv_SensorMonitor.c ****     if (obj->statistic_baro->is_calid == Calib_Start)
+ 1067              		.loc 1 669 5 is_stmt 1 view .LVU345
+ 1068              		.loc 1 669 12 is_stmt 0 view .LVU346
+ 1069 0032 6D69     		ldr	r5, [r5, #20]
+ 1070              	.LVL113:
+ 1071              		.loc 1 669 28 view .LVU347
+ 1072 0034 2B7E     		ldrb	r3, [r5, #24]	@ zero_extendqisi2
+ 1073              		.loc 1 669 8 view .LVU348
+ 1074 0036 012B     		cmp	r3, #1
+ 1075 0038 12D0     		beq	.L93
+ 670:Service/Srv_SensorMonitor.c ****     {
+ 671:Service/Srv_SensorMonitor.c ****         if (SrvBaro.set_calib)
+ 672:Service/Srv_SensorMonitor.c ****         {
+ 673:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->is_calid = SrvBaro.set_calib(BARO_CALIB_CYCLE);
+ 674:Service/Srv_SensorMonitor.c ****         }
+ 675:Service/Srv_SensorMonitor.c ****         else
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 32
+
+
+ 676:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->is_calid = Calib_Failed;
+ 677:Service/Srv_SensorMonitor.c ****     }
+ 678:Service/Srv_SensorMonitor.c ****     else if (obj->statistic_baro->is_calid != Calib_Failed)
+ 1076              		.loc 1 678 10 is_stmt 1 view .LVU349
+ 1077              		.loc 1 678 13 is_stmt 0 view .LVU350
+ 1078 003a 042B     		cmp	r3, #4
+ 1079 003c 03D0     		beq	.L90
+ 679:Service/Srv_SensorMonitor.c ****         obj->statistic_baro->is_calid = SrvBaro.get_calib();
+ 1080              		.loc 1 679 9 is_stmt 1 view .LVU351
+ 1081              		.loc 1 679 48 is_stmt 0 view .LVU352
+ 1082 003e 0E4B     		ldr	r3, .L94+4
+ 1083 0040 DB68     		ldr	r3, [r3, #12]
+ 1084              		.loc 1 679 41 view .LVU353
+ 1085 0042 9847     		blx	r3
+ 1086              	.LVL114:
+ 1087              		.loc 1 679 39 view .LVU354
+ 1088 0044 2876     		strb	r0, [r5, #24]
+ 1089              	.L90:
+ 680:Service/Srv_SensorMonitor.c **** 
+ 681:Service/Srv_SensorMonitor.c ****     // DebugPin.ctl(Debug_PB5, false);
+ 682:Service/Srv_SensorMonitor.c ****     
+ 683:Service/Srv_SensorMonitor.c ****     return state;
+ 1090              		.loc 1 683 5 is_stmt 1 view .LVU355
+ 684:Service/Srv_SensorMonitor.c **** }
+ 1091              		.loc 1 684 1 is_stmt 0 view .LVU356
+ 1092 0046 2046     		mov	r0, r4
+ 1093 0048 70BD     		pop	{r4, r5, r6, pc}
+ 1094              	.LVL115:
+ 1095              	.L92:
+ 655:Service/Srv_SensorMonitor.c ****         {
+ 1096              		.loc 1 655 9 is_stmt 1 view .LVU357
+ 655:Service/Srv_SensorMonitor.c ****         {
+ 1097              		.loc 1 655 19 is_stmt 0 view .LVU358
+ 1098 004a 0A4B     		ldr	r3, .L94
+ 1099 004c DB69     		ldr	r3, [r3, #28]
+ 655:Service/Srv_SensorMonitor.c ****         {
+ 1100              		.loc 1 655 12 view .LVU359
+ 1101 004e 23B1     		cbz	r3, .L86
+ 657:Service/Srv_SensorMonitor.c ****         }
+ 1102              		.loc 1 657 13 is_stmt 1 view .LVU360
+ 657:Service/Srv_SensorMonitor.c ****         }
+ 1103              		.loc 1 657 44 is_stmt 0 view .LVU361
+ 1104 0050 4FF47A70 		mov	r0, #1000
+ 1105 0054 9847     		blx	r3
+ 1106              	.LVL116:
+ 657:Service/Srv_SensorMonitor.c ****         }
+ 1107              		.loc 1 657 42 view .LVU362
+ 1108 0056 3076     		strb	r0, [r6, #24]
+ 1109 0058 E1E7     		b	.L87
+ 1110              	.L86:
+ 660:Service/Srv_SensorMonitor.c ****     }
+ 1111              		.loc 1 660 13 is_stmt 1 view .LVU363
+ 660:Service/Srv_SensorMonitor.c ****     }
+ 1112              		.loc 1 660 42 is_stmt 0 view .LVU364
+ 1113 005a 0423     		movs	r3, #4
+ 1114 005c 3376     		strb	r3, [r6, #24]
+ 1115 005e DEE7     		b	.L87
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 33
+
+
+ 1116              	.LVL117:
+ 1117              	.L93:
+ 671:Service/Srv_SensorMonitor.c ****         {
+ 1118              		.loc 1 671 9 is_stmt 1 view .LVU365
+ 671:Service/Srv_SensorMonitor.c ****         {
+ 1119              		.loc 1 671 20 is_stmt 0 view .LVU366
+ 1120 0060 054B     		ldr	r3, .L94+4
+ 1121 0062 9B68     		ldr	r3, [r3, #8]
+ 671:Service/Srv_SensorMonitor.c ****         {
+ 1122              		.loc 1 671 12 view .LVU367
+ 1123 0064 1BB1     		cbz	r3, .L89
+ 673:Service/Srv_SensorMonitor.c ****         }
+ 1124              		.loc 1 673 13 is_stmt 1 view .LVU368
+ 673:Service/Srv_SensorMonitor.c ****         }
+ 1125              		.loc 1 673 45 is_stmt 0 view .LVU369
+ 1126 0066 6420     		movs	r0, #100
+ 1127 0068 9847     		blx	r3
+ 1128              	.LVL118:
+ 673:Service/Srv_SensorMonitor.c ****         }
+ 1129              		.loc 1 673 43 view .LVU370
+ 1130 006a 2876     		strb	r0, [r5, #24]
+ 1131 006c EBE7     		b	.L90
+ 1132              	.L89:
+ 676:Service/Srv_SensorMonitor.c ****     }
+ 1133              		.loc 1 676 13 is_stmt 1 view .LVU371
+ 676:Service/Srv_SensorMonitor.c ****     }
+ 1134              		.loc 1 676 43 is_stmt 0 view .LVU372
+ 1135 006e 0423     		movs	r3, #4
+ 1136 0070 2B76     		strb	r3, [r5, #24]
+ 1137 0072 E8E7     		b	.L90
+ 1138              	.L95:
+ 1139              		.align	2
+ 1140              	.L94:
+ 1141 0074 00000000 		.word	SrvIMU
+ 1142 0078 00000000 		.word	SrvBaro
+ 1143              		.cfi_endproc
+ 1144              	.LFE159:
+ 1146              		.section	.text.SrvSensorMonitor_Set_Module_Calib,"ax",%progbits
+ 1147              		.align	1
+ 1148              		.syntax unified
+ 1149              		.thumb
+ 1150              		.thumb_func
+ 1152              	SrvSensorMonitor_Set_Module_Calib:
+ 1153              	.LVL119:
+ 1154              	.LFB160:
+ 685:Service/Srv_SensorMonitor.c **** 
+ 686:Service/Srv_SensorMonitor.c **** static GenCalib_State_TypeList SrvSensorMonitor_Set_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, 
+ 687:Service/Srv_SensorMonitor.c **** {
+ 1155              		.loc 1 687 1 is_stmt 1 view -0
+ 1156              		.cfi_startproc
+ 1157              		@ args = 0, pretend = 0, frame = 0
+ 1158              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1159              		@ link register save eliminated.
+ 688:Service/Srv_SensorMonitor.c ****     if (obj)
+ 1160              		.loc 1 688 5 view .LVU374
+ 1161              		.loc 1 688 8 is_stmt 0 view .LVU375
+ 1162 0000 20B1     		cbz	r0, .L97
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 34
+
+
+ 689:Service/Srv_SensorMonitor.c ****     {
+ 690:Service/Srv_SensorMonitor.c ****         switch((uint8_t) type)
+ 1163              		.loc 1 690 9 is_stmt 1 view .LVU376
+ 1164 0002 0129     		cmp	r1, #1
+ 1165 0004 0CD0     		beq	.L98
+ 1166 0006 0229     		cmp	r1, #2
+ 1167 0008 06D0     		beq	.L99
+ 1168 000a 09B1     		cbz	r1, .L100
+ 1169              	.L97:
+ 691:Service/Srv_SensorMonitor.c ****         {
+ 692:Service/Srv_SensorMonitor.c ****             case SrvSensorMonitor_Type_IMU:
+ 693:Service/Srv_SensorMonitor.c ****                 obj->statistic_imu->is_calid = Calib_Start;
+ 694:Service/Srv_SensorMonitor.c ****                 break;
+ 695:Service/Srv_SensorMonitor.c **** 
+ 696:Service/Srv_SensorMonitor.c ****             case SrvSensorMonitor_Type_BARO:
+ 697:Service/Srv_SensorMonitor.c ****                 obj->statistic_baro->is_calid = Calib_Start;
+ 698:Service/Srv_SensorMonitor.c ****                 break;
+ 699:Service/Srv_SensorMonitor.c **** 
+ 700:Service/Srv_SensorMonitor.c ****             case SrvSensorMonitor_Type_MAG:
+ 701:Service/Srv_SensorMonitor.c ****                 obj->statistic_mag->is_calid = Calib_Start;
+ 702:Service/Srv_SensorMonitor.c ****                 break;
+ 703:Service/Srv_SensorMonitor.c **** 
+ 704:Service/Srv_SensorMonitor.c ****             default:
+ 705:Service/Srv_SensorMonitor.c ****                 return Calib_Start;
+ 706:Service/Srv_SensorMonitor.c ****         }
+ 707:Service/Srv_SensorMonitor.c ****     }
+ 708:Service/Srv_SensorMonitor.c **** 
+ 709:Service/Srv_SensorMonitor.c ****     return Calib_Start;
+ 710:Service/Srv_SensorMonitor.c **** }
+ 1170              		.loc 1 710 1 is_stmt 0 view .LVU377
+ 1171 000c 0120     		movs	r0, #1
+ 1172              	.LVL120:
+ 1173              		.loc 1 710 1 view .LVU378
+ 1174 000e 7047     		bx	lr
+ 1175              	.LVL121:
+ 1176              	.L100:
+ 693:Service/Srv_SensorMonitor.c ****                 break;
+ 1177              		.loc 1 693 17 is_stmt 1 view .LVU379
+ 693:Service/Srv_SensorMonitor.c ****                 break;
+ 1178              		.loc 1 693 20 is_stmt 0 view .LVU380
+ 1179 0010 C368     		ldr	r3, [r0, #12]
+ 693:Service/Srv_SensorMonitor.c ****                 break;
+ 1180              		.loc 1 693 46 view .LVU381
+ 1181 0012 0122     		movs	r2, #1
+ 1182 0014 1A76     		strb	r2, [r3, #24]
+ 694:Service/Srv_SensorMonitor.c **** 
+ 1183              		.loc 1 694 17 is_stmt 1 view .LVU382
+ 1184 0016 F9E7     		b	.L97
+ 1185              	.L99:
+ 697:Service/Srv_SensorMonitor.c ****                 break;
+ 1186              		.loc 1 697 17 view .LVU383
+ 697:Service/Srv_SensorMonitor.c ****                 break;
+ 1187              		.loc 1 697 20 is_stmt 0 view .LVU384
+ 1188 0018 4369     		ldr	r3, [r0, #20]
+ 697:Service/Srv_SensorMonitor.c ****                 break;
+ 1189              		.loc 1 697 47 view .LVU385
+ 1190 001a 0122     		movs	r2, #1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 35
+
+
+ 1191 001c 1A76     		strb	r2, [r3, #24]
+ 698:Service/Srv_SensorMonitor.c **** 
+ 1192              		.loc 1 698 17 is_stmt 1 view .LVU386
+ 1193 001e F5E7     		b	.L97
+ 1194              	.L98:
+ 701:Service/Srv_SensorMonitor.c ****                 break;
+ 1195              		.loc 1 701 17 view .LVU387
+ 701:Service/Srv_SensorMonitor.c ****                 break;
+ 1196              		.loc 1 701 20 is_stmt 0 view .LVU388
+ 1197 0020 0369     		ldr	r3, [r0, #16]
+ 701:Service/Srv_SensorMonitor.c ****                 break;
+ 1198              		.loc 1 701 46 view .LVU389
+ 1199 0022 0122     		movs	r2, #1
+ 1200 0024 1A76     		strb	r2, [r3, #24]
+ 702:Service/Srv_SensorMonitor.c **** 
+ 1201              		.loc 1 702 17 is_stmt 1 view .LVU390
+ 1202 0026 F1E7     		b	.L97
+ 1203              		.cfi_endproc
+ 1204              	.LFE160:
+ 1206              		.section	.text.SrvSensorMonitor_Get_Module_Calib,"ax",%progbits
+ 1207              		.align	1
+ 1208              		.syntax unified
+ 1209              		.thumb
+ 1210              		.thumb_func
+ 1212              	SrvSensorMonitor_Get_Module_Calib:
+ 1213              	.LVL122:
+ 1214              	.LFB161:
+ 711:Service/Srv_SensorMonitor.c **** 
+ 712:Service/Srv_SensorMonitor.c **** static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonitorObj_TypeDef *obj, 
+ 713:Service/Srv_SensorMonitor.c **** {
+ 1215              		.loc 1 713 1 view -0
+ 1216              		.cfi_startproc
+ 1217              		@ args = 0, pretend = 0, frame = 0
+ 1218              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1219              		@ link register save eliminated.
+ 714:Service/Srv_SensorMonitor.c ****     if (obj)
+ 1220              		.loc 1 714 5 view .LVU392
+ 1221              		.loc 1 714 8 is_stmt 0 view .LVU393
+ 1222 0000 D8B1     		cbz	r0, .L105
+ 715:Service/Srv_SensorMonitor.c ****     {
+ 716:Service/Srv_SensorMonitor.c ****         switch((uint8_t) type)
+ 1223              		.loc 1 716 9 is_stmt 1 view .LVU394
+ 1224 0002 0129     		cmp	r1, #1
+ 1225 0004 03D0     		beq	.L103
+ 1226 0006 0229     		cmp	r1, #2
+ 1227 0008 0CD0     		beq	.L104
+ 1228 000a 0420     		movs	r0, #4
+ 1229              	.LVL123:
+ 1230              		.loc 1 716 9 is_stmt 0 view .LVU395
+ 1231 000c 7047     		bx	lr
+ 1232              	.LVL124:
+ 1233              	.L103:
+ 717:Service/Srv_SensorMonitor.c ****         {
+ 718:Service/Srv_SensorMonitor.c ****             case SrvSensorMonitor_Type_IMU:
+ 719:Service/Srv_SensorMonitor.c ****                 break;
+ 720:Service/Srv_SensorMonitor.c **** 
+ 721:Service/Srv_SensorMonitor.c ****             case SrvSensorMonitor_Type_MAG:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 36
+
+
+ 722:Service/Srv_SensorMonitor.c ****                 if (obj->enabled_reg.bit.mag && obj->init_state_reg.bit.mag)
+ 1234              		.loc 1 722 17 is_stmt 1 view .LVU396
+ 1235              		.loc 1 722 21 is_stmt 0 view .LVU397
+ 1236 000e 0278     		ldrb	r2, [r0]	@ zero_extendqisi2
+ 1237              		.loc 1 722 20 view .LVU398
+ 1238 0010 12F0020F 		tst	r2, #2
+ 1239 0014 13D0     		beq	.L106
+ 1240              		.loc 1 722 46 discriminator 1 view .LVU399
+ 1241 0016 0279     		ldrb	r2, [r0, #4]	@ zero_extendqisi2
+ 1242 0018 12F0020F 		tst	r2, #2
+ 1243 001c 11D0     		beq	.L107
+ 723:Service/Srv_SensorMonitor.c ****                 {
+ 724:Service/Srv_SensorMonitor.c ****                     return obj->statistic_mag->is_calid;
+ 1244              		.loc 1 724 21 is_stmt 1 view .LVU400
+ 1245              		.loc 1 724 31 is_stmt 0 view .LVU401
+ 1246 001e 0369     		ldr	r3, [r0, #16]
+ 1247              		.loc 1 724 46 view .LVU402
+ 1248 0020 187E     		ldrb	r0, [r3, #24]	@ zero_extendqisi2
+ 1249              	.LVL125:
+ 1250              		.loc 1 724 46 view .LVU403
+ 1251 0022 7047     		bx	lr
+ 1252              	.LVL126:
+ 1253              	.L104:
+ 725:Service/Srv_SensorMonitor.c ****                 }
+ 726:Service/Srv_SensorMonitor.c ****                 else
+ 727:Service/Srv_SensorMonitor.c ****                     return Calib_Failed; 
+ 728:Service/Srv_SensorMonitor.c **** 
+ 729:Service/Srv_SensorMonitor.c ****             case SrvSensorMonitor_Type_BARO:
+ 730:Service/Srv_SensorMonitor.c ****                 if (obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro)
+ 1254              		.loc 1 730 17 is_stmt 1 view .LVU404
+ 1255              		.loc 1 730 21 is_stmt 0 view .LVU405
+ 1256 0024 0278     		ldrb	r2, [r0]	@ zero_extendqisi2
+ 1257              		.loc 1 730 20 view .LVU406
+ 1258 0026 12F0040F 		tst	r2, #4
+ 1259 002a 0CD0     		beq	.L108
+ 1260              		.loc 1 730 47 discriminator 1 view .LVU407
+ 1261 002c 0279     		ldrb	r2, [r0, #4]	@ zero_extendqisi2
+ 1262 002e 12F0040F 		tst	r2, #4
+ 1263 0032 0AD0     		beq	.L109
+ 731:Service/Srv_SensorMonitor.c ****                 {
+ 732:Service/Srv_SensorMonitor.c ****                     return obj->statistic_baro->is_calid;
+ 1264              		.loc 1 732 21 is_stmt 1 view .LVU408
+ 1265              		.loc 1 732 31 is_stmt 0 view .LVU409
+ 1266 0034 4369     		ldr	r3, [r0, #20]
+ 1267              		.loc 1 732 47 view .LVU410
+ 1268 0036 187E     		ldrb	r0, [r3, #24]	@ zero_extendqisi2
+ 1269              	.LVL127:
+ 1270              		.loc 1 732 47 view .LVU411
+ 1271 0038 7047     		bx	lr
+ 1272              	.LVL128:
+ 1273              	.L105:
+ 733:Service/Srv_SensorMonitor.c ****                 }
+ 734:Service/Srv_SensorMonitor.c ****                 else
+ 735:Service/Srv_SensorMonitor.c ****                     return Calib_Failed;
+ 736:Service/Srv_SensorMonitor.c **** 
+ 737:Service/Srv_SensorMonitor.c ****             default:
+ 738:Service/Srv_SensorMonitor.c ****                 return Calib_Failed;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 37
+
+
+ 739:Service/Srv_SensorMonitor.c ****         }
+ 740:Service/Srv_SensorMonitor.c ****     }
+ 741:Service/Srv_SensorMonitor.c **** 
+ 742:Service/Srv_SensorMonitor.c ****     return Calib_Failed;
+ 1274              		.loc 1 742 12 view .LVU412
+ 1275 003a 0420     		movs	r0, #4
+ 1276              	.LVL129:
+ 1277              		.loc 1 742 12 view .LVU413
+ 1278 003c 7047     		bx	lr
+ 1279              	.LVL130:
+ 1280              	.L106:
+ 727:Service/Srv_SensorMonitor.c **** 
+ 1281              		.loc 1 727 28 view .LVU414
+ 1282 003e 0420     		movs	r0, #4
+ 1283              	.LVL131:
+ 727:Service/Srv_SensorMonitor.c **** 
+ 1284              		.loc 1 727 28 view .LVU415
+ 1285 0040 7047     		bx	lr
+ 1286              	.LVL132:
+ 1287              	.L107:
+ 727:Service/Srv_SensorMonitor.c **** 
+ 1288              		.loc 1 727 28 view .LVU416
+ 1289 0042 0420     		movs	r0, #4
+ 1290              	.LVL133:
+ 727:Service/Srv_SensorMonitor.c **** 
+ 1291              		.loc 1 727 28 view .LVU417
+ 1292 0044 7047     		bx	lr
+ 1293              	.LVL134:
+ 1294              	.L108:
+ 735:Service/Srv_SensorMonitor.c **** 
+ 1295              		.loc 1 735 28 view .LVU418
+ 1296 0046 0420     		movs	r0, #4
+ 1297              	.LVL135:
+ 735:Service/Srv_SensorMonitor.c **** 
+ 1298              		.loc 1 735 28 view .LVU419
+ 1299 0048 7047     		bx	lr
+ 1300              	.LVL136:
+ 1301              	.L109:
+ 735:Service/Srv_SensorMonitor.c **** 
+ 1302              		.loc 1 735 28 view .LVU420
+ 1303 004a 0420     		movs	r0, #4
+ 1304              	.LVL137:
+ 743:Service/Srv_SensorMonitor.c **** }
+ 1305              		.loc 1 743 1 view .LVU421
+ 1306 004c 7047     		bx	lr
+ 1307              		.cfi_endproc
+ 1308              	.LFE161:
+ 1310              		.section	.text.SrvSensorMonitor_Get_BaroData,"ax",%progbits
+ 1311              		.align	1
+ 1312              		.syntax unified
+ 1313              		.thumb
+ 1314              		.thumb_func
+ 1316              	SrvSensorMonitor_Get_BaroData:
+ 1317              	.LVL138:
+ 1318              	.LFB156:
+ 554:Service/Srv_SensorMonitor.c ****     SrvBaro_UnionData_TypeDef baro_data_tmp;
+ 1319              		.loc 1 554 1 is_stmt 1 view -0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 38
+
+
+ 1320              		.cfi_startproc
+ 1321              		@ args = 0, pretend = 0, frame = 32
+ 1322              		@ frame_needed = 0, uses_anonymous_args = 0
+ 554:Service/Srv_SensorMonitor.c ****     SrvBaro_UnionData_TypeDef baro_data_tmp;
+ 1323              		.loc 1 554 1 is_stmt 0 view .LVU423
+ 1324 0000 30B5     		push	{r4, r5, lr}
+ 1325              	.LCFI4:
+ 1326              		.cfi_def_cfa_offset 12
+ 1327              		.cfi_offset 4, -12
+ 1328              		.cfi_offset 5, -8
+ 1329              		.cfi_offset 14, -4
+ 1330 0002 89B0     		sub	sp, sp, #36
+ 1331              	.LCFI5:
+ 1332              		.cfi_def_cfa_offset 48
+ 1333 0004 0446     		mov	r4, r0
+ 555:Service/Srv_SensorMonitor.c **** 
+ 1334              		.loc 1 555 5 is_stmt 1 view .LVU424
+ 557:Service/Srv_SensorMonitor.c **** 
+ 1335              		.loc 1 557 5 view .LVU425
+ 1336 0006 0023     		movs	r3, #0
+ 1337 0008 0193     		str	r3, [sp, #4]
+ 1338 000a 0293     		str	r3, [sp, #8]
+ 1339 000c 0393     		str	r3, [sp, #12]
+ 1340 000e 0493     		str	r3, [sp, #16]
+ 1341 0010 0593     		str	r3, [sp, #20]
+ 1342 0012 0693     		str	r3, [sp, #24]
+ 1343 0014 0793     		str	r3, [sp, #28]
+ 559:Service/Srv_SensorMonitor.c ****     {
+ 1344              		.loc 1 559 5 view .LVU426
+ 559:Service/Srv_SensorMonitor.c ****     {
+ 1345              		.loc 1 559 8 is_stmt 0 view .LVU427
+ 1346 0016 C1B1     		cbz	r1, .L111
+ 1347 0018 0D46     		mov	r5, r1
+ 559:Service/Srv_SensorMonitor.c ****     {
+ 1348              		.loc 1 559 13 discriminator 1 view .LVU428
+ 1349 001a 0B78     		ldrb	r3, [r1]	@ zero_extendqisi2
+ 1350 001c 13F0040F 		tst	r3, #4
+ 1351 0020 13D0     		beq	.L111
+ 559:Service/Srv_SensorMonitor.c ****     {
+ 1352              		.loc 1 559 42 discriminator 2 view .LVU429
+ 1353 0022 0B79     		ldrb	r3, [r1, #4]	@ zero_extendqisi2
+ 1354 0024 13F0040F 		tst	r3, #4
+ 1355 0028 0FD0     		beq	.L111
+ 559:Service/Srv_SensorMonitor.c ****     {
+ 1356              		.loc 1 559 84 discriminator 3 view .LVU430
+ 1357 002a 144B     		ldr	r3, .L114
+ 1358 002c 1B69     		ldr	r3, [r3, #16]
+ 559:Service/Srv_SensorMonitor.c ****     {
+ 1359              		.loc 1 559 74 discriminator 3 view .LVU431
+ 1360 002e 63B1     		cbz	r3, .L111
+ 561:Service/Srv_SensorMonitor.c ****         {
+ 1361              		.loc 1 561 9 is_stmt 1 view .LVU432
+ 561:Service/Srv_SensorMonitor.c ****         {
+ 1362              		.loc 1 561 13 is_stmt 0 view .LVU433
+ 1363 0030 01A8     		add	r0, sp, #4
+ 1364              	.LVL139:
+ 561:Service/Srv_SensorMonitor.c ****         {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 39
+
+
+ 1365              		.loc 1 561 13 view .LVU434
+ 1366 0032 9847     		blx	r3
+ 1367              	.LVL140:
+ 561:Service/Srv_SensorMonitor.c ****         {
+ 1368              		.loc 1 561 12 view .LVU435
+ 1369 0034 B8B1     		cbz	r0, .L112
+ 563:Service/Srv_SensorMonitor.c ****         }
+ 1370              		.loc 1 563 13 is_stmt 1 view .LVU436
+ 563:Service/Srv_SensorMonitor.c ****         }
+ 1371              		.loc 1 563 37 is_stmt 0 view .LVU437
+ 1372 0036 8435     		adds	r5, r5, #132
+ 1373              	.LVL141:
+ 563:Service/Srv_SensorMonitor.c ****         }
+ 1374              		.loc 1 563 37 view .LVU438
+ 1375 0038 0DF1040C 		add	ip, sp, #4
+ 1376 003c BCE80F00 		ldmia	ip!, {r0, r1, r2, r3}
+ 1377 0040 0FC5     		stmia	r5!, {r0, r1, r2, r3}
+ 1378              	.LVL142:
+ 563:Service/Srv_SensorMonitor.c ****         }
+ 1379              		.loc 1 563 37 view .LVU439
+ 1380 0042 9CE80700 		ldm	ip, {r0, r1, r2}
+ 1381 0046 85E80700 		stm	r5, {r0, r1, r2}
+ 1382              	.LVL143:
+ 1383              	.L111:
+ 569:Service/Srv_SensorMonitor.c **** }
+ 1384              		.loc 1 569 5 is_stmt 1 view .LVU440
+ 569:Service/Srv_SensorMonitor.c **** }
+ 1385              		.loc 1 569 12 is_stmt 0 view .LVU441
+ 1386 004a A446     		mov	ip, r4
+ 1387 004c 0DF1040E 		add	lr, sp, #4
+ 1388 0050 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 1389 0054 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 1390 0058 9EE80700 		ldm	lr, {r0, r1, r2}
+ 1391 005c 8CE80700 		stm	ip, {r0, r1, r2}
+ 570:Service/Srv_SensorMonitor.c **** 
+ 1392              		.loc 1 570 1 view .LVU442
+ 1393 0060 2046     		mov	r0, r4
+ 1394 0062 09B0     		add	sp, sp, #36
+ 1395              	.LCFI6:
+ 1396              		.cfi_remember_state
+ 1397              		.cfi_def_cfa_offset 12
+ 1398              		@ sp needed
+ 1399 0064 30BD     		pop	{r4, r5, pc}
+ 1400              	.LVL144:
+ 1401              	.L112:
+ 1402              	.LCFI7:
+ 1403              		.cfi_restore_state
+ 566:Service/Srv_SensorMonitor.c ****     }
+ 1404              		.loc 1 566 13 is_stmt 1 view .LVU443
+ 566:Service/Srv_SensorMonitor.c ****     }
+ 1405              		.loc 1 566 32 is_stmt 0 view .LVU444
+ 1406 0066 0DF1040C 		add	ip, sp, #4
+ 1407 006a 8435     		adds	r5, r5, #132
+ 1408              	.LVL145:
+ 566:Service/Srv_SensorMonitor.c ****     }
+ 1409              		.loc 1 566 32 view .LVU445
+ 1410 006c 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 40
+
+
+ 1411              	.LVL146:
+ 566:Service/Srv_SensorMonitor.c ****     }
+ 1412              		.loc 1 566 32 view .LVU446
+ 1413 006e ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 1414 0072 95E80700 		ldm	r5, {r0, r1, r2}
+ 1415 0076 8CE80700 		stm	ip, {r0, r1, r2}
+ 1416 007a E6E7     		b	.L111
+ 1417              	.L115:
+ 1418              		.align	2
+ 1419              	.L114:
+ 1420 007c 00000000 		.word	SrvBaro
+ 1421              		.cfi_endproc
+ 1422              	.LFE156:
+ 1424              		.section	.text.SrvSensorMonitor_Get_IMUData,"ax",%progbits
+ 1425              		.align	1
+ 1426              		.syntax unified
+ 1427              		.thumb
+ 1428              		.thumb_func
+ 1430              	SrvSensorMonitor_Get_IMUData:
+ 1431              	.LVL147:
+ 1432              	.LFB150:
+ 422:Service/Srv_SensorMonitor.c ****     SrvIMU_UnionData_TypeDef imu_data_tmp;
+ 1433              		.loc 1 422 1 is_stmt 1 view -0
+ 1434              		.cfi_startproc
+ 1435              		@ args = 0, pretend = 0, frame = 88
+ 1436              		@ frame_needed = 0, uses_anonymous_args = 0
+ 422:Service/Srv_SensorMonitor.c ****     SrvIMU_UnionData_TypeDef imu_data_tmp;
+ 1437              		.loc 1 422 1 is_stmt 0 view .LVU448
+ 1438 0000 30B5     		push	{r4, r5, lr}
+ 1439              	.LCFI8:
+ 1440              		.cfi_def_cfa_offset 12
+ 1441              		.cfi_offset 4, -12
+ 1442              		.cfi_offset 5, -8
+ 1443              		.cfi_offset 14, -4
+ 1444 0002 97B0     		sub	sp, sp, #92
+ 1445              	.LCFI9:
+ 1446              		.cfi_def_cfa_offset 104
+ 1447 0004 0546     		mov	r5, r0
+ 1448 0006 0C46     		mov	r4, r1
+ 423:Service/Srv_SensorMonitor.c **** 
+ 1449              		.loc 1 423 5 is_stmt 1 view .LVU449
+ 425:Service/Srv_SensorMonitor.c **** 
+ 1450              		.loc 1 425 5 view .LVU450
+ 1451 0008 5422     		movs	r2, #84
+ 1452 000a 0021     		movs	r1, #0
+ 1453              	.LVL148:
+ 425:Service/Srv_SensorMonitor.c **** 
+ 1454              		.loc 1 425 5 is_stmt 0 view .LVU451
+ 1455 000c 01A8     		add	r0, sp, #4
+ 1456              	.LVL149:
+ 425:Service/Srv_SensorMonitor.c **** 
+ 1457              		.loc 1 425 5 view .LVU452
+ 1458 000e FFF7FEFF 		bl	memset
+ 1459              	.LVL150:
+ 427:Service/Srv_SensorMonitor.c ****     {
+ 1460              		.loc 1 427 5 is_stmt 1 view .LVU453
+ 427:Service/Srv_SensorMonitor.c ****     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 41
+
+
+ 1461              		.loc 1 427 8 is_stmt 0 view .LVU454
+ 1462 0012 64B3     		cbz	r4, .L117
+ 427:Service/Srv_SensorMonitor.c ****     {
+ 1463              		.loc 1 427 13 discriminator 1 view .LVU455
+ 1464 0014 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 1465 0016 13F0010F 		tst	r3, #1
+ 1466 001a 28D0     		beq	.L117
+ 427:Service/Srv_SensorMonitor.c ****     {
+ 1467              		.loc 1 427 41 discriminator 2 view .LVU456
+ 1468 001c 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 1469 001e 13F0010F 		tst	r3, #1
+ 1470 0022 24D0     		beq	.L117
+ 427:Service/Srv_SensorMonitor.c ****     {
+ 1471              		.loc 1 427 81 discriminator 3 view .LVU457
+ 1472 0024 194B     		ldr	r3, .L125
+ 1473 0026 9B68     		ldr	r3, [r3, #8]
+ 427:Service/Srv_SensorMonitor.c ****     {
+ 1474              		.loc 1 427 72 discriminator 3 view .LVU458
+ 1475 0028 0BB3     		cbz	r3, .L117
+ 429:Service/Srv_SensorMonitor.c ****         {
+ 1476              		.loc 1 429 9 is_stmt 1 view .LVU459
+ 429:Service/Srv_SensorMonitor.c ****         {
+ 1477              		.loc 1 429 13 is_stmt 0 view .LVU460
+ 1478 002a 01A9     		add	r1, sp, #4
+ 1479 002c 0320     		movs	r0, #3
+ 1480 002e 9847     		blx	r3
+ 1481              	.LVL151:
+ 429:Service/Srv_SensorMonitor.c ****         {
+ 1482              		.loc 1 429 12 view .LVU461
+ 1483 0030 D8B9     		cbnz	r0, .L122
+ 445:Service/Srv_SensorMonitor.c ****     }
+ 1484              		.loc 1 445 13 is_stmt 1 view .LVU462
+ 445:Service/Srv_SensorMonitor.c ****     }
+ 1485              		.loc 1 445 31 is_stmt 0 view .LVU463
+ 1486 0032 5422     		movs	r2, #84
+ 1487 0034 04F13001 		add	r1, r4, #48
+ 1488 0038 01A8     		add	r0, sp, #4
+ 1489 003a FFF7FEFF 		bl	memcpy
+ 1490              	.LVL152:
+ 1491 003e 1CE0     		b	.L121
+ 1492              	.LVL153:
+ 1493              	.L120:
+ 1494              	.LBB2:
+ 439:Service/Srv_SensorMonitor.c ****             }
+ 1495              		.loc 1 439 17 is_stmt 1 discriminator 3 view .LVU464
+ 439:Service/Srv_SensorMonitor.c ****             }
+ 1496              		.loc 1 439 63 is_stmt 0 discriminator 3 view .LVU465
+ 1497 0040 03F15802 		add	r2, r3, #88
+ 1498 0044 6A44     		add	r2, sp, r2
+ 1499 0046 12F8542C 		ldrb	r2, [r2, #-84]	@ zero_extendqisi2
+ 439:Service/Srv_SensorMonitor.c ****             }
+ 1500              		.loc 1 439 43 discriminator 3 view .LVU466
+ 1501 004a BDF854C0 		ldrh	ip, [sp, #84]
+ 1502 004e 6244     		add	r2, r2, ip
+ 1503 0050 ADF85420 		strh	r2, [sp, #84]	@ movhi
+ 437:Service/Srv_SensorMonitor.c ****             {
+ 1504              		.loc 1 437 94 is_stmt 1 discriminator 3 view .LVU467
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 42
+
+
+ 437:Service/Srv_SensorMonitor.c ****             {
+ 1505              		.loc 1 437 97 is_stmt 0 discriminator 3 view .LVU468
+ 1506 0054 0133     		adds	r3, r3, #1
+ 1507              	.LVL154:
+ 437:Service/Srv_SensorMonitor.c ****             {
+ 1508              		.loc 1 437 97 discriminator 3 view .LVU469
+ 1509 0056 DBB2     		uxtb	r3, r3
+ 1510              	.LVL155:
+ 1511              	.L118:
+ 437:Service/Srv_SensorMonitor.c ****             {
+ 1512              		.loc 1 437 35 is_stmt 1 discriminator 1 view .LVU470
+ 437:Service/Srv_SensorMonitor.c ****             {
+ 1513              		.loc 1 437 13 is_stmt 0 discriminator 1 view .LVU471
+ 1514 0058 512B     		cmp	r3, #81
+ 1515 005a F1D9     		bls	.L120
+ 1516              	.LBE2:
+ 442:Service/Srv_SensorMonitor.c ****         }
+ 1517              		.loc 1 442 13 is_stmt 1 view .LVU472
+ 442:Service/Srv_SensorMonitor.c ****         }
+ 1518              		.loc 1 442 36 is_stmt 0 view .LVU473
+ 1519 005c 5422     		movs	r2, #84
+ 1520 005e 01A9     		add	r1, sp, #4
+ 1521 0060 04F13000 		add	r0, r4, #48
+ 1522 0064 FFF7FEFF 		bl	memcpy
+ 1523              	.LVL156:
+ 442:Service/Srv_SensorMonitor.c ****         }
+ 1524              		.loc 1 442 36 view .LVU474
+ 1525 0068 07E0     		b	.L121
+ 1526              	.L122:
+ 1527              	.LBB3:
+ 437:Service/Srv_SensorMonitor.c ****             {
+ 1528              		.loc 1 437 26 view .LVU475
+ 1529 006a 0023     		movs	r3, #0
+ 1530 006c F4E7     		b	.L118
+ 1531              	.L117:
+ 1532              	.LBE3:
+ 448:Service/Srv_SensorMonitor.c **** 
+ 1533              		.loc 1 448 9 is_stmt 1 view .LVU476
+ 448:Service/Srv_SensorMonitor.c **** 
+ 1534              		.loc 1 448 22 is_stmt 0 view .LVU477
+ 1535 006e 5422     		movs	r2, #84
+ 1536 0070 04F13001 		add	r1, r4, #48
+ 1537 0074 01A8     		add	r0, sp, #4
+ 1538 0076 FFF7FEFF 		bl	memcpy
+ 1539              	.LVL157:
+ 1540              	.L121:
+ 450:Service/Srv_SensorMonitor.c **** }
+ 1541              		.loc 1 450 5 is_stmt 1 view .LVU478
+ 450:Service/Srv_SensorMonitor.c **** }
+ 1542              		.loc 1 450 12 is_stmt 0 view .LVU479
+ 1543 007a 5422     		movs	r2, #84
+ 1544 007c 01A9     		add	r1, sp, #4
+ 1545 007e 2846     		mov	r0, r5
+ 1546 0080 FFF7FEFF 		bl	memcpy
+ 1547              	.LVL158:
+ 451:Service/Srv_SensorMonitor.c **** 
+ 1548              		.loc 1 451 1 view .LVU480
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 43
+
+
+ 1549 0084 2846     		mov	r0, r5
+ 1550 0086 17B0     		add	sp, sp, #92
+ 1551              	.LCFI10:
+ 1552              		.cfi_def_cfa_offset 12
+ 1553              		@ sp needed
+ 1554 0088 30BD     		pop	{r4, r5, pc}
+ 1555              	.LVL159:
+ 1556              	.L126:
+ 451:Service/Srv_SensorMonitor.c **** 
+ 1557              		.loc 1 451 1 view .LVU481
+ 1558 008a 00BF     		.align	2
+ 1559              	.L125:
+ 1560 008c 00000000 		.word	SrvIMU
+ 1561              		.cfi_endproc
+ 1562              	.LFE150:
+ 1564              		.section	.rodata.SrvSensorMonitor_IMU_Init.str1.4,"aMS",%progbits,1
+ 1565              		.align	2
+ 1566              	.LC0:
+ 1567 0000 50726920 		.ascii	"Pri IMU init error\015\012\000"
+ 1567      494D5520 
+ 1567      696E6974 
+ 1567      20657272 
+ 1567      6F720D0A 
+ 1568 0015 000000   		.align	2
+ 1569              	.LC1:
+ 1570 0018 5B205345 		.ascii	"[ SENSOR MONITOR INFO ] \000"
+ 1570      4E534F52 
+ 1570      204D4F4E 
+ 1570      49544F52 
+ 1570      20494E46 
+ 1571 0031 000000   		.align	2
+ 1572              	.LC2:
+ 1573 0034 494D5520 		.ascii	"IMU get range failed\015\012\000"
+ 1573      67657420 
+ 1573      72616E67 
+ 1573      65206661 
+ 1573      696C6564 
+ 1574 004b 00       		.align	2
+ 1575              	.LC3:
+ 1576 004c 53656320 		.ascii	"Sec IMU init error\015\012\000"
+ 1576      494D5520 
+ 1576      696E6974 
+ 1576      20657272 
+ 1576      6F720D0A 
+ 1577 0061 000000   		.align	2
+ 1578              	.LC4:
+ 1579 0064 416C6C20 		.ascii	"All IMU init successed\015\012\000"
+ 1579      494D5520 
+ 1579      696E6974 
+ 1579      20737563 
+ 1579      63657373 
+ 1580              		.section	.text.SrvSensorMonitor_IMU_Init,"ax",%progbits
+ 1581              		.align	1
+ 1582              		.syntax unified
+ 1583              		.thumb
+ 1584              		.thumb_func
+ 1586              	SrvSensorMonitor_IMU_Init:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 44
+
+
+ 1587              	.LVL160:
+ 1588              	.LFB146:
+ 206:Service/Srv_SensorMonitor.c ****     SrvIMU_ErrorCode_List init_state;
+ 1589              		.loc 1 206 1 is_stmt 1 view -0
+ 1590              		.cfi_startproc
+ 1591              		@ args = 0, pretend = 0, frame = 0
+ 1592              		@ frame_needed = 0, uses_anonymous_args = 0
+ 206:Service/Srv_SensorMonitor.c ****     SrvIMU_ErrorCode_List init_state;
+ 1593              		.loc 1 206 1 is_stmt 0 view .LVU483
+ 1594 0000 70B5     		push	{r4, r5, r6, lr}
+ 1595              	.LCFI11:
+ 1596              		.cfi_def_cfa_offset 16
+ 1597              		.cfi_offset 4, -16
+ 1598              		.cfi_offset 5, -12
+ 1599              		.cfi_offset 6, -8
+ 1600              		.cfi_offset 14, -4
+ 207:Service/Srv_SensorMonitor.c **** 
+ 1601              		.loc 1 207 5 is_stmt 1 view .LVU484
+ 209:Service/Srv_SensorMonitor.c ****     {
+ 1602              		.loc 1 209 5 view .LVU485
+ 209:Service/Srv_SensorMonitor.c ****     {
+ 1603              		.loc 1 209 15 is_stmt 0 view .LVU486
+ 1604 0002 4B4B     		ldr	r3, .L145
+ 1605 0004 1B68     		ldr	r3, [r3]
+ 209:Service/Srv_SensorMonitor.c ****     {
+ 1606              		.loc 1 209 8 view .LVU487
+ 1607 0006 002B     		cmp	r3, #0
+ 1608 0008 00F08D80 		beq	.L137
+ 1609 000c 0446     		mov	r4, r0
+ 209:Service/Srv_SensorMonitor.c ****     {
+ 1610              		.loc 1 209 21 discriminator 1 view .LVU488
+ 1611 000e 0028     		cmp	r0, #0
+ 1612 0010 00F08B80 		beq	.L138
+ 211:Service/Srv_SensorMonitor.c ****         obj->imu_num = 0;
+ 1613              		.loc 1 211 9 is_stmt 1 view .LVU489
+ 211:Service/Srv_SensorMonitor.c ****         obj->imu_num = 0;
+ 1614              		.loc 1 211 22 is_stmt 0 view .LVU490
+ 1615 0014 9847     		blx	r3
+ 1616              	.LVL161:
+ 212:Service/Srv_SensorMonitor.c **** 
+ 1617              		.loc 1 212 9 is_stmt 1 view .LVU491
+ 212:Service/Srv_SensorMonitor.c **** 
+ 1618              		.loc 1 212 22 is_stmt 0 view .LVU492
+ 1619 0016 0023     		movs	r3, #0
+ 1620 0018 84F82030 		strb	r3, [r4, #32]
+ 214:Service/Srv_SensorMonitor.c ****         {
+ 1621              		.loc 1 214 9 is_stmt 1 view .LVU493
+ 1622 001c B0F1FF3F 		cmp	r0, #-1
+ 1623 0020 28D0     		beq	.L129
+ 1624 0022 0028     		cmp	r0, #0
+ 1625 0024 45D0     		beq	.L130
+ 1626 0026 10F1050F 		cmn	r0, #5
+ 1627 002a 02D0     		beq	.L141
+ 1628 002c 0025     		movs	r5, #0
+ 1629              	.LVL162:
+ 1630              	.L128:
+ 293:Service/Srv_SensorMonitor.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 45
+
+
+ 1631              		.loc 1 293 1 is_stmt 0 view .LVU494
+ 1632 002e 2846     		mov	r0, r5
+ 1633 0030 70BD     		pop	{r4, r5, r6, pc}
+ 1634              	.LVL163:
+ 1635              	.L141:
+ 217:Service/Srv_SensorMonitor.c ****                 memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+ 1636              		.loc 1 217 17 is_stmt 1 view .LVU495
+ 1637 0032 404A     		ldr	r2, .L145+4
+ 1638 0034 4049     		ldr	r1, .L145+8
+ 1639 0036 4148     		ldr	r0, .L145+12
+ 1640              	.LVL164:
+ 217:Service/Srv_SensorMonitor.c ****                 memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+ 1641              		.loc 1 217 17 is_stmt 0 view .LVU496
+ 1642 0038 FFF7FEFF 		bl	Debug_Print
+ 1643              	.LVL165:
+ 218:Service/Srv_SensorMonitor.c ****                 obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
+ 1644              		.loc 1 218 17 is_stmt 1 view .LVU497
+ 1645 003c 0023     		movs	r3, #0
+ 1646 003e 6362     		str	r3, [r4, #36]	@ unaligned
+ 219:Service/Srv_SensorMonitor.c ****                 if (!obj->sec_range_get)
+ 1647              		.loc 1 219 17 view .LVU498
+ 219:Service/Srv_SensorMonitor.c ****                 if (!obj->sec_range_get)
+ 1648              		.loc 1 219 44 is_stmt 0 view .LVU499
+ 1649 0040 3B4B     		ldr	r3, .L145
+ 1650 0042 DB68     		ldr	r3, [r3, #12]
+ 219:Service/Srv_SensorMonitor.c ****                 if (!obj->sec_range_get)
+ 1651              		.loc 1 219 38 view .LVU500
+ 1652 0044 04F12801 		add	r1, r4, #40
+ 1653 0048 0220     		movs	r0, #2
+ 1654 004a 9847     		blx	r3
+ 1655              	.LVL166:
+ 1656 004c 0546     		mov	r5, r0
+ 219:Service/Srv_SensorMonitor.c ****                 if (!obj->sec_range_get)
+ 1657              		.loc 1 219 36 view .LVU501
+ 1658 004e 84F82200 		strb	r0, [r4, #34]
+ 220:Service/Srv_SensorMonitor.c ****                 {
+ 1659              		.loc 1 220 17 is_stmt 1 view .LVU502
+ 220:Service/Srv_SensorMonitor.c ****                 {
+ 1660              		.loc 1 220 20 is_stmt 0 view .LVU503
+ 1661 0052 38B1     		cbz	r0, .L142
+ 227:Service/Srv_SensorMonitor.c ****                 /* set sample mode */
+ 1662              		.loc 1 227 17 is_stmt 1 view .LVU504
+ 227:Service/Srv_SensorMonitor.c ****                 /* set sample mode */
+ 1663              		.loc 1 227 30 is_stmt 0 view .LVU505
+ 1664 0054 0123     		movs	r3, #1
+ 1665 0056 84F82030 		strb	r3, [r4, #32]
+ 229:Service/Srv_SensorMonitor.c ****                 break;
+ 1666              		.loc 1 229 17 is_stmt 1 view .LVU506
+ 229:Service/Srv_SensorMonitor.c ****                 break;
+ 1667              		.loc 1 229 37 is_stmt 0 view .LVU507
+ 1668 005a 0223     		movs	r3, #2
+ 1669 005c 84F82C30 		strb	r3, [r4, #44]
+ 230:Service/Srv_SensorMonitor.c **** 
+ 1670              		.loc 1 230 17 is_stmt 1 view .LVU508
+ 1671              	.L132:
+ 289:Service/Srv_SensorMonitor.c ****     }
+ 1672              		.loc 1 289 9 view .LVU509
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 46
+
+
+ 289:Service/Srv_SensorMonitor.c ****     }
+ 1673              		.loc 1 289 16 is_stmt 0 view .LVU510
+ 1674 0060 0125     		movs	r5, #1
+ 1675 0062 E4E7     		b	.L128
+ 1676              	.L142:
+ 222:Service/Srv_SensorMonitor.c ****                     memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+ 1677              		.loc 1 222 21 is_stmt 1 view .LVU511
+ 1678 0064 364A     		ldr	r2, .L145+16
+ 1679 0066 3449     		ldr	r1, .L145+8
+ 1680 0068 3448     		ldr	r0, .L145+12
+ 1681 006a FFF7FEFF 		bl	Debug_Print
+ 1682              	.LVL167:
+ 223:Service/Srv_SensorMonitor.c ****                     return false;
+ 1683              		.loc 1 223 21 view .LVU512
+ 1684 006e 0023     		movs	r3, #0
+ 1685 0070 A362     		str	r3, [r4, #40]	@ unaligned
+ 224:Service/Srv_SensorMonitor.c ****                 }
+ 1686              		.loc 1 224 21 view .LVU513
+ 224:Service/Srv_SensorMonitor.c ****                 }
+ 1687              		.loc 1 224 28 is_stmt 0 view .LVU514
+ 1688 0072 DCE7     		b	.L128
+ 1689              	.LVL168:
+ 1690              	.L129:
+ 233:Service/Srv_SensorMonitor.c ****                 memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+ 1691              		.loc 1 233 17 is_stmt 1 view .LVU515
+ 1692 0074 334A     		ldr	r2, .L145+20
+ 1693 0076 3049     		ldr	r1, .L145+8
+ 1694 0078 3048     		ldr	r0, .L145+12
+ 1695              	.LVL169:
+ 233:Service/Srv_SensorMonitor.c ****                 memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+ 1696              		.loc 1 233 17 is_stmt 0 view .LVU516
+ 1697 007a FFF7FEFF 		bl	Debug_Print
+ 1698              	.LVL170:
+ 234:Service/Srv_SensorMonitor.c ****                 obj->pri_range_get = SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range);
+ 1699              		.loc 1 234 17 is_stmt 1 view .LVU517
+ 1700 007e 0023     		movs	r3, #0
+ 1701 0080 A362     		str	r3, [r4, #40]	@ unaligned
+ 235:Service/Srv_SensorMonitor.c ****                 if (!obj->pri_range_get)
+ 1702              		.loc 1 235 17 view .LVU518
+ 235:Service/Srv_SensorMonitor.c ****                 if (!obj->pri_range_get)
+ 1703              		.loc 1 235 44 is_stmt 0 view .LVU519
+ 1704 0082 2B4B     		ldr	r3, .L145
+ 1705 0084 DB68     		ldr	r3, [r3, #12]
+ 235:Service/Srv_SensorMonitor.c ****                 if (!obj->pri_range_get)
+ 1706              		.loc 1 235 38 view .LVU520
+ 1707 0086 04F12401 		add	r1, r4, #36
+ 1708 008a 0120     		movs	r0, #1
+ 1709 008c 9847     		blx	r3
+ 1710              	.LVL171:
+ 1711 008e 0546     		mov	r5, r0
+ 235:Service/Srv_SensorMonitor.c ****                 if (!obj->pri_range_get)
+ 1712              		.loc 1 235 36 view .LVU521
+ 1713 0090 84F82100 		strb	r0, [r4, #33]
+ 236:Service/Srv_SensorMonitor.c ****                 {
+ 1714              		.loc 1 236 17 is_stmt 1 view .LVU522
+ 236:Service/Srv_SensorMonitor.c ****                 {
+ 1715              		.loc 1 236 20 is_stmt 0 view .LVU523
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 47
+
+
+ 1716 0094 28B1     		cbz	r0, .L143
+ 243:Service/Srv_SensorMonitor.c ****                 /* ser sample mode */
+ 1717              		.loc 1 243 17 is_stmt 1 view .LVU524
+ 243:Service/Srv_SensorMonitor.c ****                 /* ser sample mode */
+ 1718              		.loc 1 243 30 is_stmt 0 view .LVU525
+ 1719 0096 0123     		movs	r3, #1
+ 1720 0098 84F82030 		strb	r3, [r4, #32]
+ 245:Service/Srv_SensorMonitor.c ****                 break;
+ 1721              		.loc 1 245 17 is_stmt 1 view .LVU526
+ 245:Service/Srv_SensorMonitor.c ****                 break;
+ 1722              		.loc 1 245 37 is_stmt 0 view .LVU527
+ 1723 009c 84F82C30 		strb	r3, [r4, #44]
+ 246:Service/Srv_SensorMonitor.c **** 
+ 1724              		.loc 1 246 17 is_stmt 1 view .LVU528
+ 1725 00a0 DEE7     		b	.L132
+ 1726              	.L143:
+ 238:Service/Srv_SensorMonitor.c ****                     memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+ 1727              		.loc 1 238 21 view .LVU529
+ 1728 00a2 274A     		ldr	r2, .L145+16
+ 1729 00a4 2449     		ldr	r1, .L145+8
+ 1730 00a6 2548     		ldr	r0, .L145+12
+ 1731 00a8 FFF7FEFF 		bl	Debug_Print
+ 1732              	.LVL172:
+ 239:Service/Srv_SensorMonitor.c ****                     return false;
+ 1733              		.loc 1 239 21 view .LVU530
+ 1734 00ac 0023     		movs	r3, #0
+ 1735 00ae 6362     		str	r3, [r4, #36]	@ unaligned
+ 240:Service/Srv_SensorMonitor.c ****                 }
+ 1736              		.loc 1 240 21 view .LVU531
+ 240:Service/Srv_SensorMonitor.c ****                 }
+ 1737              		.loc 1 240 28 is_stmt 0 view .LVU532
+ 1738 00b0 BDE7     		b	.L128
+ 1739              	.LVL173:
+ 1740              	.L130:
+ 249:Service/Srv_SensorMonitor.c ****                 memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+ 1741              		.loc 1 249 17 is_stmt 1 view .LVU533
+ 1742 00b2 254A     		ldr	r2, .L145+24
+ 1743 00b4 2049     		ldr	r1, .L145+8
+ 1744 00b6 2148     		ldr	r0, .L145+12
+ 1745              	.LVL174:
+ 249:Service/Srv_SensorMonitor.c ****                 memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+ 1746              		.loc 1 249 17 is_stmt 0 view .LVU534
+ 1747 00b8 FFF7FEFF 		bl	Debug_Print
+ 1748              	.LVL175:
+ 250:Service/Srv_SensorMonitor.c ****                 memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+ 1749              		.loc 1 250 17 is_stmt 1 view .LVU535
+ 1750 00bc 0023     		movs	r3, #0
+ 1751 00be 6362     		str	r3, [r4, #36]	@ unaligned
+ 251:Service/Srv_SensorMonitor.c ****                 
+ 1752              		.loc 1 251 17 view .LVU536
+ 251:Service/Srv_SensorMonitor.c ****                 
+ 1753              		.loc 1 251 24 is_stmt 0 view .LVU537
+ 1754 00c0 04F12805 		add	r5, r4, #40
+ 251:Service/Srv_SensorMonitor.c ****                 
+ 1755              		.loc 1 251 17 view .LVU538
+ 1756 00c4 A362     		str	r3, [r4, #40]	@ unaligned
+ 253:Service/Srv_SensorMonitor.c ****                 obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 48
+
+
+ 1757              		.loc 1 253 17 is_stmt 1 view .LVU539
+ 253:Service/Srv_SensorMonitor.c ****                 obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
+ 1758              		.loc 1 253 44 is_stmt 0 view .LVU540
+ 1759 00c6 1A4E     		ldr	r6, .L145
+ 1760 00c8 F368     		ldr	r3, [r6, #12]
+ 253:Service/Srv_SensorMonitor.c ****                 obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
+ 1761              		.loc 1 253 38 view .LVU541
+ 1762 00ca 04F12401 		add	r1, r4, #36
+ 1763 00ce 0120     		movs	r0, #1
+ 1764 00d0 9847     		blx	r3
+ 1765              	.LVL176:
+ 253:Service/Srv_SensorMonitor.c ****                 obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
+ 1766              		.loc 1 253 36 view .LVU542
+ 1767 00d2 84F82100 		strb	r0, [r4, #33]
+ 254:Service/Srv_SensorMonitor.c ****                 
+ 1768              		.loc 1 254 17 is_stmt 1 view .LVU543
+ 254:Service/Srv_SensorMonitor.c ****                 
+ 1769              		.loc 1 254 44 is_stmt 0 view .LVU544
+ 1770 00d6 F368     		ldr	r3, [r6, #12]
+ 254:Service/Srv_SensorMonitor.c ****                 
+ 1771              		.loc 1 254 38 view .LVU545
+ 1772 00d8 2946     		mov	r1, r5
+ 1773 00da 0220     		movs	r0, #2
+ 1774 00dc 9847     		blx	r3
+ 1775              	.LVL177:
+ 1776 00de 0546     		mov	r5, r0
+ 254:Service/Srv_SensorMonitor.c ****                 
+ 1777              		.loc 1 254 36 view .LVU546
+ 1778 00e0 84F82200 		strb	r0, [r4, #34]
+ 257:Service/Srv_SensorMonitor.c ****                 {
+ 1779              		.loc 1 257 17 is_stmt 1 view .LVU547
+ 257:Service/Srv_SensorMonitor.c ****                 {
+ 1780              		.loc 1 257 25 is_stmt 0 view .LVU548
+ 1781 00e4 94F82130 		ldrb	r3, [r4, #33]	@ zero_extendqisi2
+ 257:Service/Srv_SensorMonitor.c ****                 {
+ 1782              		.loc 1 257 20 view .LVU549
+ 1783 00e8 03B9     		cbnz	r3, .L134
+ 257:Service/Srv_SensorMonitor.c ****                 {
+ 1784              		.loc 1 257 41 discriminator 1 view .LVU550
+ 1785 00ea 40B1     		cbz	r0, .L144
+ 1786              	.L134:
+ 266:Service/Srv_SensorMonitor.c ****                     {
+ 1787              		.loc 1 266 21 is_stmt 1 view .LVU551
+ 266:Service/Srv_SensorMonitor.c ****                     {
+ 1788              		.loc 1 266 24 is_stmt 0 view .LVU552
+ 1789 00ec 85B1     		cbz	r5, .L135
+ 1790 00ee 7BB1     		cbz	r3, .L135
+ 268:Service/Srv_SensorMonitor.c ****                         obj->IMU_SampleMode = SrvIMU_Both_Sample;
+ 1791              		.loc 1 268 25 is_stmt 1 view .LVU553
+ 268:Service/Srv_SensorMonitor.c ****                         obj->IMU_SampleMode = SrvIMU_Both_Sample;
+ 1792              		.loc 1 268 38 is_stmt 0 view .LVU554
+ 1793 00f0 0223     		movs	r3, #2
+ 1794 00f2 84F82030 		strb	r3, [r4, #32]
+ 269:Service/Srv_SensorMonitor.c ****                     }
+ 1795              		.loc 1 269 25 is_stmt 1 view .LVU555
+ 269:Service/Srv_SensorMonitor.c ****                     }
+ 1796              		.loc 1 269 45 is_stmt 0 view .LVU556
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 49
+
+
+ 1797 00f6 0323     		movs	r3, #3
+ 1798 00f8 84F82C30 		strb	r3, [r4, #44]
+ 1799 00fc B0E7     		b	.L132
+ 1800              	.L144:
+ 259:Service/Srv_SensorMonitor.c ****                     memset(&obj->PriIMU_Range, 0, sizeof(obj->PriIMU_Range));
+ 1801              		.loc 1 259 21 is_stmt 1 view .LVU557
+ 1802 00fe 104A     		ldr	r2, .L145+16
+ 1803 0100 0D49     		ldr	r1, .L145+8
+ 1804 0102 0E48     		ldr	r0, .L145+12
+ 1805 0104 FFF7FEFF 		bl	Debug_Print
+ 1806              	.LVL178:
+ 260:Service/Srv_SensorMonitor.c ****                     memset(&obj->SecIMU_Range, 0, sizeof(obj->SecIMU_Range));
+ 1807              		.loc 1 260 21 view .LVU558
+ 1808 0108 0023     		movs	r3, #0
+ 1809 010a 6362     		str	r3, [r4, #36]	@ unaligned
+ 261:Service/Srv_SensorMonitor.c ****                     return false;
+ 1810              		.loc 1 261 21 view .LVU559
+ 1811 010c A362     		str	r3, [r4, #40]	@ unaligned
+ 262:Service/Srv_SensorMonitor.c ****                 }
+ 1812              		.loc 1 262 21 view .LVU560
+ 262:Service/Srv_SensorMonitor.c ****                 }
+ 1813              		.loc 1 262 28 is_stmt 0 view .LVU561
+ 1814 010e 8EE7     		b	.L128
+ 1815              	.L135:
+ 273:Service/Srv_SensorMonitor.c ****                         if (obj->pri_range_get)
+ 1816              		.loc 1 273 25 is_stmt 1 view .LVU562
+ 273:Service/Srv_SensorMonitor.c ****                         if (obj->pri_range_get)
+ 1817              		.loc 1 273 38 is_stmt 0 view .LVU563
+ 1818 0110 0122     		movs	r2, #1
+ 1819 0112 84F82020 		strb	r2, [r4, #32]
+ 274:Service/Srv_SensorMonitor.c ****                         {
+ 1820              		.loc 1 274 25 is_stmt 1 view .LVU564
+ 274:Service/Srv_SensorMonitor.c ****                         {
+ 1821              		.loc 1 274 28 is_stmt 0 view .LVU565
+ 1822 0116 13B1     		cbz	r3, .L136
+ 276:Service/Srv_SensorMonitor.c ****                         }
+ 1823              		.loc 1 276 29 is_stmt 1 view .LVU566
+ 276:Service/Srv_SensorMonitor.c ****                         }
+ 1824              		.loc 1 276 49 is_stmt 0 view .LVU567
+ 1825 0118 84F82C20 		strb	r2, [r4, #44]
+ 1826 011c A0E7     		b	.L132
+ 1827              	.L136:
+ 279:Service/Srv_SensorMonitor.c ****                     }
+ 1828              		.loc 1 279 29 is_stmt 1 view .LVU568
+ 279:Service/Srv_SensorMonitor.c ****                     }
+ 1829              		.loc 1 279 49 is_stmt 0 view .LVU569
+ 1830 011e 0223     		movs	r3, #2
+ 1831 0120 84F82C30 		strb	r3, [r4, #44]
+ 1832 0124 9CE7     		b	.L132
+ 1833              	.LVL179:
+ 1834              	.L137:
+ 292:Service/Srv_SensorMonitor.c **** }
+ 1835              		.loc 1 292 12 view .LVU570
+ 1836 0126 0025     		movs	r5, #0
+ 1837 0128 81E7     		b	.L128
+ 1838              	.L138:
+ 292:Service/Srv_SensorMonitor.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 50
+
+
+ 1839              		.loc 1 292 12 view .LVU571
+ 1840 012a 0025     		movs	r5, #0
+ 1841 012c 7FE7     		b	.L128
+ 1842              	.L146:
+ 1843 012e 00BF     		.align	2
+ 1844              	.L145:
+ 1845 0130 00000000 		.word	SrvIMU
+ 1846 0134 00000000 		.word	.LC0
+ 1847 0138 18000000 		.word	.LC1
+ 1848 013c 00000000 		.word	DebugPort
+ 1849 0140 34000000 		.word	.LC2
+ 1850 0144 4C000000 		.word	.LC3
+ 1851 0148 64000000 		.word	.LC4
+ 1852              		.cfi_endproc
+ 1853              	.LFE146:
+ 1855              		.section	.rodata.SrvSensorMonitor_Baro_Init.str1.4,"aMS",%progbits,1
+ 1856              		.align	2
+ 1857              	.LC5:
+ 1858 0000 4261726F 		.ascii	"Baro init accomplished\015\012\000"
+ 1858      20696E69 
+ 1858      74206163 
+ 1858      636F6D70 
+ 1858      6C697368 
+ 1859              		.section	.text.SrvSensorMonitor_Baro_Init,"ax",%progbits
+ 1860              		.align	1
+ 1861              		.syntax unified
+ 1862              		.thumb
+ 1863              		.thumb_func
+ 1865              	SrvSensorMonitor_Baro_Init:
+ 1866              	.LFB154:
+ 477:Service/Srv_SensorMonitor.c ****     if (SrvBaro.init && (SrvBaro.init(BARO_TYPE, BARO_BUS_TYPE) == SrvBaro_Error_None))
+ 1867              		.loc 1 477 1 is_stmt 1 view -0
+ 1868              		.cfi_startproc
+ 1869              		@ args = 0, pretend = 0, frame = 0
+ 1870              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1871 0000 08B5     		push	{r3, lr}
+ 1872              	.LCFI12:
+ 1873              		.cfi_def_cfa_offset 8
+ 1874              		.cfi_offset 3, -8
+ 1875              		.cfi_offset 14, -4
+ 478:Service/Srv_SensorMonitor.c ****     {
+ 1876              		.loc 1 478 5 view .LVU573
+ 478:Service/Srv_SensorMonitor.c ****     {
+ 1877              		.loc 1 478 16 is_stmt 0 view .LVU574
+ 1878 0002 094B     		ldr	r3, .L153
+ 1879 0004 1B68     		ldr	r3, [r3]
+ 478:Service/Srv_SensorMonitor.c ****     {
+ 1880              		.loc 1 478 8 view .LVU575
+ 1881 0006 63B1     		cbz	r3, .L149
+ 478:Service/Srv_SensorMonitor.c ****     {
+ 1882              		.loc 1 478 26 discriminator 1 view .LVU576
+ 1883 0008 0121     		movs	r1, #1
+ 1884 000a 0220     		movs	r0, #2
+ 1885 000c 9847     		blx	r3
+ 1886              	.LVL180:
+ 478:Service/Srv_SensorMonitor.c ****     {
+ 1887              		.loc 1 478 22 discriminator 1 view .LVU577
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 51
+
+
+ 1888 000e 08B1     		cbz	r0, .L152
+ 484:Service/Srv_SensorMonitor.c **** }
+ 1889              		.loc 1 484 12 view .LVU578
+ 1890 0010 0020     		movs	r0, #0
+ 1891              	.L148:
+ 485:Service/Srv_SensorMonitor.c **** 
+ 1892              		.loc 1 485 1 view .LVU579
+ 1893 0012 08BD     		pop	{r3, pc}
+ 1894              	.L152:
+ 480:Service/Srv_SensorMonitor.c ****         return true;
+ 1895              		.loc 1 480 9 is_stmt 1 view .LVU580
+ 1896 0014 054A     		ldr	r2, .L153+4
+ 1897 0016 0649     		ldr	r1, .L153+8
+ 1898 0018 0648     		ldr	r0, .L153+12
+ 1899 001a FFF7FEFF 		bl	Debug_Print
+ 1900              	.LVL181:
+ 481:Service/Srv_SensorMonitor.c ****     }
+ 1901              		.loc 1 481 9 view .LVU581
+ 481:Service/Srv_SensorMonitor.c ****     }
+ 1902              		.loc 1 481 16 is_stmt 0 view .LVU582
+ 1903 001e 0120     		movs	r0, #1
+ 1904 0020 F7E7     		b	.L148
+ 1905              	.L149:
+ 484:Service/Srv_SensorMonitor.c **** }
+ 1906              		.loc 1 484 12 view .LVU583
+ 1907 0022 0020     		movs	r0, #0
+ 1908 0024 F5E7     		b	.L148
+ 1909              	.L154:
+ 1910 0026 00BF     		.align	2
+ 1911              	.L153:
+ 1912 0028 00000000 		.word	SrvBaro
+ 1913 002c 00000000 		.word	.LC5
+ 1914 0030 18000000 		.word	.LC1
+ 1915 0034 00000000 		.word	DebugPort
+ 1916              		.cfi_endproc
+ 1917              	.LFE154:
+ 1919              		.section	.text.SrvSensorMonitor_Init,"ax",%progbits
+ 1920              		.align	1
+ 1921              		.syntax unified
+ 1922              		.thumb
+ 1923              		.thumb_func
+ 1925              	SrvSensorMonitor_Init:
+ 1926              	.LVL182:
+ 1927              	.LFB142:
+  57:Service/Srv_SensorMonitor.c ****     uint8_t enable_sensor_num = 0;
+ 1928              		.loc 1 57 1 is_stmt 1 view -0
+ 1929              		.cfi_startproc
+ 1930              		@ args = 0, pretend = 0, frame = 0
+ 1931              		@ frame_needed = 0, uses_anonymous_args = 0
+  57:Service/Srv_SensorMonitor.c ****     uint8_t enable_sensor_num = 0;
+ 1932              		.loc 1 57 1 is_stmt 0 view .LVU585
+ 1933 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 1934              	.LCFI13:
+ 1935              		.cfi_def_cfa_offset 24
+ 1936              		.cfi_offset 4, -24
+ 1937              		.cfi_offset 5, -20
+ 1938              		.cfi_offset 6, -16
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 52
+
+
+ 1939              		.cfi_offset 7, -12
+ 1940              		.cfi_offset 8, -8
+ 1941              		.cfi_offset 14, -4
+  58:Service/Srv_SensorMonitor.c ****     uint16_t list_index = 0;
+ 1942              		.loc 1 58 5 is_stmt 1 view .LVU586
+ 1943              	.LVL183:
+  59:Service/Srv_SensorMonitor.c **** 
+ 1944              		.loc 1 59 5 view .LVU587
+  61:Service/Srv_SensorMonitor.c ****     {
+ 1945              		.loc 1 61 5 view .LVU588
+  61:Service/Srv_SensorMonitor.c ****     {
+ 1946              		.loc 1 61 8 is_stmt 0 view .LVU589
+ 1947 0004 0028     		cmp	r0, #0
+ 1948 0006 00F0A080 		beq	.L167
+ 1949 000a 0446     		mov	r4, r0
+  63:Service/Srv_SensorMonitor.c ****         
+ 1950              		.loc 1 63 9 is_stmt 1 view .LVU590
+  63:Service/Srv_SensorMonitor.c ****         
+ 1951              		.loc 1 63 29 is_stmt 0 view .LVU591
+ 1952 000c 0068     		ldr	r0, [r0]
+ 1953              	.LVL184:
+  63:Service/Srv_SensorMonitor.c ****         
+ 1954              		.loc 1 63 29 view .LVU592
+ 1955 000e FFF7FEFF 		bl	Get_OnSet_Bit_Num
+ 1956              	.LVL185:
+ 1957 0012 0546     		mov	r5, r0
+ 1958              	.LVL186:
+  65:Service/Srv_SensorMonitor.c ****         if (obj->statistic_list == NULL)
+ 1959              		.loc 1 65 9 is_stmt 1 view .LVU593
+  65:Service/Srv_SensorMonitor.c ****         if (obj->statistic_list == NULL)
+ 1960              		.loc 1 65 42 is_stmt 0 view .LVU594
+ 1961 0014 524B     		ldr	r3, .L176
+ 1962 0016 9B6A     		ldr	r3, [r3, #40]
+  65:Service/Srv_SensorMonitor.c ****         if (obj->statistic_list == NULL)
+ 1963              		.loc 1 65 68 view .LVU595
+ 1964 0018 00EB4000 		add	r0, r0, r0, lsl #1
+ 1965              	.LVL187:
+  65:Service/Srv_SensorMonitor.c ****         if (obj->statistic_list == NULL)
+ 1966              		.loc 1 65 31 view .LVU596
+ 1967 001c 0001     		lsls	r0, r0, #4
+ 1968 001e 9847     		blx	r3
+ 1969              	.LVL188:
+  65:Service/Srv_SensorMonitor.c ****         if (obj->statistic_list == NULL)
+ 1970              		.loc 1 65 29 view .LVU597
+ 1971 0020 E061     		str	r0, [r4, #28]
+  66:Service/Srv_SensorMonitor.c ****         {
+ 1972              		.loc 1 66 9 is_stmt 1 view .LVU598
+  66:Service/Srv_SensorMonitor.c ****         {
+ 1973              		.loc 1 66 12 is_stmt 0 view .LVU599
+ 1974 0022 68B1     		cbz	r0, .L172
+  73:Service/Srv_SensorMonitor.c ****         {
+ 1975              		.loc 1 73 9 is_stmt 1 view .LVU600
+  73:Service/Srv_SensorMonitor.c ****         {
+ 1976              		.loc 1 73 13 is_stmt 0 view .LVU601
+ 1977 0024 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+  73:Service/Srv_SensorMonitor.c ****         {
+ 1978              		.loc 1 73 12 view .LVU602
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 53
+
+
+ 1979 0026 13F0010F 		tst	r3, #1
+ 1980 002a 0ED1     		bne	.L173
+ 1981              	.L158:
+  86:Service/Srv_SensorMonitor.c ****                 obj->init_state_reg.bit.imu = false;
+ 1982              		.loc 1 86 13 is_stmt 1 view .LVU603
+  86:Service/Srv_SensorMonitor.c ****                 obj->init_state_reg.bit.imu = false;
+ 1983              		.loc 1 86 17 is_stmt 0 view .LVU604
+ 1984 002c 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+  86:Service/Srv_SensorMonitor.c ****                 obj->init_state_reg.bit.imu = false;
+ 1985              		.loc 1 86 16 view .LVU605
+ 1986 002e 13F0010F 		tst	r3, #1
+ 1987 0032 03D0     		beq	.L161
+  87:Service/Srv_SensorMonitor.c **** 
+ 1988              		.loc 1 87 17 is_stmt 1 view .LVU606
+  87:Service/Srv_SensorMonitor.c **** 
+ 1989              		.loc 1 87 45 is_stmt 0 view .LVU607
+ 1990 0034 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 1991 0036 6FF30003 		bfc	r3, #0, #1
+ 1992 003a 2371     		strb	r3, [r4, #4]
+ 1993              	.L161:
+  89:Service/Srv_SensorMonitor.c ****         }
+ 1994              		.loc 1 89 13 is_stmt 1 view .LVU608
+  89:Service/Srv_SensorMonitor.c ****         }
+ 1995              		.loc 1 89 20 is_stmt 0 view .LVU609
+ 1996 003c 0026     		movs	r6, #0
+ 1997 003e 85E0     		b	.L156
+ 1998              	.L172:
+  68:Service/Srv_SensorMonitor.c ****             return false;
+ 1999              		.loc 1 68 13 is_stmt 1 view .LVU610
+  68:Service/Srv_SensorMonitor.c ****             return false;
+ 2000              		.loc 1 68 24 is_stmt 0 view .LVU611
+ 2001 0040 474B     		ldr	r3, .L176
+ 2002 0042 DB6A     		ldr	r3, [r3, #44]
+  68:Service/Srv_SensorMonitor.c ****             return false;
+ 2003              		.loc 1 68 13 view .LVU612
+ 2004 0044 9847     		blx	r3
+ 2005              	.LVL189:
+  69:Service/Srv_SensorMonitor.c ****         }
+ 2006              		.loc 1 69 13 is_stmt 1 view .LVU613
+  69:Service/Srv_SensorMonitor.c ****         }
+ 2007              		.loc 1 69 20 is_stmt 0 view .LVU614
+ 2008 0046 0026     		movs	r6, #0
+ 2009 0048 80E0     		b	.L156
+ 2010              	.L173:
+  73:Service/Srv_SensorMonitor.c ****         {
+ 2011              		.loc 1 73 41 discriminator 1 view .LVU615
+ 2012 004a 2046     		mov	r0, r4
+ 2013 004c FFF7FEFF 		bl	SrvSensorMonitor_IMU_Init
+ 2014              	.LVL190:
+  73:Service/Srv_SensorMonitor.c ****         {
+ 2015              		.loc 1 73 38 discriminator 1 view .LVU616
+ 2016 0050 0646     		mov	r6, r0
+ 2017 0052 0028     		cmp	r0, #0
+ 2018 0054 EAD0     		beq	.L158
+  75:Service/Srv_SensorMonitor.c ****                 return false;
+ 2019              		.loc 1 75 13 is_stmt 1 view .LVU617
+  75:Service/Srv_SensorMonitor.c ****                 return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 54
+
+
+ 2020              		.loc 1 75 28 is_stmt 0 view .LVU618
+ 2021 0056 1FFA85F8 		uxth	r8, r5
+  78:Service/Srv_SensorMonitor.c ****             obj->statistic_imu = &obj->statistic_list[list_index];
+ 2022              		.loc 1 78 13 is_stmt 1 view .LVU619
+  78:Service/Srv_SensorMonitor.c ****             obj->statistic_imu = &obj->statistic_list[list_index];
+ 2023              		.loc 1 78 41 is_stmt 0 view .LVU620
+ 2024 005a 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 2025 005c 43F00103 		orr	r3, r3, #1
+ 2026 0060 2371     		strb	r3, [r4, #4]
+  79:Service/Srv_SensorMonitor.c ****             obj->statistic_imu->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.imu);
+ 2027              		.loc 1 79 13 is_stmt 1 view .LVU621
+  79:Service/Srv_SensorMonitor.c ****             obj->statistic_imu->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.imu);
+ 2028              		.loc 1 79 38 is_stmt 0 view .LVU622
+ 2029 0062 E769     		ldr	r7, [r4, #28]
+  79:Service/Srv_SensorMonitor.c ****             obj->statistic_imu->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.imu);
+ 2030              		.loc 1 79 32 view .LVU623
+ 2031 0064 E760     		str	r7, [r4, #12]
+  80:Service/Srv_SensorMonitor.c ****             obj->statistic_imu->is_calid = Calib_None; 
+ 2032              		.loc 1 80 13 is_stmt 1 view .LVU624
+  80:Service/Srv_SensorMonitor.c ****             obj->statistic_imu->is_calid = Calib_None; 
+ 2033              		.loc 1 80 92 is_stmt 0 view .LVU625
+ 2034 0066 207A     		ldrb	r0, [r4, #8]	@ zero_extendqisi2
+  80:Service/Srv_SensorMonitor.c ****             obj->statistic_imu->is_calid = Calib_None; 
+ 2035              		.loc 1 80 46 view .LVU626
+ 2036 0068 00F00F00 		and	r0, r0, #15
+ 2037 006c FFF7FEFF 		bl	SrvSensorMonitor_Get_FreqVal
+ 2038              	.LVL191:
+  80:Service/Srv_SensorMonitor.c ****             obj->statistic_imu->is_calid = Calib_None; 
+ 2039              		.loc 1 80 44 view .LVU627
+ 2040 0070 B862     		str	r0, [r7, #40]
+  81:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2041              		.loc 1 81 13 is_stmt 1 view .LVU628
+  81:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2042              		.loc 1 81 16 is_stmt 0 view .LVU629
+ 2043 0072 E368     		ldr	r3, [r4, #12]
+  81:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2044              		.loc 1 81 42 view .LVU630
+ 2045 0074 0022     		movs	r2, #0
+ 2046 0076 1A76     		strb	r2, [r3, #24]
+  82:Service/Srv_SensorMonitor.c ****         }
+ 2047              		.loc 1 82 13 is_stmt 1 view .LVU631
+ 2048              	.LVL192:
+  92:Service/Srv_SensorMonitor.c ****         {
+ 2049              		.loc 1 92 9 view .LVU632
+  92:Service/Srv_SensorMonitor.c ****         {
+ 2050              		.loc 1 92 13 is_stmt 0 view .LVU633
+ 2051 0078 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+  92:Service/Srv_SensorMonitor.c ****         {
+ 2052              		.loc 1 92 12 view .LVU634
+ 2053 007a 13F0020F 		tst	r3, #2
+ 2054 007e 1BD1     		bne	.L159
+ 2055              	.L160:
+ 105:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.mag = false;
+ 2056              		.loc 1 105 13 is_stmt 1 view .LVU635
+ 105:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.mag = false;
+ 2057              		.loc 1 105 16 is_stmt 0 view .LVU636
+ 2058 0080 2369     		ldr	r3, [r4, #16]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 55
+
+
+ 105:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.mag = false;
+ 2059              		.loc 1 105 42 view .LVU637
+ 2060 0082 0022     		movs	r2, #0
+ 2061 0084 1A76     		strb	r2, [r3, #24]
+ 106:Service/Srv_SensorMonitor.c ****         }
+ 2062              		.loc 1 106 13 is_stmt 1 view .LVU638
+ 106:Service/Srv_SensorMonitor.c ****         }
+ 2063              		.loc 1 106 41 is_stmt 0 view .LVU639
+ 2064 0086 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 2065 0088 62F34103 		bfi	r3, r2, #1, #1
+ 2066 008c 2371     		strb	r3, [r4, #4]
+  82:Service/Srv_SensorMonitor.c ****         }
+ 2067              		.loc 1 82 24 view .LVU640
+ 2068 008e 0125     		movs	r5, #1
+ 2069              	.LVL193:
+ 2070              	.L162:
+ 109:Service/Srv_SensorMonitor.c ****         {
+ 2071              		.loc 1 109 9 is_stmt 1 view .LVU641
+ 109:Service/Srv_SensorMonitor.c ****         {
+ 2072              		.loc 1 109 13 is_stmt 0 view .LVU642
+ 2073 0090 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 109:Service/Srv_SensorMonitor.c ****         {
+ 2074              		.loc 1 109 12 view .LVU643
+ 2075 0092 13F0040F 		tst	r3, #4
+ 2076 0096 26D1     		bne	.L174
+ 2077              	.L163:
+ 122:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.baro = false;
+ 2078              		.loc 1 122 13 is_stmt 1 view .LVU644
+ 122:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.baro = false;
+ 2079              		.loc 1 122 16 is_stmt 0 view .LVU645
+ 2080 0098 6369     		ldr	r3, [r4, #20]
+ 122:Service/Srv_SensorMonitor.c ****             obj->init_state_reg.bit.baro = false;
+ 2081              		.loc 1 122 43 view .LVU646
+ 2082 009a 0022     		movs	r2, #0
+ 2083 009c 1A76     		strb	r2, [r3, #24]
+ 123:Service/Srv_SensorMonitor.c ****         }
+ 2084              		.loc 1 123 13 is_stmt 1 view .LVU647
+ 123:Service/Srv_SensorMonitor.c ****         }
+ 2085              		.loc 1 123 42 is_stmt 0 view .LVU648
+ 2086 009e 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 2087 00a0 62F38203 		bfi	r3, r2, #2, #1
+ 2088 00a4 2371     		strb	r3, [r4, #4]
+ 2089              	.L164:
+ 126:Service/Srv_SensorMonitor.c ****         {
+ 2090              		.loc 1 126 9 is_stmt 1 view .LVU649
+ 126:Service/Srv_SensorMonitor.c ****         {
+ 2091              		.loc 1 126 13 is_stmt 0 view .LVU650
+ 2092 00a6 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 126:Service/Srv_SensorMonitor.c ****         {
+ 2093              		.loc 1 126 12 view .LVU651
+ 2094 00a8 13F0080F 		tst	r3, #8
+ 2095 00ac 37D1     		bne	.L175
+ 2096              	.L165:
+ 138:Service/Srv_SensorMonitor.c ****         }
+ 2097              		.loc 1 138 13 is_stmt 1 view .LVU652
+ 138:Service/Srv_SensorMonitor.c ****         }
+ 2098              		.loc 1 138 42 is_stmt 0 view .LVU653
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 56
+
+
+ 2099 00ae 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 2100 00b0 6FF3C303 		bfc	r3, #3, #1
+ 2101 00b4 2371     		strb	r3, [r4, #4]
+ 141:Service/Srv_SensorMonitor.c ****     }
+ 2102              		.loc 1 141 9 is_stmt 1 view .LVU654
+ 141:Service/Srv_SensorMonitor.c ****     }
+ 2103              		.loc 1 141 16 is_stmt 0 view .LVU655
+ 2104 00b6 49E0     		b	.L156
+ 2105              	.LVL194:
+ 2106              	.L159:
+  92:Service/Srv_SensorMonitor.c ****         {
+ 2107              		.loc 1 92 41 discriminator 1 view .LVU656
+ 2108 00b8 FFF7FEFF 		bl	SrvSensorMonitor_Mag_Init
+ 2109              	.LVL195:
+  92:Service/Srv_SensorMonitor.c ****         {
+ 2110              		.loc 1 92 38 discriminator 1 view .LVU657
+ 2111 00bc 0028     		cmp	r0, #0
+ 2112 00be DFD0     		beq	.L160
+  94:Service/Srv_SensorMonitor.c ****                 return false;
+ 2113              		.loc 1 94 13 is_stmt 1 view .LVU658
+  94:Service/Srv_SensorMonitor.c ****                 return false;
+ 2114              		.loc 1 94 16 is_stmt 0 view .LVU659
+ 2115 00c0 002D     		cmp	r5, #0
+ 2116 00c2 46D0     		beq	.L168
+  97:Service/Srv_SensorMonitor.c ****             obj->statistic_mag = &obj->statistic_list[list_index];
+ 2117              		.loc 1 97 13 is_stmt 1 view .LVU660
+  97:Service/Srv_SensorMonitor.c ****             obj->statistic_mag = &obj->statistic_list[list_index];
+ 2118              		.loc 1 97 41 is_stmt 0 view .LVU661
+ 2119 00c4 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 2120 00c6 43F00203 		orr	r3, r3, #2
+ 2121 00ca 2371     		strb	r3, [r4, #4]
+  98:Service/Srv_SensorMonitor.c ****             obj->statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
+ 2122              		.loc 1 98 13 is_stmt 1 view .LVU662
+  98:Service/Srv_SensorMonitor.c ****             obj->statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
+ 2123              		.loc 1 98 38 is_stmt 0 view .LVU663
+ 2124 00cc E569     		ldr	r5, [r4, #28]
+  98:Service/Srv_SensorMonitor.c ****             obj->statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
+ 2125              		.loc 1 98 34 view .LVU664
+ 2126 00ce 3035     		adds	r5, r5, #48
+  98:Service/Srv_SensorMonitor.c ****             obj->statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
+ 2127              		.loc 1 98 32 view .LVU665
+ 2128 00d0 2561     		str	r5, [r4, #16]
+  99:Service/Srv_SensorMonitor.c ****             obj->statistic_mag->is_calid = Calib_None;
+ 2129              		.loc 1 99 13 is_stmt 1 view .LVU666
+  99:Service/Srv_SensorMonitor.c ****             obj->statistic_mag->is_calid = Calib_None;
+ 2130              		.loc 1 99 92 is_stmt 0 view .LVU667
+ 2131 00d2 207A     		ldrb	r0, [r4, #8]	@ zero_extendqisi2
+  99:Service/Srv_SensorMonitor.c ****             obj->statistic_mag->is_calid = Calib_None;
+ 2132              		.loc 1 99 46 view .LVU668
+ 2133 00d4 0009     		lsrs	r0, r0, #4
+ 2134 00d6 FFF7FEFF 		bl	SrvSensorMonitor_Get_FreqVal
+ 2135              	.LVL196:
+  99:Service/Srv_SensorMonitor.c ****             obj->statistic_mag->is_calid = Calib_None;
+ 2136              		.loc 1 99 44 view .LVU669
+ 2137 00da A862     		str	r0, [r5, #40]
+ 100:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2138              		.loc 1 100 13 is_stmt 1 view .LVU670
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 57
+
+
+ 100:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2139              		.loc 1 100 16 is_stmt 0 view .LVU671
+ 2140 00dc 2369     		ldr	r3, [r4, #16]
+ 100:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2141              		.loc 1 100 42 view .LVU672
+ 2142 00de 0022     		movs	r2, #0
+ 2143 00e0 1A76     		strb	r2, [r3, #24]
+ 101:Service/Srv_SensorMonitor.c ****         }
+ 2144              		.loc 1 101 13 is_stmt 1 view .LVU673
+ 2145              	.LVL197:
+ 101:Service/Srv_SensorMonitor.c ****         }
+ 2146              		.loc 1 101 24 is_stmt 0 view .LVU674
+ 2147 00e2 0225     		movs	r5, #2
+ 2148 00e4 D4E7     		b	.L162
+ 2149              	.LVL198:
+ 2150              	.L174:
+ 109:Service/Srv_SensorMonitor.c ****         {
+ 2151              		.loc 1 109 42 discriminator 1 view .LVU675
+ 2152 00e6 FFF7FEFF 		bl	SrvSensorMonitor_Baro_Init
+ 2153              	.LVL199:
+ 109:Service/Srv_SensorMonitor.c ****         {
+ 2154              		.loc 1 109 39 discriminator 1 view .LVU676
+ 2155 00ea 0028     		cmp	r0, #0
+ 2156 00ec D4D0     		beq	.L163
+ 111:Service/Srv_SensorMonitor.c ****                 return false;
+ 2157              		.loc 1 111 13 is_stmt 1 view .LVU677
+ 111:Service/Srv_SensorMonitor.c ****                 return false;
+ 2158              		.loc 1 111 16 is_stmt 0 view .LVU678
+ 2159 00ee A845     		cmp	r8, r5
+ 2160 00f0 31D3     		bcc	.L169
+ 114:Service/Srv_SensorMonitor.c ****             obj->statistic_baro = &obj->statistic_list[list_index];
+ 2161              		.loc 1 114 13 is_stmt 1 view .LVU679
+ 114:Service/Srv_SensorMonitor.c ****             obj->statistic_baro = &obj->statistic_list[list_index];
+ 2162              		.loc 1 114 42 is_stmt 0 view .LVU680
+ 2163 00f2 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 2164 00f4 43F00403 		orr	r3, r3, #4
+ 2165 00f8 2371     		strb	r3, [r4, #4]
+ 115:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.baro);
+ 2166              		.loc 1 115 13 is_stmt 1 view .LVU681
+ 115:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.baro);
+ 2167              		.loc 1 115 39 is_stmt 0 view .LVU682
+ 2168 00fa E769     		ldr	r7, [r4, #28]
+ 115:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.baro);
+ 2169              		.loc 1 115 55 view .LVU683
+ 2170 00fc 05EB4503 		add	r3, r5, r5, lsl #1
+ 115:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.baro);
+ 2171              		.loc 1 115 35 view .LVU684
+ 2172 0100 07EB0317 		add	r7, r7, r3, lsl #4
+ 115:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.baro);
+ 2173              		.loc 1 115 33 view .LVU685
+ 2174 0104 6761     		str	r7, [r4, #20]
+ 116:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->is_calid = Calib_None;
+ 2175              		.loc 1 116 13 is_stmt 1 view .LVU686
+ 116:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->is_calid = Calib_None;
+ 2176              		.loc 1 116 93 is_stmt 0 view .LVU687
+ 2177 0106 607A     		ldrb	r0, [r4, #9]	@ zero_extendqisi2
+ 116:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->is_calid = Calib_None;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 58
+
+
+ 2178              		.loc 1 116 47 view .LVU688
+ 2179 0108 00F00F00 		and	r0, r0, #15
+ 2180 010c FFF7FEFF 		bl	SrvSensorMonitor_Get_FreqVal
+ 2181              	.LVL200:
+ 116:Service/Srv_SensorMonitor.c ****             obj->statistic_baro->is_calid = Calib_None;
+ 2182              		.loc 1 116 45 view .LVU689
+ 2183 0110 B862     		str	r0, [r7, #40]
+ 117:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2184              		.loc 1 117 13 is_stmt 1 view .LVU690
+ 117:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2185              		.loc 1 117 16 is_stmt 0 view .LVU691
+ 2186 0112 6369     		ldr	r3, [r4, #20]
+ 117:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2187              		.loc 1 117 43 view .LVU692
+ 2188 0114 0022     		movs	r2, #0
+ 2189 0116 1A76     		strb	r2, [r3, #24]
+ 118:Service/Srv_SensorMonitor.c ****         }
+ 2190              		.loc 1 118 13 is_stmt 1 view .LVU693
+ 118:Service/Srv_SensorMonitor.c ****         }
+ 2191              		.loc 1 118 24 is_stmt 0 view .LVU694
+ 2192 0118 0135     		adds	r5, r5, #1
+ 2193              	.LVL201:
+ 118:Service/Srv_SensorMonitor.c ****         }
+ 2194              		.loc 1 118 24 view .LVU695
+ 2195 011a ADB2     		uxth	r5, r5
+ 118:Service/Srv_SensorMonitor.c ****         }
+ 2196              		.loc 1 118 24 view .LVU696
+ 2197 011c C3E7     		b	.L164
+ 2198              	.LVL202:
+ 2199              	.L175:
+ 126:Service/Srv_SensorMonitor.c ****         {
+ 2200              		.loc 1 126 42 discriminator 1 view .LVU697
+ 2201 011e FFF7FEFF 		bl	SrvSensorMonitor_Flow_Init
+ 2202              	.LVL203:
+ 126:Service/Srv_SensorMonitor.c ****         {
+ 2203              		.loc 1 126 39 discriminator 1 view .LVU698
+ 2204 0122 0028     		cmp	r0, #0
+ 2205 0124 C3D0     		beq	.L165
+ 128:Service/Srv_SensorMonitor.c ****                 return false;
+ 2206              		.loc 1 128 13 is_stmt 1 view .LVU699
+ 128:Service/Srv_SensorMonitor.c ****                 return false;
+ 2207              		.loc 1 128 16 is_stmt 0 view .LVU700
+ 2208 0126 A845     		cmp	r8, r5
+ 2209 0128 17D3     		bcc	.L170
+ 131:Service/Srv_SensorMonitor.c ****             obj->statistic_flow = &obj->statistic_list[list_index];
+ 2210              		.loc 1 131 13 is_stmt 1 view .LVU701
+ 131:Service/Srv_SensorMonitor.c ****             obj->statistic_flow = &obj->statistic_list[list_index];
+ 2211              		.loc 1 131 42 is_stmt 0 view .LVU702
+ 2212 012a 2379     		ldrb	r3, [r4, #4]	@ zero_extendqisi2
+ 2213 012c 43F00803 		orr	r3, r3, #8
+ 2214 0130 2371     		strb	r3, [r4, #4]
+ 132:Service/Srv_SensorMonitor.c ****             obj->statistic_flow->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.flow);
+ 2215              		.loc 1 132 13 is_stmt 1 view .LVU703
+ 132:Service/Srv_SensorMonitor.c ****             obj->statistic_flow->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.flow);
+ 2216              		.loc 1 132 39 is_stmt 0 view .LVU704
+ 2217 0132 E369     		ldr	r3, [r4, #28]
+ 132:Service/Srv_SensorMonitor.c ****             obj->statistic_flow->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.flow);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 59
+
+
+ 2218              		.loc 1 132 55 view .LVU705
+ 2219 0134 05EB4505 		add	r5, r5, r5, lsl #1
+ 132:Service/Srv_SensorMonitor.c ****             obj->statistic_flow->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.flow);
+ 2220              		.loc 1 132 35 view .LVU706
+ 2221 0138 03EB0515 		add	r5, r3, r5, lsl #4
+ 132:Service/Srv_SensorMonitor.c ****             obj->statistic_flow->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.flow);
+ 2222              		.loc 1 132 33 view .LVU707
+ 2223 013c A561     		str	r5, [r4, #24]
+ 133:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2224              		.loc 1 133 13 is_stmt 1 view .LVU708
+ 133:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2225              		.loc 1 133 93 is_stmt 0 view .LVU709
+ 2226 013e 607A     		ldrb	r0, [r4, #9]	@ zero_extendqisi2
+ 133:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2227              		.loc 1 133 47 view .LVU710
+ 2228 0140 0009     		lsrs	r0, r0, #4
+ 2229 0142 FFF7FEFF 		bl	SrvSensorMonitor_Get_FreqVal
+ 2230              	.LVL204:
+ 133:Service/Srv_SensorMonitor.c ****             list_index ++;
+ 2231              		.loc 1 133 45 view .LVU711
+ 2232 0146 A862     		str	r0, [r5, #40]
+ 134:Service/Srv_SensorMonitor.c ****         }
+ 2233              		.loc 1 134 13 is_stmt 1 view .LVU712
+ 134:Service/Srv_SensorMonitor.c ****         }
+ 2234              		.loc 1 134 24 is_stmt 0 view .LVU713
+ 2235 0148 00E0     		b	.L156
+ 2236              	.LVL205:
+ 2237              	.L167:
+ 144:Service/Srv_SensorMonitor.c **** }
+ 2238              		.loc 1 144 12 view .LVU714
+ 2239 014a 0026     		movs	r6, #0
+ 2240              	.LVL206:
+ 2241              	.L156:
+ 145:Service/Srv_SensorMonitor.c **** 
+ 2242              		.loc 1 145 1 view .LVU715
+ 2243 014c 3046     		mov	r0, r6
+ 2244 014e BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 2245              	.LVL207:
+ 2246              	.L168:
+  95:Service/Srv_SensorMonitor.c **** 
+ 2247              		.loc 1 95 24 view .LVU716
+ 2248 0152 0026     		movs	r6, #0
+ 2249 0154 FAE7     		b	.L156
+ 2250              	.LVL208:
+ 2251              	.L169:
+ 112:Service/Srv_SensorMonitor.c **** 
+ 2252              		.loc 1 112 24 view .LVU717
+ 2253 0156 0026     		movs	r6, #0
+ 2254 0158 F8E7     		b	.L156
+ 2255              	.L170:
+ 129:Service/Srv_SensorMonitor.c **** 
+ 2256              		.loc 1 129 24 view .LVU718
+ 2257 015a 0026     		movs	r6, #0
+ 2258 015c F6E7     		b	.L156
+ 2259              	.L177:
+ 2260 015e 00BF     		.align	2
+ 2261              	.L176:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 60
+
+
+ 2262 0160 00000000 		.word	SrvOsCommon
+ 2263              		.cfi_endproc
+ 2264              	.LFE142:
+ 2266              		.global	SrvSensorMonitor
+ 2267              		.section	.data.SrvSensorMonitor,"aw"
+ 2268              		.align	2
+ 2271              	SrvSensorMonitor:
+ 2272 0000 00000000 		.word	SrvSensorMonitor_Init
+ 2273 0004 00000000 		.word	SrvSensorMonitor_SampleCTL
+ 2274 0008 00000000 		.word	SrvSensorMonitor_IMU_Get_Num
+ 2275 000c 00000000 		.word	SrvSensorMonitor_Get_IMU_Range
+ 2276 0010 00000000 		.word	SrvSensorMonitor_Get_IMUData
+ 2277 0014 00000000 		.word	SrvSensorMonitor_Get_BaroData
+ 2278 0018 00000000 		.word	SrvSensorMonitor_Set_Module_Calib
+ 2279 001c 00000000 		.word	SrvSensorMonitor_Get_Module_Calib
+ 2280              		.text
+ 2281              	.Letext0:
+ 2282              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 2283              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 2284              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi\
+ 2285              		.file 5 "System/FreeRTOS/include/portable.h"
+ 2286              		.file 6 "Service/Srv_OsCommon.h"
+ 2287              		.file 7 "common/gen_physic_def/imu_data.h"
+ 2288              		.file 8 "common/gen_physic_def/gen_calib.h"
+ 2289              		.file 9 "Service/Srv_IMUSample.h"
+ 2290              		.file 10 "Service/Srv_Baro.h"
+ 2291              		.file 11 "Service/Srv_Flow.h"
+ 2292              		.file 12 "Service/Srv_SensorMonitor.h"
+ 2293              		.file 13 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 2294              		.file 14 "debug/debug_util.h"
+ 2295              		.file 15 "HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.h"
+ 2296              		.file 16 "System/FreeRTOS/FreeRTOSConfig.h"
+ 2297              		.file 17 "<built-in>"
+ 2298              		.file 18 "common/util.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 61
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Srv_SensorMonitor.c
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:20     .text.SrvSensorMonitor_Get_FreqVal:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:25     .text.SrvSensorMonitor_Get_FreqVal:00000000 SrvSensorMonitor_Get_FreqVal
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:39     .text.SrvSensorMonitor_Get_FreqVal:00000008 $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:49     .text.SrvSensorMonitor_Get_FreqVal:00000012 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:138    .text.SrvSensorMonitor_IMU_Get_Num:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:143    .text.SrvSensorMonitor_IMU_Get_Num:00000000 SrvSensorMonitor_IMU_Get_Num
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:201    .text.SrvSensorMonitor_Get_IMU_Range:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:206    .text.SrvSensorMonitor_Get_IMU_Range:00000000 SrvSensorMonitor_Get_IMU_Range
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:321    .text.SrvSensorMonitor_IMU_SampleCTL:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:326    .text.SrvSensorMonitor_IMU_SampleCTL:00000000 SrvSensorMonitor_IMU_SampleCTL
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:621    .text.SrvSensorMonitor_IMU_SampleCTL:00000110 $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:627    .text.SrvSensorMonitor_Mag_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:632    .text.SrvSensorMonitor_Mag_Init:00000000 SrvSensorMonitor_Mag_Init
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:647    .text.SrvSensorMonitor_Mag_SampleCTL:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:652    .text.SrvSensorMonitor_Mag_SampleCTL:00000000 SrvSensorMonitor_Mag_SampleCTL
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:672    .text.SrvSensorMonitor_Baro_SampleCTL:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:677    .text.SrvSensorMonitor_Baro_SampleCTL:00000000 SrvSensorMonitor_Baro_SampleCTL
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:953    .text.SrvSensorMonitor_Baro_SampleCTL:000000fc $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:959    .text.SrvSensorMonitor_Flow_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:964    .text.SrvSensorMonitor_Flow_Init:00000000 SrvSensorMonitor_Flow_Init
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:988    .text.SrvSensorMonitor_Flow_Init:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:993    .text.SrvSensorMonitor_SampleCTL:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:998    .text.SrvSensorMonitor_SampleCTL:00000000 SrvSensorMonitor_SampleCTL
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1141   .text.SrvSensorMonitor_SampleCTL:00000074 $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1147   .text.SrvSensorMonitor_Set_Module_Calib:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1152   .text.SrvSensorMonitor_Set_Module_Calib:00000000 SrvSensorMonitor_Set_Module_Calib
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1207   .text.SrvSensorMonitor_Get_Module_Calib:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1212   .text.SrvSensorMonitor_Get_Module_Calib:00000000 SrvSensorMonitor_Get_Module_Calib
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1311   .text.SrvSensorMonitor_Get_BaroData:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1316   .text.SrvSensorMonitor_Get_BaroData:00000000 SrvSensorMonitor_Get_BaroData
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1420   .text.SrvSensorMonitor_Get_BaroData:0000007c $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1425   .text.SrvSensorMonitor_Get_IMUData:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1430   .text.SrvSensorMonitor_Get_IMUData:00000000 SrvSensorMonitor_Get_IMUData
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1560   .text.SrvSensorMonitor_Get_IMUData:0000008c $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1565   .rodata.SrvSensorMonitor_IMU_Init.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1581   .text.SrvSensorMonitor_IMU_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1586   .text.SrvSensorMonitor_IMU_Init:00000000 SrvSensorMonitor_IMU_Init
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1845   .text.SrvSensorMonitor_IMU_Init:00000130 $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1856   .rodata.SrvSensorMonitor_Baro_Init.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1860   .text.SrvSensorMonitor_Baro_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1865   .text.SrvSensorMonitor_Baro_Init:00000000 SrvSensorMonitor_Baro_Init
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1912   .text.SrvSensorMonitor_Baro_Init:00000028 $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1920   .text.SrvSensorMonitor_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:1925   .text.SrvSensorMonitor_Init:00000000 SrvSensorMonitor_Init
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:2262   .text.SrvSensorMonitor_Init:00000160 $d
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:2271   .data.SrvSensorMonitor:00000000 SrvSensorMonitor
+C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s:2268   .data.SrvSensorMonitor:00000000 $d
+
+UNDEFINED SYMBOLS
+SrvOsCommon
+SrvIMU
+SrvBaro
+SrvFlow
+memset
+memcpy
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccwcAgC0.s 			page 62
+
+
+Debug_Print
+DebugPort
+Get_OnSet_Bit_Num
