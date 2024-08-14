@@ -200,7 +200,7 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
                                                      RECEIVER_CRSF_RX_DMA_STREAM,
                                                      RECEIVER_CRSF_TX_DMA,
                                                      RECEIVER_CRSF_TX_DMA_STREAM,
-                                                     false,
+                                                     CRSF_PIN_SWAP,
                                                      CRSF_TX_PIN,
                                                      CRSF_RX_PIN);
         }

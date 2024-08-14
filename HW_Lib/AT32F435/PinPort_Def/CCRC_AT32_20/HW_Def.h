@@ -52,6 +52,8 @@ extern "C" {
 #define SBUS_TX_PIN Uart3_TxPin
 #define SBUS_RX_PIN Uart3_RxPin
 
+#define CRSF_PIN_SWAP true
+
 /* IMU SPI */
 #define PriIMU_SPI_BUS SPI1
 

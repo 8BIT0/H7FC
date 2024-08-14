@@ -36,6 +36,8 @@ extern "C" {
 #define SBUS_TX_PIN Uart3_TxPin
 #define SBUS_RX_PIN Uart3_RxPin
 
+#define CRSF_PIN_SWAP false
+
 /* radio port */
 #define RADIO_PORT USART1
 #define RADIO_TX_PIN_INIT_STATE GPIO_PULL_NONE

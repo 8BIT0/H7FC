@@ -227,6 +227,8 @@ extern "C" {
 #define SBUS_TX_PIN Uart4_TxPin
 #define SBUS_RX_PIN Uart4_RxPin
 
+#define CRSF_PIN_SWAP false
+
 /* radio uart */
 #define RADIO_PORT USART1
 
