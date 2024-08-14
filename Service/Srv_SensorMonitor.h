@@ -91,10 +91,6 @@ typedef struct
     uint32_t err_cnt;
     uint32_t detect_period;
     uint32_t set_period;
-
-    uint8_t sensor_type;
-    uint8_t bus_type;
-    int8_t error_code;
 }SrvSensorMonitor_Statistic_TypeDef;
 
 /* bit field on init_state_reg set 1 represent error triggerd on */
@@ -118,6 +114,23 @@ typedef struct
     SrvSensorMonitor_IMURange_TypeDef SecIMU_Range;
 
     SrvIMU_SampleMode_List IMU_SampleMode;
+
+    uint8_t baro_type;
+    uint8_t baro_bus_type;
+    int8_t baro_err;
+
+    uint8_t pri_imu_type;
+    uint8_t sec_imu_type;
+    int8_t pri_imu_err;
+    int8_t sec_imu_err;
+
+    uint8_t mag_type;
+    uint8_t mag_bus_type;
+    int8_t mag_err;
+
+    uint8_t flow_type;
+    uint8_t flow_bus_type;
+    int8_t flow_err;
 
     SrvIMU_UnionData_TypeDef lst_imu_data;
     SrvBaro_UnionData_TypeDef lst_baro_data;

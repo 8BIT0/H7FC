@@ -29,7 +29,7 @@ static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum);
 
 static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj);
 static bool SrvSensorMonitor_Mag_Init(void);
-static bool SrvSensorMonitor_Baro_Init(void);
+static bool SrvSensorMonitor_Baro_Init(SrvSensorMonitorObj_TypeDef *obj);
 static bool SrvSensorMonitor_Flow_Init(void);
 
 /* external function */
@@ -106,7 +106,7 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.mag = false;
         }
 
-        if (obj->enabled_reg.bit.baro && SrvSensorMonitor_Baro_Init())
+        if (obj->enabled_reg.bit.baro && SrvSensorMonitor_Baro_Init(obj))
         {
             if (list_index > enable_sensor_num)
                 return false;
@@ -473,12 +473,20 @@ static uint32_t SrvSensorMonitor_Get_MagData(SrvSensorMonitorObj_TypeDef *obj)
 }
 
 /******************************************* Baro Section *********************************************/
-static bool SrvSensorMonitor_Baro_Init(void)
+static bool SrvSensorMonitor_Baro_Init(SrvSensorMonitorObj_TypeDef *obj)
 {
-    if (SrvBaro.init && (SrvBaro.init(BARO_TYPE, BARO_BUS_TYPE) == SrvBaro_Error_None))
+    if (SrvBaro.init && obj)
     {
-        MONITOR_INFO("Baro init accomplished\r\n");
-        return true;
+        obj->baro_type = BARO_TYPE;
+        obj->baro_bus_type = BARO_BUS_TYPE;
+        obj->baro_err = SrvBaro.init(BARO_TYPE, BARO_BUS_TYPE);
+
+        if (obj->baro_err == SrvBaro_Error_None)
+        {
+            MONITOR_INFO("Baro init accomplished\r\n");
+            return true;
+        }
+        MONITOR_INFO("Baro init failed\r\n");
     }
 
     return false;
