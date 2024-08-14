@@ -1,6 +1,9 @@
 #include "Bsp_GPIO.h"
 #include "Bsp_IIC.h"
 #include "at32f435_437.h"
+#include "i2c_application.h"
+
+#define I2C_TIMEOUT     100
 
 #define I2Cx_CLK_10K    0xB170FFFF   //10K
 #define I2Cx_CLK_50K    0xC0E06969   //50K
@@ -122,7 +125,8 @@ static bool BspIIC_DeInit(BspIICObj_TypeDef *obj)
 {
     if(obj)
     {
-
+        i2c_reset((i2c_type *)obj->handle);
+        memset(obj, 0, sizeof(BspIICObj_TypeDef));
     }
 
     return false;
@@ -132,7 +136,10 @@ static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg,
 {
     if(obj && p_buf && len)
     {
+        if (i2c_master_receive(obj->handle, dev_addr, p_buf, len, I2C_TIMEOUT) != I2C_OK)
+            return false;
 
+        return true;
     }
 
     return false;
@@ -142,7 +149,10 @@ static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg
 {
     if(obj && p_buf && len)
     {
+        if (i2c_master_transmit(obj->handle, dev_addr, p_buf, len, I2C_TIMEOUT) != I2C_OK)
+            return false;
 
+        return true;
     }
 
     return false;
