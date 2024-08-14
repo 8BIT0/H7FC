@@ -14,6 +14,9 @@ extern "C" {
 
 #define BMP280_NORMAL_MODE             3
 
+#define BMP280_ADDR_1                  0x76
+#define BMP280_ADDR_2                  0x77
+
 #define BMP280_REG_NVM_PAR_T1_L        0x88        /**< NVM PAR T1 low register */
 #define BMP280_REG_NVM_PAR_T1_H        0x89        /**< NVM PAR T1 high register */
 #define BMP280_REG_NVM_PAR_T2_L        0x8A        /**< NVM PAR T2 low register */
@@ -53,12 +56,6 @@ extern "C" {
 
 typedef enum
 {
-    DevBMP280_Bus_SPI = 0,
-    DevBMP280_Bus_IIC,
-} DevBMP280_BusType_List;
-
-typedef enum
-{
     DevBMP280_Error_None = 0,
     DevBMP280_Para_Error,
     DevBMP280_Init_Error,
@@ -94,7 +91,9 @@ typedef uint32_t (*DevBMP280_Get_Tick)(void);
 typedef int32_t (*DevBMP280_Delay_Ms)(uint32_t ms);
 typedef uint16_t (*DevBMP280_BusCommu)(uint8_t *p_data, uint16_t len);
 typedef uint16_t (*DevBMP280_Trans)(uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
-typedef void (*DevBMP280_CS_Ctl)(bool state); /* true -> cs high / false -> cs low */
+
+typedef bool (*DevBMP280_IIC_Write)(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint16_t len);
+typedef bool (*DevBMP280_IIC_Read)(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint16_t len);
 
 typedef struct
 {
@@ -116,13 +115,9 @@ typedef struct
 typedef struct
 {
     DevBMP280_ErrorCode_List ErrorCode;
-    DevBMP280_BusType_List Bus;
 
     DevBMP280_Get_Tick get_tick;
     DevBMP280_Delay_Ms delay_ms;
-    DevBMP280_BusCommu send;
-    DevBMP280_BusCommu recv;
-    DevBMP280_Trans trans;
 
     DevBMP280_Calib_TypeDef calib;
 
@@ -136,6 +131,15 @@ typedef struct
     float temperature;
     float pressure;
 
+    /* IIC section */
+    uint8_t DevAddr;
+    DevBMP280_IIC_Write bus_tx;
+    DevBMP280_IIC_Read bus_rx;
+
+    /* spi section */
+    DevBMP280_BusCommu send;
+    DevBMP280_BusCommu recv;
+    DevBMP280_Trans trans;
 } DevBMP280Obj_TypeDef;
 
 typedef struct

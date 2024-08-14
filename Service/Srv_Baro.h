@@ -29,6 +29,7 @@ typedef enum
 {
     SrvBaro_Error_None = 0,
     SrvBaro_Error_BadRate,
+    SrvBaro_Error_BusType,
     SrvBaro_Error_BadType,
     SrvBaro_Error_DevInit,
     SrvBaro_Error_BadSensorObj,

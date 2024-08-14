@@ -301,7 +301,7 @@ static BspIIC_PinConfig_TypeDef I2c2_BusPin = {
     .pin_Alternate = GPIO_MUX_4,
 };
 
-extern BspIICObj_TypeDef I2c2_BusObj = {
+BspIICObj_TypeDef Baro_BusCfg = {
     .init = false,
     .Pin = &I2c2_BusPin,
     .instance_id = BspIIC_Instance_I2C_2,

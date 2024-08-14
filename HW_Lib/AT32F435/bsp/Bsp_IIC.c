@@ -86,18 +86,9 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
         obj->handle = NULL;
         switch ((uint8_t)obj->instance_id)
         {
-            case BspIIC_Instance_I2C_1:
-                obj->handle = I2C1;
-                break;
-
-            case BspIIC_Instance_I2C_2:
-                obj->handle = I2C2;
-                break;
-
-            case BspIIC_Instance_I2C_3:
-                obj->handle = I2C3;
-                break;
-
+            case BspIIC_Instance_I2C_1: obj->handle = I2C1; break;
+            case BspIIC_Instance_I2C_2: obj->handle = I2C2; break;
+            case BspIIC_Instance_I2C_3: obj->handle = I2C3; break;
             default: return false;
         }
 
@@ -136,7 +127,7 @@ static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg,
 {
     if(obj && p_buf && len)
     {
-        if (i2c_master_receive(obj->handle, dev_addr, p_buf, len, I2C_TIMEOUT) != I2C_OK)
+        if (i2c_memory_read(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT) != I2C_OK)
             return false;
 
         return true;
@@ -149,7 +140,7 @@ static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg
 {
     if(obj && p_buf && len)
     {
-        if (i2c_master_transmit(obj->handle, dev_addr, p_buf, len, I2C_TIMEOUT) != I2C_OK)
+        if (i2c_memory_write(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT) != I2C_OK)
             return false;
 
         return true;

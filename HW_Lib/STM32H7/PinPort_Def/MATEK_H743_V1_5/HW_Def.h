@@ -99,6 +99,8 @@ extern "C" {
 #define IIC2_SCK_PORT GPIOB
 #define IIC2_SCK_PIN GPIO_PIN_10
 
+extern BspIICObj_TypeDef Baro_BusCfg;
+
 /* Serial Pin */
 #define UART4_TX_PORT GPIOB
 #define UART4_TX_PIN GPIO_PIN_9
@@ -291,7 +293,6 @@ extern DevLedObj_TypeDef Led1;
 extern DevLedObj_TypeDef Led2;
 extern DevLedObj_TypeDef Led3;
 
-extern BspGPIO_Obj_TypeDef Baro_CSPin;
 extern BspGPIO_Obj_TypeDef USB_DctPin;
 extern BspGPIO_Obj_TypeDef PriIMU_CSPin;
 extern BspGPIO_Obj_TypeDef SecIMU_CSPin;
@@ -306,9 +307,6 @@ extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
 extern BspSPI_PinConfig_TypeDef SecIMU_BusPin;
 
 extern BspIIC_PinConfig_TypeDef SrvBaro_BusPin;
-extern BspSPI_PinConfig_TypeDef Baro_BusPin;
-
-extern BspSPI_NorModeConfig_TypeDef Baro_BusCfg;
 
 extern BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg;
 extern BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg;
