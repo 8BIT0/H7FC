@@ -277,6 +277,7 @@ static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle,
 static GenCalib_State_TypeList SrvIMU_Set_Calib(uint32_t calb_cycle);
 static GenCalib_State_TypeList SrvIMU_Get_Calib(void);
 static bool SrvIMU_Get_Range(SrvIMU_Module_Type module, SrvIMU_Range_TypeDef *range);
+static bool SrvIMU_Get_ModuleType(SrvIMU_Module_Type module, SrvIMU_SensorID_List *type);
 
 /* internal function */
 static int8_t SrvIMU_PriIMU_Init(void);
@@ -305,6 +306,7 @@ SrvIMU_TypeDef SrvIMU = {
     .error_proc = SrvIMU_ErrorProc,
     .set_calib = SrvIMU_Set_Calib,
     .get_calib = SrvIMU_Get_Calib,
+    .get_type = SrvIMU_Get_ModuleType,
     .get_max_angular_speed_diff = SrvIMU_Get_MaxAngularSpeed_Diff,
 };
 
@@ -318,6 +320,9 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 
     memset(&InUse_PriIMU_Obj, 0, sizeof(InUse_PriIMU_Obj));
     memset(&InUse_SecIMU_Obj, 0, sizeof(InUse_SecIMU_Obj));
+
+    InUse_PriIMU_Obj.type = SrvIMU_Dev_None;
+    InUse_SecIMU_Obj.type = SrvIMU_Dev_None;
 
     memset(&PriIMU_Data, 0, sizeof(PriIMU_Data));
     memset(&SecIMU_Data, 0, sizeof(SecIMU_Data));
@@ -1204,6 +1209,23 @@ reupdate_imu:
 reupdate_imu_statistics:
     SrvIMU_Reupdate_Statistics_CNT ++;
     goto reupdate_imu;
+}
+
+static bool SrvIMU_Get_ModuleType(SrvIMU_Module_Type module, SrvIMU_SensorID_List *type)
+{
+    if ((module >= SrvIMU_FusModule) || (type == NULL))
+        return false;
+
+    if (module == SrvIMU_PriModule)
+    {
+        *type = InUse_PriIMU_Obj.type;
+    }
+    else if (module == SrvIMU_SecModule)
+    {
+        *type = InUse_SecIMU_Obj.type;
+    }
+
+    return true;
 }
 
 static float SrvIMU_Get_MaxAngularSpeed_Diff(void)

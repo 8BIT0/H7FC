@@ -87,6 +87,19 @@ typedef enum
     SrvIMU_Dev_None,
 }SrvIMU_SensorID_List;
 
+static inline const char* SrvIMU_Get_TypeStr(SrvIMU_SensorID_List type)
+{
+    switch (type)
+    {
+        case SrvIMU_Dev_MPU6000:    return "MPU6000";
+        case SrvIMU_Dev_ICM20602:   return "ICM20602";
+        case SrvIMU_Dev_ICM42688P:  return "ICM42688P";
+        case SrvIMU_Dev_ICM42605:   return "ICM42605";
+        case SrvIMU_Dev_None:   return "None";
+        default: return "Unknow type";
+    }
+}
+
 typedef enum
 {
     SrvIMU_Priori_Pri = UTIL_SET_BIT(0),                        /* primary IMU sample Only */
@@ -143,6 +156,7 @@ typedef struct
     bool (*get_data)(SrvIMU_Module_Type type, SrvIMU_Data_TypeDef *data);
     bool (*get_range)(SrvIMU_Module_Type type, SrvIMU_Range_TypeDef *range);
     float (*get_max_angular_speed_diff)(void);
+    bool (*get_type)(SrvIMU_Module_Type module, SrvIMU_SensorID_List *type);
     void (*error_proc)(void);
     GenCalib_State_TypeList (*get_calib)(void);
     GenCalib_State_TypeList (*set_calib)(uint32_t calib_cycle);

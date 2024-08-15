@@ -115,6 +115,28 @@ typedef struct
     bool (*get_data)(SrvBaro_UnionData_TypeDef *data);
 }SrvBaro_TypeDef;
 
+static inline const char* SrvBaro_Get_TypeStr(SrvBaro_TypeList type)
+{
+    switch (type)
+    {
+        case Baro_Type_None:    return "None";
+        case Baro_Type_DPS310:  return "DPS310";
+        case Baro_Type_BMP280:  return "BMP280";
+        default: return "Unknow type";
+    }
+}
+
+static inline const char* SrvBaro_Get_BusStr(SrvBaroBus_TypeList bus)
+{
+    switch (bus)
+    {
+        case SrvBaro_Bus_None:  return "None";
+        case SrvBaro_Bus_IIC:   return "IIC";
+        case SrvBaro_Bus_SPI:   return "SPI";
+        default: return "Unknow type";
+    }
+}
+
 extern SrvBaro_TypeDef SrvBaro;
 
 #ifdef __cplusplus

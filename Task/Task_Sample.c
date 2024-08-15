@@ -180,6 +180,12 @@ static void TaskSample_Get_SensorState(void)
     shellPrint(shell_obj, "IMU  init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.imu));
     shellPrint(shell_obj, "Mag  init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.mag));
     shellPrint(shell_obj, "Flow init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.flow));
+    shellPrint(shell_obj, "---------------------------\r\n");
+    shellPrint(shell_obj, "PriIMU type: %s\r\n", IMU_TypeStr(SensorMonitor.pri_imu_type));
+    shellPrint(shell_obj, "SecIMU type: %s\r\n", IMU_TypeStr(SensorMonitor.sec_imu_type));
+    shellPrint(shell_obj, "---------------------------\r\n");
+    shellPrint(shell_obj, "Baro   type: %s\r\n", BARO_TypeStr(SensorMonitor.baro_type));
+    shellPrint(shell_obj, "Baro   bus:  %s\r\n", BARO_Bus_TypeStr(SensorMonitor.baro_bus_type));
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, sensor_status, TaskSample_Get_SensorState, show sensor status);
 

@@ -227,6 +227,10 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 obj->imu_num = 1;
                 /* set sample mode */
                 obj->IMU_SampleMode = SrvIMU_Priori_Sec;
+
+                /* get secondary imu type */
+                SrvIMU.get_type(SrvIMU_SecModule, &obj->sec_imu_type);
+                obj->pri_imu_type = SrvIMU_Dev_None;
                 break;
 
             case SrvIMU_SecDev_Init_Error:
@@ -243,6 +247,10 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 obj->imu_num = 1;
                 /* ser sample mode */
                 obj->IMU_SampleMode = SrvIMU_Priori_Pri;
+
+                /* get primary imu type */
+                SrvIMU.get_type(SrvIMU_PriModule, &obj->pri_imu_type);
+                obj->sec_imu_type = SrvIMU_Dev_None;
                 break;
 
             case SrvIMU_No_Error:
@@ -253,6 +261,10 @@ static bool SrvSensorMonitor_IMU_Init(SrvSensorMonitorObj_TypeDef *obj)
                 obj->pri_range_get = SrvIMU.get_range(SrvIMU_PriModule, &obj->PriIMU_Range);
                 obj->sec_range_get = SrvIMU.get_range(SrvIMU_SecModule, &obj->SecIMU_Range);
                 
+                /* get both imu type */
+                SrvIMU.get_type(SrvIMU_PriModule, &obj->pri_imu_type);
+                SrvIMU.get_type(SrvIMU_SecModule, &obj->sec_imu_type);
+
                 /* set sample mode */
                 if (!obj->pri_range_get && !obj->sec_range_get)
                 {

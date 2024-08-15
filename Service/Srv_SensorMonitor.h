@@ -19,6 +19,10 @@ typedef SrvIMU_Range_TypeDef SrvSensorMonitor_IMURange_TypeDef;
 #define GYRO_CALIB_CYCLE GYR_STATIC_CALIB_CYCLE
 #define BARO_CALIB_CYCLE SRVBARO_DEFAULT_CALI_CYCLE
 
+#define IMU_TypeStr(x) SrvIMU_Get_TypeStr(x)
+#define BARO_TypeStr(x) SrvBaro_Get_TypeStr(x)
+#define BARO_Bus_TypeStr(x) SrvBaro_Get_BusStr(x)
+
 typedef enum
 {
     SrvSensorMonitor_StatisticTimer_Defualt = 0,
