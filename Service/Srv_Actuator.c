@@ -168,14 +168,6 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
     case Model_Quad:
         SrvActuator_Obj.drive_module.num = QUAD_CONTROL_COMPONENT;
         break;
-    
-    case Model_Hex:
-        SrvActuator_Obj.drive_module.num = HEX_CONTROL_COMPONENT;
-        break;
-
-    case Model_Y6:
-        SrvActuator_Obj.drive_module.num = Y6_CONTROL_CONPONENT;
-        break;
 
     case Model_Tri:
         SrvActuator_Obj.drive_module.num = TRI_CONTROL_COMPONENT;
@@ -184,6 +176,16 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
     case Model_TDrone:
         SrvActuator_Obj.drive_module.num = TDRONE_CONTROL_COMPONENT;
         break;
+        
+#if defined BATEAT32F435_AIO
+    case Model_Hex:
+        SrvActuator_Obj.drive_module.num = HEX_CONTROL_COMPONENT;
+        break;
+
+    case Model_Y6:
+        SrvActuator_Obj.drive_module.num = Y6_CONTROL_CONPONENT;
+        break;
+#endif
 #if defined MATEKH743_V1_5
 
     case Model_Oct:
