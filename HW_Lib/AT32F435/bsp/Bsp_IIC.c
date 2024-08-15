@@ -91,25 +91,24 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
             case BspIIC_Instance_I2C_3: obj->handle = I2C3; break;
             default: return false;
         }
-
-        if (!BspIIC_Pin_Init(obj))
-            return false;
-    
-        if (!BspIIC_PeriphClk_Init(obj))
-            return false;
-
-        if (obj->handle == NULL)
-            return false;
-
-        i2c_reset((i2c_type *)obj->handle);
-        i2c_init((i2c_type *)obj->handle, 0x0F, I2Cx_CLK_100K);
-        i2c_own_address1_set((i2c_type *)obj->handle, I2C_ADDRESS_MODE_7BIT, obj->addr);
-        i2c_enable((i2c_type *)obj->handle, TRUE);
         
+        if ((obj->handle == NULL) || \
+            !BspIIC_PeriphClk_Init(obj) || \
+            !BspIIC_Pin_Init(obj))
+            return false;
+
+        i2c_config((i2c_type *)obj->handle);
+
         return true;
     }
 
     return false;
+}
+
+void i2c_lowlevel_init(i2c_handle_type* hi2c)
+{
+    /* config i2c */
+    i2c_init(hi2c->i2cx, 0x0F, I2Cx_CLK_100K);
 }
 
 static bool BspIIC_DeInit(BspIICObj_TypeDef *obj)
