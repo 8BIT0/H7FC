@@ -625,7 +625,7 @@ static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, 
         }
         else if (obj->bus_rx)
             /* iic communicate */
-            obj->bus_rx(obj->DevAddr, reg, p_buf, len);
+            state = (uint16_t)obj->bus_rx(obj->DevAddr, reg, p_buf, len);
         
         return state;
     }
