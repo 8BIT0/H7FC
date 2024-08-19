@@ -607,9 +607,9 @@ static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, 
 {
     uint16_t state = 0;
 
-    if (obj && p_buf && (len < 64))
+    if (obj && p_buf)
     {
-        if (obj->trans)
+        if (obj->trans && (len < 64))
         {
             uint8_t tx_tmp[64] = {0};
             uint8_t rx_tmp[64] = {0};
