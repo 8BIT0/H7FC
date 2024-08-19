@@ -176,7 +176,7 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
         case SrvBaro_Bus_IIC:
             SrvBaroBus.bus_api = (void *)&BspIIC;
 
-#if defined MATEKH743_V1_5
+#if defined STM32H743xx
             ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(I2C_HandleType_Size);
             if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
             {
@@ -191,7 +191,7 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
                 SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct);
                 return false;
             }
-#elif defined CCRC_AT32_20
+#elif defined AT32F435RGT7
             ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(sizeof(I2C_Handle));
             if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
             {
@@ -199,7 +199,6 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
                 return false;
             }
 #endif
-
             if (!ToIIC_BusAPI(SrvBaroBus.bus_api)->init(ToIIC_BusObj(SrvBaroBus.bus_obj)))
                 return false;
 

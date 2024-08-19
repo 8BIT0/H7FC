@@ -294,14 +294,13 @@ static bool BspGPIO_Altnate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode)
     if(pin_source == 16)
         return false;
 
+    gpio_pin_mux_config(To_GPIO_Port(IO_Obj.port)->port, pin_source, IO_Obj.alternate);
     gpio_initstructure.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
     gpio_initstructure.gpio_pull = GPIO_PULL_UP;
     gpio_initstructure.gpio_mode = GPIO_MODE_MUX;
     gpio_initstructure.gpio_pins = IO_Obj.pin;
     gpio_initstructure.gpio_out_type = af_mode;
     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_initstructure);
-
-    gpio_pin_mux_config(To_GPIO_Port(IO_Obj.port)->port, pin_source, IO_Obj.alternate);
 
     return true;
 }

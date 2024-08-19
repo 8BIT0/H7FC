@@ -94,7 +94,7 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
 {
     if(obj)
     {
-        if (!BspIIC_PeriphClk_Init(obj) || !BspIIC_Pin_Init(obj))
+        if (!(BspIIC_PeriphClk_Init(obj) & BspIIC_Pin_Init(obj)))
             return false;
 
         i2c_config((i2c_handle_type *)obj->handle);
@@ -107,7 +107,6 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
 
 void i2c_lowlevel_init(i2c_handle_type* hi2c)
 {
-    I2C_INFO("Low level init\r\n");
     /* config i2c */
     i2c_init(hi2c->i2cx, 0x0F, I2Cx_CLK_100K);
 }
@@ -130,7 +129,7 @@ static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg,
     if(obj && obj->handle && p_buf && len)
     {
         state = i2c_memory_read(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT);
-        I2C_INFO("Rx Err_code: %d\r\n", state);
+        I2C_INFO("Rx addr: 0x%02x --- reg: 0x%02x --- Err_code: %d\r\n", dev_addr, reg, state);
 
         if (state != I2C_OK)
             return false;
@@ -148,7 +147,7 @@ static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg
     if(obj && obj->handle && p_buf && len)
     {
         state = i2c_memory_write(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT);
-        I2C_INFO("Tx Err_code: %d\r\n", state);
+        I2C_INFO("Tx addr: 0x%02x --- reg: 0x%02x --- Err_code: %d\r\n", dev_addr, reg, state);
 
         if (state != I2C_OK)
             return false;

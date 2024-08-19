@@ -640,7 +640,7 @@ static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, 
         else if (obj->bus_rx)
         {
             /* iic communicate */
-            state = (uint16_t)obj->bus_rx(obj->DevAddr, reg, p_buf, len);
+            state = (uint16_t)obj->bus_rx(obj->DevAddr, DevBMP280_Read_Mask(reg), p_buf, len);
             BMP280_INFO("I2C R Addr: 0x%02x --- Reg: 0x%02x --- State: %s\r\n", obj->DevAddr, reg, state ? "True" : "False");
         }
 
@@ -670,7 +670,7 @@ static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg,
         else if (obj->bus_tx)
         {
             /* spi communicate */
-            state = (uint16_t)obj->bus_tx(obj->DevAddr, reg, &p_buf, 1);
+            state = (uint16_t)obj->bus_tx(obj->DevAddr, DevBMP280_Write_Mask(reg), &p_buf, 1);
             BMP280_INFO("I2C T Addr: 0x%02x --- Reg: 0x%02x --- State: %s\r\n", obj->DevAddr, reg, state ? "True" : "False");
         }
 

@@ -31,7 +31,6 @@ typedef struct
     uint8_t instance_id;
     void *PeriphClkInitStruct;
     void *handle;
-
 }BspIICObj_TypeDef;
 
 typedef struct
