@@ -1,8 +1,17 @@
 #include "Dev_BMP280.h"
 #include <math.h>
 
+/* test code */
+#include "HW_Def.h"
+/* test code */
+
 #define DevBMP280_Write_Mask(x) (x & ~(1 << 7))
 #define DevBMP280_Read_Mask(x) (x | (1 << 7))
+
+/* test code */
+#define BMP280_TAG "[ BMP280 ] "
+#define BMP280_INFO(fmt, ...) Debug_Print(&DebugPort, BMP280_TAG, fmt, ##__VA_ARGS__)
+/* test code */
 
 /* internal function */
 static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, uint8_t *p_buf, uint16_t len);
@@ -47,6 +56,7 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
         /* check id first */
         if (!DevBMP280_Check_ModuleID(obj))
         {
+            BMP280_INFO("ID Error\r\n");
             obj->ErrorCode = DevBMP280_ID_Error;
             return false;
         }
@@ -54,6 +64,7 @@ static bool DevBMP280_Init(DevBMP280Obj_TypeDef *obj)
         /* soft reset */
         if (!DevBMP280_SoftReset(obj))
         {
+            BMP280_INFO("Soft Reset Error\r\n");
             obj->ErrorCode = DevBMP280_Reset_Error;
             return false;
         }
@@ -388,6 +399,7 @@ static bool DevBMP280_Check_ModuleID(DevBMP280Obj_TypeDef *obj)
         (ID == BMP280_DEVICE_ID))
         return true;
 
+    BMP280_INFO("ID: 0x%02x\r\n", ID);
     return false;
 }
 
@@ -609,8 +621,11 @@ static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, 
 
     if (obj && p_buf)
     {
-        if (obj->trans && (len < 64))
+        if (obj->trans)
         {
+            if (len >= 64)
+                return 0;
+
             uint8_t tx_tmp[64] = {0};
             uint8_t rx_tmp[64] = {0};
 
@@ -621,12 +636,14 @@ static uint16_t DevBMP280_Register_Read(DevBMP280Obj_TypeDef *obj, uint8_t reg, 
             memset(p_buf, 0, len);
             if (state)
                 memcpy(p_buf, &rx_tmp[1], len);
-
         }
         else if (obj->bus_rx)
+        {
             /* iic communicate */
             state = (uint16_t)obj->bus_rx(obj->DevAddr, reg, p_buf, len);
-        
+            BMP280_INFO("I2C R Addr: 0x%02x --- Reg: 0x%02x --- State: %s\r\n", obj->DevAddr, reg, state ? "True" : "False");
+        }
+
         return state;
     }
 
@@ -651,8 +668,11 @@ static uint16_t DevBMP280_Register_Write(DevBMP280Obj_TypeDef *obj, uint8_t reg,
             state = obj->trans(tx_tmp, rx_tmp, sizeof(tx_tmp));
         }
         else if (obj->bus_tx)
+        {
             /* spi communicate */
-            state = (uint16_t)obj->bus_tx(obj->DevAddr, reg, p_buf, 1);
+            state = (uint16_t)obj->bus_tx(obj->DevAddr, reg, &p_buf, 1);
+            BMP280_INFO("I2C T Addr: 0x%02x --- Reg: 0x%02x --- State: %s\r\n", obj->DevAddr, reg, state ? "True" : "False");
+        }
 
         return state;
     }

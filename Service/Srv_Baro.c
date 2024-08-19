@@ -191,7 +191,15 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
                 SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct);
                 return false;
             }
+#elif defined CCRC_AT32_20
+            ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(sizeof(I2C_Handle));
+            if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
+            {
+                SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
+                return false;
+            }
 #endif
+
             if (!ToIIC_BusAPI(SrvBaroBus.bus_api)->init(ToIIC_BusObj(SrvBaroBus.bus_obj)))
                 return false;
 

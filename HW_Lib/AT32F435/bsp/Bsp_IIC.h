@@ -6,6 +6,9 @@ extern "C" {
 #endif
 
 #include "Bsp_IIC_Port_Def.h"
+#include "i2c_application.h"
+
+typedef i2c_handle_type I2C_Handle;
 
 typedef enum
 {

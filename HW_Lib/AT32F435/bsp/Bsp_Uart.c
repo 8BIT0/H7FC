@@ -361,10 +361,10 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
         return false;
 
     /* pin init */
-    if (!BspGPIO.alt_init(obj->tx_io, 0))
+    if (!BspGPIO.alt_init(obj->tx_io, GPIO_OUTPUT_PUSH_PULL))
         return false;
 
-    if (!BspGPIO.alt_init(obj->rx_io, 0))
+    if (!BspGPIO.alt_init(obj->rx_io, GPIO_OUTPUT_PUSH_PULL))
         return false;
 
     if(obj->baudrate <= 0)

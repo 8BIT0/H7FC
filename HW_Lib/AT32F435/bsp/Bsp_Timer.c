@@ -264,7 +264,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     obj->tim_channel = ch;
 
     /* init pin */
-    if (!BspGPIO.alt_init(pin, 0))
+    if (!BspGPIO.alt_init(pin, GPIO_OUTPUT_PUSH_PULL))
         return false;
 
     /* init pwm output */

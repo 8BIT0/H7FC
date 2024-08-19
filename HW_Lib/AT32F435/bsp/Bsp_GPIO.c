@@ -279,7 +279,8 @@ static bool BspGPIO_Altnate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode)
     uint32_t pin_source = 0;
     crm_periph_clock_type clk = 0;
 
-    UNUSED(af_mode);
+    if (af_mode > GPIO_OUTPUT_OPEN_DRAIN)
+        return false;
 
     clk = BspGPIO_Get_CLK(To_GPIO_Port(IO_Obj.port)->port);
     if(clk == 0)
@@ -297,8 +298,7 @@ static bool BspGPIO_Altnate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode)
     gpio_initstructure.gpio_pull = GPIO_PULL_UP;
     gpio_initstructure.gpio_mode = GPIO_MODE_MUX;
     gpio_initstructure.gpio_pins = IO_Obj.pin;
-    if (IO_Obj.open_drain)
-        gpio_initstructure.gpio_out_type = GPIO_OUTPUT_OPEN_DRAIN;
+    gpio_initstructure.gpio_out_type = af_mode;
     gpio_init(To_GPIO_Port(IO_Obj.port)->port, &gpio_initstructure);
 
     gpio_pin_mux_config(To_GPIO_Port(IO_Obj.port)->port, pin_source, IO_Obj.alternate);

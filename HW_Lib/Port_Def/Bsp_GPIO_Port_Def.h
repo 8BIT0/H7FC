@@ -24,7 +24,6 @@ typedef struct
     void *port;
     uint16_t pin;
     uint8_t init_state;
-    bool open_drain;
     uint32_t alternate;
 } BspGPIO_Obj_TypeDef;
 

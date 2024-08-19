@@ -3,7 +3,16 @@
 #include "at32f435_437.h"
 #include "i2c_application.h"
 
-#define I2C_TIMEOUT     100
+/* test code */
+#include "HW_Def.h"
+/* test code */
+
+/* test code */
+#define I2C_TAG "[ I2C ] "
+#define I2C_INFO(fmt, ...) Debug_Print(&DebugPort, I2C_TAG, fmt, ##__VA_ARGS__)
+/* test code */
+
+#define I2C_TIMEOUT     200
 
 #define I2Cx_CLK_10K    0xB170FFFF   //10K
 #define I2Cx_CLK_50K    0xC0E06969   //50K
@@ -36,19 +45,18 @@ static bool BspIIC_Pin_Init(BspIICObj_TypeDef *obj)
         obj->Pin->pin_sck && \
         obj->Pin->pin_sda)
     {
-        Pin.open_drain = true;
         Pin.alternate = obj->Pin->pin_Alternate;
         Pin.init_state = false;
 
         /* sck init */
         Pin.port = obj->Pin->port_sck;
         Pin.pin = obj->Pin->pin_sck;
-        pin_state = BspGPIO.alt_init(Pin, 0);
+        pin_state = BspGPIO.alt_init(Pin, GPIO_OUTPUT_OPEN_DRAIN);
 
         /* sda init */
         Pin.port = obj->Pin->port_sda;
         Pin.pin = obj->Pin->pin_sda;
-        pin_state &= BspGPIO.alt_init(Pin, 0);
+        pin_state &= BspGPIO.alt_init(Pin, GPIO_OUTPUT_OPEN_DRAIN);
     }
 
     return pin_state;
@@ -56,19 +64,22 @@ static bool BspIIC_Pin_Init(BspIICObj_TypeDef *obj)
 
 static bool BspIIC_PeriphClk_Init(BspIICObj_TypeDef *obj)
 {
-    if (obj)
+    if (obj && obj->handle)
     {
         switch ((uint8_t)obj->instance_id)
         {
             case BspIIC_Instance_I2C_1:
+                ((i2c_handle_type *)(obj->handle))->i2cx = I2C1;
                 crm_periph_clock_enable(CRM_I2C1_PERIPH_CLOCK, TRUE);
                 return true;
 
             case BspIIC_Instance_I2C_2:
+                ((i2c_handle_type *)(obj->handle))->i2cx = I2C2;
                 crm_periph_clock_enable(CRM_I2C2_PERIPH_CLOCK, TRUE);
                 return true;
 
             case BspIIC_Instance_I2C_3:
+                ((i2c_handle_type *)(obj->handle))->i2cx = I2C3;
                 crm_periph_clock_enable(CRM_I2C3_PERIPH_CLOCK, TRUE);
                 return true;
 
@@ -83,21 +94,10 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
 {
     if(obj)
     {
-        obj->handle = NULL;
-        switch ((uint8_t)obj->instance_id)
-        {
-            case BspIIC_Instance_I2C_1: obj->handle = I2C1; break;
-            case BspIIC_Instance_I2C_2: obj->handle = I2C2; break;
-            case BspIIC_Instance_I2C_3: obj->handle = I2C3; break;
-            default: return false;
-        }
-        
-        if ((obj->handle == NULL) || \
-            !BspIIC_PeriphClk_Init(obj) || \
-            !BspIIC_Pin_Init(obj))
+        if (!BspIIC_PeriphClk_Init(obj) || !BspIIC_Pin_Init(obj))
             return false;
 
-        i2c_config((i2c_type *)obj->handle);
+        i2c_config((i2c_handle_type *)obj->handle);
 
         return true;
     }
@@ -107,6 +107,7 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
 
 void i2c_lowlevel_init(i2c_handle_type* hi2c)
 {
+    I2C_INFO("Low level init\r\n");
     /* config i2c */
     i2c_init(hi2c->i2cx, 0x0F, I2Cx_CLK_100K);
 }
@@ -124,9 +125,14 @@ static bool BspIIC_DeInit(BspIICObj_TypeDef *obj)
 
 static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg, uint8_t *p_buf, uint16_t len)
 {
-    if(obj && p_buf && len)
+    i2c_status_type state = I2C_OK;
+
+    if(obj && obj->handle && p_buf && len)
     {
-        if (i2c_memory_read(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT) != I2C_OK)
+        state = i2c_memory_read(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT);
+        I2C_INFO("Rx Err_code: %d\r\n", state);
+
+        if (state != I2C_OK)
             return false;
 
         return true;
@@ -137,9 +143,14 @@ static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg,
 
 static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg, uint8_t *p_buf, uint16_t len)
 {
-    if(obj && p_buf && len)
+    i2c_status_type state = I2C_OK;
+
+    if(obj && obj->handle && p_buf && len)
     {
-        if (i2c_memory_write(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT) != I2C_OK)
+        state = i2c_memory_write(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT);
+        I2C_INFO("Tx Err_code: %d\r\n", state);
+
+        if (state != I2C_OK)
             return false;
 
         return true;
