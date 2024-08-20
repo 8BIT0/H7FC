@@ -285,7 +285,7 @@ C_DEFS =  \
 FPU = -mfpu=fpv5-d16
 else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 C_DEFS = \
--DAT32F435RGT7
+-DAT32F435xx
 ifeq ($(HARDWARE), $(HW_BETAFPV_AIO_AT32))
 C_DEFS += \
 -DBATEAT32F435_AIO
@@ -457,7 +457,7 @@ ifeq ($(PLATFORM), $(PLATFORM_STM32H7))
 OPENOCD := openocd -f interface/stlink.cfg \
         -f target/stm32h7x.cfg 
 else ifeq ($(PLATFORM), $(PLATFORM_AT32))
-OPENOCD := openocd -f interface/stlink.cfg \
+OPENOCD := openocd_at32 -f interface/stlink.cfg \
         -f target/at32f435xG.cfg 
 endif
 

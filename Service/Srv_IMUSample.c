@@ -87,7 +87,7 @@ static Error_Handler SrvMPU_Error_Handle = 0;
 static SPI_HandleTypeDef PriIMU_Bus_Instance;
 /* ICM42688P Instance */
 static SPI_HandleTypeDef SecIMU_Bus_Instance;
-#elif defined AT32F435RGT7
+#elif defined AT32F435xx
 static void *PriIMU_Bus_Instance = NULL;
 #endif
 

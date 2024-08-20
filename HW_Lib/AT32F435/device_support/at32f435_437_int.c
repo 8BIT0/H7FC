@@ -32,6 +32,7 @@
 #include "Bsp_Uart.h"
 #include "Bsp_USB.h"
 #include "Bsp_Timer.h"
+#include "Bsp_IIC.h"
 #include "FreeRTOS.h"
 #include "HW_Def.h"
 #include "debug_util.h"
@@ -449,6 +450,34 @@ void TMR20_OVF_IRQHandler(void)
 
     tmr_flag_clear(TMR20, TMR_OVF_FLAG);
   }
+}
+
+/**
+  * @brief  this function handles i2c event interrupt request.
+  * @param  none
+  * @retval none
+  */
+void I2Cx_EVT_IRQHandler(void)
+{
+  i2c_handle_type *hdl = NULL;
+  
+  hdl = BspIIC_Get_HandlePtr(BspIIC_Instance_I2C_2);
+  if (hdl)
+    i2c_evt_irq_handler(hdl);
+}
+
+/**
+  * @brief  this function handles i2c error interrupt request.
+  * @param  none
+  * @retval none
+  */
+void I2Cx_ERR_IRQHandler(void)
+{
+  i2c_handle_type *hdl = NULL;
+
+  hdl = BspIIC_Get_HandlePtr(BspIIC_Instance_I2C_2);
+  if (hdl)
+    i2c_err_irq_handler(hdl);
 }
 
 /**

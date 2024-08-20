@@ -19,6 +19,10 @@
 #define I2Cx_CLK_100K   0x80504C4E   //100K
 #define I2Cx_CLK_200K   0x30F03C6B   //200K
 
+static i2c_handle_type *BspIIC_HandleList[BspIIC_Instance_I2C_Sum] = {
+    NULL,
+};
+
 /* external function */
 static bool BspIIC_Init(BspIICObj_TypeDef *obj);
 static bool BspIIC_DeInit(BspIICObj_TypeDef *obj);
@@ -71,18 +75,49 @@ static bool BspIIC_PeriphClk_Init(BspIICObj_TypeDef *obj)
             case BspIIC_Instance_I2C_1:
                 ((i2c_handle_type *)(obj->handle))->i2cx = I2C1;
                 crm_periph_clock_enable(CRM_I2C1_PERIPH_CLOCK, TRUE);
+                BspIIC_HandleList[BspIIC_Instance_I2C_1] = (i2c_handle_type *)(obj->handle);
                 return true;
 
             case BspIIC_Instance_I2C_2:
                 ((i2c_handle_type *)(obj->handle))->i2cx = I2C2;
                 crm_periph_clock_enable(CRM_I2C2_PERIPH_CLOCK, TRUE);
+                BspIIC_HandleList[BspIIC_Instance_I2C_2] = (i2c_handle_type *)(obj->handle);
                 return true;
 
             case BspIIC_Instance_I2C_3:
                 ((i2c_handle_type *)(obj->handle))->i2cx = I2C3;
                 crm_periph_clock_enable(CRM_I2C3_PERIPH_CLOCK, TRUE);
+                BspIIC_HandleList[BspIIC_Instance_I2C_3] = (i2c_handle_type *)(obj->handle);
                 return true;
 
+            default: return false;
+        }
+    }
+
+    return false;
+}
+
+static bool BspIIC_Irq_Enable(BspIICObj_TypeDef *obj)
+{
+    if (obj && obj->handle)
+    {
+        switch (obj->instance_id)
+        {
+            case BspIIC_Instance_I2C_1:
+                nvic_irq_enable(I2C1_EVT_IRQn, 5, 0);
+                nvic_irq_enable(I2C1_ERR_IRQn, 5, 0);
+                return true;
+            
+            case BspIIC_Instance_I2C_2:
+                nvic_irq_enable(I2C2_EVT_IRQn, 5, 0);
+                nvic_irq_enable(I2C2_ERR_IRQn, 5, 0);
+                return true;
+
+            case BspIIC_Instance_I2C_3:
+                nvic_irq_enable(I2C3_EVT_IRQn, 5, 0);
+                nvic_irq_enable(I2C3_ERR_IRQn, 5, 0);
+                return true; 
+        
             default: return false;
         }
     }
@@ -97,18 +132,19 @@ static bool BspIIC_Init(BspIICObj_TypeDef *obj)
         if (!(BspIIC_PeriphClk_Init(obj) & BspIIC_Pin_Init(obj)))
             return false;
 
-        i2c_config((i2c_handle_type *)obj->handle);
+        i2c_reset(((i2c_handle_type *)obj->handle)->i2cx);
 
+        i2c_init(((i2c_handle_type *)obj->handle)->i2cx, 0x0F, I2Cx_CLK_100K);
+        i2c_own_address1_set(((i2c_handle_type *)obj->handle)->i2cx, I2C_ADDRESS_MODE_7BIT, 0x0);
+
+        if (!BspIIC_Irq_Enable(obj))
+            return false;
+
+        i2c_enable(((i2c_handle_type *)obj->handle)->i2cx, TRUE);
         return true;
     }
 
     return false;
-}
-
-void i2c_lowlevel_init(i2c_handle_type* hi2c)
-{
-    /* config i2c */
-    i2c_init(hi2c->i2cx, 0x0F, I2Cx_CLK_100K);
 }
 
 static bool BspIIC_DeInit(BspIICObj_TypeDef *obj)
@@ -152,4 +188,12 @@ static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg
     }
 
     return false;
+}
+
+void *BspIIC_Get_HandlePtr(BspIIC_Instance_List index)
+{
+    if(index < BspIIC_Instance_I2C_Sum)
+        return BspIIC_HandleList[index];
+
+    return NULL;
 }

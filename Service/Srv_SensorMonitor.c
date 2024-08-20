@@ -17,7 +17,7 @@
 #define BARO_TYPE Baro_Type_BMP280
 #define BARO_BUS_TYPE SrvBaro_Bus_SPI
 #elif defined CCRC_AT32_20
-#define BARO_TYPE Baro_Type_BMP280
+#define BARO_TYPE Baro_Type_DPS310
 #define BARO_BUS_TYPE SrvBaro_Bus_IIC
 #endif
 
