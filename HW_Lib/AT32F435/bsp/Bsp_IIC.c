@@ -131,10 +131,8 @@ static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg,
         state = i2c_memory_read(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT);
         I2C_INFO("Rx addr: 0x%02x --- reg: 0x%02x --- Err_code: %d\r\n", dev_addr, reg, state);
 
-        if (state != I2C_OK)
-            return false;
-
-        return true;
+        if (state == I2C_OK)
+            return true;
     }
 
     return false;
@@ -149,10 +147,8 @@ static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg
         state = i2c_memory_write(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT);
         I2C_INFO("Tx addr: 0x%02x --- reg: 0x%02x --- Err_code: %d\r\n", dev_addr, reg, state);
 
-        if (state != I2C_OK)
-            return false;
-
-        return true;
+        if (state == I2C_OK)
+            return true;
     }
 
     return false;
