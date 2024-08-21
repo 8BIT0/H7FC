@@ -55,7 +55,7 @@ extern "C" {
 
 #if !defined (AT32F435CCU7) && !defined (AT32F435CGU7) && !defined (AT32F435CMU7) && \
     !defined (AT32F435CCT7) && !defined (AT32F435CGT7) && !defined (AT32F435CMT7) && \
-    !defined (AT32F435RCT7) && !defined (AT32F435xx) && !defined (AT32F435RMT7) && \
+    !defined (AT32F435RCT7) && !defined (AT32F435RGT7) && !defined (AT32F435RMT7) && \
     !defined (AT32F435VCT7) && !defined (AT32F435VGT7) && !defined (AT32F435VMT7) && \
     !defined (AT32F435ZCT7) && !defined (AT32F435ZGT7) && !defined (AT32F435ZMT7) && \
     !defined (AT32F437RCT7) && !defined (AT32F437RGT7) && !defined (AT32F437RMT7) && \
@@ -67,7 +67,7 @@ extern "C" {
 
 #if defined (AT32F435CCU7) || defined (AT32F435CGU7) || defined (AT32F435CMU7) || \
     defined (AT32F435CCT7) || defined (AT32F435CGT7) || defined (AT32F435CMT7) || \
-    defined (AT32F435RCT7) || defined (AT32F435xx) || defined (AT32F435RMT7) || \
+    defined (AT32F435RCT7) || defined (AT32F435RGT7) || defined (AT32F435RMT7) || \
     defined (AT32F435VCT7) || defined (AT32F435VGT7) || defined (AT32F435VMT7) || \
     defined (AT32F435ZCT7) || defined (AT32F435ZGT7) || defined (AT32F435ZMT7)
 

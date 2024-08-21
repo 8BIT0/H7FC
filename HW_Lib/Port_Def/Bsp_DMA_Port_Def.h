@@ -14,7 +14,7 @@ typedef struct
     bool (*regist)(int8_t dma, int8_t stream, void *obj);
     bool (*unregist)(int8_t dma, int8_t stream);
     void *(*get_handle)(int8_t dma, int8_t stream);
-#if defined AT32F435xx
+#if defined AT32F435_437
     void *(*get_channel_instance)(int8_t dma, int8_t stream);
 #endif
     void *(*get_instance)(int8_t dma, int8_t stream);

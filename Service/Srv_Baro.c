@@ -191,7 +191,7 @@ static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
                 SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct);
                 return false;
             }
-#elif defined AT32F435xx
+#elif defined AT32F435_437
             ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(sizeof(I2C_Handle));
             if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
             {

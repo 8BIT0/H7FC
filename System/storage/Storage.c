@@ -24,7 +24,7 @@
 #define Item_Capacity_Per_Tab (Storage_TabSize / sizeof(Storage_Item_TypeDef))
 #if defined STM32H743xx
 static SPI_HandleTypeDef ExtFlash_Bus_InstObj;
-#elif defined AT32F435xx
+#elif defined AT32F435_437
 void *ExtFlash_Bus_InstObj = NULL;
 #endif
 

@@ -50,9 +50,9 @@
 /* Ensure definitions are only used by the compiler, and not by the assembler. */
 #if defined(__ICCARM__) || defined(__CC_ARM) || defined(__GNUC__)
   #include <stdint.h>
-  #if !defined AT32F435xx
+  #if !defined AT32F435_437
   extern uint32_t SystemCoreClock;
-  #elif defined AT32F435xx
+  #elif defined AT32F435_437
   static uint32_t systemcoreclock = 288000000;
   #endif
   void xPortSysTickHandler(void);
@@ -65,9 +65,9 @@
 #define configSUPPORT_DYNAMIC_ALLOCATION         1
 #define configUSE_IDLE_HOOK                      0
 #define configUSE_TICK_HOOK                      0
-#if !defined AT32F435xx
+#if !defined AT32F435_437
 #define configCPU_CLOCK_HZ                       ( SystemCoreClock )
-#elif defined AT32F435xx
+#elif defined AT32F435_437
 #define configCPU_CLOCK_HZ                       ( systemcoreclock )
 #endif
 #define configTICK_RATE_HZ                       ((TickType_t)1000)

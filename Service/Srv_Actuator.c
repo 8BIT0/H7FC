@@ -641,7 +641,7 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
             SrvActuator_Sem = osSemaphoreCreate(osSemaphore(DShot_Sem), 1);
         }
 
-#if defined AT32F435xx
+#if defined AT32F435_437
         To_DShot_Obj(obj)->pwm_obj.dma_callback_obj = SrvOsCommon.malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
 #endif
 
