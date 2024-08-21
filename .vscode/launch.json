@@ -27,8 +27,8 @@
             "type": "cortex-debug",
             "servertype": "openocd",
             "configFiles": [
-                "interface/stlink-v2.cfg",
-                "target/at32f435xx.cfg"
+                "interface/stlink.cfg",
+                "target/at32f435xG.cfg"
             ],
             //"svdFile": "/Users/mac/Desktop/Stm32/tool/cmsis-svd/data/STMicro/STM32F405.svd"
         },
