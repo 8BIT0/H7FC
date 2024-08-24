@@ -25,11 +25,15 @@ extern "C" {
 #define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_5
 #define RECEIVER_CRSF_TX_DMA Bsp_DMA_1
 #define RECEIVER_CRSF_TX_DMA_STREAM Bsp_DMA_Stream_6
+#define CRSF_TX_PIN Uart3_TxPin
+#define CRSF_RX_PIN Uart3_RxPin
 
 #define RECEIVER_SBUS_RX_DMA Bsp_DMA_1
 #define RECEIVER_SBUS_RX_DMA_STREAM Bsp_DMA_Stream_5
 #define RECEIVER_SBUS_TX_DMA Bsp_DMA_1
 #define RECEIVER_SBUS_TX_DMA_STREAM Bsp_DMA_Stream_6
+#define SBUS_TX_PIN Uart3_TxPin
+#define SBUS_RX_PIN Uart3_RxPin
 
 /* radio port */
 #define RADIO_PORT USART1
@@ -45,12 +49,6 @@ extern "C" {
 #define RADIO_RX_PIN GPIO_PINS_10
 #define RADIO_TX_PORT &Uart1_Tx_Port
 #define RADIO_RX_PORT &Uart1_Rx_Port
-
-#define CRSF_TX_PIN Uart3_TxPin
-#define CRSF_RX_PIN Uart3_RxPin
-
-#define SBUS_TX_PIN Uart3_TxPin
-#define SBUS_RX_PIN Uart3_RxPin
 
 #define CRSF_PIN_SWAP false
 
