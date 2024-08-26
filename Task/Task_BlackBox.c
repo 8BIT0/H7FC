@@ -602,7 +602,7 @@ static void TaskBlackBox_Set_Log(uint8_t medium, uint8_t type, uint32_t size)
 
     info.medium = medium;
     info.log_type = type;
-    info.log_size = size;
+    info.log_size = size;   /* only when tf blackbox avaliable */
 
     search_out = Storage.search(Para_User, BlackBox_Storage_Name);
     if ((search_out.item_addr == 0) || \
