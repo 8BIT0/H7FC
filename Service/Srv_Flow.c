@@ -142,11 +142,13 @@ static bool SrvFlow_3901U_PortInit(BspUART_Port_List port, void *p_cus_data)
     if (To_BspUart_Obj(port_obj)->rx_buf == NULL)
         return false;
 
-    /* set tx pin as yaw mode control pin */
-
     BspUart.init(port_obj);
+
     /* set port parse callback */
     BspUart.set_rx_callback(To_BspUart_Obj(port_obj), (BspUART_Callback *)DevFlow3901.recv);
+
+    /* set tx pin as yaw mode control pin */
+
     return true;
 }
 
