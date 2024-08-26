@@ -136,8 +136,8 @@ static bool SrvFlow_3901U_PortInit(BspUART_Port_List port, void *p_cus_data)
     // To_BspUart_Obj(port_obj)->tx_io = ;
     // To_BspUart_Obj(port_obj)->rx_dma = FLOW_RX_DMA;
     // To_BspUart_Obj(port_obj)->rx_stream = FLOW_RX_DMA_STREAM;
-    // To_BspUart_Obj(port_obj)->tx_dma = FLOW_TX_DMA;
-    // To_BspUart_Obj(port_obj)->tx_stream = FLOW_TX_DMA_STREAM;
+    To_BspUart_Obj(port_obj)->tx_dma = Bsp_DMA_None;
+    To_BspUart_Obj(port_obj)->tx_stream = Bsp_DMA_Stream_None;
     To_BspUart_Obj(port_obj)->rx_buf = SrvOsCommon.malloc(To_BspUart_Obj(port_obj)->rx_size);
     if (To_BspUart_Obj(port_obj)->rx_buf == NULL)
         return false;
