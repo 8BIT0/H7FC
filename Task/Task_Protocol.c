@@ -757,10 +757,10 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
         PckInfo.component_id = MAV_CompoID_Raw_IMU;
         PckInfo.chan = 0;
         SrvComProto.mav_msg_obj_init(&TaskProto_MAV_RawIMU, PckInfo, 10);
-        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RawIMU, true);
+        SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_RawIMU, false);
  
         SrvComProto.mav_msg_obj_init(&RadioProto_MAV_RawIMU, PckInfo, 10);
-        SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_RawIMU, true);
+        SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_RawIMU, false);
              
         // period 10Ms 100Hz
         PckInfo.system_id = MAV_SysID_Drone;
@@ -793,8 +793,8 @@ static bool TaskFrameCTL_MAV_Msg_Init(void)
         SrvComProto.mav_msg_enable_ctl(&RadioProto_MAV_MotoChannel, false);
         
         // period 20Ms 50Hz
-        PckInfo.system_id = MAV_SysID_Radio;
-        PckInfo.component_id = MAV_CompoID_Ctl_Attitude;
+        PckInfo.system_id = MAV_SysID_Drone;
+        PckInfo.component_id = MAV_CompoID_Attitude;
         PckInfo.chan = 0;
         SrvComProto.mav_msg_obj_init(&TaskProto_MAV_Attitude, PckInfo, 20);
         SrvComProto.mav_msg_enable_ctl(&TaskProto_MAV_Attitude, true);
