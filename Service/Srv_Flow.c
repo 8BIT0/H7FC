@@ -63,28 +63,27 @@ static bool SrvFlow_Init(SrvFlow_SensorType_List type)
                 return false;
             
             /* port init */
-#if (FLOW_SUM != 0)
-            To_BspUart_Obj(port_obj)->baudrate = FLOW_3901U_BAUDRATE;
-            To_BspUart_Obj(port_obj)->cust_data_addr = p_obj;
-            To_BspUart_Obj(port_obj)->irq_type = BspUart_IRQ_Type_Idle;
-            To_BspUart_Obj(port_obj)->instance = FLOW_PORT;
-            To_BspUart_Obj(port_obj)->rx_io = Uart6_RxPin;
-            To_BspUart_Obj(port_obj)->tx_io = Uart6_TxPin;
-            To_BspUart_Obj(port_obj)->pin_swap = false;
-            To_BspUart_Obj(port_obj)->rx_dma = FLOW_RX_DMA;
-            To_BspUart_Obj(port_obj)->rx_stream = FLOW_RX_DMA_STREAM;
-            To_BspUart_Obj(port_obj)->tx_dma = FLOW_TX_DMA;
-            To_BspUart_Obj(port_obj)->tx_stream = FLOW_TX_DMA_STREAM;
-            To_BspUart_Obj(port_obj)->rx_size = 128;
-            To_BspUart_Obj(port_obj)->rx_buf = SrvOsCommon.malloc(To_BspUart_Obj(port_obj)->rx_size);
-            if (To_BspUart_Obj(port_obj)->rx_buf == NULL)
-                return false;
+            // To_BspUart_Obj(port_obj)->baudrate = FLOW_3901U_BAUDRATE;
+            // To_BspUart_Obj(port_obj)->cust_data_addr = p_obj;
+            // To_BspUart_Obj(port_obj)->irq_type = BspUart_IRQ_Type_Idle;
+            // To_BspUart_Obj(port_obj)->instance = FLOW_PORT;
+            // To_BspUart_Obj(port_obj)->rx_io = Uart6_RxPin;
+            // To_BspUart_Obj(port_obj)->tx_io = Uart6_TxPin;
+            // To_BspUart_Obj(port_obj)->pin_swap = false;
+            // To_BspUart_Obj(port_obj)->rx_dma = FLOW_RX_DMA;
+            // To_BspUart_Obj(port_obj)->rx_stream = FLOW_RX_DMA_STREAM;
+            // To_BspUart_Obj(port_obj)->tx_dma = FLOW_TX_DMA;
+            // To_BspUart_Obj(port_obj)->tx_stream = FLOW_TX_DMA_STREAM;
+            // To_BspUart_Obj(port_obj)->rx_size = 128;
+            // To_BspUart_Obj(port_obj)->rx_buf = SrvOsCommon.malloc(To_BspUart_Obj(port_obj)->rx_size);
+            // if (To_BspUart_Obj(port_obj)->rx_buf == NULL)
+            //     return false;
 
-            BspUart.init(port_obj);
+            // BspUart.init(port_obj);
             /* set port parse callback */
-            BspUart.set_rx_callback(To_BspUart_Obj(port_obj), (BspUART_Callback *)DevFlow3901.recv);
-            FlowMonitor.init = true;
-#endif
+            // BspUart.set_rx_callback(To_BspUart_Obj(port_obj), (BspUART_Callback *)DevFlow3901.recv);
+            // FlowMonitor.init = true;
+            
             return true;
 
         default: return false;

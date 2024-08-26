@@ -152,6 +152,8 @@ extern BspIICObj_TypeDef Baro_BusCfg;
 
 extern BspGPIO_Port_TypeDef Uart3_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart3_Rx_Port;
+extern BspGPIO_Port_TypeDef Uart2_Tx_Port;
+extern BspGPIO_Port_TypeDef Uart2_Rx_Port;
 extern BspGPIO_Port_TypeDef Uart1_Tx_Port;
 extern BspGPIO_Port_TypeDef Uart1_Rx_Port;
 extern BspGPIO_Port_TypeDef Uart5_Tx_Port;
@@ -161,6 +163,8 @@ extern BspGPIO_Port_TypeDef Uart7_Rx_Port;
 
 extern BspGPIO_Obj_TypeDef Uart3_TxPin;
 extern BspGPIO_Obj_TypeDef Uart3_RxPin;
+extern BspGPIO_Obj_TypeDef Uart2_TxPin;
+extern BspGPIO_Obj_TypeDef Uart2_RxPin;
 extern BspGPIO_Obj_TypeDef Uart1_TxPin;
 extern BspGPIO_Obj_TypeDef Uart1_RxPin;
 extern BspGPIO_Obj_TypeDef Uart5_TxPin;
