@@ -29,6 +29,7 @@ static SrvFlowObj_TypeDef FlowMonitor = {
 };
 
 /* internal function */
+static bool SrvFlow_3901U_PortInit(BspUART_Port_List port, void *p_cus_data);
 static void SrvFlow_3901U_RawComput(uint32_t time_stamp, int16_t raw_x, int16_t raw_y);
 
 /* external function */
@@ -45,7 +46,6 @@ SrvFlow_TypeDef SrvFlow = {
 static bool SrvFlow_Init(SrvFlow_SensorType_List type)
 {
     void *p_obj = NULL;
-    void *port_obj = NULL;
 
     FlowMonitor.type = type;
     switch ((uint8_t)FlowMonitor.type)
@@ -53,8 +53,7 @@ static bool SrvFlow_Init(SrvFlow_SensorType_List type)
         case Flow_3901U:    /* Uart port */
             /* use uart6 connect with flow sensor */
             p_obj = SrvOsCommon.malloc(DevFlow3901U_Size);
-            port_obj = SrvOsCommon.malloc(BspUartObj_Size);
-            if ((p_obj == NULL) || (port_obj == NULL))
+            if (p_obj == NULL)
                 return false;
 
             To_DevFlow3901U_Obj(p_obj)->get_sys_time = SrvOsCommon.get_os_ms;
@@ -64,29 +63,6 @@ static bool SrvFlow_Init(SrvFlow_SensorType_List type)
             if (DevFlow3901.init(To_DevFlow3901U_Obj(p_obj)) == 0)
                 return false;
             
-            /* port init */
-            To_BspUart_Obj(port_obj)->rx_size = FLOW_TEMP_BUFF_SIZE;
-            To_BspUart_Obj(port_obj)->baudrate = FLOW_3901U_BAUDRATE;
-            To_BspUart_Obj(port_obj)->cust_data_addr = p_obj;
-            To_BspUart_Obj(port_obj)->irq_type = BspUart_IRQ_Type_Idle;
-            
-            // To_BspUart_Obj(port_obj)->instance = FLOW_PORT;
-            // To_BspUart_Obj(port_obj)->rx_io = ;
-            // To_BspUart_Obj(port_obj)->tx_io = ;
-            // To_BspUart_Obj(port_obj)->pin_swap = false;
-            // To_BspUart_Obj(port_obj)->rx_dma = FLOW_RX_DMA;
-            // To_BspUart_Obj(port_obj)->rx_stream = FLOW_RX_DMA_STREAM;
-            // To_BspUart_Obj(port_obj)->tx_dma = FLOW_TX_DMA;
-            // To_BspUart_Obj(port_obj)->tx_stream = FLOW_TX_DMA_STREAM;
-            To_BspUart_Obj(port_obj)->rx_buf = SrvOsCommon.malloc(To_BspUart_Obj(port_obj)->rx_size);
-            if (To_BspUart_Obj(port_obj)->rx_buf == NULL)
-                return false;
-
-            /* set tx pin as yaw mode control pin */
-
-            BspUart.init(port_obj);
-            /* set port parse callback */
-            BspUart.set_rx_callback(To_BspUart_Obj(port_obj), (BspUART_Callback *)DevFlow3901.recv);
             FlowMonitor.init = true;
             
             return true;
@@ -126,6 +102,54 @@ static bool SrvFlow_Get_Data(SrvFlowData_TypeDef *p_data)
 }
 
 /************************************************************ distance process impliment **********************************************************/
+static bool SrvFlow_3901U_PortInit(BspUART_Port_List port, void *p_cus_data)
+{
+    void *port_obj = NULL;
+    void *port_instance = NULL;
+
+#if defined AT32F435_437
+    switch ((uint8_t)port)
+    {
+        case Bsp_UART_Port_1: port_instance = USART1; break;
+        case Bsp_UART_Port_2: port_instance = USART2; break;
+        case Bsp_UART_Port_3: port_instance = USART3; break;
+        case Bsp_UART_Port_4: port_instance = UART4;  break;
+        case Bsp_UART_Port_5: port_instance = UART5;  break;
+        case Bsp_UART_Port_6: port_instance = USART6; break;
+        case Bsp_UART_Port_7: port_instance = UART7;  break;
+        case Bsp_UART_Port_8: port_instance = UART8;  break;
+        default: return false;
+    }
+#endif
+
+    port_obj = SrvOsCommon.malloc(BspUartObj_Size);
+    if (port_obj == NULL)
+        return false;
+
+    To_BspUart_Obj(port_obj)->rx_size = FLOW_TEMP_BUFF_SIZE;
+    To_BspUart_Obj(port_obj)->baudrate = FLOW_3901U_BAUDRATE;
+    To_BspUart_Obj(port_obj)->cust_data_addr = p_cus_data;
+    To_BspUart_Obj(port_obj)->irq_type = BspUart_IRQ_Type_Idle;
+    To_BspUart_Obj(port_obj)->instance = port_instance;
+    To_BspUart_Obj(port_obj)->pin_swap = false;
+    // To_BspUart_Obj(port_obj)->rx_io = ;
+    // To_BspUart_Obj(port_obj)->tx_io = ;
+    // To_BspUart_Obj(port_obj)->rx_dma = FLOW_RX_DMA;
+    // To_BspUart_Obj(port_obj)->rx_stream = FLOW_RX_DMA_STREAM;
+    // To_BspUart_Obj(port_obj)->tx_dma = FLOW_TX_DMA;
+    // To_BspUart_Obj(port_obj)->tx_stream = FLOW_TX_DMA_STREAM;
+    To_BspUart_Obj(port_obj)->rx_buf = SrvOsCommon.malloc(To_BspUart_Obj(port_obj)->rx_size);
+    if (To_BspUart_Obj(port_obj)->rx_buf == NULL)
+        return false;
+
+    /* set tx pin as yaw mode control pin */
+
+    BspUart.init(port_obj);
+    /* set port parse callback */
+    BspUart.set_rx_callback(To_BspUart_Obj(port_obj), (BspUART_Callback *)DevFlow3901.recv);
+    return true;
+}
+
 /* comput raw data */
 static void SrvFlow_3901U_RawComput(uint32_t time_stamp, int16_t raw_x, int16_t raw_y)
 {

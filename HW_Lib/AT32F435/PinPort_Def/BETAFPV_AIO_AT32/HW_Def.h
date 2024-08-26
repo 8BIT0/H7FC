@@ -54,7 +54,7 @@ extern "C" {
 #define RADIO_RX_PORT &Uart1_Rx_Port
 
 /* flow sensor port uart6 */
-#define FLOW_PORT USART6
+#define FLOW_PORT Bsp_UART_Port_6
 #define FLOW_TX_PIN_INIT_STATE GPIO_PULL_NONE
 #define FLOW_RX_PIN_INIT_STATE GPIO_PULL_NONE
 #define FLOW_TX_PIN_ALT GPIO_MUX_8
