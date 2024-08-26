@@ -21,6 +21,7 @@ extern "C" {
 #include "Dev_W25Qxx.h"
 
 #define RECEIVER_PORT USART3
+#define CRSF_PIN_SWAP false
 #define RECEIVER_CRSF_RX_DMA Bsp_DMA_1
 #define RECEIVER_CRSF_RX_DMA_STREAM Bsp_DMA_Stream_5
 #define RECEIVER_CRSF_TX_DMA Bsp_DMA_1
@@ -50,7 +51,8 @@ extern "C" {
 #define RADIO_TX_PORT &Uart1_Tx_Port
 #define RADIO_RX_PORT &Uart1_Rx_Port
 
-#define CRSF_PIN_SWAP false
+/* FLow Port */
+#define FLOW_PORT Bsp_UART_Port_1
 
 /* IMU SPI */
 #define PriIMU_SPI_BUS SPI1

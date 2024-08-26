@@ -15,7 +15,7 @@
 #define BspUart_Opr_TimeOut 100 // 100ms
 
 /* internal variable */
-static BspUARTObj_TypeDef *BspUart_Obj_List[BspUART_Port_Sum] = {NULL};
+static BspUARTObj_TypeDef *BspUart_Obj_List[Bsp_UART_Port_Sum] = {NULL};
 
 /* external function */
 static bool BspUart_Init(BspUARTObj_TypeDef *obj);
@@ -56,7 +56,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
             return BspUart_Clock_Error;
 
         __HAL_RCC_USART1_CLK_ENABLE();
-        index = BspUART_Port_1;
+        index = Bsp_UART_Port_1;
     }
     else if (To_Uart_Instance(obj->instance) == UART4)
     {
@@ -67,7 +67,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
             return BspUart_Clock_Error;
 
         __HAL_RCC_UART4_CLK_ENABLE();
-        index = BspUART_Port_4;
+        index = Bsp_UART_Port_4;
     }
     else if (To_Uart_Instance(obj->instance) == USART6)
     {
@@ -78,7 +78,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
             return BspUart_Clock_Error;
 
         __HAL_RCC_USART6_CLK_ENABLE();
-        index = BspUART_Port_6;
+        index = Bsp_UART_Port_6;
     }
     else if (To_Uart_Instance(obj->instance) == UART7)
     {
@@ -89,7 +89,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
             return BspUart_Clock_Error;
 
         __HAL_RCC_UART7_CLK_ENABLE();
-        index = BspUART_Port_7;
+        index = Bsp_UART_Port_7;
     }
     else
         return BspUart_Clock_Error;
@@ -136,28 +136,28 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
         rx_dma_cfg.Init.Request = DMA_REQUEST_USART1_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_USART1_TX;
 
-        index = BspUART_Port_1;
+        index = Bsp_UART_Port_1;
     }
     else if (To_Uart_Instance(obj->instance) == UART4)
     {
         rx_dma_cfg.Init.Request = DMA_REQUEST_UART4_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_UART4_TX;
 
-        index = BspUART_Port_4;
+        index = Bsp_UART_Port_4;
     }
     else if (To_Uart_Instance(obj->instance) == USART6)
     {
         rx_dma_cfg.Init.Request = DMA_REQUEST_USART6_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_USART6_TX;
 
-        index = BspUART_Port_6;
+        index = Bsp_UART_Port_6;
     }
     else if (To_Uart_Instance(obj->instance) == UART7)
     {
         rx_dma_cfg.Init.Request = DMA_REQUEST_UART7_RX;
         tx_dma_cfg.Init.Request = DMA_REQUEST_UART7_TX;
 
-        index = BspUART_Port_7;
+        index = Bsp_UART_Port_7;
     }
     else
         return BspUart_Clock_Error;
@@ -206,22 +206,22 @@ static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj)
     if (To_Uart_Instance(obj->instance) == USART1)
     {
         irqn = USART1_IRQn;
-        index = BspUART_Port_1;
+        index = Bsp_UART_Port_1;
     }
     else if (To_Uart_Instance(obj->instance) == UART4)
     {
         irqn = UART4_IRQn;
-        index = BspUART_Port_4;
+        index = Bsp_UART_Port_4;
     }
     else if (To_Uart_Instance(obj->instance) == USART6)
     {
         irqn = USART6_IRQn;
-        index = BspUART_Port_6;
+        index = Bsp_UART_Port_6;
     }
     else if (To_Uart_Instance(obj->instance) == UART7)
     {
         irqn = UART7_IRQn;
-        index = BspUART_Port_7;
+        index = Bsp_UART_Port_7;
     }
     else
         return Bspuart_None_Index;
@@ -385,7 +385,7 @@ static bool BspUart_Swap_Pin(BspUARTObj_TypeDef *obj, bool swap)
 
 UART_HandleTypeDef *BspUart_GetObj_Handle(BspUART_Port_List index)
 {
-    if (index >= BspUART_Port_Sum)
+    if (index >= Bsp_UART_Port_Sum)
         return NULL;
 
     return &(BspUart_Obj_List[index]->hdl);
@@ -542,19 +542,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
     if (huart->Instance == USART1)
     {
-        index = BspUART_Port_1;
+        index = Bsp_UART_Port_1;
     }
     else if (huart->Instance == UART4)
     {
-        index = BspUART_Port_4;
+        index = Bsp_UART_Port_4;
     }
     else if (huart->Instance == USART6)
     {
-        index = BspUART_Port_6;
+        index = Bsp_UART_Port_6;
     }
     else if (huart->Instance == UART7)
     {
-        index = BspUART_Port_7;
+        index = Bsp_UART_Port_7;
     }
     else
         return;
@@ -592,19 +592,19 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
     if(huart->Instance == USART1)
     {
-        index = BspUART_Port_1;
+        index = Bsp_UART_Port_1;
     }
     else if (huart->Instance == UART4)
     {
-        index = BspUART_Port_4;
+        index = Bsp_UART_Port_4;
     }
     else if (huart->Instance == USART6)
     {
-        index = BspUART_Port_6;
+        index = Bsp_UART_Port_6;
     }
     else if (huart->Instance == UART7)
     {
-        index = BspUART_Port_7;
+        index = Bsp_UART_Port_7;
     }
     else
         return;
@@ -627,19 +627,19 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
 
     if(huart->Instance == USART1)
     {
-        index = BspUART_Port_1;
+        index = Bsp_UART_Port_1;
     }
     else if (huart->Instance == UART4)
     {
-        index = BspUART_Port_4;
+        index = Bsp_UART_Port_4;
     }
     else if (huart->Instance == USART6)
     {
-        index = BspUART_Port_6;
+        index = Bsp_UART_Port_6;
     }
     else if (huart->Instance == UART7)
     {
-        index = BspUART_Port_7;
+        index = Bsp_UART_Port_7;
     }
     else
         return;

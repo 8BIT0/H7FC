@@ -18,11 +18,11 @@ extern "C" {
 
 typedef enum
 {
-    BspUART_Port_1 = 0,
-    BspUART_Port_4,
-    BspUART_Port_6,
-    BspUART_Port_7,
-    BspUART_Port_Sum,
+    Bsp_UART_Port_1 = 0,
+    Bsp_UART_Port_4,
+    Bsp_UART_Port_6,
+    Bsp_UART_Port_7,
+    Bsp_UART_Port_Sum,
 } BspUART_Port_List;
 
 void UART_IRQ_Callback(BspUART_Port_List index);

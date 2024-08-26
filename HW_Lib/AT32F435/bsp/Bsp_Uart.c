@@ -14,10 +14,10 @@
 #define BspUart_Opr_TimeOut 100 // 100ms
 
 /* internal variable */
-static BspUARTObj_TypeDef *BspUart_Obj_List[BspUART_Port_Sum] = {NULL};
-static BspDMA_IrqCall_Obj_TypeDef BspUart_TxDMA_IrqObj[BspUART_Port_Sum] = {{NULL, NULL}};
-static BspDMA_IrqCall_Obj_TypeDef BspUart_RxDMA_IrqObj[BspUART_Port_Sum] = {{NULL, NULL}};
-
+static BspUARTObj_TypeDef *BspUart_Obj_List[Bsp_UART_Port_Sum] = {NULL};
+static BspDMA_IrqCall_Obj_TypeDef BspUart_TxDMA_IrqObj[Bsp_UART_Port_Sum] = {{NULL, NULL}};
+static BspDMA_IrqCall_Obj_TypeDef BspUart_RxDMA_IrqObj[Bsp_UART_Port_Sum] = {{NULL, NULL}};
+                                                          
 /* internal function */
 static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj);
 static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj, bool state);
@@ -62,42 +62,42 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
     if(To_Uart_Instance(obj->instance) == USART1)
     {
         clock = CRM_USART1_PERIPH_CLOCK;
-        index = BspUART_Port_1;
+        index = Bsp_UART_Port_1;
     }
     else if(To_Uart_Instance(obj->instance) == USART2)
     {
         clock = CRM_USART2_PERIPH_CLOCK;
-        index = BspUART_Port_2;
+        index = Bsp_UART_Port_2;
     }
     else if(To_Uart_Instance(obj->instance) == USART3)
     {
         clock = CRM_USART3_PERIPH_CLOCK;
-        index = BspUART_Port_3;
+        index = Bsp_UART_Port_3;
     }
     else if(To_Uart_Instance(obj->instance) == UART4)
     {
         clock = CRM_UART4_PERIPH_CLOCK;
-        index = BspUART_Port_4;
+        index = Bsp_UART_Port_4;
     }
     else if(To_Uart_Instance(obj->instance) == UART5)
     {
         clock = CRM_UART5_PERIPH_CLOCK;
-        index = BspUART_Port_5;
+        index = Bsp_UART_Port_5;
     }
     else if(To_Uart_Instance(obj->instance) == USART6)
     {
         clock = CRM_USART6_PERIPH_CLOCK;
-        index = BspUART_Port_6;
+        index = Bsp_UART_Port_6;
     }
     else if(To_Uart_Instance(obj->instance) == UART7)
     {
         clock = CRM_UART7_PERIPH_CLOCK;
-        index = BspUART_Port_7;
+        index = Bsp_UART_Port_7;
     }
     else if(To_Uart_Instance(obj->instance) == UART8)
     {
         clock = CRM_UART8_PERIPH_CLOCK;
-        index = BspUART_Port_8;
+        index = Bsp_UART_Port_8;
     }
     else
         return BspUart_Clock_Error;
@@ -109,7 +109,7 @@ static int BspUart_Init_Clock(BspUARTObj_TypeDef *obj)
 static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj, bool state)
 {
     int index = 0;
-    IRQn_Type irqn = BspUART_Port_1;
+    IRQn_Type irqn = Bsp_UART_Port_1;
 
     if((obj == NULL) || (obj->instance == NULL))
         return BspUart_Clock_Error;
@@ -117,42 +117,42 @@ static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj, bool state)
     if(To_Uart_Instance(obj->instance) == USART1)
     {
         irqn = USART1_IRQn;
-        index = BspUART_Port_1;
+        index = Bsp_UART_Port_1;
     }
     else if(To_Uart_Instance(obj->instance) == USART2)
     {
         irqn = USART2_IRQn;
-        index = BspUART_Port_2;
+        index = Bsp_UART_Port_2;
     }
     else if(To_Uart_Instance(obj->instance) == USART3)
     {
         irqn = USART3_IRQn;
-        index = BspUART_Port_3;
+        index = Bsp_UART_Port_3;
     }
     else if(To_Uart_Instance(obj->instance) == UART4)
     {
         irqn = UART4_IRQn;
-        index = BspUART_Port_4;
+        index = Bsp_UART_Port_4;
     }
     else if(To_Uart_Instance(obj->instance) == UART5)
     {
         irqn = UART5_IRQn;
-        index = BspUART_Port_5;
+        index = Bsp_UART_Port_5;
     }
     else if(To_Uart_Instance(obj->instance) == USART6)
     {
         irqn = USART6_IRQn;
-        index = BspUART_Port_6;
+        index = Bsp_UART_Port_6;
     }
     else if(To_Uart_Instance(obj->instance) == UART7)
     {
         irqn = UART7_IRQn;
-        index = BspUART_Port_7;
+        index = Bsp_UART_Port_7;
     }
     else if(To_Uart_Instance(obj->instance) == UART8)
     {
         irqn = UART8_IRQn;
-        index = BspUART_Port_7;
+        index = Bsp_UART_Port_8;
     }
 
     nvic_priority_group_config(NVIC_PRIORITY_GROUP_4);
@@ -251,35 +251,35 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
 
     if (To_Uart_Instance(obj->instance) == USART1)
     {
-        index = BspUART_Port_1;
+        index = Bsp_UART_Port_1;
     }
     else if (To_Uart_Instance(obj->instance) == USART2)
     {
-        index = BspUART_Port_2;
+        index = Bsp_UART_Port_2;
     }
     else if (To_Uart_Instance(obj->instance) == USART3)
     {
-        index = BspUART_Port_3;
+        index = Bsp_UART_Port_3;
     }
     else if (To_Uart_Instance(obj->instance) == UART4)
     {
-        index = BspUART_Port_4;
+        index = Bsp_UART_Port_4;
     }
     else if (To_Uart_Instance(obj->instance) == UART5)
     {
-        index = BspUART_Port_5;
+        index = Bsp_UART_Port_5;
     }
     else if (To_Uart_Instance(obj->instance) == USART6)
     {
-        index = BspUART_Port_6;
+        index = Bsp_UART_Port_6;
     }
     else if (To_Uart_Instance(obj->instance) == UART7)
     {
-        index = BspUART_Port_7;
+        index = Bsp_UART_Port_7;
     }
     else if (To_Uart_Instance(obj->instance) == UART8)
     {
-        index = BspUART_Port_8;
+        index = Bsp_UART_Port_8;
     }
     else
         return Bspuart_None_Index;
@@ -350,6 +350,8 @@ static int BspUart_Init_DMA(BspUARTObj_TypeDef *obj)
 static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 {
     int port_index = -1;
+    bool tx_en = false;
+    bool rx_en = false;
 
     if ((obj == NULL) || \
         (obj->instance == NULL))
@@ -361,12 +363,9 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
         return false;
 
     /* pin init */
-    if (!BspGPIO.alt_init(obj->tx_io, GPIO_OUTPUT_PUSH_PULL))
-        return false;
-
-    if (!BspGPIO.alt_init(obj->rx_io, GPIO_OUTPUT_PUSH_PULL))
-        return false;
-
+    tx_en = BspGPIO.alt_init(obj->tx_io, GPIO_OUTPUT_PUSH_PULL);
+    rx_en = BspGPIO.alt_init(obj->rx_io, GPIO_OUTPUT_PUSH_PULL);
+          
     if(obj->baudrate <= 0)
         obj->baudrate = Uart_Default_Baudrate;
 
@@ -375,8 +374,11 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     if (obj->pin_swap)
         usart_transmit_receive_pin_swap(To_Uart_Instance(obj->instance), TRUE);
     
-    usart_transmitter_enable(To_Uart_Instance(obj->instance), TRUE);
-    usart_receiver_enable(To_Uart_Instance(obj->instance), TRUE);
+    if (tx_en)
+        usart_transmitter_enable(To_Uart_Instance(obj->instance), TRUE);
+    
+    if (rx_en)
+        usart_receiver_enable(To_Uart_Instance(obj->instance), TRUE);
 
     if(BspUart_Init_DMA(obj) == BspUart_Clock_Error)
         return false;
@@ -622,28 +624,28 @@ void BspUart_Irq_Callback(void *arg)
         usart_data_receive(instance);
     
         if (instance == USART1)
-            obj = BspUart_Obj_List[BspUART_Port_1];
+            obj = BspUart_Obj_List[Bsp_UART_Port_1];
 
         if (instance == USART2)
-            obj = BspUart_Obj_List[BspUART_Port_2];
+            obj = BspUart_Obj_List[Bsp_UART_Port_2];
         
         if (instance == USART3)
-            obj = BspUart_Obj_List[BspUART_Port_3];
+            obj = BspUart_Obj_List[Bsp_UART_Port_3];
 
         if (instance == UART4)
-            obj = BspUart_Obj_List[BspUART_Port_4];
+            obj = BspUart_Obj_List[Bsp_UART_Port_4];
         
         if (instance == UART5)
-            obj = BspUart_Obj_List[BspUART_Port_5];
+            obj = BspUart_Obj_List[Bsp_UART_Port_5];
         
         if (instance == USART6)
-            obj = BspUart_Obj_List[BspUART_Port_6];
+            obj = BspUart_Obj_List[Bsp_UART_Port_6];
         
         if (instance == UART7)
-            obj = BspUart_Obj_List[BspUART_Port_7];
+            obj = BspUart_Obj_List[Bsp_UART_Port_7];
         
         if (instance == UART8)
-            obj = BspUart_Obj_List[BspUART_Port_8];
+            obj = BspUart_Obj_List[Bsp_UART_Port_8];
     
         if (obj && obj->instance && obj->init_state && (obj->instance == instance))
         {

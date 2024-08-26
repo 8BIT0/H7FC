@@ -9,6 +9,8 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 
+#define FLOW_TEMP_BUFF_SIZE 128
+
 #define FLOW_3901U_BAUDRATE 19200
 #define FLOW_3901U_BIT      8
 #define FLOW_3901U_PARITY   0

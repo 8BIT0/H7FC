@@ -203,8 +203,8 @@ void DMA2_Stream1_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   UART_HandleTypeDef *hdl = NULL;
-  UART_IRQ_Callback(BspUART_Port_1);
-  hdl = BspUart_GetObj_Handle(BspUART_Port_1);
+  UART_IRQ_Callback(Bsp_UART_Port_1);
+  hdl = BspUart_GetObj_Handle(Bsp_UART_Port_1);
 
   if (hdl && (hdl->Instance == USART1))
     HAL_UART_IRQHandler(hdl);
@@ -213,8 +213,8 @@ void USART1_IRQHandler(void)
 void UART4_IRQHandler(void)
 {
   UART_HandleTypeDef *hdl = NULL;
-  UART_IRQ_Callback(BspUART_Port_4);
-  hdl = BspUart_GetObj_Handle(BspUART_Port_4);
+  UART_IRQ_Callback(Bsp_UART_Port_4);
+  hdl = BspUart_GetObj_Handle(Bsp_UART_Port_4);
 
   if (hdl && (hdl->Instance == UART4))
     HAL_UART_IRQHandler(hdl);
@@ -223,8 +223,8 @@ void UART4_IRQHandler(void)
 void USART6_IRQHandler(void)
 {
   UART_HandleTypeDef *hdl = NULL;
-  UART_IRQ_Callback(BspUART_Port_6);
-  hdl = BspUart_GetObj_Handle(BspUART_Port_6);
+  UART_IRQ_Callback(Bsp_UART_Port_6);
+  hdl = BspUart_GetObj_Handle(Bsp_UART_Port_6);
 
   if (hdl && (hdl->Instance == USART6))
     HAL_UART_IRQHandler(hdl);
@@ -233,8 +233,8 @@ void USART6_IRQHandler(void)
 void UART7_IRQHandler(void)
 {
   UART_HandleTypeDef *hdl = NULL;
-  UART_IRQ_Callback(BspUART_Port_7);
-  hdl = BspUart_GetObj_Handle(BspUART_Port_7);
+  UART_IRQ_Callback(Bsp_UART_Port_7);
+  hdl = BspUart_GetObj_Handle(Bsp_UART_Port_7);
 
   if (hdl && (hdl->Instance == UART7))
     HAL_UART_IRQHandler(hdl);
