@@ -45,7 +45,6 @@ SrvFlow_TypeDef SrvFlow = {
 static bool SrvFlow_Init(SrvFlow_SensorType_List type)
 {
     void *p_obj = NULL;
-    void *port_obj = NULL;
 
     FlowMonitor.type = type;
     switch ((uint8_t)FlowMonitor.type)
@@ -53,8 +52,7 @@ static bool SrvFlow_Init(SrvFlow_SensorType_List type)
         case Flow_3901U:
             /* use uart6 connect with flow sensor */
             p_obj = SrvOsCommon.malloc(DevFlow3901U_Size);
-            port_obj = SrvOsCommon.malloc(BspUartObj_Size);
-            if ((p_obj == NULL) || (port_obj == NULL))
+            if (p_obj == NULL)
                 return false;
 
             To_DevFlow3901U_Obj(p_obj)->get_sys_time = SrvOsCommon.get_os_ms;
