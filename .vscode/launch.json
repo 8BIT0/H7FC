@@ -30,7 +30,7 @@
                 "interface/stlink.cfg",
                 "target/at32f435xG.cfg"
             ],
-            //"svdFile": "/Users/mac/Desktop/Stm32/tool/cmsis-svd/data/STMicro/STM32F405.svd"
+            "svdFile": "./HW_Lib/AT32F435/svd/AT32F435xx_V2.svd"
         },
         {
             "name": "ARM Debug",

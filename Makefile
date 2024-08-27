@@ -391,6 +391,8 @@ CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -std=c99 -Wall -fdata-sections -f
 
 CPPFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(CPP_INCLUDES) $(OPT) -std=c++11 -Wall -fdata-sections -ffunction-sections 
 
+CPPFLAGS += -g
+
 # ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
 # endif
@@ -458,7 +460,7 @@ ifeq ($(PLATFORM), $(PLATFORM_STM32H7))
 OPENOCD := openocd -f interface/stlink.cfg \
         -f target/stm32h7x.cfg 
 else ifeq ($(PLATFORM), $(PLATFORM_AT32))
-OPENOCD := openocd -f interface/stlink.cfg \
+OPENOCD := openocd_at32 -f interface/stlink.cfg \
         -f target/at32f435xG.cfg 
 endif
 
