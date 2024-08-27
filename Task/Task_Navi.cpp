@@ -137,8 +137,8 @@ void TaskNavi_Core(void const *arg)
         if(Attitude_Update)
         {
             /* update Attitude */
-            MadgwickAHRSupdate(&algo_att, Deg2Rad(Flt_Gyr[Axis_X]), Deg2Rad(Flt_Gyr[Axis_Y]), Deg2Rad(Flt_Gyr[Axis_Z]), \
-                                          Flt_Acc[Axis_X],          Flt_Acc[Axis_Y],          Flt_Acc[Axis_Z], \
+            MadgwickAHRSupdate(&algo_att, Deg2Rad(Flt_Gyr[Axis_X]), Deg2Rad(-Flt_Gyr[Axis_Y]), Deg2Rad(-Flt_Gyr[Axis_Z]), \
+                                          Flt_Acc[Axis_X],          -Flt_Acc[Axis_Y],          -Flt_Acc[Axis_Z], \
                                           Flt_Mag[Axis_X],          Flt_Mag[Axis_Y],          Flt_Mag[Axis_Z]);
             
             attitude.pitch = algo_att.pitch;
