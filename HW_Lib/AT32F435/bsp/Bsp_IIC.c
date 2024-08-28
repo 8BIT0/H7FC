@@ -12,7 +12,7 @@
 #define I2C_INFO(fmt, ...) Debug_Print(&DebugPort, I2C_TAG, fmt, ##__VA_ARGS__)
 /* test code */
 
-#define I2C_TIMEOUT     200
+#define I2C_TIMEOUT     0xFFFFFFFF
 
 #define I2Cx_CLK_10K    0xB170FFFF   //10K
 #define I2Cx_CLK_50K    0xC0E06969   //50K

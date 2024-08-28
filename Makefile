@@ -460,7 +460,7 @@ ifeq ($(PLATFORM), $(PLATFORM_STM32H7))
 OPENOCD := openocd -f interface/stlink.cfg \
         -f target/stm32h7x.cfg 
 else ifeq ($(PLATFORM), $(PLATFORM_AT32))
-OPENOCD := openocd_at32 -f interface/stlink.cfg \
+OPENOCD := openocd -f interface/stlink.cfg \
         -f target/at32f435xG.cfg 
 endif
 

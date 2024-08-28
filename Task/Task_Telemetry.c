@@ -62,10 +62,10 @@ void TaskTelemetry_Init(uint32_t period)
     Telemetry_Monitor.Init_Rt = SrvOsCommon.get_os_ms();
 
     /* gimbal channel definition */
-    Telemetry_Monitor.throttle_ch = Channel_2;
-    Telemetry_Monitor.pitch_ch = Channel_3;
-    Telemetry_Monitor.roll_ch = Channel_4;
-    Telemetry_Monitor.yaw_ch = Channel_1;
+    Telemetry_Monitor.throttle_ch = Channel_3;
+    Telemetry_Monitor.pitch_ch = Channel_2;
+    Telemetry_Monitor.roll_ch = Channel_1;
+    Telemetry_Monitor.yaw_ch = Channel_4;
 
     /* toggle channel definition */
     Telemetry_Monitor.arm_toggle_ch = Channel_5;

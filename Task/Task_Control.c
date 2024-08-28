@@ -290,8 +290,8 @@ void TaskControl_Core(void const *arg)
     uint32_t sys_time = SrvOsCommon.get_os_ms();
     bool upgrade_state = false;
     ControlData_TypeDef CtlData;
-    bool USB_Attach = false;
     memset(&CtlData, 0, sizeof(ControlData_TypeDef));
+
     while(1)
     {
         /* get control data from data hub */
@@ -306,14 +306,8 @@ void TaskControl_Core(void const *arg)
         {
             if (!TaskControl_Monitor.CLI_enable)
             {
-                /* lock moto when usb attached */
-                if (!SrvDataHub.get_vcp_attach_state(&USB_Attach) || USB_Attach)
-                {
-                    SrvActuator.lock();
-                }
-                else
-                    /* debug set control to angular speed control */
-                    TaskControl_FlightControl_Polling(&CtlData);
+                /* debug set control to angular speed control */
+                TaskControl_FlightControl_Polling(&CtlData);
             }
             else
             {
@@ -479,6 +473,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
     uint8_t axis = Axis_X;
     uint32_t tunning_port = 0;
     bool arm_state = false;
+    bool USB_Attach = false;
 
     if (TaskControl_Monitor.init_state && exp_ctl_val)
     {
@@ -654,18 +649,22 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             TaskControl_Monitor.GyrZCtl_PIDObj.exp = TaskControl_Monitor.exp_gyr_z;
             TaskControl_AngularSpeedRing_PID_Update(&TaskControl_Monitor);
 
-            TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
-
-            if(imu_err_code == SrvIMU_Sample_NoError)
+            /* when when usb attached lock moto */
+            if (SrvDataHub.get_vcp_attach_state(&USB_Attach) || !USB_Attach)
             {
-                for(axis = Axis_X; axis < Axis_Sum; axis ++)
+                TaskControl_Actuator_ControlValue_Update(&TaskControl_Monitor);
+
+                if(imu_err_code == SrvIMU_Sample_NoError)
                 {
-                    TaskControl_Monitor.acc_lst[axis] = TaskControl_Monitor.acc[axis];
-                    TaskControl_Monitor.gyr_lst[axis] = TaskControl_Monitor.gyr[axis];
+                    for(axis = Axis_X; axis < Axis_Sum; axis ++)
+                    {
+                        TaskControl_Monitor.acc_lst[axis] = TaskControl_Monitor.acc[axis];
+                        TaskControl_Monitor.gyr_lst[axis] = TaskControl_Monitor.gyr[axis];
+                    }
                 }
+            
+                return;
             }
-        
-            return;
         }
     }
 
