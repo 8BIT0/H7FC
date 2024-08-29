@@ -71,7 +71,7 @@ extern "C" {
 #define PWM_SIG_2_PORT &PWM_2_Port
 #define PWM_SIG_2_PIN GPIO_PINS_7
 #define PWM_SIG_2_DMA Bsp_DMA_1
-#define PWM_SIG_2_DMA_CHANNEL Bsp_DMA_Stream_4
+#define PWM_SIG_2_DMA_CHANNEL Bsp_DMA_Stream_2
 #define PWM_SIG_2_PIN_AF GPIO_MUX_2
 
 #define PWM_SIG_3_TIM TMR2
@@ -87,7 +87,7 @@ extern "C" {
 #define PWM_SIG_4_PORT &PWM_4_Port
 #define PWM_SIG_4_PIN GPIO_PINS_1
 #define PWM_SIG_4_DMA Bsp_DMA_1
-#define PWM_SIG_4_DMA_CHANNEL Bsp_DMA_Stream_2
+#define PWM_SIG_4_DMA_CHANNEL Bsp_DMA_Stream_4
 #define PWM_SIG_4_PIN_AF GPIO_MUX_2
 
 /* internal flash storage */

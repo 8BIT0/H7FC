@@ -6,11 +6,29 @@
 
 #define To_Timer_Instance(x) ((tmr_type *)x)
 
+typedef union
+{
+    uint8_t val;
+
+    struct
+    {
+        uint8_t tim1 : 1;
+        uint8_t tim2 : 1;
+        uint8_t tim3 : 1;
+        uint8_t tim4 : 1;
+        uint8_t tim5 : 1;
+        uint8_t tim6 : 1;
+        uint8_t tim7 : 1;
+        uint8_t tim8 : 1;
+    } bit;
+} BspTiemrClk_EnReg_TypeDef;
+
 typedef struct
 {
     tmr_type *list[32];
     uint8_t init_cnt;
     bool monitor_init;
+    BspTiemrClk_EnReg_TypeDef clk_en;
 } BspTIM_PWMInitMonitor_TypeDef;
 
 BspTIM_PWMInitMonitor_TypeDef monitor = {
@@ -50,22 +68,42 @@ static bool BspTimer_Clock_EnableCtl(void *instance, confirm_state state)
 {
     if (To_Timer_Instance(instance) == TMR2)
     {
-        crm_periph_clock_enable(CRM_TMR2_PERIPH_CLOCK, state);
+        if (!monitor.clk_en.bit.tim2)
+        {
+            crm_periph_clock_enable(CRM_TMR2_PERIPH_CLOCK, state);
+            monitor.clk_en.bit.tim2 = true;
+        }
+
         return true;
     }
     else if (To_Timer_Instance(instance) == TMR3)
     {
-        crm_periph_clock_enable(CRM_TMR3_PERIPH_CLOCK, state);
+        if (!monitor.clk_en.bit.tim3)
+        {
+            crm_periph_clock_enable(CRM_TMR3_PERIPH_CLOCK, state);
+            monitor.clk_en.bit.tim3 = true;
+        }
+
         return true;
     }
     else if (To_Timer_Instance(instance) == TMR8)
     {
-        crm_periph_clock_enable(CRM_TMR8_PERIPH_CLOCK, state);
+        if (!monitor.clk_en.bit.tim8)
+        {
+            crm_periph_clock_enable(CRM_TMR8_PERIPH_CLOCK, state);
+            monitor.clk_en.bit.tim8 = true;
+        }
+    
         return true;
     }
     else if (To_Timer_Instance(instance) == TMR4)
     {
-        crm_periph_clock_enable(CRM_TMR4_PERIPH_CLOCK, state);
+        if (!monitor.clk_en.bit.tim4)
+        {
+            crm_periph_clock_enable(CRM_TMR4_PERIPH_CLOCK, state);
+            monitor.clk_en.bit.tim4 = true;
+        }
+
         return true;
     }
 
