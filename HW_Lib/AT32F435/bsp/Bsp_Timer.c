@@ -114,50 +114,64 @@ static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef 
 {
     if (obj)
     {
-        switch((uint32_t)obj->instance)
+        if (To_Timer_Instance(obj->instance) == TMR2)
         {
-            case (uint32_t)TMR2:
-                switch(obj->tim_channel)
-                {
-                    case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR2_CH1;
-                    case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR2_CH2;
-                    case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR2_CH3;
-                    case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR2_CH4;
-                    default: return 0;
-                }
-                
-            case (uint32_t)TMR3:
-                switch(obj->tim_channel)
-                {
-                    case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR3_CH1;
-                    case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR3_CH2;
-                    case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR3_CH3;
-                    case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR3_CH4;
-                    default: return 0;
-                }
-                
-            case (uint32_t)TMR4:
-                switch(obj->tim_channel)
-                {
-                    case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR4_CH1;
-                    case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR4_CH2;
-                    case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR4_CH3;
-                    case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR4_CH4;
-                    default: return 0;
-                }
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_1)
+                return DMAMUX_DMAREQ_ID_TMR2_CH1;
 
-            case (uint32_t)TMR8:
-                switch(obj->tim_channel)
-                {
-                    case TMR_SELECT_CHANNEL_1: return DMAMUX_DMAREQ_ID_TMR8_CH1;
-                    case TMR_SELECT_CHANNEL_2: return DMAMUX_DMAREQ_ID_TMR8_CH2;
-                    case TMR_SELECT_CHANNEL_3: return DMAMUX_DMAREQ_ID_TMR8_CH3;
-                    case TMR_SELECT_CHANNEL_4: return DMAMUX_DMAREQ_ID_TMR8_CH4;
-                    default: return 0;
-                }
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_2)
+                return DMAMUX_DMAREQ_ID_TMR2_CH2;
+
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_3)
+                return DMAMUX_DMAREQ_ID_TMR2_CH3;
+
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_4)
+                return DMAMUX_DMAREQ_ID_TMR2_CH4;
+        }
                 
-            default:
-                return 0;
+        if (To_Timer_Instance(obj->instance) == TMR3)
+        {
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_1)
+                return DMAMUX_DMAREQ_ID_TMR3_CH1;
+
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_2)
+                return DMAMUX_DMAREQ_ID_TMR3_CH2;
+
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_3)
+                return DMAMUX_DMAREQ_ID_TMR3_CH3;
+
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_4)
+                return DMAMUX_DMAREQ_ID_TMR3_CH4;
+        }
+
+        if (To_Timer_Instance(obj->instance) == TMR4)
+        {
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_1)
+                return DMAMUX_DMAREQ_ID_TMR4_CH1;
+
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_2)
+                return DMAMUX_DMAREQ_ID_TMR4_CH2;
+
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_3)
+                return DMAMUX_DMAREQ_ID_TMR4_CH3;
+
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_4)
+                return DMAMUX_DMAREQ_ID_TMR4_CH4;
+        }
+
+        if (To_Timer_Instance(obj->instance) == TMR8)
+        {
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_1)
+                return DMAMUX_DMAREQ_ID_TMR8_CH1;
+
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_2)
+                return DMAMUX_DMAREQ_ID_TMR8_CH2;
+
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_3)
+                return DMAMUX_DMAREQ_ID_TMR8_CH3;
+
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_4)
+                return DMAMUX_DMAREQ_ID_TMR8_CH4;
         }
     }
 
@@ -166,25 +180,19 @@ static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef 
 
 static uint32_t BspTimer_Get_PrtiphAddr(BspTimerPWMObj_TypeDef *obj)
 {
-    if (obj && obj->instance && obj->tim_channel)
+    if (obj && obj->instance)
     {
-        switch(obj->tim_channel)
-        {
-            case TMR_SELECT_CHANNEL_1:
-                return (uint32_t)&(To_Timer_Instance(obj->instance)->c1dt);
+        if (obj->tim_channel == TMR_SELECT_CHANNEL_1)
+            return (uint32_t)&(To_Timer_Instance(obj->instance)->c1dt);
 
-            case TMR_SELECT_CHANNEL_2:
-                return (uint32_t)&(To_Timer_Instance(obj->instance)->c2dt);
+        if (obj->tim_channel == TMR_SELECT_CHANNEL_2)
+            return (uint32_t)&(To_Timer_Instance(obj->instance)->c2dt);
 
-            case TMR_SELECT_CHANNEL_3:
-                return (uint32_t)&(To_Timer_Instance(obj->instance)->c3dt);
+        if (obj->tim_channel == TMR_SELECT_CHANNEL_3)
+            return (uint32_t)&(To_Timer_Instance(obj->instance)->c3dt);
 
-            case TMR_SELECT_CHANNEL_4:
-                return (uint32_t)&(To_Timer_Instance(obj->instance)->c4dt);
-            
-            default:
-                break;
-        }
+        if (obj->tim_channel == TMR_SELECT_CHANNEL_4)
+            return (uint32_t)&(To_Timer_Instance(obj->instance)->c4dt);
     }
 
     return 0;
@@ -212,7 +220,7 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         case (uint32_t)DMA2_CHANNEL4: dmamux_ch = DMA2MUX_CHANNEL4; break;
         case (uint32_t)DMA2_CHANNEL5: dmamux_ch = DMA2MUX_CHANNEL5; break;
         case (uint32_t)DMA2_CHANNEL6: dmamux_ch = DMA2MUX_CHANNEL6; break;
-        case (uint32_t)DMA2_CHANNEL7: dmamux_ch = DMA2MUX_CHANNEL7; break;
+        // case (uint32_t)DMA2_CHANNEL7: dmamux_ch = DMA2MUX_CHANNEL7; break;
         default: return false;
     }
 
@@ -361,7 +369,7 @@ static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
 
 static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload)
 {
-    if (obj && obj->instance && obj->tim_channel)
+    if (obj && obj->instance)
     {
         obj->auto_reload = auto_reload;
         tmr_base_init(obj->instance, auto_reload, obj->prescale);
