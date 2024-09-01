@@ -279,9 +279,9 @@ void DMA2_Channel5_IRQHandler(void)
 
 void DMA2_Channel6_IRQHandler(void)
 {
-    BspDMA_Irq_Callback((void *)DMA2_CHANNEL6);
   if(dma_flag_get(DMA2_FDT6_FLAG) != RESET)
   {
+    BspDMA_Irq_Callback((void *)DMA2_CHANNEL6);
     dma_flag_clear(DMA2_FDT6_FLAG);
   }
 }

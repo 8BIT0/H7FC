@@ -251,7 +251,6 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         dma_init_struct.loop_mode_enable = FALSE;
         dma_init(obj->dma_hdl, &dma_init_struct);
         dmamux_init(dmamux_ch, dma_req_id);
-        dma_channel_enable(obj->dma_hdl, TRUE);
 
         return true;
     }
@@ -319,7 +318,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_output_struct.oc_mode = TMR_OUTPUT_CONTROL_PWM_MODE_A;
     tmr_output_struct.oc_output_state = TRUE;
     tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
-    tmr_output_struct.oc_idle_state = TRUE;
+    tmr_output_struct.oc_idle_state = FALSE;
     tmr_output_struct.occ_output_state = TRUE;
     tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_HIGH;
     tmr_output_struct.occ_idle_state = FALSE;
