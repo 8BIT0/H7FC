@@ -13,6 +13,9 @@ static BspDshotBitBang_InitMonitor_TypeDef Monitor = {
     .monitor_init = false,
 };
 
+/* internal function */
+static void BspDshotBitBang_DMA_TransCplt_Callback(void *cus);
+
 static bool BspDshotBitBang_TMRClockEn_Ctl(tmr_type *tmr, confirm_state state)
 {
     if (tmr == NULL)
@@ -159,7 +162,27 @@ static bool BspDshotBitBang_TimerInit(BspTimerPWMObj_TypeDef *obj, \
     dma_init(obj->dma_hdl, &dmainit);
 
     /* irq enable */
-    BspDMA.enable_irq();
+    if (obj->dma_callback_obj)
+    {
+        To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->cus_data = (void *)obj;
+        To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->BspDMA_Irq_Callback_Func = BspDshotBitBang_DMA_TransCplt_Callback;
+    }
+    BspDMA.enable_irq(dma, stream, 5, 0, 0, obj->dma_callback_obj);
 
     return false;
 }
+
+static void BspDshotBitBang_DMA_TransCplt_Callback(void *arg)
+{
+    BspTimerPWMObj_TypeDef *obj = NULL;
+
+    if (arg && To_TimerPWMObj_Ptr(arg)->dma_hdl)
+    {
+        obj = To_TimerPWMObj_Ptr(arg);
+        dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
+
+        if (obj->send_callback)
+            obj->send_callback();
+    }
+}
+
