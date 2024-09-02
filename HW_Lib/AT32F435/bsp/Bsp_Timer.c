@@ -220,7 +220,15 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         (obj->buffer_size == 0))
         return false;
 
-    tmr_dma_request_enable(obj->instance, TMR_OVERFLOW_DMA_REQUEST, TRUE);
+    switch (obj->tim_channel)
+    {
+        case TMR_SELECT_CHANNEL_1: tmr_dma_request_enable(obj->instance, TMR_C1_DMA_REQUEST, TRUE); break;
+        case TMR_SELECT_CHANNEL_2: tmr_dma_request_enable(obj->instance, TMR_C2_DMA_REQUEST, TRUE); break;
+        case TMR_SELECT_CHANNEL_3: tmr_dma_request_enable(obj->instance, TMR_C3_DMA_REQUEST, TRUE); break;
+        case TMR_SELECT_CHANNEL_4: tmr_dma_request_enable(obj->instance, TMR_C4_DMA_REQUEST, TRUE); break;
+        default: return false;
+    }
+    
     dma_req_id = BspTimer_Get_DMA_MuxSeq(obj);
 
     if (dma_req_id)
@@ -312,8 +320,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_output_struct.oc_mode = TMR_OUTPUT_CONTROL_PWM_MODE_A;
     tmr_output_struct.oc_idle_state = TRUE;
     tmr_output_struct.oc_output_state = TRUE;
-    tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_LOW;
-    // tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
+    tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
     tmr_output_struct.occ_output_state = TRUE;
     tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_HIGH;
     tmr_output_struct.occ_idle_state = FALSE;
