@@ -647,11 +647,13 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
             return false;
 #endif
 
-        if (!BspTimer_PWM.init(&(To_DShot_Obj(obj)->pwm_obj), time_ins, time_ch, *(BspGPIO_Obj_TypeDef *)pin, dma, stream, (uint32_t)(To_DShot_Obj(obj)->ctl_buf), DSHOT_DMA_BUFFER_SIZE))
+        if (!BspTimer_PWM.init(&(To_DShot_Obj(obj)->pwm_obj), \
+                               time_ins, time_ch, \
+                               (MOTOR_BITLENGTH - 1), prescaler, \
+                               *(BspGPIO_Obj_TypeDef *)pin, dma, stream, \
+                               (uint32_t)(To_DShot_Obj(obj)->ctl_buf), DSHOT_DMA_BUFFER_SIZE))
             return false;
 
-        BspTimer_PWM.set_prescaler(&(To_DShot_Obj(obj))->pwm_obj, prescaler);
-        BspTimer_PWM.set_autoreload(&(To_DShot_Obj(obj))->pwm_obj, (MOTOR_BITLENGTH - 1));
         To_DShot_Obj(obj)->pwm_obj.send_callback = DShot_Tran_Finish;
         BspTimer_PWM.start_pwm(&(To_DShot_Obj(obj))->pwm_obj);
         return true;

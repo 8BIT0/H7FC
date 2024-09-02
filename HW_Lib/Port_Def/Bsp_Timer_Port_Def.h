@@ -75,14 +75,14 @@ typedef struct
     bool (*init)(BspTimerPWMObj_TypeDef *obj,
                  void *instance,
                  uint32_t ch,
+                 uint32_t auto_reload,
+                 uint32_t prescale,
                  BspGPIO_Obj_TypeDef pin,
                  uint8_t dma,
                  uint8_t stream,
-                 uint32_t buf_aadr,
+                 uint32_t buf_addr,
                  uint32_t buf_size);
     bool (*de_init)(BspTimerPWMObj_TypeDef *obj);
-    void (*set_prescaler)(BspTimerPWMObj_TypeDef *obj, uint32_t prescale);
-    void (*set_autoreload)(BspTimerPWMObj_TypeDef *obj, uint32_t autoreload);
     void (*start_pwm)(BspTimerPWMObj_TypeDef *obj);
     void (*dma_trans)(BspTimerPWMObj_TypeDef *obj);
     uint32_t (*get_clock_freq)(BspTimerPWMObj_TypeDef *obj);

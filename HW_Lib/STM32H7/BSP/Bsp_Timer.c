@@ -25,21 +25,19 @@ static bool BspTimer_Clk_Enable(TIM_TypeDef *tim);
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               TIM_TypeDef *instance,
                               uint32_t ch,
+                              uint32_t auto_reload,
+                              uint32_t prescale,
                               BspGPIO_Obj_TypeDef pin,
                               uint8_t dma,
                               uint8_t stream,
                               uint32_t buf_aadr,
                               uint32_t buf_size);
-static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale);
-static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload);
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj);
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj);
 static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj);
 
 BspTimerPWM_TypeDef BspTimer_PWM = {
     .init = BspTimer_PWM_Init,
-    .set_prescaler = BspTimer_SetPreScale,
-    .set_autoreload = BspTimer_SetAutoReload,
     .start_pwm = BspTimer_PWM_Start,
     .dma_trans = BspTimer_DMA_Start,
     .get_clock_freq = BspTimer_Get_Clock_Freq,
@@ -293,6 +291,8 @@ static uint32_t BspTimer_Get_DMA_Request(TIM_TypeDef *instance, uint32_t ch)
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               TIM_TypeDef *instance,
                               uint32_t ch,
+                              uint32_t auto_reload,
+                              uint32_t prescale,
                               BspGPIO_Obj_TypeDef pin,
                               uint8_t dma, uint8_t stream, uint32_t buf_aadr, uint32_t buf_size)
 {
@@ -335,6 +335,14 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     default:
         return false;
     }
+
+    obj->prescale = prescale;
+    if(obj->tim_hdl)
+        __HAL_TIM_SET_PRESCALER(To_TIM_Handle_Ptr(obj->tim_hdl), prescale);
+
+    obj->auto_reload = auto_reload;
+    if(obj->tim_hdl)
+        __HAL_TIM_SET_AUTORELOAD(To_TIM_Handle_Ptr(obj->tim_hdl), auto_reload);
 
     BspTimer_PWM_InitMonit(instance);
     obj->instance = instance;
@@ -438,20 +446,6 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
 
     HAL_DMA_Start_IT(To_TIM_Handle_Ptr(obj->tim_hdl)->hdma[obj->tim_dma_id_cc], obj->buffer_addr, dst_addr, obj->buffer_size);
     __HAL_TIM_ENABLE_DMA(To_TIM_Handle_Ptr(obj->tim_hdl), obj->tim_dma_cc);
-}
-
-static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
-{
-    obj->prescale = prescale;
-    if(obj->tim_hdl)
-        __HAL_TIM_SET_PRESCALER(To_TIM_Handle_Ptr(obj->tim_hdl), prescale);
-}
-
-static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload)
-{
-    obj->auto_reload = auto_reload;
-    if(obj->tim_hdl)
-        __HAL_TIM_SET_AUTORELOAD(To_TIM_Handle_Ptr(obj->tim_hdl), auto_reload);
 }
 
 /***************************************************************** Tick Function ***********************************************************************/

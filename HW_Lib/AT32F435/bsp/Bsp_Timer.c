@@ -33,13 +33,13 @@ static bool BspTimer_PWM_DeInit(BspTimerPWMObj_TypeDef *obj);
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               void *instance,
                               uint32_t ch,
+                              uint32_t auto_reload,
+                              uint32_t prescale,
                               BspGPIO_Obj_TypeDef pin,
                               uint8_t dma,
                               uint8_t stream,
                               uint32_t buf_aadr,
                               uint32_t buf_size);
-static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale);
-static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload);
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj);
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj);
 static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj);
@@ -47,8 +47,6 @@ static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj);
 BspTimerPWM_TypeDef BspTimer_PWM = {
     .init = BspTimer_PWM_Init,
     .de_init = BspTimer_PWM_DeInit,
-    .set_prescaler = BspTimer_SetPreScale,
-    .set_autoreload = BspTimer_SetAutoReload,
     .start_pwm = BspTimer_PWM_Start,
     .dma_trans = BspTimer_DMA_Start,
     .get_clock_freq = BspTimer_Get_Clock_Freq,
@@ -265,6 +263,8 @@ static bool BspTimer_PWM_DeInit(BspTimerPWMObj_TypeDef *obj)
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               void *instance,
                               uint32_t ch,
+                              uint32_t auto_reload,
+                              uint32_t prescale,
                               BspGPIO_Obj_TypeDef pin,
                               uint8_t dma,
                               uint8_t stream,
@@ -301,6 +301,10 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     /* init pin */
     if (!BspGPIO.alt_init(pin, GPIO_OUTPUT_PUSH_PULL))
         return false;
+
+    obj->prescale = prescale;
+    obj->auto_reload = auto_reload;
+    tmr_base_init(obj->instance, obj->auto_reload, obj->prescale);
 
     /* init pwm output */
     tmr_cnt_dir_set(obj->instance, TMR_COUNT_UP);
@@ -349,24 +353,6 @@ static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj)
     memset(&crm_clocks_freq_struct, 0, sizeof(crm_clocks_freq_type));
     crm_clocks_freq_get(&crm_clocks_freq_struct);
     return (crm_clocks_freq_struct.apb2_freq * 2);
-}
-
-static void BspTimer_SetPreScale(BspTimerPWMObj_TypeDef *obj, uint32_t prescale)
-{
-    if (obj && obj->instance)
-    {
-        obj->prescale = prescale;
-        tmr_base_init(obj->instance, obj->auto_reload, prescale);
-    }
-}
-
-static void BspTimer_SetAutoReload(BspTimerPWMObj_TypeDef *obj, uint32_t auto_reload)
-{
-    if (obj && obj->instance)
-    {
-        obj->auto_reload = auto_reload;
-        tmr_base_init(obj->instance, auto_reload, obj->prescale);
-    }
 }
 
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj)
