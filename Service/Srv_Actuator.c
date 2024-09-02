@@ -643,6 +643,8 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
 
 #if defined AT32F435_437
         To_DShot_Obj(obj)->pwm_obj.dma_callback_obj = SrvOsCommon.malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
+        if (To_DShot_Obj(obj)->pwm_obj.dma_callback_obj == NULL)
+            return false;
 #endif
 
         if (!BspTimer_PWM.init(&(To_DShot_Obj(obj)->pwm_obj), time_ins, time_ch, *(BspGPIO_Obj_TypeDef *)pin, dma, stream, (uint32_t)(To_DShot_Obj(obj)->ctl_buf), DSHOT_DMA_BUFFER_SIZE))
