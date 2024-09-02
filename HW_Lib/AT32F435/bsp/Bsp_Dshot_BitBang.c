@@ -162,7 +162,7 @@ static bool BspDshotBitBang_TimerInit(BspTimerPWMObj_TypeDef *obj, \
 
     tmr_counter_enable(To_Timer_Instance(instance), FALSE);
     tmr_output_channel_config(To_Timer_Instance(instance), ch, &TIM_OCStruct);
-    tmr_channel_enable(To_Timer_Instance(instance), ch, TRUE);
+    tmr_channel_enable(To_Timer_Instance(instance), ch, FALSE);
     tmr_output_channel_buffer_enable(To_Timer_Instance(instance), ch, TRUE);
     tmr_counter_enable(To_Timer_Instance(instance), TRUE);
 
@@ -216,14 +216,5 @@ static void BspDshotBitBang_Start(BspTimerPWMObj_TypeDef *obj)
 static void BspDshotBitBang_Trans(BspTimerPWMObj_TypeDef *obj)
 {
     if (obj && obj->dma_hdl)
-    {
-        To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
-        To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * sizeof(uint16_t);
-        
-        tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
-        tmr_channel_value_set(To_Timer_Instance(obj->instance), obj->tim_channel, 0);
-        tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
-        
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
-    }
 }
