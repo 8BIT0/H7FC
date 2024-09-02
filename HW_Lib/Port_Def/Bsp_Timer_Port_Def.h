@@ -12,6 +12,32 @@ extern "C" {
 typedef void (*BspTimer_Tick_Callback)(const uint32_t tick);
 typedef void (*BspTimer_DMA_SendCallback)(void);
 
+typedef union
+{
+    uint16_t val;
+
+    struct
+    {
+        uint16_t tim1  : 1;
+        uint16_t tim2  : 1;
+        uint16_t tim3  : 1;
+        uint16_t tim4  : 1;
+        uint16_t tim5  : 1;
+        uint16_t tim6  : 1;
+        uint16_t tim7  : 1;
+        uint16_t tim8  : 1;
+        uint16_t tim9  : 1;
+        uint16_t tim10 : 1;
+        uint16_t tim11 : 1;
+        uint16_t tim12 : 1;
+        uint16_t tim13 : 1;
+        uint16_t tim14 : 1;
+        uint16_t tim20 : 1;
+
+        uint16_t res   : 1;
+    } bit;
+} BspTiemrClk_EnReg_TypeDef;
+
 typedef struct
 {
     void *tim_hdl;

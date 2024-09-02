@@ -10,9 +10,8 @@ extern "C" {
 #include <stdbool.h>
 #include <string.h>
 
+#define To_Timer_Instance(x) ((tmr_type *)x)
 #define To_TimerPWMObj_Ptr(x) ((BspTimerPWMObj_TypeDef *)x)
-
-bool BspTimer_SysTick_Init(void);
 
 extern BspTimerPWM_TypeDef BspTimer_PWM;
 

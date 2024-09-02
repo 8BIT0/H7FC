@@ -1,9 +1,6 @@
 #include "Bsp_GPIO.h"
 #include "at32f435_437.h"
 
-#define To_GPIO_Port(x) ((BspGPIO_Port_TypeDef *)x)
-#define To_ExtiGPIO_Port(x) ((BspGPIO_EXTI_Port_TypeDef *)x)
-
 static EXTI_Callback EXTI_CallBack_List[GPIO_EXTI_SUM] = {NULL};
 
 /* internal function */

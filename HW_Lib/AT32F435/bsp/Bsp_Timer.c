@@ -13,29 +13,8 @@
 #include "at32f435_437_crm.h"
 #include "at32f435_437_tmr.h"
 
-#define To_Timer_Instance(x) ((tmr_type *)x)
-
-typedef union
-{
-    uint8_t val;
-
-    struct
-    {
-        uint8_t tim1 : 1;
-        uint8_t tim2 : 1;
-        uint8_t tim3 : 1;
-        uint8_t tim4 : 1;
-        uint8_t tim5 : 1;
-        uint8_t tim6 : 1;
-        uint8_t tim7 : 1;
-        uint8_t tim8 : 1;
-    } bit;
-} BspTiemrClk_EnReg_TypeDef;
-
 typedef struct
 {
-    tmr_type *list[32];
-    uint8_t init_cnt;
     bool monitor_init;
     BspTiemrClk_EnReg_TypeDef clk_en;
 } BspTIM_PWMInitMonitor_TypeDef;

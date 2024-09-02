@@ -10,6 +10,9 @@ extern "C" {
 
 #define GPIO_EXTI_SUM 16
 
+#define To_GPIO_Port(x) ((BspGPIO_Port_TypeDef *)x)
+#define To_ExtiGPIO_Port(x) ((BspGPIO_EXTI_Port_TypeDef *)x)
+
 typedef struct
 {
     gpio_type *port;

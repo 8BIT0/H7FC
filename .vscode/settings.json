@@ -194,7 +194,8 @@
                 "srv_blackbox_def.h": "c",
                 "srv_flow.h": "c",
                 "dev_flow_3901u.h": "c",
-                "i2c_application.h": "c"
+                "i2c_application.h": "c",
+                "bsp_gpio_port_def.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,
