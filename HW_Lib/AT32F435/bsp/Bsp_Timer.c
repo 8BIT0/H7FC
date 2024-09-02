@@ -220,6 +220,7 @@ static bool BspTimer_DMA_Init(BspTimerPWMObj_TypeDef *obj)
         (obj->buffer_size == 0))
         return false;
 
+    tmr_dma_request_enable(obj->instance, TMR_OVERFLOW_DMA_REQUEST, TRUE);
     switch (obj->tim_channel)
     {
         case TMR_SELECT_CHANNEL_1: tmr_dma_request_enable(obj->instance, TMR_C1_DMA_REQUEST, TRUE); break;
