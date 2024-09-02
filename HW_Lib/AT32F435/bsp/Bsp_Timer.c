@@ -1,3 +1,12 @@
+/*
+ *  Auther:8_B!T0
+ *  Bref: ESC Timer Bsp On AT32F435xx MCU
+ *
+ *  I got real confuse cuz im trying to use tmr4 ch1 ch2 to drive esc,but i can only capture no dma irq, but if i switch tmr4 ch1 ch2 to tmr2 ch3/4 or tmr3 ch3/4 it worked.....
+ *  also tmr2 ch1/ch2 and tmr3 ch1/ch2 is not working, it drove me crazy.......
+ *  
+ */
+
 #include "Bsp_Timer.h"
 #include "Bsp_DMA.h"
 #include "Bsp_GPIO.h"
@@ -316,13 +325,18 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_cnt_dir_set(obj->instance, TMR_COUNT_UP);
     tmr_output_default_para_init(&tmr_output_struct);
     tmr_output_struct.oc_mode = TMR_OUTPUT_CONTROL_PWM_MODE_A;
+    tmr_output_struct.oc_idle_state = TRUE;
     tmr_output_struct.oc_output_state = TRUE;
-    tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
-    tmr_output_struct.oc_idle_state = FALSE;
+    tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_LOW;
+    // tmr_output_struct.oc_polarity = TMR_OUTPUT_ACTIVE_HIGH;
     tmr_output_struct.occ_output_state = TRUE;
     tmr_output_struct.occ_polarity = TMR_OUTPUT_ACTIVE_HIGH;
     tmr_output_struct.occ_idle_state = FALSE;
+    
+    tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
+    tmr_channel_enable(obj->instance, obj->tim_channel, TRUE);
+    tmr_output_channel_buffer_enable(obj->instance, obj->tim_channel, TRUE);
 
     if (BspTimer_DMA_Init(obj))
     {
@@ -338,7 +352,6 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
         monitor.init_cnt ++;
 
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
-        tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
         tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
         tmr_output_enable(To_Timer_Instance(obj->instance), FALSE);
         return true;
