@@ -195,7 +195,8 @@
                 "srv_flow.h": "c",
                 "dev_flow_3901u.h": "c",
                 "i2c_application.h": "c",
-                "bsp_gpio_port_def.h": "c"
+                "bsp_gpio_port_def.h": "c",
+                "list": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

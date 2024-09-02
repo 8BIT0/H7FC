@@ -15,6 +15,8 @@
 
 typedef struct
 {
+    tmr_type* list[32];
+    uint32_t init_cnt;
     bool monitor_init;
     BspTiemrClk_EnReg_TypeDef clk_en;
 } BspTIM_PWMInitMonitor_TypeDef;
