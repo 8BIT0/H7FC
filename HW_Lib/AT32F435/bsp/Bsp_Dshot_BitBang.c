@@ -15,6 +15,22 @@ static BspDshotBitBang_InitMonitor_TypeDef Monitor = {
 
 /* internal function */
 static void BspDshotBitBang_DMA_TransCplt_Callback(void *cus);
+static bool BspDshotBitBang_TMRClockEn_Ctl(tmr_type *tmr, confirm_state state);
+
+/* external function */
+static bool BspDshotBitBang_TimerInit(BspTimerPWMObj_TypeDef *obj, \
+                                      uint32_t period, \
+                                      void *instance, \
+                                      uint32_t ch, \
+                                      uint32_t auto_reload, \
+                                      uint32_t prescale, \
+                                      BspGPIO_Obj_TypeDef pin, \
+                                      uint8_t dma, \
+                                      uint8_t stream, \
+                                      uint32_t buf_addr, \
+                                      uint32_t buf_size);
+static void BspDshotBitBang_Start(BspTimerPWMObj_TypeDef *obj);
+static void BspDshotBitBang_Trans(BspTimerPWMObj_TypeDef *obj);
 
 static bool BspDshotBitBang_TMRClockEn_Ctl(tmr_type *tmr, confirm_state state)
 {
@@ -85,6 +101,8 @@ static bool BspDshotBitBang_TimerInit(BspTimerPWMObj_TypeDef *obj, \
                                       uint32_t period, \
                                       void *instance, \
                                       uint32_t ch, \
+                                      uint32_t auto_reload, \
+                                      uint32_t prescale, \
                                       BspGPIO_Obj_TypeDef pin, \
                                       uint8_t dma, \
                                       uint8_t stream, \
@@ -98,7 +116,8 @@ static bool BspDshotBitBang_TimerInit(BspTimerPWMObj_TypeDef *obj, \
         (period == 0) || \
         (instance == NULL) || \
         (buf_addr == 0) || \
-        (buf_size == 0))
+        (buf_size == 0) || \
+        (auto_reload == 0))
         return false;
 
     if (!Monitor.monitor_init)
@@ -108,6 +127,9 @@ static bool BspDshotBitBang_TimerInit(BspTimerPWMObj_TypeDef *obj, \
     }
 
     obj->instance = instance;
+    obj->tim_channel = ch;
+    obj->auto_reload = auto_reload;
+    obj->prescale = prescale;
     obj->buffer_addr = buf_addr;
     obj->buffer_size = buf_size;
     obj->dma = dma;
@@ -125,7 +147,7 @@ static bool BspDshotBitBang_TimerInit(BspTimerPWMObj_TypeDef *obj, \
         return false;
     
     /* timer init */
-    tmr_base_init(To_Timer_Instance(instance), period, 0);
+    tmr_base_init(To_Timer_Instance(instance), obj->auto_reload, obj->prescale);
     tmr_clock_source_div_set(To_Timer_Instance(instance), TMR_CLOCK_DIV1);
     tmr_cnt_dir_set(To_Timer_Instance(instance), TMR_COUNT_UP);
     tmr_period_buffer_enable(To_Timer_Instance(instance), TRUE);
@@ -162,14 +184,14 @@ static bool BspDshotBitBang_TimerInit(BspTimerPWMObj_TypeDef *obj, \
     dma_init(obj->dma_hdl, &dmainit);
 
     /* irq enable */
-    if (obj->dma_callback_obj)
-    {
-        To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->cus_data = (void *)obj;
-        To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->BspDMA_Irq_Callback_Func = BspDshotBitBang_DMA_TransCplt_Callback;
-    }
+    if (obj->dma_callback_obj == NULL)
+        return false;
+
+    To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->cus_data = (void *)obj;
+    To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->BspDMA_Irq_Callback_Func = BspDshotBitBang_DMA_TransCplt_Callback;
     BspDMA.enable_irq(dma, stream, 5, 0, 0, obj->dma_callback_obj);
 
-    return false;
+    return true;
 }
 
 static void BspDshotBitBang_DMA_TransCplt_Callback(void *arg)
@@ -186,3 +208,22 @@ static void BspDshotBitBang_DMA_TransCplt_Callback(void *arg)
     }
 }
 
+static void BspDshotBitBang_Start(BspTimerPWMObj_TypeDef *obj)
+{
+
+}
+
+static void BspDshotBitBang_Trans(BspTimerPWMObj_TypeDef *obj)
+{
+    if (obj && obj->dma_hdl)
+    {
+        To_DMA_Handle_Ptr(obj->dma_hdl)->maddr = obj->buffer_addr;
+        To_DMA_Handle_Ptr(obj->dma_hdl)->dtcnt = obj->buffer_size * sizeof(uint16_t);
+        
+        tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
+        tmr_channel_value_set(To_Timer_Instance(obj->instance), obj->tim_channel, 0);
+        tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
+        
+        dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
+    }
+}
