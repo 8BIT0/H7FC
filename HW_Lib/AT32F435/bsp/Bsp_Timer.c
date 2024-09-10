@@ -1,10 +1,6 @@
 /*
  *  Auther:8_B!T0
  *  Bref: ESC Timer Bsp On AT32F435xx MCU
- *
- *  I got real confuse cuz im trying to use tmr4 ch1 ch2 to drive esc,but i can only capture no dma irq, but if i switch tmr4 ch1 ch2 to tmr2 ch3/4 or tmr3 ch3/4 it worked.....
- *  also tmr2 ch1/ch2 and tmr3 ch1/ch2 is not working, it drove me crazy.......
- *  
  */
 
 #include "Bsp_Timer.h"
