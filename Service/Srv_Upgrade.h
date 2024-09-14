@@ -63,16 +63,14 @@ typedef union
 
     struct
     {
-        uint8_t Boot   : 1;
         uint8_t App    : 1;
-        uint8_t res    : 6;
+        uint8_t res    : 7;
     } bit;
 } SrvUpgrade_CTLReg_TypeDef;
 
 typedef struct
 {
     SrvUpgrade_CTLReg_TypeDef CTLReg;
-    FileInfo_TypeDef BF_Info;   /* boot firmware info */
     FileInfo_TypeDef AF_Info;   /* app firmware info */
 } SrvUpgradeInfo_TypeDef;
 #pragma pack()

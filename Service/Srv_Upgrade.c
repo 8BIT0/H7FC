@@ -174,20 +174,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
     Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
     if (Monitor.UpgradeInfo_SO.item_addr)
     {
-        Storage.get(Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
-
         /* read parameter section */
-        /* read boot firmware info */
-        if (Info.CTLReg.bit.Boot)
-        {
-            /* check hardware version */
-            if (memcmp(Info.BF_Info.HW_Ver, HWVer, sizeof(HWVer)) == 0)
-            {
-                /* check boot upgrade */
-                file_size = Info.BF_Info.File_Size;
-            }
-        }
-        
         while (file_size)
         {
             update_size = file_size;
@@ -205,19 +192,11 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
 
             file_size -= update_size;
             addr_offset += update_size;
-
-            if (file_size == 0)
-            {
-                /* clear upgrade flag */
-                Info.CTLReg.bit.Boot = false;
-                Storage.update(Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
-            }
         }
     }
     else
     {
         memcpy(Info.AF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver));
-        memcpy(Info.BF_Info.HW_Ver, HWVer, sizeof(Info.AF_Info.HW_Ver));
         Storage.create(Para_Boot, UpgradeInfo_Sec, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
         Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
     }
@@ -319,20 +298,6 @@ static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
         Info.CTLReg.bit.App = true;
         Info.AF_Info = rec_file_info;
     }
-    else if (Monitor.FileInfo.File_Type == FileType_Boot)
-    {
-        SrvUpgrade_Collect_Info("\tBoot firmware receive finished\r\n");
-        
-        if (memcmp(Info.BF_Info.HW_Ver, HWVer, sizeof(Info.BF_Info.HW_Ver)) != 0)
-        {
-            SrvUpgrade_Collect_Info("Boot firmware hardware version error\r\n");
-            return Stage_Upgrade_Error;
-        }
-        
-        /* update boot firmware info */
-        Info.CTLReg.bit.Boot = true;
-        Info.BF_Info = rec_file_info;    /* check for firmware upgrade */
-    }
 
     SrvUpgrade_Collect_Info("\tFile size: %d\r\n", rec_file_info.File_Size);
     SrvUpgrade_Collect_Info("\tHW: %d.%d.%d\r\n", rec_file_info.HW_Ver[0], rec_file_info.HW_Ver[1], rec_file_info.HW_Ver[2]);
@@ -351,7 +316,7 @@ static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time, SrvFileA
 {
     uint8_t i = 0;
     
-    if ((Monitor.FileInfo.File_Type == FileType_None) || (Monitor.FileInfo.File_Type > FileType_Boot))
+    if ((Monitor.FileInfo.File_Type == FileType_None) || (Monitor.FileInfo.File_Type == FileType_All))
     {
         Monitor.PollingState = Stage_FileInfo_Error;
     }
@@ -596,59 +561,3 @@ static void SrvUpgrade_Check_AppFirmware(void)
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, check_app, SrvUpgrade_Check_AppFirmware, check stored app);
-
-static void SrvUpgrade_Check_BootFirmware(void)
-{
-    SrvUpgradeInfo_TypeDef Info;
-    memset(&Info, 0, sizeof(Info));
-    Shell *shell_obj = Shell_GetInstence();
-    uint16_t read_size = 0;
-    uint32_t total_size = 0;
-    uint32_t read_addr_offset = 0;
-    uint8_t r = 0;
-
-    if (shell_obj == NULL)
-        return;
-
-    if (Monitor.UpgradeInfo_SO.item_addr)
-    {
-        if (Storage.get(Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef)) != Storage_Error_None)
-        {
-            shellPrint(shell_obj, "[ Firmware Info Param ] Read Failed\r\n");
-            return;
-        }
-
-        shellPrint(shell_obj, "[ Boot Info ] size: %d\r\n", Info.BF_Info.File_Size);
-        shellPrint(shell_obj, "[ Boot Info ] HW:   %d.%d.%d\r\n", Info.BF_Info.HW_Ver[0], Info.BF_Info.HW_Ver[1], Info.BF_Info.HW_Ver[2]);
-        shellPrint(shell_obj, "[ Boot Info ] SW:   %d.%d.%d\r\n", Info.BF_Info.SW_Ver[0], Info.BF_Info.SW_Ver[1], Info.BF_Info.SW_Ver[2]);
-
-        total_size = Info.AF_Info.File_Size;
-        for (uint32_t i = 0; i < total_size; )
-        {
-            read_size = (1 Kb);
-            if (total_size < (1 Kb))
-                read_size = total_size;
-
-            /* read boot firmware */
-            Storage.read_firmware(Firmware_App, read_addr_offset, upgrade_buf, read_size);
-
-            for (uint16_t j = 0; j < (read_size / 4); j++)
-            {
-                shellPrint(shell_obj, " %02x%02x%02x%02x ", upgrade_buf[j * 4], upgrade_buf[j * 4 + 1], upgrade_buf[j * 4 + 2], upgrade_buf[j * 4 + 3]);
-                r ++;
-                if (r == 3)
-                {
-                    r = 0;
-                    shellPrint(shell_obj, "\r\n");
-                }
-            }
-            memset(upgrade_buf, 0, read_size);
-            total_size -= read_size;
-            if (total_size == 0)
-                break;
-            
-            read_addr_offset += read_size;
-        }
-    }
-}
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, check_boot, SrvUpgrade_Check_BootFirmware, check stored boot);

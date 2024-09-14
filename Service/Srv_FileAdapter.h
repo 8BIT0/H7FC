@@ -18,7 +18,7 @@ typedef enum
 {
     FileType_None = 0,
     FileType_APP,
-    FileType_Boot,
+    FileType_All,
 } Firmware_FileType_List;
 
 typedef enum

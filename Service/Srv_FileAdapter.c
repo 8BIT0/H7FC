@@ -133,17 +133,11 @@ static Adapter_Polling_State SrvFileAdapter_Store_Firmware(SrvFileAdapterObj_Typ
 
     if ((p_Adapter == NULL) || \
         (p_Adapter->file_info.File_Type == FileType_None) || \
-        (p_Adapter->file_info.File_Type > FileType_Boot) || \
         (p_data == NULL) || \
         (size == 0))
         return Adapter_Proc_Failed;
 
-    if (p_Adapter->file_info.File_Type == FileType_Boot)
-    {
-        max_file_size = Boot_Section_Size;
-        firmware_type = Firmware_Boot;
-    }
-    else if (p_Adapter->file_info.File_Type == FileType_APP)
+    if (p_Adapter->file_info.File_Type == FileType_APP)
     {
         max_file_size = App_Section_Size;
         firmware_type = Firmware_App;
@@ -248,8 +242,6 @@ static Adapter_Polling_State SrvAdapter_YModem_Polling(SrvFileAdapterObj_TypeDef
                         {
                             Storage.format_firmware(Firmware_App);
                         }
-                        else if (p_Adapter->file_info.File_Type == FileType_Boot)
-                            Storage.format_firmware(Firmware_Boot);
 
                         *clear_stream = true;
                         return Adapter_Proc_Failed;

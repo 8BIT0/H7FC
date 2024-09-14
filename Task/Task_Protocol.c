@@ -1100,17 +1100,12 @@ static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
         shellPrint(shell_obj, "[ File Adapter Enable ]\r\n");
         shellPrint(shell_obj, "[ File Type List Down Below ]\r\n");
         shellPrint(shell_obj, "\t1 ---- App    Firmware File\r\n");
-        shellPrint(shell_obj, "\t2 ---- Boot   Firmware File\r\n");
         shellPrint(shell_obj, "\r\n");
     
         switch (type)
         {
             case FileType_APP:
                 shellPrint(shell_obj, "[ Waitting App Firmware ]\r\n");
-                break;
-
-            case FileType_Boot:
-                shellPrint(shell_obj, "[ Waitting Boot Firmware ]\r\n");
                 break;
 
             default:
