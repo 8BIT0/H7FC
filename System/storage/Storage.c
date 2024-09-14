@@ -14,7 +14,6 @@
 
 #define Storage_Malloc(size) SrvOsCommon.malloc(size)
 #define Storage_Free(ptr) SrvOsCommon.free(ptr)
-#define Storage_GetSysTick() SrvOsCommon.get_os_ms()
 #define Storage_GetSysTick_Ptr SrvOsCommon.get_os_ms
 
 #define STORAGE_DEBUG 0
