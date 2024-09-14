@@ -82,7 +82,6 @@ static void SrvActuator_PipeData(void);
 /* external function */
 static bool SrvActuator_DeInit(void);
 static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg);
-static bool SrvActuator_DeInit(void);
 static void SrvActuator_MotoControl(uint16_t *p_val);
 static bool SrvActuator_TmpReversedMotoSpinDir(uint8_t component_index);
 static bool SrvActuator_Lock(void);
