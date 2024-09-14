@@ -174,6 +174,7 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
     Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
     if (Monitor.UpgradeInfo_SO.item_addr)
     {
+        Storage.get(Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDef));
         /* read parameter section */
         while (file_size)
         {
