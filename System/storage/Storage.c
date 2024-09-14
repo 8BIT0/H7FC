@@ -12,6 +12,11 @@
 #include "Srv_OsCommon.h"
 #include "debug_util.h"
 
+#define Storage_Malloc(size) SrvOsCommon.malloc(size)
+#define Storage_Free(ptr) SrvOsCommon.free(ptr)
+#define Storage_GetSysTick() SrvOsCommon.get_os_ms()
+#define Storage_GetSysTick_Ptr SrvOsCommon.get_os_ms
+
 #define STORAGE_DEBUG 0
 
 #define InternalFlash_BootDataSec_Size (4 Kb)
@@ -111,7 +116,7 @@ static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
         if (ExtDev->bus_type == Storage_ChipBus_Spi)
         {
             Storage_Monitor.ExtDev_ptr = NULL;
-            ext_flash_bus_cfg = SrvOsCommon.malloc(sizeof(BspSPI_NorModeConfig_TypeDef));
+            ext_flash_bus_cfg = Storage_Malloc(sizeof(BspSPI_NorModeConfig_TypeDef));
 
             if (ext_flash_bus_cfg)
             {
@@ -131,11 +136,11 @@ static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
 
                     if (ExtDev->chip_type == Storage_ChipType_W25Qxx)
                     {
-                        ExtDev->dev_obj = SrvOsCommon.malloc(sizeof(DevW25QxxObj_TypeDef));
+                        ExtDev->dev_obj = Storage_Malloc(sizeof(DevW25QxxObj_TypeDef));
                         if (ExtDev->dev_obj)
                         {
                             /* set get time callback */
-                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->systick = SrvOsCommon.get_os_ms;
+                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->systick = Storage_GetSysTick_Ptr;
 
                             /* set bus control callback */
                             To_DevW25Qxx_OBJ(ExtDev->dev_obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
