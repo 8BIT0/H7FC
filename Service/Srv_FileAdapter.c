@@ -129,7 +129,6 @@ static bool SrvFileAdapter_PushToStream(uint8_t *p_buf, uint16_t size)
 static Adapter_Polling_State SrvFileAdapter_Store_Firmware(SrvFileAdapterObj_TypeDef *p_Adapter, uint8_t *p_data, uint16_t size)
 {
     uint32_t max_file_size = 0;
-    Storage_FirmwareType_List firmware_type = Firmware_None;
 
     if ((p_Adapter == NULL) || \
         (p_Adapter->file_info.File_Type == FileType_None) || \
@@ -140,20 +139,20 @@ static Adapter_Polling_State SrvFileAdapter_Store_Firmware(SrvFileAdapterObj_Typ
     if (p_Adapter->file_info.File_Type == FileType_APP)
     {
         max_file_size = App_Section_Size;
-        firmware_type = Firmware_App;
+
+        /* check received file size */
+        if (p_Adapter->file_info.File_Size >= max_file_size)
+            /* abort file receive */
+            return Adapter_Proc_Failed;
+        
+        /* write stream data to storage section */
+        if (!Storage.write_firmware(External_Flash, p_Adapter->store_addr_offset, p_data, size))
+            return Adapter_Proc_Failed;
+
+        p_Adapter->file_info.File_Size += size;
+        p_Adapter->store_addr_offset += size;
     }
 
-    /* check received file size */
-    if (p_Adapter->file_info.File_Size >= max_file_size)
-        /* abort file receive */
-        return Adapter_Proc_Failed;
-    
-    /* write stream data to storage section */
-    if (!Storage.write_firmware(External_Flash, firmware_type, p_Adapter->store_addr_offset, p_data, size))
-        return Adapter_Proc_Failed;
-
-    p_Adapter->file_info.File_Size += size;
-    p_Adapter->store_addr_offset += size;
     return Adapter_Processing;
 }
 
@@ -238,9 +237,10 @@ static Adapter_Polling_State SrvAdapter_YModem_Polling(SrvFileAdapterObj_TypeDef
                         /* abort YModem */
                         /* clear app storage section */
                         p_api->abort(p_obj);
-                        if (p_Adapter->file_info.File_Type == FileType_APP)
+                        switch (p_Adapter->file_info.File_Type)
                         {
-                            Storage.format_firmware(Firmware_App);
+                            case FileType_APP: Storage.format_firmware(); break;
+                            default: return Adapter_Proc_Failed;
                         }
 
                         *clear_stream = true;

@@ -1,6 +1,6 @@
 /*
  *  Auther: 8_B!T0
- *  Noticed: this file use to upgrade App / Bootloader / Module Firmware 
+ *  Noticed: this file use to upgrade App / Module Firmware 
  *  When at bootloader use this file can upgrade App and Module Firmware
  *  When at app use this file can upgrade Bootloader and Module Firmware
  *  
@@ -184,11 +184,11 @@ static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
 
             /* read firmware from storage */
             memset(upgrade_buf, 0, update_size);
-            Storage.read_firmware(Firmware_Boot, addr_offset, upgrade_buf, update_size);
+            Storage.read_firmware(addr_offset, upgrade_buf, update_size);
 
             SrvOsCommon.enter_critical();
             /* write firmware to boot flash */
-            Storage.write_firmware(Internal_Flash, Firmware_Boot, addr_offset, upgrade_buf, update_size);
+            Storage.write_firmware(Internal_Flash, addr_offset, upgrade_buf, update_size);
             SrvOsCommon.exit_critical();
 
             file_size -= update_size;
@@ -540,7 +540,7 @@ static void SrvUpgrade_Check_AppFirmware(void)
                 read_size = total_size;
 
             /* read boot firmware */
-            Storage.read_firmware(Firmware_App, read_addr_offset, upgrade_buf, read_size);
+            Storage.read_firmware(read_addr_offset, upgrade_buf, read_size);
 
             for (uint16_t j = 0; j < (read_size / 4); j++)
             {

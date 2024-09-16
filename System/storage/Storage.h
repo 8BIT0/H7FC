@@ -111,13 +111,6 @@ typedef enum
     Para_User,
 } Storage_ParaClassType_List;
 
-typedef enum
-{
-    Firmware_None = 0,
-    Firmware_Boot,
-    Firmware_App,
-} Storage_FirmwareType_List;
-
 #pragma pack(1)
 /* length must be 64Byte */
 typedef struct
@@ -267,9 +260,9 @@ typedef struct
     bool (*erase_section)(uint32_t addr, uint16_t len);
 
     /* firmware section */
-    bool (*format_firmware)(Storage_FirmwareType_List type);
-    bool (*read_firmware)(Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_date, uint16_t size);
-    bool (*write_firmware)(Storage_MediumType_List medium, Storage_FirmwareType_List type, uint32_t addr_offset, uint8_t *p_data, uint16_t size);
+    bool (*format_firmware)(void);
+    bool (*read_firmware)(uint32_t addr_offset, uint8_t *p_date, uint16_t size);
+    bool (*write_firmware)(Storage_MediumType_List medium, uint32_t addr_offset, uint8_t *p_data, uint16_t size);
 } Storage_TypeDef;
 
 extern Storage_TypeDef Storage;
