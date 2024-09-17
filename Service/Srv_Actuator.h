@@ -86,7 +86,7 @@ extern "C" {
         }                           \
     }
 
-#if defined BATEAT32F435_AIO
+#if defined BATEAT32F435_AIO || defined MATEKH743_V1_5
 #define SRVACTUATOR_SIG_5           \
     (SrvActuator_PeriphSet_TypeDef) \
     {                               \
