@@ -26,6 +26,9 @@
 #include "Srv_OsCommon.h"
 #include "../System/DataPipe/DataPipe.h"
 
+#define Actuator_Malloc(size) SrvOsCommon.malloc(size)
+#define Actuator_Free(ptr) SrvOsCommon.free(ptr)
+
 const SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM] = {
     SRVACTUATOR_SIG_1,
     SRVACTUATOR_SIG_2,
@@ -205,11 +208,11 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
     SrvActuator_Obj.model = cfg.model;
 
     /* malloc dshot esc driver obj for using */
-    SrvActuator_Obj.drive_module.obj_list = (SrvActuator_PWMOutObj_TypeDef *)SrvOsCommon.malloc(sizeof(SrvActuator_PWMOutObj_TypeDef) * SrvActuator_Obj.drive_module.num.total_cnt);
+    SrvActuator_Obj.drive_module.obj_list = (SrvActuator_PWMOutObj_TypeDef *)Actuator_Malloc(sizeof(SrvActuator_PWMOutObj_TypeDef) * SrvActuator_Obj.drive_module.num.total_cnt);
 
     if (SrvActuator_Obj.drive_module.obj_list == NULL)
     {
-        SrvOsCommon.free(SrvActuator_Obj.drive_module.obj_list);
+        Actuator_Free(SrvActuator_Obj.drive_module.obj_list);
         return false;
     }
 
@@ -231,14 +234,14 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
                 SrvActuator_Obj.drive_module.obj_list[i].idle_val = DSHOT_IDLE_THROTTLE;
                 SrvActuator_Obj.drive_module.obj_list[i].lock_val = DSHOT_LOCK_THROTTLE;
 
-                SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)SrvOsCommon.malloc(sizeof(DevDshotObj_TypeDef));
+                SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)Actuator_Malloc(sizeof(DevDshotObj_TypeDef));
                 break;
 
             case Actuator_DevType_ServoPWM:
                 break;
 
             default:
-                SrvOsCommon.free(SrvActuator_Obj.drive_module.obj_list);
+                Actuator_Free(SrvActuator_Obj.drive_module.obj_list);
                 return false;
             }
 
@@ -246,10 +249,10 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
             {
                 for (uint8_t j = 0; j < i; j++)
                 {
-                    SrvOsCommon.free(SrvActuator_Obj.drive_module.obj_list[j].drv_obj);
+                    Actuator_Free(SrvActuator_Obj.drive_module.obj_list[j].drv_obj);
                 }
 
-                SrvOsCommon.free(SrvActuator_Obj.drive_module.obj_list);
+                Actuator_Free(SrvActuator_Obj.drive_module.obj_list);
                 return false;
             }
         }
@@ -585,12 +588,12 @@ static bool SrvActuator_Servo_DirectDrive(uint8_t index, uint16_t value)
 /****************************************************** ESC Weak Function Implimentation *******************************************************/
 void *DShot_Malloc(uint32_t size)
 {
-    return SrvOsCommon.malloc(size);
+    return Actuator_Malloc(size);
 }
 
 void DShot_Free(void *ptr)
 {
-    SrvOsCommon.free(ptr);
+    Actuator_Free(ptr);
 }
 
 bool DShot_Port_DeInit(void *obj)
@@ -632,7 +635,7 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
         }
 
 #if defined AT32F435_437
-        To_DShot_Obj(obj)->pwm_obj.dma_callback_obj = SrvOsCommon.malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
+        To_DShot_Obj(obj)->pwm_obj.dma_callback_obj = Actuator_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
         if (To_DShot_Obj(obj)->pwm_obj.dma_callback_obj == NULL)
             return false;
 #endif
