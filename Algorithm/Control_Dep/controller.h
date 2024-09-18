@@ -5,9 +5,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-typedef void *(*Control_Malloc_Cb)(uint32_t size);
-typedef void (*Control_Free_Cb)(void *ptr);
-
 typedef enum
 {
     CtlM_PID = 0, /* PID      control modle */
@@ -77,8 +74,8 @@ typedef struct
 
 typedef struct
 {
-    bool (*att_clt_init)(AttControl_DataObj_TypeDef *D_i, Control_Malloc_Cb Malloc_Cb, Control_Free_Cb Free_Cb);
-    bool (*alt_clt_init)(AltControl_DataObj_TypeDef *D_i, Control_Malloc_Cb Malloc_Cb, Control_Free_Cb Free_Cb);
+    bool (*att_clt_init)(AttControl_DataObj_TypeDef *D_i);
+    bool (*alt_clt_init)(AltControl_DataObj_TypeDef *D_i);
     
     void (*att_ctl)(AttControl_DataObj_TypeDef *D_i, float *ctl_gyr_x, float *ctl_gyr_y, float *ctl_gyr_z);
     void (*alt_ctl)(AltControl_DataObj_TypeDef *D_i, float *ctl_throttle);
