@@ -1,10 +1,9 @@
-#ifndef __CONTROL_H
-#define __CONTROL_H
+#ifndef __CONTROLLER_H
+#define __CONTROLLER_H
 
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include "pid.h"
 
 typedef void *(*Control_Malloc_Cb)(uint32_t size);
 typedef void (*Control_Free_Cb)(void *ptr);

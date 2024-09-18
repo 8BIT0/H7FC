@@ -1,4 +1,4 @@
-#include "control.h"
+#include "controller.h"
 
 /* internal function */
 static bool Check_Controller_Mode(ControlMode_List mode);
