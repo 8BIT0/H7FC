@@ -1,7 +1,9 @@
 #include "controller.h"
+#include "Att_Casecade_PID.h"
 
 /* internal function */
 static bool Check_Controller_Mode(ControlMode_List mode);
+static bool Check_ParamStream(ControlMode_List mode, ControlParam_TypeDef para_stream);
 
 static bool Check_Controller_Mode(ControlMode_List mode)
 {
@@ -13,3 +15,24 @@ static bool Check_Controller_Mode(ControlMode_List mode)
     return true;
 }
 
+static bool Check_ParamStream(ControlMode_List mode, ControlParam_TypeDef para_stream)
+{
+    if (para_stream.p_para == NULL)
+        return false;
+
+    /* check size */
+    switch ((uint8_t)mode)
+    {
+        case CtlM_PID: return (para_stream.size == ) ? true : false;
+        default: return false;
+    }
+}
+
+static bool Controller_Att_Init(AttControl_DataObj_TypeDef *AttCtl_Obj)
+{
+    if ((AttCtl_Obj == NULL) || \
+        !Check_Controller_Mode(AttCtl_Obj->CtlMode) || \
+        !Check_ParamStream(AttCtl_Obj->CtlMode, AttCtl_Obj->p_para))
+        return false;
+
+}

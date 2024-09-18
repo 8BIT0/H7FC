@@ -27,19 +27,13 @@ typedef struct
     bool angular_only;
 
     /* attitude control paramter */
-    ControlParam_TypeDef p_para_pitch;
-    ControlParam_TypeDef p_para_roll;
+    ControlParam_TypeDef p_para;
 
     /* attitude control */
     float exp_pitch;
     float exp_roll;
     float act_pitch;
     float act_roll;
-
-    /* angular control parameter */
-    ControlParam_TypeDef *p_para_gyro_x;
-    ControlParam_TypeDef *p_para_gyro_y;
-    ControlParam_TypeDef *p_para_gyro_z;
 
     /* angular speed control */
     float exp_gyro_x;
