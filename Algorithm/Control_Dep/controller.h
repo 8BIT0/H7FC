@@ -1,6 +1,10 @@
 #ifndef __CONTROLLER_H
 #define __CONTROLLER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -76,5 +80,9 @@ typedef struct
 } Control_TypeDef;
 
 extern Control_TypeDef Controller;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

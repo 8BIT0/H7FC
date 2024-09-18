@@ -1,6 +1,10 @@
 #ifndef __ATT_CONTROL_BASE_H
 #define __ATT_CONTROL_BASE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* expective attitude and yaw angular speed */
 typedef struct
 {
@@ -24,5 +28,9 @@ typedef struct
     float out_gyro_y;   /* range 0 ~ 1.0f */
     float out_gyro_z;   /* range 0 ~ 1.0f */
 } AngControl_Out_TypeDef;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

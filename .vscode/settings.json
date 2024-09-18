@@ -196,7 +196,10 @@
                 "dev_flow_3901u.h": "c",
                 "i2c_application.h": "c",
                 "bsp_gpio_port_def.h": "c",
-                "list": "c"
+                "list": "c",
+                "att_casecade_pid.h": "c",
+                "att_control_base.h": "c",
+                "pid.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

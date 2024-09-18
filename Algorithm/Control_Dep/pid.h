@@ -43,8 +43,6 @@ typedef struct
     float gD;
     float lst_diff;
     float D_out;
-
-    uint16_t dt;    /* unit: ms */
 }PIDObj_TypeDef;
 
 bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in);
