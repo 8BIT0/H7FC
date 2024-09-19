@@ -1,4 +1,3 @@
-#include "storage.h"
 #include "Att_Casecade_PID.h"
 
 #define PARA_AMPLIFICATE(x)     (uint16_t)(x * 1000) 
