@@ -5,21 +5,15 @@
 extern "C" {
 #endif
 
-/* expective attitude and yaw angular speed */
+/* attitude and angular speed */
 typedef struct
 {
-    float exp_pitch;
-    float exp_roll;
-    float exp_gyro_z;
-} AttControl_ExpIn_TypeDef;
-
-/* expectice angular speed */
-typedef struct
-{
-    float exp_gyro_x;
-    float exp_gyro_y;
-    float exp_gyro_z;
-} AngControl_ExpIn_TypeDef;
+    float pitch;
+    float roll;
+    float gyro_x;
+    float gyro_y;
+    float gyro_z;
+} AttControl_In_TypeDef;
 
 /* angular speed control value out */
 typedef struct

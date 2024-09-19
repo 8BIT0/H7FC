@@ -25,7 +25,7 @@ static ProcessParam_TypeDef ProcessPara = {
 
 /* external function */
 static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para);
-static bool Att_Casecade_PID(bool angular_only, AttControl_ExpIn_TypeDef exp_att, AngControl_ExpIn_TypeDef exp_ang, AngControl_Out_TypeDef *ctl_out);
+static bool Att_Casecade_PID(bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out);
 
 AttCasecadePID_TypeDef Att_CasecadePID_Controller = {
     .init = Att_CheckParam_Validation,
@@ -69,19 +69,31 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     /* angular axis X parameter set */
     if (PARA_AMPLIFICATE(para.GyroX_Para.gP) == 0)
         return false;
+
+    ProcessPara.g_x.gP = para.GyroX_Para.gP;
+    ProcessPara.g_x.gI = para.GyroX_Para.gI;
+    ProcessPara.g_x.gD = para.GyroX_Para.gD;
     
     /* angular axis Y parameter set */
     if (PARA_AMPLIFICATE(para.GyroY_Para.gP) == 0)
         return false;
     
+    ProcessPara.g_y.gP = para.GyroY_Para.gP;
+    ProcessPara.g_y.gI = para.GyroY_Para.gI;
+    ProcessPara.g_y.gD = para.GyroY_Para.gD;
+                   
     /* angular axis Z parameter set */
     if (PARA_AMPLIFICATE(para.GyroZ_Para.gP) == 0)
         return false;
 
+    ProcessPara.g_z.gP = para.GyroZ_Para.gP;
+    ProcessPara.g_z.gI = para.GyroZ_Para.gI;
+    ProcessPara.g_z.gD = para.GyroZ_Para.gD;
+
     return true;
 }
 
-static bool Att_Casecade_PID(bool angular_only, AttControl_ExpIn_TypeDef exp_att, AngControl_ExpIn_TypeDef exp_ang, AngControl_Out_TypeDef *ctl_out)
+static bool Att_Casecade_PID(bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out)
 {
     bool state = false;
 
@@ -92,10 +104,10 @@ static bool Att_Casecade_PID(bool angular_only, AttControl_ExpIn_TypeDef exp_att
     {
         /* attitude loop */
         /* Pitch PID update */
-        // state = PID_Update();
+        state = PID_Update(&ProcessPara.pitch, mea.pitch, exp.pitch);
 
         /* Roll PID update */
-        // state &= PID_Update();
+        state &= PID_Update(&ProcessPara.roll, mea.roll, exp.roll);
     }
 
     /* angular speed loop */
