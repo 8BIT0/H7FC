@@ -43,7 +43,10 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     /* attitude pid pitch parameter set */
     /* invalid Pitch P gain input */
     if (PARA_AMPLIFICATE(para.Pitch_Para.gP) == 0)
+    {
+        /* use default parameter */
         return false;
+    }
 
     ProcessPara.pitch.gP = para.Pitch_Para.gP;
     ProcessPara.pitch.gI = para.Pitch_Para.gI;
@@ -56,7 +59,10 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     /* attitude pid roll parameter set */
     /* invalid Roll P gain input */
     if (PARA_AMPLIFICATE(para.Roll_Para.gP) == 0)
+    {
+        /* use default parameter */
         return false;
+    }
 
     ProcessPara.roll.gP = para.Roll_Para.gP;
     ProcessPara.roll.gI = para.Roll_Para.gI;
@@ -68,27 +74,42 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
 
     /* angular axis X parameter set */
     if (PARA_AMPLIFICATE(para.GyroX_Para.gP) == 0)
+    {
+        /* use default parameter */
         return false;
+    }
 
     ProcessPara.g_x.gP = para.GyroX_Para.gP;
     ProcessPara.g_x.gI = para.GyroX_Para.gI;
     ProcessPara.g_x.gD = para.GyroX_Para.gD;
+    ProcessPara.g_x.diff_max = para.GyroX_Para.base_diff;
+    ProcessPara.g_x.diff_min = -para.GyroX_Para.base_diff;
     
     /* angular axis Y parameter set */
     if (PARA_AMPLIFICATE(para.GyroY_Para.gP) == 0)
+    {
+        /* use default parameter */
         return false;
-    
+    }
+
     ProcessPara.g_y.gP = para.GyroY_Para.gP;
     ProcessPara.g_y.gI = para.GyroY_Para.gI;
     ProcessPara.g_y.gD = para.GyroY_Para.gD;
+    ProcessPara.g_y.diff_max = para.GyroY_Para.base_diff;
+    ProcessPara.g_y.diff_min = -para.GyroY_Para.base_diff;
                    
     /* angular axis Z parameter set */
     if (PARA_AMPLIFICATE(para.GyroZ_Para.gP) == 0)
+    {
+        /* use default parameter */
         return false;
+    }
 
     ProcessPara.g_z.gP = para.GyroZ_Para.gP;
     ProcessPara.g_z.gI = para.GyroZ_Para.gI;
     ProcessPara.g_z.gD = para.GyroZ_Para.gD;
+    ProcessPara.g_z.diff_max = para.GyroZ_Para.base_diff;
+    ProcessPara.g_z.diff_min = -para.GyroZ_Para.base_diff;
 
     return true;
 }
@@ -105,20 +126,26 @@ static bool Att_Casecade_PID(bool angular_only, AttControl_In_TypeDef exp, AttCo
         /* attitude loop */
         /* Pitch PID update */
         state = PID_Update(&ProcessPara.pitch, mea.pitch, exp.pitch);
+        exp.gyro_y = ProcessPara.pitch.fout;
 
         /* Roll PID update */
         state &= PID_Update(&ProcessPara.roll, mea.roll, exp.roll);
+        exp.gyro_x = ProcessPara.roll.fout;
     }
 
     /* angular speed loop */
     /* Gyro X PID update */
-    // state &= PID_Update();
+    state &= PID_Update(&ProcessPara.g_x, mea.gyro_x, exp.gyro_x);
 
     /* Gyro Y PID update */
-    // state &= PID_Update();
+    state &= PID_Update(&ProcessPara.g_y, mea.gyro_y, exp.gyro_y);
 
     /* Gyro Z PID update */
-    // state &= PID_Update();
+    state &= PID_Update(&ProcessPara.g_z, mea.gyro_z, exp.gyro_z);
+
+    ctl_out->out_gyro_x = ProcessPara.g_x.fout;
+    ctl_out->out_gyro_y = ProcessPara.g_y.fout;
+    ctl_out->out_gyro_z = ProcessPara.g_z.fout;
 
     return state;
 }
