@@ -11,7 +11,6 @@
 #include "Srv_DataHub.h"
 #include "Srv_Actuator.h"
 #include "shell_port.h"
-#include "controller.h"
 
 #define CONTROL_STORAGE_SECTION_NAME "Control_Para"
 
@@ -84,10 +83,10 @@ void TaskControl_Init(uint32_t period)
 static void TaskControl_Get_StoreParam(void)
 {
     SrvActuator_Setting_TypeDef Actuator_Param;
-    TaskControl_CtlRange_TypeDef CtlRange_Param;
+    TaskControl_CtlPara_TypeDef CtlRange_Param;
 
     /* search storage section first */
-    memset(&CtlRange_Param, 0, sizeof(TaskControl_CtlRange_TypeDef));
+    memset(&CtlRange_Param, 0, sizeof(TaskControl_CtlPara_TypeDef));
     memset(&Actuator_Param, 0, sizeof(SrvActuator_Setting_TypeDef));
     memset(&TaskControl_Monitor.pid_store_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
     memset(&TaskControl_Monitor.actuator_store_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
@@ -100,13 +99,13 @@ static void TaskControl_Get_StoreParam(void)
     {
         /* no pid parameter found in external flash chip under user partten */
         /* section create successful */
-        Storage.create(Para_User, CONTROL_STORAGE_SECTION_NAME, (uint8_t *)&CtlRange_Param, sizeof(TaskControl_CtlRange_TypeDef));
+        Storage.create(Para_User, CONTROL_STORAGE_SECTION_NAME, (uint8_t *)&CtlRange_Param, sizeof(TaskControl_CtlPara_TypeDef));
     }
     else
     {
-        if ((TaskControl_Monitor.pid_store_info.item.len == sizeof(TaskControl_CtlRange_TypeDef )) && \
-            (Storage.get(Para_User, TaskControl_Monitor.pid_store_info.item, (uint8_t *)&CtlRange_Param, sizeof(TaskControl_CtlRange_TypeDef)) == Storage_Error_None))
-            memcpy(&TaskControl_Monitor.ctl_range, &CtlRange_Param, sizeof(TaskControl_CtlRange_TypeDef));
+        if ((TaskControl_Monitor.pid_store_info.item.len == sizeof(TaskControl_CtlPara_TypeDef )) && \
+            (Storage.get(Para_User, TaskControl_Monitor.pid_store_info.item, (uint8_t *)&CtlRange_Param, sizeof(TaskControl_CtlPara_TypeDef)) == Storage_Error_None))
+            memcpy(&TaskControl_Monitor.ctl_range, &CtlRange_Param, sizeof(TaskControl_CtlPara_TypeDef));
     }
     
     /* get actuator parameter */

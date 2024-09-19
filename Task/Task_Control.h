@@ -12,7 +12,7 @@ extern "C" {
 #include "Srv_OsCommon.h"
 #include "pid.h"
 #include "../System/storage/Storage.h"
-// #include "adrc.h"
+#include "controller.h"
 #include "../common/util.h"
 
 #define TASKCONTROL_SET_BIT(x) UTIL_SET_BIT(x)
@@ -60,6 +60,8 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
+    ControlMode_List ctl_type;
+
     float att_rate;
     float pitch_range;
     float roll_range;
@@ -72,7 +74,7 @@ typedef struct
 
     float gz_rate;
     float gz_range;
-} TaskControl_CtlRange_TypeDef;
+} TaskControl_CtlPara_TypeDef;
 #pragma pack()
 
 typedef struct
@@ -86,7 +88,7 @@ typedef struct
     bool CLI_enable;
 
     Storage_ItemSearchOut_TypeDef pid_store_info;
-    TaskControl_CtlRange_TypeDef ctl_range;
+    TaskControl_CtlPara_TypeDef ctl_range;
 
     Storage_ItemSearchOut_TypeDef actuator_store_info;
     SrvActuator_Setting_TypeDef actuator_param;
