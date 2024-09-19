@@ -25,7 +25,7 @@ static ProcessParam_TypeDef ProcessPara = {
 
 /* external function */
 static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para);
-static bool Att_Casecade_PID(bool angular_only, AttControl_ExpIn_TypeDef exp_att, AngControl_ExpIn_TypeDef exp_ang, AngControl_Out_TypeDef ctl_out);
+static bool Att_Casecade_PID(bool angular_only, AttControl_ExpIn_TypeDef exp_att, AngControl_ExpIn_TypeDef exp_ang, AngControl_Out_TypeDef *ctl_out);
 
 AttCasecadePID_TypeDef Att_CasecadePID_Controller = {
     .init = Att_CheckParam_Validation,
@@ -81,15 +81,33 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     return true;
 }
 
-static bool Att_Casecade_PID(bool angular_only, AttControl_ExpIn_TypeDef exp_att, AngControl_ExpIn_TypeDef exp_ang, AngControl_Out_TypeDef ctl_out)
+static bool Att_Casecade_PID(bool angular_only, AttControl_ExpIn_TypeDef exp_att, AngControl_ExpIn_TypeDef exp_ang, AngControl_Out_TypeDef *ctl_out)
 {
+    bool state = false;
+
+    if (ctl_out == NULL)
+        return false;
+
     if (!angular_only)
     {
         /* attitude loop */
+        /* Pitch PID update */
+        state = PID_Update();
+
+        /* Roll PID update */
+        state &= PID_Update();
     }
 
     /* angular speed loop */
+    /* Gyro X PID update */
+    state &= PID_Update();
 
-    return false;
+    /* Gyro Y PID update */
+    state &= PID_Update();
+
+    /* Gyro Z PID update */
+    state &= PID_Update();
+
+    return state;
 }
 
