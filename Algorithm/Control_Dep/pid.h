@@ -11,9 +11,9 @@ extern "C" {
 
 typedef struct
 {
+    float base_diff;
+
     float gP;
-    float gP_Diff_Max;
-    float gP_Diff_Min;
 
     float gI;
     float gI_Max;

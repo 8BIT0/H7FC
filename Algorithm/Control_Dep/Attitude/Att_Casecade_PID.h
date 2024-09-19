@@ -10,16 +10,19 @@ extern "C" {
 
 #define ATT_CASECADE_PID_PARAM_SIZE sizeof(AttCaseCadePID_Param_TypeDef)
 
+#pragma pack(1)
 typedef struct
 {
-
     /* attitude parameter */
-
+    PID_Param_TypeDef Pitch_Para;
+    PID_Param_TypeDef Roll_Para;
 
     /* angular speed parameter */
-
-
+    PID_Param_TypeDef GyroX_Para;
+    PID_Param_TypeDef GyroY_Para;
+    PID_Param_TypeDef GyroZ_Para;
 } AttCaseCadePID_Param_TypeDef;
+#pragma pack()
 
 typedef struct
 {

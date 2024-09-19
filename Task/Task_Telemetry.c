@@ -184,7 +184,7 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
 {
     uint8_t *port_ptr = NULL;
 
-    memset(receiver_obj, 0, sizeof(receiver_obj));
+    memset(receiver_obj, 0, sizeof(SrvReceiverObj_TypeDef));
 
     receiver_obj->port_type = Receiver_Port_Serial;
     receiver_obj->Frame_type = Receiver_Type_CRSF;

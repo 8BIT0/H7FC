@@ -12,7 +12,7 @@ static bool BspFlash_NoneCheck_Write(uint32_t addr, uint8_t *p_data, uint32_t le
 
 /* external function */
 static bool BspFlash_Init(void);
-static bool BspFlash_DeInit(void);
+static void BspFlash_DeInit(void);
 static bool BspFlash_Erase(uint32_t addr, uint32_t len);
 static bool BspFlash_Read(uint32_t addr, uint8_t *p_data, uint32_t len);
 static bool BspFlash_Write(uint32_t addr, uint8_t *p_data, uint32_t len);
@@ -31,9 +31,8 @@ static bool BspFlash_Init(void)
     return true;
 }
 
-static bool BspFlash_DeInit(void)
+static void BspFlash_DeInit(void)
 {
-    return true;
 }
 
 static bool BspFlash_Erase(uint32_t addr, uint32_t len)

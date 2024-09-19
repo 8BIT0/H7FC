@@ -23,7 +23,8 @@ static bool Check_ParamStream(ControlMode_List mode, ControlParam_TypeDef para_s
     /* check size */
     switch ((uint8_t)mode)
     {
-        case CtlM_PID: return (para_stream.size == ) ? true : false;
+        /* in developping currently only support PID */
+        case CtlM_PID: return (para_stream.size == ATT_CASECADE_PID_PARAM_SIZE) ? true : false;
         default: return false;
     }
 }

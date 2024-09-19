@@ -388,7 +388,7 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
 
 static uint16_t SrvComProto_MavMsg_MotoActuator(SrvComProto_MsgInfo_TypeDef *pck)
 {
-    uint32_t time_stamp = 0;
+    return 0;
 }
 /******************************************* Frame Out ****************************************/
 /******************************************* Frame In  ****************************************/

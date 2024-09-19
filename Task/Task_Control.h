@@ -60,36 +60,19 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    PID_Param_TypeDef Pitch_Para;
-    PID_Param_TypeDef Roll_Para;
-} TaskControl_OuterLoop_Para_TypeDef;
+    float att_rate;
+    float pitch_range;
+    float roll_range;
 
-typedef struct
-{
-    PID_Param_TypeDef GyroX_Para;
-    PID_Param_TypeDef GyroY_Para;
-    PID_Param_TypeDef GyroZ_Para;
-} TaskControl_InnerLoop_Para_TypeDef;
+    float gx_rate;
+    float gx_range;
 
-typedef struct
-{
-    float max;
-    float mid;
-    float min;
-} TaskControl_CtlRange_Para_TypeDef;
+    float gy_rate;
+    float gy_range;
 
-typedef struct
-{
-    TaskControl_CtlRange_Para_TypeDef pitch;
-    TaskControl_CtlRange_Para_TypeDef roll;
-
-    TaskControl_CtlRange_Para_TypeDef gx;
-    TaskControl_CtlRange_Para_TypeDef gy;
-    TaskControl_CtlRange_Para_TypeDef gz;
-
-    TaskControl_OuterLoop_Para_TypeDef Outer;
-    TaskControl_InnerLoop_Para_TypeDef Inner;
-} TaskControl_FlightParam_TypeDef;
+    float gz_rate;
+    float gz_range;
+} TaskControl_CtlRange_TypeDef;
 #pragma pack()
 
 typedef struct
@@ -103,7 +86,7 @@ typedef struct
     bool CLI_enable;
 
     Storage_ItemSearchOut_TypeDef pid_store_info;
-    TaskControl_FlightParam_TypeDef param;
+    TaskControl_CtlRange_TypeDef ctl_range;
 
     Storage_ItemSearchOut_TypeDef actuator_store_info;
     SrvActuator_Setting_TypeDef actuator_param;
@@ -135,15 +118,6 @@ typedef struct
     uint32_t error_code;
     uint8_t imu_none_update_cnt;
     uint8_t over_angular_accelerate_cnt;
-
-    /* outer ring attitude control pid */
-    PIDObj_TypeDef RollCtl_PIDObj;
-    PIDObj_TypeDef PitchCtl_PIDObj;
-
-    /* inner ring angular speed control pid */
-    PIDObj_TypeDef GyrXCtl_PIDObj;
-    PIDObj_TypeDef GyrYCtl_PIDObj;
-    PIDObj_TypeDef GyrZCtl_PIDObj;
 
     osMessageQId CLIMessage_ID;
 } TaskControl_Monitor_TypeDef;

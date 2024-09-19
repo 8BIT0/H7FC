@@ -202,7 +202,7 @@ static bool BspDMA_DisableIRQ(BspDMA_List dma, BspDMA_Stream_List stream)
     dma_channel_type *dma_ch = NULL;
 
     if ((dma < Bsp_DMA_1) || (stream < Bsp_DMA_Stream_1))
-        return;
+        return false;
 
     if (dma == Bsp_DMA_1)
     {

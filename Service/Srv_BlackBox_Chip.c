@@ -135,7 +135,6 @@ static bool SrvChip_BlackBox_PushData(uint8_t *p_data, uint32_t len)
 static bool SrvChip_BlackBox_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
     Chip_BlackBox_Info_TypeDef info;
-    uint8_t read_cnt = 1;
     uint32_t read_addr = 0;
 
     memset(&info, 0, sizeof(Chip_BlackBox_Info_TypeDef));

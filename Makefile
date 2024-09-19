@@ -60,7 +60,6 @@ main.c \
 Algorithm/Navi_Dep/MadgwickAHRS.c \
 Algorithm/Filter_Dep/filter.c \
 Algorithm/Filter_Dep/filter_param.c \
-Algorithm/Control_Dep/adrc.c \
 Algorithm/Control_Dep/pid.c \
 debug/debug_util.c \
 debug/trace_analysiser.c \
