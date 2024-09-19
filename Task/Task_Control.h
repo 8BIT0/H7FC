@@ -60,7 +60,7 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    ControlMode_List ctl_type;
+    ControlMode_List mode;
 
     float att_rate;
     float pitch_range;

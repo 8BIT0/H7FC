@@ -14,6 +14,7 @@
 
 #define CONTROL_STORAGE_SECTION_NAME "Control_Para"
 
+#define DEFAULT_ATTITUDE_CONTROLLER_MODE CtlM_PID 
 #define ATTITUDE_DISARM_RANGE_MAX 10.0f
 #define ATTITUDE_DISARM_RANGE_MIN -10.0f
 
@@ -83,10 +84,10 @@ void TaskControl_Init(uint32_t period)
 static void TaskControl_Get_StoreParam(void)
 {
     SrvActuator_Setting_TypeDef Actuator_Param;
-    TaskControl_CtlPara_TypeDef CtlRange_Param;
+    TaskControl_CtlPara_TypeDef Ctl_Param;
 
     /* search storage section first */
-    memset(&CtlRange_Param, 0, sizeof(TaskControl_CtlPara_TypeDef));
+    memset(&Ctl_Param, 0, sizeof(TaskControl_CtlPara_TypeDef));
     memset(&Actuator_Param, 0, sizeof(SrvActuator_Setting_TypeDef));
     memset(&TaskControl_Monitor.pid_store_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
     memset(&TaskControl_Monitor.actuator_store_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
@@ -94,18 +95,20 @@ static void TaskControl_Get_StoreParam(void)
     TaskControl_Monitor.pid_store_info = Storage.search(Para_User, CONTROL_STORAGE_SECTION_NAME);
     TaskControl_Monitor.actuator_store_info = Storage.search(Para_User, ACTUATOR_STORAGE_SECTION_NAME);
 
-    
+    /* set Ctl Parameter as default */
+    Ctl_Param.mode = DEFAULT_ATTITUDE_CONTROLLER_MODE;
+
     if (TaskControl_Monitor.pid_store_info.item_addr == 0)
     {
         /* no pid parameter found in external flash chip under user partten */
         /* section create successful */
-        Storage.create(Para_User, CONTROL_STORAGE_SECTION_NAME, (uint8_t *)&CtlRange_Param, sizeof(TaskControl_CtlPara_TypeDef));
+        Storage.create(Para_User, CONTROL_STORAGE_SECTION_NAME, (uint8_t *)&Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef));
     }
     else
     {
         if ((TaskControl_Monitor.pid_store_info.item.len == sizeof(TaskControl_CtlPara_TypeDef )) && \
-            (Storage.get(Para_User, TaskControl_Monitor.pid_store_info.item, (uint8_t *)&CtlRange_Param, sizeof(TaskControl_CtlPara_TypeDef)) == Storage_Error_None))
-            memcpy(&TaskControl_Monitor.ctl_range, &CtlRange_Param, sizeof(TaskControl_CtlPara_TypeDef));
+            (Storage.get(Para_User, TaskControl_Monitor.pid_store_info.item, (uint8_t *)&Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef)) == Storage_Error_None))
+            memcpy(&TaskControl_Monitor.ctl_range, &Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef));
     }
     
     /* get actuator parameter */
