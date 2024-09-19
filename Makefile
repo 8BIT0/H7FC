@@ -61,6 +61,8 @@ Algorithm/Navi_Dep/MadgwickAHRS.c \
 Algorithm/Filter_Dep/filter.c \
 Algorithm/Filter_Dep/filter_param.c \
 Algorithm/Control_Dep/pid.c \
+Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c \
+Algorithm/Control_Dep/controller.c \
 debug/debug_util.c \
 debug/trace_analysiser.c \
 Task/Task_Sample.c \
@@ -335,6 +337,7 @@ C_INCLUDES =  \
 -IAlgorithm/Navi_Dep \
 -IAlgorithm/Filter_Dep \
 -IAlgorithm/Control_Dep \
+-IAlgorithm/Control_Dep/Attitude \
 -IAlgorithm \
 -IMAVLink/common \
 -IMAVLink/minimal \

@@ -20,7 +20,7 @@ typedef struct
 
 /* internal vriable */
 static ProcessParam_TypeDef ProcessPara = {
-    .init = false;
+    .init = false,
 };
 
 /* external function */
@@ -92,21 +92,21 @@ static bool Att_Casecade_PID(bool angular_only, AttControl_ExpIn_TypeDef exp_att
     {
         /* attitude loop */
         /* Pitch PID update */
-        state = PID_Update();
+        // state = PID_Update();
 
         /* Roll PID update */
-        state &= PID_Update();
+        // state &= PID_Update();
     }
 
     /* angular speed loop */
     /* Gyro X PID update */
-    state &= PID_Update();
+    // state &= PID_Update();
 
     /* Gyro Y PID update */
-    state &= PID_Update();
+    // state &= PID_Update();
 
     /* Gyro Z PID update */
-    state &= PID_Update();
+    // state &= PID_Update();
 
     return state;
 }

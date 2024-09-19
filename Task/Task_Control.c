@@ -11,6 +11,7 @@
 #include "Srv_DataHub.h"
 #include "Srv_Actuator.h"
 #include "shell_port.h"
+#include "controller.h"
 
 #define CONTROL_STORAGE_SECTION_NAME "Control_Para"
 
