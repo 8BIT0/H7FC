@@ -88,7 +88,7 @@ typedef struct
     bool CLI_enable;
 
     Storage_ItemSearchOut_TypeDef pid_store_info;
-    TaskControl_CtlPara_TypeDef ctl_range;
+    TaskControl_CtlPara_TypeDef ctl_para;
 
     Storage_ItemSearchOut_TypeDef actuator_store_info;
     SrvActuator_Setting_TypeDef actuator_param;

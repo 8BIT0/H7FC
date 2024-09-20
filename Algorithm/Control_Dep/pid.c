@@ -17,7 +17,7 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in
         p_PIDObj->in = mea_in;
         p_PIDObj->exp = exp_in;
 
-        /* foward feed is essential? */
+        /* feed foward is essential? */
 
         /* if P stage error then PID can`t be use in other progress */
         if(PID_P_Progress(p_PIDObj, diff))

@@ -15,14 +15,26 @@
 #define CONTROL_STORAGE_SECTION_NAME "Control_Para"
 
 #define DEFAULT_ATTITUDE_CONTROLLER_MODE CtlM_PID
-#define DEFAULT_CONTROL_RATE 1.0f 
-#define ATTITUDE_DISARM_RANGE_MAX 10.0f
-#define ATTITUDE_DISARM_RANGE_MIN -10.0f
+#define DEFAULT_CONTROL_RATE        1.0f
 
-#define THROTTLE_CHANGE_RATE 50   /* unit value per ms */
+#define ATTITUDE_DISARM_RANGE_MAX   10.0f
+#define ATTITUDE_DISARM_RANGE_MIN   -10.0f
 
-#define CONTROL_ATT_RANGE 30.0f
-#define CONTROL_GYR_RANGE_MAX 800.0f
+#define THROTTLE_CHANGE_RATE        50   /* unit value per ms */
+
+#define DEFAULT_CONTROL_ATT_RANGE   25.0f
+#define DEFAULT_CONTROL_GYR_RANGE   500.0f
+
+#define MAX_CONTROL_RATE            1.5f
+#define MIN_CONTROL_RATE            0.5f
+#define MAX_CONTROL_ATT_RANGE       45.0f
+#define MIN_CONTROL_ATT_RANGE       15.0f
+#define MAX_CONTROL_GYR_RANGE       800.0f
+#define MIN_CONTROL_GYR_RANGE       200.0f
+
+#define Check_Control_Rate(x)       ((x > MAX_CONTROL_RATE) ? MAX_CONTROL_RATE : ((x < MIN_CONTROL_RATE) ? MIN_CONTROL_RATE : x))
+#define Check_AttControl_Range(x)   ((x > MAX_CONTROL_ATT_RANGE) ? MAX_CONTROL_ATT_RANGE : ((x < MIN_CONTROL_ATT_RANGE) ? MIN_CONTROL_ATT_RANGE : x))
+#define Check_GyrControl_Range(x)   ((x > MAX_CONTROL_GYR_RANGE) ? MAX_CONTROL_GYR_RANGE : ((x < MIN_CONTROL_GYR_RANGE) ? MIN_CONTROL_GYR_RANGE : x))
 
 static uint32_t imu_update_time = 0;
 static uint32_t att_update_time = 0;
@@ -102,6 +114,12 @@ static void TaskControl_Get_StoreParam(void)
     Ctl_Param.gx_rate = DEFAULT_CONTROL_RATE;
     Ctl_Param.gy_rate = DEFAULT_CONTROL_RATE;
     Ctl_Param.gz_rate = DEFAULT_CONTROL_RATE;
+    Ctl_Param.pitch_range = DEFAULT_CONTROL_ATT_RANGE;
+    Ctl_Param.roll_range = DEFAULT_CONTROL_ATT_RANGE;
+    Ctl_Param.gx_range = DEFAULT_CONTROL_GYR_RANGE;
+    Ctl_Param.gy_range = DEFAULT_CONTROL_GYR_RANGE;
+    Ctl_Param.gz_range = DEFAULT_CONTROL_GYR_RANGE;
+    memcpy(&TaskControl_Monitor.ctl_para, &Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef));
 
     if (TaskControl_Monitor.pid_store_info.item_addr == 0)
     {
@@ -109,13 +127,25 @@ static void TaskControl_Get_StoreParam(void)
         /* section create successful */
         Storage.create(Para_User, CONTROL_STORAGE_SECTION_NAME, (uint8_t *)&Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef));
     }
-    else
-    {
-        if ((TaskControl_Monitor.pid_store_info.item.len == sizeof(TaskControl_CtlPara_TypeDef )) && \
+    else if ((TaskControl_Monitor.pid_store_info.item.len == sizeof(TaskControl_CtlPara_TypeDef )) && \
             (Storage.get(Para_User, TaskControl_Monitor.pid_store_info.item, (uint8_t *)&Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef)) == Storage_Error_None))
-            memcpy(&TaskControl_Monitor.ctl_range, &Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef));
+    {
+        /* check parameter validation */
+        Ctl_Param.att_rate = Check_Control_Rate(Ctl_Param.att_rate);
+        Ctl_Param.gx_rate = Check_Control_Rate(Ctl_Param.gx_rate);
+        Ctl_Param.gy_rate = Check_Control_Rate(Ctl_Param.gy_rate);
+        Ctl_Param.gz_rate = Check_Control_Rate(Ctl_Param.gz_rate);
+        Ctl_Param.pitch_range = Check_AttControl_Range(Ctl_Param.pitch_range);
+        Ctl_Param.roll_range = Check_AttControl_Range(Ctl_Param.roll_range);
+        Ctl_Param.gx_range = Check_AttControl_Range(Ctl_Param.gx_range);
+        Ctl_Param.gy_range = Check_AttControl_Range(Ctl_Param.gy_range);
+        Ctl_Param.gz_range = Check_AttControl_Range(Ctl_Param.gz_range);
+
+        memcpy(&TaskControl_Monitor.ctl_para, &Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef));
     }
     
+    /* controller load parameter from storage */
+
     /* get actuator parameter */
     /* set as default first */
     TaskControl_Monitor.actuator_param = SrvActuator.default_param();
@@ -246,11 +276,11 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
 
     if (TaskControl_Monitor.init_state && exp_ctl_val)
     {
-        TaskControl_Monitor.exp_pitch = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_range.pitch_range, TaskControl_Monitor.ctl_range.att_rate);
-        TaskControl_Monitor.exp_roll  = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_range.roll_range,  TaskControl_Monitor.ctl_range.att_rate);
-        TaskControl_Monitor.exp_gyr_x = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_range.gx_range,    TaskControl_Monitor.ctl_range.gx_rate);
-        TaskControl_Monitor.exp_gyr_y = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_range.gy_range,    TaskControl_Monitor.ctl_range.gy_rate);
-        TaskControl_Monitor.exp_gyr_z = TaskControl_Convert_CtlData(exp_ctl_val->yaw_percent,   TaskControl_Monitor.ctl_range.gz_range,    TaskControl_Monitor.ctl_range.gz_rate);
+        TaskControl_Monitor.exp_pitch = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.pitch_range, TaskControl_Monitor.ctl_para.att_rate);
+        TaskControl_Monitor.exp_roll  = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.roll_range,  TaskControl_Monitor.ctl_para.att_rate);
+        TaskControl_Monitor.exp_gyr_x = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.gx_range,    TaskControl_Monitor.ctl_para.gx_rate);
+        TaskControl_Monitor.exp_gyr_y = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.gy_range,    TaskControl_Monitor.ctl_para.gy_rate);
+        TaskControl_Monitor.exp_gyr_z = TaskControl_Convert_CtlData(exp_ctl_val->yaw_percent,   TaskControl_Monitor.ctl_para.gz_range,    TaskControl_Monitor.ctl_para.gz_rate);
 
         arm_state = exp_ctl_val->arm_state;
         failsafe = exp_ctl_val->fail_safe;
