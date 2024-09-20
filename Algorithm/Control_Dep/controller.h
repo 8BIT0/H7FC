@@ -27,57 +27,17 @@ typedef struct
 /* attitude & angular speed control */
 typedef struct
 {
-    uint32_t time_stamp;
     ControlMode_List CtlMode;
-    bool angular_only;
-
-    /* attitude control paramter */
-    ControlParam_TypeDef p_para;
-
-    /* attitude control */
-    float exp_pitch;
-    float exp_roll;
-    float act_pitch;
-    float act_roll;
-
-    /* angular speed control */
-    float exp_gyro_x;
-    float exp_gyro_y;
-    float exp_gyro_z;
-    float act_gyro_x;
-    float act_gyro_y;
-    float act_gyro_z;
-} AttControl_DataObj_TypeDef;
-
-/* altitude control */
-typedef struct
-{
-    uint32_t time_stamp;
-    ControlMode_List CtlMode;
-    bool abs_alt_only;
-
-    /* parameter */
-    ControlParam_TypeDef p_para_alt;
-
-    /* relative altitude control low priority */
-    float exp_rel_alt;
-    float rel_alt;
-
-    /* absolute altitude control high priority */
-    float exp_abs_alt;
-    float abs_alt;
-
-    float pitch;
-    float roll;
-} AltControl_DataObj_TypeDef;
+    ControlParam_TypeDef *p_para_stream;
+} Control_DataObj_TypeDef;
 
 typedef struct
 {
-    bool (*att_clt_init)(AttControl_DataObj_TypeDef *D_i);
-    bool (*alt_clt_init)(AltControl_DataObj_TypeDef *D_i);
+    bool (*att_clt_init)(Control_DataObj_TypeDef *p_obj);
+    bool (*alt_clt_init)(Control_DataObj_TypeDef *p_obj);
     
-    void (*att_ctl)(AttControl_DataObj_TypeDef *D_i, float *ctl_gyr_x, float *ctl_gyr_y, float *ctl_gyr_z);
-    void (*alt_ctl)(AltControl_DataObj_TypeDef *D_i, float *ctl_throttle);
+    void (*att_ctl)();
+    void (*alt_ctl)();
 } Control_TypeDef;
 
 extern Control_TypeDef Controller;

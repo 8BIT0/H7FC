@@ -41,6 +41,7 @@ static uint32_t att_update_time = 0;
 static uint8_t imu_err_code;
 static bool failsafe = false;
 static bool imu_init_state = false;
+static bool baro_init_state = false;
 static bool att_update = false;
 
 DataPipe_CreateDataObj(ExpControlData_TypeDef, ExpCtl);
@@ -81,11 +82,12 @@ void TaskControl_Init(uint32_t period)
     CtlData_smp_DataPipe.data_size = DataPipe_DataSize(ExpCtl);
     DataPipe_Enable(&CtlData_smp_DataPipe);
 
-    /* Parametet Init */
-    TaskControl_Get_StoreParam();
-
     TaskControl_Monitor.init_state = SrvActuator.init(TaskControl_Monitor.actuator_param);
     SrvDataHub.get_imu_init_state(&imu_init_state);
+    SrvDataHub.get_baro_init_state(&baro_init_state);
+    
+    /* Parametet Init */
+    TaskControl_Get_StoreParam();
 
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);
