@@ -92,6 +92,10 @@ static bool Controller_PID_AttControl_ParamLoad(Control_DataObj_TypeDef *obj)
         if (stor_err != Storage_Error_None)
             return false;
     }
+    else
+    {
+        /* section found */
+    }
 
     return true;
 }
