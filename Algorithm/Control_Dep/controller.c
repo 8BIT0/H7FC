@@ -64,7 +64,12 @@ static bool Controller_Att_Init(Control_DataObj_TypeDef *obj)
 
 static bool Controller_PID_AttControl_ParamLoad(Control_DataObj_TypeDef *obj)
 {
-    if ((obj == NULL) || (obj->p_para_stream == NULL))
+    Storage_ErrorCode_List stor_err = Storage_Error_None;
+    AttCaseCadePID_Param_TypeDef default_param;
+
+    if ((obj == NULL) || \
+        (obj->p_para_stream == NULL) || \
+        (Att_CasecadePID_Controller.default_param == NULL))
         return false;
 
     obj->p_para_stream->size = ATT_CASECADE_PID_PARAM_SIZE;
@@ -75,10 +80,18 @@ static bool Controller_PID_AttControl_ParamLoad(Control_DataObj_TypeDef *obj)
             Controller_Free(obj->p_para_stream);
         return false;
     }
-    memset(obj->p_para_stream->p_para, 0, ATT_CASECADE_PID_PARAM_SIZE);
+    *((AttCaseCadePID_Param_TypeDef *)obj->p_para_stream->p_para) = Att_CasecadePID_Controller.default_param();
 
     /* load parameter */
-    // Storage.search();
+    ControllerMonitor.Att_SSO = Storage.search(Para_User, ATTITUDE_PID_PARAM_SEC_NAME);
+    if (ControllerMonitor.Att_SSO.item_addr == 0)
+    {
+        /* no section found */
+        /* create pid attitude controller parameter section in storage */
+        stor_err = Storage.create(Para_User, ATTITUDE_PID_PARAM_SEC_NAME, (uint8_t *)(obj->p_para_stream->p_para), ATT_CASECADE_PID_PARAM_SIZE);
+        if (stor_err != Storage_Error_None)
+            return false;
+    }
 
     return true;
 }
