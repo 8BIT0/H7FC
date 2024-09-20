@@ -102,14 +102,14 @@ static void TaskControl_Get_StoreParam(void)
     /* search storage section first */
     memset(&Ctl_Param, 0, sizeof(TaskControl_CtlPara_TypeDef));
     memset(&Actuator_Param, 0, sizeof(SrvActuator_Setting_TypeDef));
-    memset(&TaskControl_Monitor.pid_store_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+    memset(&TaskControl_Monitor.controller_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
     memset(&TaskControl_Monitor.actuator_store_info, 0, sizeof(Storage_ItemSearchOut_TypeDef));
 
-    TaskControl_Monitor.pid_store_info = Storage.search(Para_User, CONTROL_STORAGE_SECTION_NAME);
+    TaskControl_Monitor.controller_info = Storage.search(Para_User, CONTROL_STORAGE_SECTION_NAME);
     TaskControl_Monitor.actuator_store_info = Storage.search(Para_User, ACTUATOR_STORAGE_SECTION_NAME);
 
     /* set Ctl Parameter as default */
-    Ctl_Param.mode = DEFAULT_ATTITUDE_CONTROLLER_MODE;
+    Ctl_Param.att_mode = DEFAULT_ATTITUDE_CONTROLLER_MODE;
     Ctl_Param.att_rate = DEFAULT_CONTROL_RATE;
     Ctl_Param.gx_rate = DEFAULT_CONTROL_RATE;
     Ctl_Param.gy_rate = DEFAULT_CONTROL_RATE;
@@ -121,20 +121,21 @@ static void TaskControl_Get_StoreParam(void)
     Ctl_Param.gz_range = DEFAULT_CONTROL_GYR_RANGE;
     memcpy(&TaskControl_Monitor.ctl_para, &Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef));
 
-    if (TaskControl_Monitor.pid_store_info.item_addr == 0)
+    if (TaskControl_Monitor.controller_info.item_addr == 0)
     {
-        /* no pid parameter found in external flash chip under user partten */
-        /* section create successful */
+        /* section create */
         Storage.create(Para_User, CONTROL_STORAGE_SECTION_NAME, (uint8_t *)&Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef));
     }
-    else if ((TaskControl_Monitor.pid_store_info.item.len == sizeof(TaskControl_CtlPara_TypeDef )) && \
-            (Storage.get(Para_User, TaskControl_Monitor.pid_store_info.item, (uint8_t *)&Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef)) == Storage_Error_None))
+    else if ((TaskControl_Monitor.controller_info.item.len == sizeof(TaskControl_CtlPara_TypeDef )) && \
+            (Storage.get(Para_User, TaskControl_Monitor.controller_info.item, (uint8_t *)&Ctl_Param, sizeof(TaskControl_CtlPara_TypeDef)) == Storage_Error_None))
     {
-        /* check parameter validation */
+        /* check rate parameter validation */
         Ctl_Param.att_rate = Check_Control_Rate(Ctl_Param.att_rate);
         Ctl_Param.gx_rate = Check_Control_Rate(Ctl_Param.gx_rate);
         Ctl_Param.gy_rate = Check_Control_Rate(Ctl_Param.gy_rate);
         Ctl_Param.gz_rate = Check_Control_Rate(Ctl_Param.gz_rate);
+
+        /* check range parameter validation */
         Ctl_Param.pitch_range = Check_AttControl_Range(Ctl_Param.pitch_range);
         Ctl_Param.roll_range = Check_AttControl_Range(Ctl_Param.roll_range);
         Ctl_Param.gx_range = Check_AttControl_Range(Ctl_Param.gx_range);

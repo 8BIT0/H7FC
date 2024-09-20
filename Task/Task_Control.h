@@ -60,7 +60,8 @@ typedef enum
 #pragma pack(1)
 typedef struct
 {
-    ControlMode_List mode;
+    ControlMode_List att_mode;
+    ControlMode_List alt_mode;
 
     float att_rate;
     float pitch_range;
@@ -87,7 +88,7 @@ typedef struct
     bool throttle_protect;
     bool CLI_enable;
 
-    Storage_ItemSearchOut_TypeDef pid_store_info;
+    Storage_ItemSearchOut_TypeDef controller_info;
     TaskControl_CtlPara_TypeDef ctl_para;
 
     Storage_ItemSearchOut_TypeDef actuator_store_info;
