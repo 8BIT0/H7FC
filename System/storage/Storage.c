@@ -16,7 +16,7 @@
 #define Storage_Free(ptr) SrvOsCommon.free(ptr)
 #define Storage_GetSysTick_Ptr SrvOsCommon.get_os_ms
 
-#define STORAGE_DEBUG 0
+#define STORAGE_DEBUG 1
 
 #define InternalFlash_BootDataSec_Size (4 Kb)
 #define InternalFlash_SysDataSec_Size (16 Kb)
