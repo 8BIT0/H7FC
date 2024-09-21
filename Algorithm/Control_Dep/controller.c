@@ -1,10 +1,7 @@
 #include "controller.h"
-#include "storage.h"
+#include "../../System/storage/Storage.h"
 #include "shell_port.h"
 #include "Att_Casecade_PID.h"
-
-__attribute__((weak)) void* Controller_Malloc(uint32_t size){return NULL;};
-__attribute__((weak)) void Controller_Free(void *ptr){};
 
 #define ATTITUDE_PID_PARAM_SEC_NAME "pid_att"
 #define ALTITUDE_PID_PARAM_SEC_NAME "pid_alt"
@@ -19,68 +16,58 @@ typedef struct
 ControllerMonitor_TypeDef ControllerMonitor;
 
 /* internal function */
-static bool Check_Controller_Mode(ControlMode_List mode);
-static bool Controller_PID_AttControl_ParamLoad(Control_DataObj_TypeDef *obj);
+/* PID controller section */
+static bool Controller_PID_AttControl_ParamLoad(void);
 
-static bool Check_Controller_Mode(ControlMode_List mode)
-{
-    /* in developping currently only support PID */
-    // if (mode >= CtlM_All)
-    if (mode >= CtlM_LADRC)
-        return false;
+/* external function */
+/* attitude section */
+static bool Controller_Att_Init(ControlMode_List mode);
+static bool Controller_AttControl(ControlMode_List mode, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out);
 
-    return true;
-}
+/* altitude section */
+static bool Controller_Alt_Init(ControlMode_List mode);
 
-static bool Controller_Att_Init(Control_DataObj_TypeDef *obj)
+Control_TypeDef Controller = {
+    .att_ctl_init = Controller_Att_Init,
+    .alt_ctl_init = Controller_Alt_Init,
+    
+    .att_ctl = Controller_AttControl,
+};
+
+static bool Controller_Att_Init(ControlMode_List mode)
 {
     memset(&ControllerMonitor.Att_SSO, 0, sizeof(Storage_ItemSearchOut_TypeDef));
 
-    if ((obj == NULL) || \
-        !Check_Controller_Mode(obj->CtlMode))
-        return false;
-
-    if (obj->p_para_stream == NULL)
+    switch ((uint8_t) mode)
     {
-        obj->p_para_stream = Controller_Malloc(sizeof(Control_DataObj_TypeDef));
-        if (obj->p_para_stream == NULL)
-            return false;
-    
-        memset(obj->p_para_stream, 0, sizeof(Control_DataObj_TypeDef));
-    }
-
-    switch ((uint8_t) obj->CtlMode)
-    {
-        case CtlM_PID:
-            if (!Controller_PID_AttControl_ParamLoad(obj))
-                return false;
-            return true;
-
+        case CtlM_PID: return Controller_PID_AttControl_ParamLoad();
         default: return false;
     }
 
-    return true;
+    return false;
 }
 
-static bool Controller_PID_AttControl_ParamLoad(Control_DataObj_TypeDef *obj)
+static bool Controller_AttControl(ControlMode_List mode, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out)
+{
+    switch ((uint8_t) mode)
+    {
+        case CtlM_PID: return Att_CasecadePID_Controller.process(angular_only, exp, mea, out);
+        default: return false;
+    }
+
+    return false;
+}
+
+/****************************************************************** pid controller section *****************************************************************************/
+static bool Controller_PID_AttControl_ParamLoad(void)
 {
     Storage_ErrorCode_List stor_err = Storage_Error_None;
-    AttCaseCadePID_Param_TypeDef default_param;
+    AttCaseCadePID_Param_TypeDef pid_param;
 
-    if ((obj == NULL) || \
-        (obj->p_para_stream == NULL) || \
-        (Att_CasecadePID_Controller.default_param == NULL))
+    if (Att_CasecadePID_Controller.default_param == NULL)
         return false;
 
-    obj->p_para_stream->size = ATT_CASECADE_PID_PARAM_SIZE;
-    obj->p_para_stream->p_para = Controller_Malloc(ATT_CASECADE_PID_PARAM_SIZE);
-    if (obj->p_para_stream->p_para == NULL)
-    {
-        obj->p_para_stream->size = 0;
-            Controller_Free(obj->p_para_stream);
-        return false;
-    }
-    *((AttCaseCadePID_Param_TypeDef *)obj->p_para_stream->p_para) = Att_CasecadePID_Controller.default_param();
+    pid_param = Att_CasecadePID_Controller.default_param();
 
     /* load parameter */
     ControllerMonitor.Att_SSO = Storage.search(Para_User, ATTITUDE_PID_PARAM_SEC_NAME);
@@ -88,14 +75,27 @@ static bool Controller_PID_AttControl_ParamLoad(Control_DataObj_TypeDef *obj)
     {
         /* no section found */
         /* create pid attitude controller parameter section in storage */
-        stor_err = Storage.create(Para_User, ATTITUDE_PID_PARAM_SEC_NAME, (uint8_t *)(obj->p_para_stream->p_para), ATT_CASECADE_PID_PARAM_SIZE);
+        stor_err = Storage.create(Para_User, ATTITUDE_PID_PARAM_SEC_NAME, (uint8_t *)&pid_param, ATT_CASECADE_PID_PARAM_SIZE);
         if (stor_err != Storage_Error_None)
             return false;
     }
     else
     {
         /* section found */
+        stor_err = Storage.get(Para_User, ControllerMonitor.Att_SSO.item, (uint8_t *)&pid_param, ATT_CASECADE_PID_PARAM_SIZE);
+        if (stor_err != Storage_Error_None)
+        {
+            /* set parameter as default */
+            pid_param = Att_CasecadePID_Controller.default_param();
+            return false;
+        }
     }
 
-    return true;
+    return Att_CasecadePID_Controller.init(pid_param);
 }
+
+static bool Controller_Alt_Init(ControlMode_List mode)
+{
+    return false;
+}
+

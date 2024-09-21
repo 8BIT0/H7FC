@@ -148,9 +148,11 @@ static void TaskControl_Get_StoreParam(void)
     }
     
     /* controller load parameter from storage */
+    Controller.att_ctl_init(Ctl_Param.att_mode);
+    Controller.alt_ctl_init(Ctl_Param.alt_mode);
 
     /* get actuator parameter */
-    /* set as default first */
+    /* set as default */
     TaskControl_Monitor.actuator_param = SrvActuator.default_param();
     if (TaskControl_Monitor.actuator_store_info.item_addr)
     {
@@ -162,7 +164,6 @@ static void TaskControl_Get_StoreParam(void)
 
 static bool TaskControl_disarm_check(bool telemetry_arm, float pitch, float roll)
 {
-
     if (telemetry_arm == DRONE_ARM)
     {
         TaskControl_Monitor.moto_unlock = Moto_Lock;
