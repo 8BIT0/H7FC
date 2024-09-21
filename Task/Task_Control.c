@@ -2,8 +2,6 @@
  *  Auther : 8_B!T0
  *  this file use for moto & servo control
  *  (but currently none servo)
- *  pitch & roll control mode outer loop is angular loop inner loop is angular speed loop 
- *  yaw control mode is only angular speed loop
  */
 #include "Task_Control.h"
 #include "Srv_OsCommon.h"
@@ -43,7 +41,6 @@ static uint32_t att_update_time = 0;
 static uint8_t imu_err_code;
 static bool failsafe = false;
 static bool imu_init_state = false;
-static bool baro_init_state = false;
 static bool att_update = false;
 
 DataPipe_CreateDataObj(ExpControlData_TypeDef, ExpCtl);
@@ -86,7 +83,6 @@ void TaskControl_Init(uint32_t period)
 
     TaskControl_Monitor.init_state = SrvActuator.init(TaskControl_Monitor.actuator_param);
     SrvDataHub.get_imu_init_state(&imu_init_state);
-    SrvDataHub.get_baro_init_state(&baro_init_state);
     
     /* Parametet Init */
     TaskControl_Get_StoreParam();
@@ -151,8 +147,8 @@ static void TaskControl_Get_StoreParam(void)
     }
     
     /* controller load parameter from storage */
-    Controller.att_ctl_init(Ctl_Param.att_mode);
-    Controller.alt_ctl_init(Ctl_Param.alt_mode);
+    Controller.att_ctl_init(TaskControl_Monitor.ctl_para.att_mode);
+    Controller.alt_ctl_init(TaskControl_Monitor.ctl_para.alt_mode);
 
     /* get actuator parameter */
     /* set as default */
@@ -437,6 +433,9 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             TaskControl_Monitor.throttle_percent = exp_ctl_val->throttle_percent;
 
             /* Controller Update */
+            /* altitude control update */
+            /* attitude control update */
+            // Controller.att_ctl(TaskControl_Monitor.ctl_para.att_mode);
             #warning " --- controller still in developping --- ";
 
             /* when when usb attached lock moto */
