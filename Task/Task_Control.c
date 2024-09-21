@@ -277,9 +277,9 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
     uint8_t axis = Axis_X;
     bool arm_state = false;
     bool USB_Attach = false;
-    float GyrX_Ctl_Out = 0.0f;
-    float GyrY_Ctl_Out = 0.0f;
-    float GyrZ_Ctl_Out = 0.0f;
+    AngControl_Out_TypeDef AngCtl_Out;
+
+    memset(&AngCtl_Out, 0, sizeof(AngControl_Out_TypeDef));
 
     if (TaskControl_Monitor.init_state && exp_ctl_val)
     {
@@ -442,7 +442,10 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             /* when when usb attached lock moto */
             if (SrvDataHub.get_vcp_attach_state(&USB_Attach) || !USB_Attach)
             {
-                TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor.throttle_percent, GyrX_Ctl_Out, GyrY_Ctl_Out, GyrZ_Ctl_Out);
+                TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor.throttle_percent, \
+                                                         AngCtl_Out.out_gyro_x, \
+                                                         AngCtl_Out.out_gyro_y, \
+                                                         AngCtl_Out.out_gyro_z);
 
                 if(imu_err_code == SrvIMU_Sample_NoError)
                 {
