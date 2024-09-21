@@ -15,6 +15,8 @@
 #define CONTROL_STORAGE_SECTION_NAME "Control_Para"
 
 #define DEFAULT_ATTITUDE_CONTROLLER_MODE CtlM_PID
+#define DEFAULT_ALTITUDE_CONTROLLER_MODE CtlM_PID
+
 #define DEFAULT_CONTROL_RATE        1.0f
 
 #define ATTITUDE_DISARM_RANGE_MAX   10.0f
@@ -112,6 +114,7 @@ static void TaskControl_Get_StoreParam(void)
 
     /* set Ctl Parameter as default */
     Ctl_Param.att_mode = DEFAULT_ATTITUDE_CONTROLLER_MODE;
+    Ctl_Param.alt_mode = DEFAULT_ATTITUDE_CONTROLLER_MODE;
     Ctl_Param.att_rate = DEFAULT_CONTROL_RATE;
     Ctl_Param.gx_rate = DEFAULT_CONTROL_RATE;
     Ctl_Param.gy_rate = DEFAULT_CONTROL_RATE;
