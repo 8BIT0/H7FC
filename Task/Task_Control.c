@@ -273,19 +273,23 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
     uint8_t axis = Axis_X;
     bool arm_state = false;
     bool USB_Attach = false;
-    AngControl_Out_TypeDef AngCtl_Out;
-    AttControl_In_TypeDef att_exp;
-    AttControl_In_TypeDef att_mea;
+    AngControl_Out_TypeDef att_ctl_out;
+    AttControl_In_TypeDef att_ctl_exp;
+    AttControl_In_TypeDef att_ctl_mea;
+    bool ang_ctl_only = false;
 
-    memset(&AngCtl_Out, 0, sizeof(AngControl_Out_TypeDef));
+    memset(&att_ctl_out, 0, sizeof(AngControl_Out_TypeDef));
 
     if (TaskControl_Monitor.init_state && exp_ctl_val)
     {
-        att_exp.pitch  = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.pitch_range, TaskControl_Monitor.ctl_para.att_rate);
-        att_exp.roll   = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.roll_range,  TaskControl_Monitor.ctl_para.att_rate);
-        att_exp.gyro_x = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.gx_range,    TaskControl_Monitor.ctl_para.gx_rate);
-        att_exp.gyro_y = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.gy_range,    TaskControl_Monitor.ctl_para.gy_rate);
-        att_exp.gyro_z = TaskControl_Convert_CtlData(exp_ctl_val->yaw_percent,   TaskControl_Monitor.ctl_para.gz_range,    TaskControl_Monitor.ctl_para.gz_rate);
+        att_ctl_exp.pitch  = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.pitch_range, TaskControl_Monitor.ctl_para.att_rate);
+        att_ctl_exp.roll   = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.roll_range,  TaskControl_Monitor.ctl_para.att_rate);
+        att_ctl_exp.gyro_x = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.gx_range,    TaskControl_Monitor.ctl_para.gx_rate);
+        att_ctl_exp.gyro_y = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.gy_range,    TaskControl_Monitor.ctl_para.gy_rate);
+        att_ctl_exp.gyro_z = TaskControl_Convert_CtlData(exp_ctl_val->yaw_percent,   TaskControl_Monitor.ctl_para.gz_range,    TaskControl_Monitor.ctl_para.gz_rate);
+
+        if (exp_ctl_val->control_mode == AngularSpeed_Control)
+            ang_ctl_only = true;
 
         arm_state = exp_ctl_val->arm_state;
         failsafe = exp_ctl_val->fail_safe;
@@ -296,11 +300,11 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
         DataPipe_DataObj(ExpCtl).failsafe = failsafe;
         DataPipe_DataObj(ExpCtl).throttle_percent = exp_ctl_val->throttle_percent;
         DataPipe_DataObj(ExpCtl).control_mode = exp_ctl_val->control_mode;
-        DataPipe_DataObj(ExpCtl).pitch = att_exp.pitch;
-        DataPipe_DataObj(ExpCtl).roll  = att_exp.roll;
-        DataPipe_DataObj(ExpCtl).gyr_x = att_exp.gyro_x;
-        DataPipe_DataObj(ExpCtl).gyr_y = att_exp.gyro_y;
-        DataPipe_DataObj(ExpCtl).gyr_z = att_exp.gyro_z;
+        DataPipe_DataObj(ExpCtl).pitch = att_ctl_exp.pitch;
+        DataPipe_DataObj(ExpCtl).roll  = att_ctl_exp.roll;
+        DataPipe_DataObj(ExpCtl).gyr_x = att_ctl_exp.gyro_x;
+        DataPipe_DataObj(ExpCtl).gyr_y = att_ctl_exp.gyro_y;
+        DataPipe_DataObj(ExpCtl).gyr_z = att_ctl_exp.gyro_z;
         DataPipe_SendTo(&CtlData_smp_DataPipe, &CtlData_hub_DataPipe);
         DataPipe_SendTo(&CtlData_smp_DataPipe, &CtlData_Log_DataPipe);
 
@@ -434,16 +438,15 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             /* Controller Update */
             /* altitude control update */
             /* attitude control update */
-            // Controller.att_ctl(TaskControl_Monitor.ctl_para.att_mode, );
-            #warning " --- controller still in developping --- ";
+            Controller.att_ctl(TaskControl_Monitor.ctl_para.att_mode, ang_ctl_only, att_ctl_exp, att_ctl_mea, &att_ctl_out);
 
             /* when when usb attached lock moto */
             if (SrvDataHub.get_vcp_attach_state(&USB_Attach) || !USB_Attach)
             {
                 TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor.throttle_percent, \
-                                                         AngCtl_Out.out_gyro_x, \
-                                                         AngCtl_Out.out_gyro_y, \
-                                                         AngCtl_Out.out_gyro_z);
+                                                         att_ctl_out.gyro_x, \
+                                                         att_ctl_out.gyro_y, \
+                                                         att_ctl_out.gyro_z);
 
                 if(imu_err_code == SrvIMU_Sample_NoError)
                 {

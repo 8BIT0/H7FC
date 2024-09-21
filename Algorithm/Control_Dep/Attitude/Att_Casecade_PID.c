@@ -151,9 +151,9 @@ static bool Att_Casecade_PID(bool angular_only, AttControl_In_TypeDef exp, AttCo
     /* Gyro Z PID update */
     state &= PID_Update(&ProcessPara.g_z, mea.gyro_z, exp.gyro_z);
 
-    ctl_out->out_gyro_x = ProcessPara.g_x.fout;
-    ctl_out->out_gyro_y = ProcessPara.g_y.fout;
-    ctl_out->out_gyro_z = ProcessPara.g_z.fout;
+    ctl_out->gyro_x = ProcessPara.g_x.fout;
+    ctl_out->gyro_y = ProcessPara.g_y.fout;
+    ctl_out->gyro_z = ProcessPara.g_z.fout;
 
     return state;
 }

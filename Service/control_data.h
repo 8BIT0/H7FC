@@ -43,7 +43,6 @@ typedef enum
 {
     Attitude_Control = 0,
     AngularSpeed_Control,
-    AngularSpeed_AngleLimit_Control,
 }Control_Mode_List;
 
 typedef union
