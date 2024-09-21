@@ -274,16 +274,18 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
     bool arm_state = false;
     bool USB_Attach = false;
     AngControl_Out_TypeDef AngCtl_Out;
+    AttControl_In_TypeDef att_exp;
+    AttControl_In_TypeDef att_mea;
 
     memset(&AngCtl_Out, 0, sizeof(AngControl_Out_TypeDef));
 
     if (TaskControl_Monitor.init_state && exp_ctl_val)
     {
-        TaskControl_Monitor.exp_pitch = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.pitch_range, TaskControl_Monitor.ctl_para.att_rate);
-        TaskControl_Monitor.exp_roll  = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.roll_range,  TaskControl_Monitor.ctl_para.att_rate);
-        TaskControl_Monitor.exp_gyr_x = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.gx_range,    TaskControl_Monitor.ctl_para.gx_rate);
-        TaskControl_Monitor.exp_gyr_y = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.gy_range,    TaskControl_Monitor.ctl_para.gy_rate);
-        TaskControl_Monitor.exp_gyr_z = TaskControl_Convert_CtlData(exp_ctl_val->yaw_percent,   TaskControl_Monitor.ctl_para.gz_range,    TaskControl_Monitor.ctl_para.gz_rate);
+        att_exp.pitch  = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.pitch_range, TaskControl_Monitor.ctl_para.att_rate);
+        att_exp.roll   = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.roll_range,  TaskControl_Monitor.ctl_para.att_rate);
+        att_exp.gyro_x = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.gx_range,    TaskControl_Monitor.ctl_para.gx_rate);
+        att_exp.gyro_y = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.gy_range,    TaskControl_Monitor.ctl_para.gy_rate);
+        att_exp.gyro_z = TaskControl_Convert_CtlData(exp_ctl_val->yaw_percent,   TaskControl_Monitor.ctl_para.gz_range,    TaskControl_Monitor.ctl_para.gz_rate);
 
         arm_state = exp_ctl_val->arm_state;
         failsafe = exp_ctl_val->fail_safe;
@@ -294,11 +296,11 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
         DataPipe_DataObj(ExpCtl).failsafe = failsafe;
         DataPipe_DataObj(ExpCtl).throttle_percent = exp_ctl_val->throttle_percent;
         DataPipe_DataObj(ExpCtl).control_mode = exp_ctl_val->control_mode;
-        DataPipe_DataObj(ExpCtl).pitch = TaskControl_Monitor.exp_pitch;
-        DataPipe_DataObj(ExpCtl).roll = TaskControl_Monitor.exp_roll;
-        DataPipe_DataObj(ExpCtl).gyr_x = TaskControl_Monitor.exp_gyr_x;
-        DataPipe_DataObj(ExpCtl).gyr_y = TaskControl_Monitor.exp_gyr_y;
-        DataPipe_DataObj(ExpCtl).gyr_z = TaskControl_Monitor.exp_gyr_z;
+        DataPipe_DataObj(ExpCtl).pitch = att_exp.pitch;
+        DataPipe_DataObj(ExpCtl).roll  = att_exp.roll;
+        DataPipe_DataObj(ExpCtl).gyr_x = att_exp.gyro_x;
+        DataPipe_DataObj(ExpCtl).gyr_y = att_exp.gyro_y;
+        DataPipe_DataObj(ExpCtl).gyr_z = att_exp.gyro_z;
         DataPipe_SendTo(&CtlData_smp_DataPipe, &CtlData_hub_DataPipe);
         DataPipe_SendTo(&CtlData_smp_DataPipe, &CtlData_Log_DataPipe);
 
@@ -318,16 +320,13 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
 
         // get attitude
         att_update = SrvDataHub.get_attitude(&att_update_time,
-                                             &TaskControl_Monitor.attitude.pitch,
-                                             &TaskControl_Monitor.attitude.roll,
-                                             &TaskControl_Monitor.attitude.yaw,
-                                             &TaskControl_Monitor.attitude.q0,
-                                             &TaskControl_Monitor.attitude.q1,
-                                             &TaskControl_Monitor.attitude.q2,
-                                             &TaskControl_Monitor.attitude.q3,
+                                             &TaskControl_Monitor.pitch,
+                                             &TaskControl_Monitor.roll,
+                                             &TaskControl_Monitor.yaw,
+                                             NULL, NULL, NULL, NULL,
                                              &TaskControl_Monitor.flip_over);
 
-        TaskControl_disarm_check(arm_state, TaskControl_Monitor.attitude.pitch, TaskControl_Monitor.attitude.roll);
+        TaskControl_disarm_check(arm_state, TaskControl_Monitor.pitch, TaskControl_Monitor.roll);
 
         /* if armed or usb attached then lock moto */
         if (TaskControl_Monitor.moto_unlock != Moto_Unlock)
@@ -435,7 +434,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             /* Controller Update */
             /* altitude control update */
             /* attitude control update */
-            // Controller.att_ctl(TaskControl_Monitor.ctl_para.att_mode);
+            // Controller.att_ctl(TaskControl_Monitor.ctl_para.att_mode, );
             #warning " --- controller still in developping --- ";
 
             /* when when usb attached lock moto */

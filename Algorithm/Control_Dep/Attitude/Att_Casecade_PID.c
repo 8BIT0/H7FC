@@ -132,6 +132,14 @@ static bool Att_Casecade_PID(bool angular_only, AttControl_In_TypeDef exp, AttCo
         state &= PID_Update(&ProcessPara.roll, mea.roll, exp.roll);
         exp.gyro_x = ProcessPara.roll.fout;
     }
+    else
+    {
+        ProcessPara.pitch.lst_diff = 0.0f;
+        ProcessPara.pitch.Integral = 0.0f;
+
+        ProcessPara.roll.lst_diff = 0.0f;
+        ProcessPara.roll.Integral = 0.0f;
+    }
 
     /* angular speed loop */
     /* Gyro X PID update */

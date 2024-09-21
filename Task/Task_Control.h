@@ -107,13 +107,11 @@ typedef struct
     float gyr_lst[Axis_Sum];
 
     uint8_t throttle_percent;
-    float exp_gyr_x;
-    float exp_gyr_y;
-    float exp_gyr_z;
-    float exp_pitch;
-    float exp_roll;
 
-    IMUAtt_TypeDef attitude;
+    float pitch;
+    float roll;
+    float yaw;
+    
     bool flip_over;
     bool dynamic_disarm_enable;
     TaskControl_MotoUnlock_State moto_unlock;
