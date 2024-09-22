@@ -4,6 +4,8 @@
 
 #include "filter.h"
 
+#define PI 3.14159265359
+
 /* internal function */
 static void Filter_Item_Update(item_obj **header, item_obj **ender, float cur_data);
 static bool Filter_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender);
@@ -15,6 +17,10 @@ static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e);
 /* smooth window filter section */
 static SW_Object_Handle SmoothWindow_Init(uint8_t window_size);
 static float SmoothWindow_Update(SW_Object_Handle hdl, float cur_e);
+/* rc filter section */
+static RC_Object_Handle RC_Filter_Init(RC_Filter_Param_TypeDef *obj);
+static float RC_Filter_Update(RC_Object_Handle hdl, uint32_t sys_ms, float in);
+static float RC_Filter_Get_Cut_Off(RC_Object_Handle hdl);
 
 Butterworth_Filter_TypeDef Butterworth = {
     .init = Butterworth_Init,
@@ -24,6 +30,12 @@ Butterworth_Filter_TypeDef Butterworth = {
 SmoothWindow_Filter_TypeDef SmoothWindow = {
     .init = SmoothWindow_Init,
     .update = SmoothWindow_Update,
+};
+
+RC_Filter_TypeDef RCFilter = {
+    .init = RC_Filter_Init,
+    .update = RC_Filter_Update,
+    .get_cut_off = RC_Filter_Get_Cut_Off,
 };
 
 /********************************************************** general filter section *********************************************************/
@@ -279,5 +291,36 @@ static float SmoothWindow_Update(SW_Object_Handle hdl, float cur_e)
     }
 
     return sum;
+}
+
+/********************************************************** RC Filter section *********************************************************/
+static RC_Object_Handle RC_Filter_Init(RC_Filter_Param_TypeDef *obj)
+{
+    RC_Object_Handle hdl = 0;
+
+    if (obj == NULL)
+        return 0;
+
+    return hdl;
+}
+
+static float RC_Filter_Update(RC_Object_Handle hdl, uint32_t sys_ms, float in)
+{
+    float val = 0.0f;
+
+    if (hdl == 0)
+        return 0.0f;
+
+    return val;
+}
+
+static float RC_Filter_Get_Cut_Off(RC_Object_Handle hdl)
+{
+    float cut_off = 0.0f;
+
+    if (hdl == 0)
+        return 0.0f;
+
+    return cut_off;
 }
 

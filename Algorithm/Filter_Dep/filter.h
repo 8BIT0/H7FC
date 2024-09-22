@@ -20,6 +20,7 @@ extern "C" {
 
 typedef uint32_t BWF_Object_Handle; /* butterworth filter object */
 typedef uint32_t SW_Object_Handle;  /* smooth window filter object */
+typedef uint32_t RC_Object_Handle;  /* RC filter object */
 
 typedef struct
 {
@@ -58,6 +59,21 @@ typedef struct
     float (*update)(BWF_Object_Handle obj, float cur_e);
 } Butterworth_Filter_TypeDef;
 
+typedef struct
+{
+    float r;
+    float c;
+    float dt;
+    float lst_in;
+    uint32_t lst_tick;
+} RC_Filter_Param_TypeDef;
+
+typedef struct
+{
+    RC_Object_Handle (*init)(RC_Filter_Param_TypeDef *obj);
+    float (*update)(RC_Object_Handle obj, float in);
+    float (*get_cut_off)(RC_Object_Handle obj);
+} RC_Filter_TypeDef;
 
 typedef struct
 {
@@ -77,6 +93,7 @@ typedef struct
 
 extern Butterworth_Filter_TypeDef Butterworth;
 extern SmoothWindow_Filter_TypeDef SmoothWindow;
+extern RC_Filter_TypeDef RCFilter;
 
 #ifdef __cplusplus
 }
