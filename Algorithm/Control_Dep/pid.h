@@ -8,6 +8,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include "filter.h"
 
 typedef struct
 {
@@ -43,6 +44,7 @@ typedef struct
     float gD;
     float lst_diff;
     float D_out;
+    RC_Filter_Param_TypeDef Dtrim_RC;
 }PIDObj_TypeDef;
 
 bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in);
