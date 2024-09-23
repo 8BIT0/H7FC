@@ -324,7 +324,7 @@ static float RC_Filter_Update(RC_Object_Handle hdl, uint32_t sys_ms, float in)
         alpha = To_RCParam_Ptr(hdl)->dt * (1.0f / (To_RCParam_Ptr(hdl)->r * To_RCParam_Ptr(hdl)->c));
         
         /* filter update */
-        val = alpha * To_RCParam_Ptr(hdl)->lst_out + (1.0f - alpha) * in;
+        val = alpha * in + (1.0f - alpha) * To_RCParam_Ptr(hdl)->lst_out;
         To_RCParam_Ptr(hdl)->lst_out = val;
     }    
     To_RCParam_Ptr(hdl)->lst_tick = sys_ms;
