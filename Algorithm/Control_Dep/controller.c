@@ -22,7 +22,7 @@ static bool Controller_PID_AttControl_ParamLoad(void);
 /* external function */
 /* attitude section */
 static bool Controller_Att_Init(ControlMode_List mode);
-static bool Controller_AttControl(ControlMode_List mode, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out);
+static bool Controller_AttControl(ControlMode_List mode, uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out);
 
 /* altitude section */
 static bool Controller_Alt_Init(ControlMode_List mode);
@@ -47,11 +47,11 @@ static bool Controller_Att_Init(ControlMode_List mode)
     return false;
 }
 
-static bool Controller_AttControl(ControlMode_List mode, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out)
+static bool Controller_AttControl(ControlMode_List mode, uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out)
 {
     switch ((uint8_t) mode)
     {
-        case CtlM_PID: return Att_CasecadePID_Controller.process(angular_only, exp, mea, out);
+        case CtlM_PID: return Att_CasecadePID_Controller.process(sys_ms, angular_only, exp, mea, out);
         default: return false;
     }
 

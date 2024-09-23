@@ -25,7 +25,7 @@ static ProcessParam_TypeDef ProcessPara = {
 
 /* external function */
 static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para);
-static bool Att_Casecade_PID(bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out);
+static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out);
 
 AttCasecadePID_TypeDef Att_CasecadePID_Controller = {
     .init = Att_CheckParam_Validation,
@@ -114,7 +114,7 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     return true;
 }
 
-static bool Att_Casecade_PID(bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out)
+static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out)
 {
     bool state = false;
 
@@ -125,11 +125,11 @@ static bool Att_Casecade_PID(bool angular_only, AttControl_In_TypeDef exp, AttCo
     {
         /* attitude loop */
         /* Pitch PID update */
-        state = PID_Update(&ProcessPara.pitch, mea.pitch, exp.pitch);
+        state = PID_Update(&ProcessPara.pitch, sys_ms, mea.pitch, exp.pitch);
         exp.gyro_y = ProcessPara.pitch.fout;
 
         /* Roll PID update */
-        state &= PID_Update(&ProcessPara.roll, mea.roll, exp.roll);
+        state &= PID_Update(&ProcessPara.roll, sys_ms, mea.roll, exp.roll);
         exp.gyro_x = ProcessPara.roll.fout;
     }
     else
@@ -143,13 +143,13 @@ static bool Att_Casecade_PID(bool angular_only, AttControl_In_TypeDef exp, AttCo
 
     /* angular speed loop */
     /* Gyro X PID update */
-    state &= PID_Update(&ProcessPara.g_x, mea.gyro_x, exp.gyro_x);
+    state &= PID_Update(&ProcessPara.g_x, sys_ms, mea.gyro_x, exp.gyro_x);
 
     /* Gyro Y PID update */
-    state &= PID_Update(&ProcessPara.g_y, mea.gyro_y, exp.gyro_y);
+    state &= PID_Update(&ProcessPara.g_y, sys_ms, mea.gyro_y, exp.gyro_y);
 
     /* Gyro Z PID update */
-    state &= PID_Update(&ProcessPara.g_z, mea.gyro_z, exp.gyro_z);
+    state &= PID_Update(&ProcessPara.g_z, sys_ms, mea.gyro_z, exp.gyro_z);
 
     ctl_out->gyro_x = ProcessPara.g_x.fout;
     ctl_out->gyro_y = ProcessPara.g_y.fout;

@@ -64,7 +64,7 @@ typedef struct
     float r;
     float c;
     float dt;
-    float lst_in;
+    float lst_out;
     uint32_t lst_tick;
 } RC_Filter_Param_TypeDef;
 

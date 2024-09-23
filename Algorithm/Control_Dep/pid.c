@@ -5,9 +5,9 @@
 /* internal function */
 static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
 static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
-static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
+static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float diff);
 
-bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in)
+bool PID_Update(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float mea_in, const float exp_in)
 {
     float diff = mea_in - exp_in;
     float out_tmp = 0.0f;
@@ -29,7 +29,7 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in
                 out_tmp += p_PIDObj->I_out;
             }
 
-            if(PID_D_Progress(p_PIDObj, diff))
+            if(PID_D_Progress(p_PIDObj, sys_ms, diff))
             {
                 out_tmp += p_PIDObj->D_out;
             }
@@ -93,14 +93,16 @@ static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
     return false;
 }
 
-static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
+static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float diff)
 {
     /* one stage filter is needed */
     /* because high frequence noise on input error will influence D stage */
+    float derivative = diff - p_PIDObj->lst_diff;
+    derivative = RCFilter.update((RC_Object_Handle)&(p_PIDObj->Dtrim_RC), derivative);
 
     if(p_PIDObj)
     {
-        p_PIDObj->D_out = p_PIDObj->gD * (diff - p_PIDObj->lst_diff);
+        p_PIDObj->D_out = p_PIDObj->gD * derivative;
 
         p_PIDObj->lst_diff = diff;
         return true;

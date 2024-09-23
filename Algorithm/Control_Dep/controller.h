@@ -24,7 +24,7 @@ typedef struct
     bool (*att_ctl_init)(ControlMode_List mode);
     bool (*alt_ctl_init)(ControlMode_List mode);
 
-    bool (*att_ctl)(ControlMode_List mode, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out);
+    bool (*att_ctl)(ControlMode_List mode, uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out);
     // void (*alt_ctl)();
 } Control_TypeDef;
 

@@ -47,7 +47,7 @@ typedef struct
     RC_Filter_Param_TypeDef Dtrim_RC;
 }PIDObj_TypeDef;
 
-bool PID_Update(PIDObj_TypeDef *p_PIDObj, const float mea_in, const float exp_in);
+bool PID_Update(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float mea_in, const float exp_in);
 
 #ifdef __cplusplus
 }

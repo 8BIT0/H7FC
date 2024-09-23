@@ -63,7 +63,7 @@ TaskControl_Monitor_TypeDef TaskControl_Monitor = {
 };
 
 /* internal function */
-static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val);
+static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, uint32_t sys_ms);
 static void TaskControl_Actuator_ControlValue_Update(uint16_t throttle, float GX_Ctl_Out, float GY_Ctl_Out, float GZ_Ctl_Out);
 static void TaskControl_CLI_Polling(void);
 static void TaskControl_Get_StoreParam(void);
@@ -195,12 +195,15 @@ static bool TaskControl_disarm_check(bool telemetry_arm, float pitch, float roll
 void TaskControl_Core(void const *arg)
 {
     uint32_t sys_time = SrvOsCommon.get_os_ms();
+    uint32_t task_tick = 0;
     bool upgrade_state = false;
     ControlData_TypeDef CtlData;
     memset(&CtlData, 0, sizeof(ControlData_TypeDef));
 
     while(1)
     {
+        task_tick = SrvOsCommon.get_os_ms();
+
         /* get control data from data hub */
         SrvDataHub.get_rc_control_data(&CtlData);
 
@@ -214,7 +217,7 @@ void TaskControl_Core(void const *arg)
             if (!TaskControl_Monitor.CLI_enable)
             {
                 /* debug set control to angular speed control */
-                TaskControl_FlightControl_Polling(&CtlData);
+                TaskControl_FlightControl_Polling(&CtlData, task_tick);
             }
             else
             {
@@ -263,7 +266,7 @@ static float TaskControl_Convert_CtlData(uint8_t gimbal_percent, float range, fl
 }
 
 /* need to be optmize */
-static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
+static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, uint32_t sys_ms)
 {
     uint8_t axis = Axis_X;
     bool arm_state = false;
@@ -437,7 +440,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val)
             /* Controller Update */
             /* altitude control update */
             /* attitude control update */
-            Controller.att_ctl(TaskControl_Monitor.ctl_para.att_mode, ang_ctl_only, att_ctl_exp, att_ctl_mea, &att_ctl_out);
+            Controller.att_ctl(TaskControl_Monitor.ctl_para.att_mode, sys_ms, ang_ctl_only, att_ctl_exp, att_ctl_mea, &att_ctl_out);
 
             /* when when usb attached lock moto */
             if (SrvDataHub.get_vcp_attach_state(&USB_Attach) || !USB_Attach)

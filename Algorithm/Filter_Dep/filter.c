@@ -6,6 +6,8 @@
 
 #define PI 3.14159265359
 
+#define To_RCParam_Ptr(x) ((RC_Filter_Param_TypeDef *)x)
+
 /* internal function */
 static void Filter_Item_Update(item_obj **header, item_obj **ender, float cur_data);
 static bool Filter_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender);
@@ -296,31 +298,47 @@ static float SmoothWindow_Update(SW_Object_Handle hdl, float cur_e)
 /********************************************************** RC Filter section *********************************************************/
 static RC_Object_Handle RC_Filter_Init(RC_Filter_Param_TypeDef *obj)
 {
-    RC_Object_Handle hdl = 0;
-
     if (obj == NULL)
         return 0;
 
-    return hdl;
+    obj->dt = 0.0f;
+    obj->lst_out = 0.0f;
+    obj->lst_tick = 0;
+
+    return (RC_Object_Handle)obj;
 }
 
 static float RC_Filter_Update(RC_Object_Handle hdl, uint32_t sys_ms, float in)
 {
     float val = 0.0f;
+    float alpha = 0.0f;
 
     if (hdl == 0)
         return 0.0f;
+
+    if (To_RCParam_Ptr(hdl)->lst_tick)
+    {
+        To_RCParam_Ptr(hdl)->dt = 1.0f / (sys_ms - To_RCParam_Ptr(hdl)->lst_tick);
+        
+        /* comput alpha */
+        alpha = To_RCParam_Ptr(hdl)->dt * (1.0f / (To_RCParam_Ptr(hdl)->r * To_RCParam_Ptr(hdl)->c));
+        
+        /* filter update */
+        val = alpha * To_RCParam_Ptr(hdl)->lst_out + (1.0f - alpha) * in;
+        To_RCParam_Ptr(hdl)->lst_out = val;
+    }    
+    To_RCParam_Ptr(hdl)->lst_tick = sys_ms;
 
     return val;
 }
 
 static float RC_Filter_Get_Cut_Off(RC_Object_Handle hdl)
 {
-    float cut_off = 0.0f;
-
-    if (hdl == 0)
+    if ((hdl == 0) || \
+        (To_RCParam_Ptr(hdl)->c == 0.0f) || \
+        (To_RCParam_Ptr(hdl)->r == 0.0f))
         return 0.0f;
 
-    return cut_off;
+    return 1 / (2 * PI * To_RCParam_Ptr(hdl)->c * To_RCParam_Ptr(hdl)->r);
 }
 

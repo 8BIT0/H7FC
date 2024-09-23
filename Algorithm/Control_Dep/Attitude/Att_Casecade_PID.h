@@ -28,7 +28,7 @@ typedef struct
 {
     bool (*init)(AttCaseCadePID_Param_TypeDef para);
     AttCaseCadePID_Param_TypeDef (*default_param)(void);
-    bool (*process)(bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out);
+    bool (*process)(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out);
 } AttCasecadePID_TypeDef;
 
 extern AttCasecadePID_TypeDef Att_CasecadePID_Controller;
