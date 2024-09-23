@@ -7,6 +7,28 @@ static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
 static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
 static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float diff);
 
+bool PID_Init(PIDObj_TypeDef *p_PIDObj, RC_Filter_Param_TypeDef rc_para)
+{
+    if (p_PIDObj == NULL)
+        return false;
+
+    p_PIDObj->in = 0.0f;
+    p_PIDObj->exp = 0.0f;
+    p_PIDObj->fout = 0.0f;
+
+    p_PIDObj->P_out = 0.0f;
+    p_PIDObj->I_out = 0.0f;
+    p_PIDObj->D_out = 0.0f;
+
+    p_PIDObj->Integral = 0.0f;
+    p_PIDObj->lst_diff = 0.0f;
+
+    if (RCFilter.init(&p_PIDObj->Dtrim_RC) == 0)
+        return false;
+
+    return true;
+}
+
 bool PID_Update(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float mea_in, const float exp_in)
 {
     float diff = mea_in - exp_in;
