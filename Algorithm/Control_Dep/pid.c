@@ -120,7 +120,7 @@ static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const floa
     /* one stage filter is needed */
     /* because high frequence noise on input error will influence D stage */
     float derivative = diff - p_PIDObj->lst_diff;
-    derivative = RCFilter.update((RC_Object_Handle)&(p_PIDObj->Dtrim_RC), derivative);
+    // derivative = RCFilter.update((RC_Object_Handle)&(p_PIDObj->Dtrim_RC), derivative);
 
     if(p_PIDObj)
     {
