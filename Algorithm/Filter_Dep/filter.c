@@ -22,7 +22,6 @@ static float SmoothWindow_Update(SW_Object_Handle hdl, float cur_e);
 /* rc filter section */
 static RC_Object_Handle RC_Filter_Init(RC_Filter_Param_TypeDef *obj);
 static float RC_Filter_Update(RC_Object_Handle hdl, uint32_t sys_ms, float in);
-static float RC_Filter_Get_Cut_Off(RC_Object_Handle hdl);
 
 Butterworth_Filter_TypeDef Butterworth = {
     .init = Butterworth_Init,
@@ -37,7 +36,6 @@ SmoothWindow_Filter_TypeDef SmoothWindow = {
 RC_Filter_TypeDef RCFilter = {
     .init = RC_Filter_Init,
     .update = RC_Filter_Update,
-    .get_cut_off = RC_Filter_Get_Cut_Off,
 };
 
 /********************************************************** general filter section *********************************************************/
@@ -296,12 +294,14 @@ static float SmoothWindow_Update(SW_Object_Handle hdl, float cur_e)
 }
 
 /********************************************************** RC Filter section *********************************************************/
+/* none tested */
 static RC_Object_Handle RC_Filter_Init(RC_Filter_Param_TypeDef *obj)
 {
     if (obj == NULL)
         return 0;
 
     obj->dt = 0.0f;
+    obj->f_cut = 0.0f;
     obj->lst_out = 0.0f;
     obj->lst_tick = 0;
 
@@ -321,7 +321,7 @@ static float RC_Filter_Update(RC_Object_Handle hdl, uint32_t sys_ms, float in)
         To_RCParam_Ptr(hdl)->dt = 1.0f / (sys_ms - To_RCParam_Ptr(hdl)->lst_tick);
         
         /* comput alpha */
-        alpha = To_RCParam_Ptr(hdl)->dt * (1.0f / (To_RCParam_Ptr(hdl)->r * To_RCParam_Ptr(hdl)->c));
+        alpha = 2 * PI * To_RCParam_Ptr(hdl)->f_cut * To_RCParam_Ptr(hdl)->dt;
         
         /* filter update */
         val = alpha * in + (1.0f - alpha) * To_RCParam_Ptr(hdl)->lst_out;
@@ -331,14 +331,3 @@ static float RC_Filter_Update(RC_Object_Handle hdl, uint32_t sys_ms, float in)
 
     return val;
 }
-
-static float RC_Filter_Get_Cut_Off(RC_Object_Handle hdl)
-{
-    if ((hdl == 0) || \
-        (To_RCParam_Ptr(hdl)->c == 0.0f) || \
-        (To_RCParam_Ptr(hdl)->r == 0.0f))
-        return 0.0f;
-
-    return 1 / (2 * PI * To_RCParam_Ptr(hdl)->c * To_RCParam_Ptr(hdl)->r);
-}
-

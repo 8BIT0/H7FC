@@ -4,11 +4,8 @@
 #define ATTITUDE_CONTROL_RATE   1
 #define ATTITUDE_INTEGRAL_RANGE 20
 
-#define ATT_DTRIM_RC_FILTER_C 0.1
-#define ATT_DTRIM_RC_FILTER_R 0.1
-
-#define ANG_DTRIM_RC_FILTER_C 0.1
-#define ANG_DTRIM_RC_FILTER_R 0.1
+#define ATT_DTRIM_RC_F_CUT 20
+#define ANG_DTRIM_RC_F_CUT 100
 
 /* Casecade PID in process paramter */
 typedef struct
@@ -119,13 +116,11 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     ProcessPara.g_z.diff_max = para.GyroZ_Para.base_diff;
     ProcessPara.g_z.diff_min = -para.GyroZ_Para.base_diff;
 
-    RCParam_Tmp.c = ATT_DTRIM_RC_FILTER_C;
-    RCParam_Tmp.r = ATT_DTRIM_RC_FILTER_R;
+    RCParam_Tmp.f_cut = ATT_DTRIM_RC_F_CUT;
     PID_Init(&ProcessPara.pitch, RCParam_Tmp);
     PID_Init(&ProcessPara.roll,  RCParam_Tmp);
 
-    RCParam_Tmp.c = ANG_DTRIM_RC_FILTER_C;
-    RCParam_Tmp.r = ANG_DTRIM_RC_FILTER_R;
+    RCParam_Tmp.f_cut = ANG_DTRIM_RC_F_CUT;
     PID_Init(&ProcessPara.g_x, RCParam_Tmp);
     PID_Init(&ProcessPara.g_y, RCParam_Tmp);
     PID_Init(&ProcessPara.g_z, RCParam_Tmp);

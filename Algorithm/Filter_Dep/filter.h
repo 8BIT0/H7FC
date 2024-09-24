@@ -61,8 +61,7 @@ typedef struct
 
 typedef struct
 {
-    float r;
-    float c;
+    float f_cut;    /* cut off frequence */
     float dt;
     float lst_out;
     uint32_t lst_tick;
@@ -72,7 +71,6 @@ typedef struct
 {
     RC_Object_Handle (*init)(RC_Filter_Param_TypeDef *obj);
     float (*update)(RC_Object_Handle obj, float in);
-    float (*get_cut_off)(RC_Object_Handle obj);
 } RC_Filter_TypeDef;
 
 typedef struct
