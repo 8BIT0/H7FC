@@ -601,7 +601,7 @@ void DShot_Free(void *ptr)
 
 bool DShot_Port_DeInit(void *obj)
 {
-    if (obj && BspTimer_PWM.de_init(&(To_DShot_Obj(obj)->pwm_obj)))
+    if (obj && BspTimer_PWM.de_init(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)))
         return true;
 
     return false;
@@ -611,14 +611,14 @@ void DShot_Port_Trans(void *obj)
 {
     if (obj && SrvActuator_Sem)
     {
-        BspTimer_PWM.dma_trans(&(To_DShot_Obj(obj)->pwm_obj));
+        BspTimer_PWM.dma_trans(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj));
         osSemaphoreWait(SrvActuator_Sem, 1);
     }
 }
 
 uint32_t DShot_Get_Timer_CLKFreq(void *obj)
 {
-    return BspTimer_PWM.get_clock_freq(&(To_DShot_Obj(obj)->pwm_obj));
+    return BspTimer_PWM.get_clock_freq(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj));
 }
 
 void DShot_Tran_Finish(void)
@@ -646,48 +646,37 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
         }
 
 #if defined STM32H743xx
-        // To_DShot_Obj(obj)->pwm_obj.tim_hdl = Actuator_Malloc(TIM_HandleType_Size);  /* lagecy */
         To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl = Actuator_Malloc(sizeof(TIM_HandleType_Size));
-        // if(To_DShot_Obj(obj)->pwm_obj.tim_hdl == NULL)  /* lagecy */
         if (To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl == NULL)
         {
-            // Actuator_Free(To_DShot_Obj(obj)->pwm_obj.tim_hdl);  /* lagecy */
-
             Actuator_Free(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl);
             Actuator_Free(To_DShot_Obj(obj)->p_timr_obj);
             return false;
         }
 
-        // To_DShot_Obj(obj)->pwm_obj.dma_hdl = Actuator_Malloc(TIM_DMA_HandleType_Size);  /* lagecy */
         To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_hdl = Actuator_Malloc(sizeof(TIM_DMA_HandleType_Size));
-        // if(To_DShot_Obj(obj)->pwm_obj.dma_hdl == NULL)  /* lagecy */
         if (To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_hdl == NULL)
         {
-            // Actuator_Free(To_DShot_Obj(obj)->pwm_obj.tim_hdl);  /* lagecy */
-            // Actuator_Free(To_DShot_Obj(obj)->pwm_obj.dma_hdl);  /* lagecy */
-
             Actuator_Free(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl);
             Actuator_Free(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_hdl);
             Actuator_Free(To_DShot_Obj(obj)->p_timr_obj);
             return false;
         }
 #elif defined AT32F435_437
-        // To_DShot_Obj(obj)->pwm_obj.dma_callback_obj = Actuator_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));  /* lagecy */
         To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_callback_obj = Actuator_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
-        // if (To_DShot_Obj(obj)->pwm_obj.dma_callback_obj == NULL)    /* lagecy */
         if (To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_callback_obj == NULL)
             return false;
 #endif
 
-        if (!BspTimer_PWM.init(&(To_DShot_Obj(obj)->pwm_obj), \
+        if (!BspTimer_PWM.init(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj), \
                                time_ins, time_ch, \
                                (MOTOR_BITLENGTH - 1), prescaler, \
                                *(BspGPIO_Obj_TypeDef *)pin, dma, stream, \
                                (uint32_t)(To_DShot_Obj(obj)->ctl_buf), DSHOT_DMA_BUFFER_SIZE))
             return false;
 
-        To_DShot_Obj(obj)->pwm_obj.send_callback = DShot_Tran_Finish;
-        BspTimer_PWM.set_dma_pwm(&(To_DShot_Obj(obj))->pwm_obj);
+        To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->send_callback = DShot_Tran_Finish;
+        BspTimer_PWM.set_dma_pwm((To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)));
         return true;
     }
 
