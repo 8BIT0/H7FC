@@ -57,8 +57,6 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float mea_in, c
             }
 
             p_PIDObj->fout = out_tmp;
-            /* comput pid integer output down below */
-
             return true;
         }
     }
