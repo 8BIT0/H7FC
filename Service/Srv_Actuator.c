@@ -637,25 +637,46 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
             SrvActuator_Sem = osSemaphoreCreate(osSemaphore(DShot_Sem), 1);
         }
 
-#if defined STM32H743xx
-        To_DShot_Obj(obj)->pwm_obj.tim_hdl = Actuator_Malloc(TIM_HandleType_Size);
-        if(To_DShot_Obj(obj)->pwm_obj.tim_hdl == NULL)
+        /* malloc timer dma pwm object */
+        To_DShot_Obj(obj)->p_timr_obj = Actuator_Malloc(sizeof(BspTimerPWMObj_TypeDef));
+        if (To_DShot_Obj(obj)->p_timr_obj == NULL)
         {
-            Actuator_Free(To_DShot_Obj(obj)->pwm_obj.tim_hdl);
+            Actuator_Free(To_DShot_Obj(obj)->p_timr_obj);
             return false;
         }
 
-        To_DShot_Obj(obj)->pwm_obj.dma_hdl = Actuator_Malloc(TIM_DMA_HandleType_Size);
-        if(To_DShot_Obj(obj)->pwm_obj.dma_hdl == NULL)
+#if defined STM32H743xx
+        // To_DShot_Obj(obj)->pwm_obj.tim_hdl = Actuator_Malloc(TIM_HandleType_Size);  /* lagecy */
+        To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl = Actuator_Malloc(sizeof(TIM_HandleType_Size));
+        // if(To_DShot_Obj(obj)->pwm_obj.tim_hdl == NULL)  /* lagecy */
+        if (To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl == NULL)
         {
-            Actuator_Free(To_DShot_Obj(obj)->pwm_obj.tim_hdl);
-            Actuator_Free(To_DShot_Obj(obj)->pwm_obj.dma_hdl);
+            // Actuator_Free(To_DShot_Obj(obj)->pwm_obj.tim_hdl);  /* lagecy */
+
+            Actuator_Free(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl);
+            Actuator_Free(To_DShot_Obj(obj)->p_timr_obj);
+            return false;
+        }
+
+        // To_DShot_Obj(obj)->pwm_obj.dma_hdl = Actuator_Malloc(TIM_DMA_HandleType_Size);  /* lagecy */
+        To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_hdl = Actuator_Malloc(sizeof(TIM_DMA_HandleType_Size));
+        // if(To_DShot_Obj(obj)->pwm_obj.dma_hdl == NULL)  /* lagecy */
+        if (To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_hdl == NULL)
+        {
+            // Actuator_Free(To_DShot_Obj(obj)->pwm_obj.tim_hdl);  /* lagecy */
+            // Actuator_Free(To_DShot_Obj(obj)->pwm_obj.dma_hdl);  /* lagecy */
+
+            Actuator_Free(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl);
+            Actuator_Free(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_hdl);
+            Actuator_Free(To_DShot_Obj(obj)->p_timr_obj);
             return false;
         }
 #elif defined AT32F435_437
-        To_DShot_Obj(obj)->pwm_obj.dma_callback_obj = Actuator_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
+        To_DShot_Obj(obj)->pwm_obj.dma_callback_obj = Actuator_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));  /* lagecy */
         if (To_DShot_Obj(obj)->pwm_obj.dma_callback_obj == NULL)
+        {
             return false;
+        }
 #endif
 
         if (!BspTimer_PWM.init(&(To_DShot_Obj(obj)->pwm_obj), \

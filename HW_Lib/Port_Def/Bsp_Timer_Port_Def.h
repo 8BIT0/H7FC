@@ -12,6 +12,8 @@ extern "C" {
 typedef void (*BspTimer_Tick_Callback)(const uint32_t tick);
 typedef void (*BspTimer_DMA_SendCallback)(void);
 
+#define To_TimerPWMObj_Ptr(x) ((BspTimerPWMObj_TypeDef *) x)
+
 typedef union
 {
     uint16_t val;
