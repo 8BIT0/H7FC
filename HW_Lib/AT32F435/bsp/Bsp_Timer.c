@@ -359,6 +359,9 @@ static void BspTimer_PWM_Trans(BspTimerPWMObj_TypeDef *obj, uint16_t val)
 
     if (val > obj->auto_reload)
         val = obj->auto_reload;
+
+    tmr_output_enable(To_Timer_Instance(obj->instance), TRUE);
+    tmr_channel_value_set(obj->instance, obj->tim_channel, val);
 }
 
 static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj)
