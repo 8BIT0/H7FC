@@ -39,12 +39,14 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj);
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj);
 static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj);
+static void BspTimer_PWM_Trans(BspTimerPWMObj_TypeDef *obj, uint16_t val);
 
 BspTimerPWM_TypeDef BspTimer_PWM = {
     .init = BspTimer_PWM_Init,
     .de_init = BspTimer_PWM_DeInit,
     .set_dma_pwm = BspTimer_PWM_Start,
     .dma_trans = BspTimer_DMA_Start,
+    .pwm_trans = BspTimer_PWM_Trans,
     .get_clock_freq = BspTimer_Get_Clock_Freq,
 };
 
@@ -350,6 +352,12 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     return true;
 }
 
+static void BspTimer_PWM_Trans(BspTimerPWMObj_TypeDef *obj, uint16_t val)
+{
+    if (obj == NULL)
+        return;
+}
+
 static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj)
 {
     crm_clocks_freq_type crm_clocks_freq_struct;
@@ -399,4 +407,3 @@ static void BspTimer_DMA_TransCplt_Callback(void *arg)
             obj->send_callback();
     }
 }
-
