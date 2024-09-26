@@ -648,7 +648,7 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
             return false;
 
         To_DShot_Obj(obj)->pwm_obj.send_callback = DShot_Tran_Finish;
-        BspTimer_PWM.start_pwm(&(To_DShot_Obj(obj))->pwm_obj);
+        BspTimer_PWM.set_dma_pwm(&(To_DShot_Obj(obj))->pwm_obj);
         return true;
     }
 

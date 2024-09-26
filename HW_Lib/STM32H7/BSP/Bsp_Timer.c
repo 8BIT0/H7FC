@@ -38,7 +38,7 @@ static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj);
 
 BspTimerPWM_TypeDef BspTimer_PWM = {
     .init = BspTimer_PWM_Init,
-    .start_pwm = BspTimer_PWM_Start,
+    .set_dma_pwm = BspTimer_PWM_Start,
     .dma_trans = BspTimer_DMA_Start,
     .get_clock_freq = BspTimer_Get_Clock_Freq,
 };
