@@ -62,6 +62,11 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
 
     prescaler = lrintf(DShot_Timer_ClkFreq / (DevDshot_GetType_Clock(obj->type) - 1) + 0.01f) - 1;
 
+    if ((obj->type < DevDshot_150) || (obj->type > DevDshot_600))
+    {
+        obj->type = DevDshot_300;
+    }
+
 #if defined STM32H743xx
     obj->pwm_obj.tim_hdl = DShot_Malloc(TIM_HandleType_Size);
     if(obj->pwm_obj.tim_hdl == NULL)
@@ -78,11 +83,6 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
         return false;
     }
 #endif
-
-    if ((obj->type < DevDshot_150) || (obj->type > DevDshot_600))
-    {
-        obj->type = DevDshot_300;
-    }
 
     if (!DShot_Port_Init(obj, prescaler, timer_ins, ch, pin, dma, stream))
         return false;
