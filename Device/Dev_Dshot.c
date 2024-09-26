@@ -162,5 +162,8 @@ static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint16_t cmd)
     obj->pwm_obj.buffer_addr = (uint32_t)obj->ctl_buf;
     obj->pwm_obj.buffer_size = DSHOT_DMA_BUFFER_SIZE;
 
+    *(obj->p_buff_addr) = (uint32_t)obj->ctl_buf;
+    *(obj->p_buff_size) = DSHOT_DMA_BUFFER_SIZE;
+
     DShot_Port_Trans(obj);
 }

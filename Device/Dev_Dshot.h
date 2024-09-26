@@ -71,6 +71,9 @@ typedef struct
     /* still can be optimize */
     BspTimerPWMObj_TypeDef pwm_obj;
 
+    uint32_t *p_buff_addr;
+    uint32_t *p_buff_size;
+
     uint32_t ctl_buf[DSHOT_DMA_BUFFER_SIZE];
 } DevDshotObj_TypeDef;
 
