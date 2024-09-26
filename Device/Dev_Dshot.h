@@ -8,7 +8,6 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
-#include "Bsp_GPIO.h"
 #include "Bsp_Timer.h"
 
 #define To_DShot_Obj(x) ((DevDshotObj_TypeDef *)x)
@@ -68,6 +67,8 @@ typedef enum
 typedef struct
 {
     DevDshotType_List type;
+
+    /* still can be optimize */
     BspTimerPWMObj_TypeDef pwm_obj;
 
     uint32_t ctl_buf[DSHOT_DMA_BUFFER_SIZE];
