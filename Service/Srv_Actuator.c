@@ -672,11 +672,11 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
             return false;
         }
 #elif defined AT32F435_437
-        To_DShot_Obj(obj)->pwm_obj.dma_callback_obj = Actuator_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));  /* lagecy */
-        if (To_DShot_Obj(obj)->pwm_obj.dma_callback_obj == NULL)
-        {
+        // To_DShot_Obj(obj)->pwm_obj.dma_callback_obj = Actuator_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));  /* lagecy */
+        To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_callback_obj = Actuator_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
+        // if (To_DShot_Obj(obj)->pwm_obj.dma_callback_obj == NULL)    /* lagecy */
+        if (To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_callback_obj == NULL)
             return false;
-        }
 #endif
 
         if (!BspTimer_PWM.init(&(To_DShot_Obj(obj)->pwm_obj), \
