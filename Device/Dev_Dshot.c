@@ -67,23 +67,6 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
         obj->type = DevDshot_300;
     }
 
-#if defined STM32H743xx
-    obj->pwm_obj.tim_hdl = DShot_Malloc(TIM_HandleType_Size);
-    if(obj->pwm_obj.tim_hdl == NULL)
-    {
-        DShot_Free(obj->pwm_obj.tim_hdl);
-        return false;
-    }
-
-    obj->pwm_obj.dma_hdl = DShot_Malloc(TIM_DMA_HandleType_Size);
-    if(obj->pwm_obj.dma_hdl == NULL)
-    {
-        DShot_Free(obj->pwm_obj.tim_hdl);
-        DShot_Free(obj->pwm_obj.dma_hdl);
-        return false;
-    }
-#endif
-
     if (!DShot_Port_Init(obj, prescaler, timer_ins, ch, pin, dma, stream))
         return false;
 
