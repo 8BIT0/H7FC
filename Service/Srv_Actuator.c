@@ -237,7 +237,8 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
                 SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)Actuator_Malloc(sizeof(DevDshotObj_TypeDef));
                 break;
 
-            case Actuator_DevType_ServoPWM:
+            case Actuator_DevType_PWM:
+                SrvActuator_Obj.drive_module.obj_list[i].drv_type = cfg.esc_type;
                 break;
 
             default:
@@ -333,8 +334,10 @@ static bool SrvActuator_Lock(void)
                 SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].lock_val;
                 break;
 
-            /* servo part still in developping */
-            case Actuator_DevType_ServoPWM:
+            /* still in developping */
+            case Actuator_DevType_PWM:
+                break;
+                
             default: return false;
         }
     }

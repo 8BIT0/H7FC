@@ -286,7 +286,7 @@ typedef enum
     Actuator_DevType_DShot150 = DevDshot_150,
     Actuator_DevType_DShot300 = DevDshot_300,
     Actuator_DevType_DShot600 = DevDshot_600,
-    Actuator_DevType_ServoPWM,
+    Actuator_DevType_PWM,
 } SrvActuator_DevType_List;
 
 typedef enum
