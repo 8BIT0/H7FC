@@ -85,6 +85,7 @@ typedef struct
     bool (*de_init)(BspTimerPWMObj_TypeDef *obj);
     void (*set_dma_pwm)(BspTimerPWMObj_TypeDef *obj);
     void (*dma_trans)(BspTimerPWMObj_TypeDef *obj);
+    void (*pwm_trans)(BspTimerPWMObj_TypeDef *obj);
     uint32_t (*get_clock_freq)(BspTimerPWMObj_TypeDef *obj);
 } BspTimerPWM_TypeDef;
 
