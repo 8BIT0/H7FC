@@ -325,10 +325,11 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
     tmr_channel_enable(obj->instance, obj->tim_channel, TRUE);
-    tmr_output_channel_buffer_enable(obj->instance, obj->tim_channel, TRUE);
 
     if (BspTimer_DMA_Init(obj))
     {
+        tmr_output_channel_buffer_enable(obj->instance, obj->tim_channel, TRUE);
+
         if (obj->dma_callback_obj)
         {
             To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->cus_data = (void *)obj;
@@ -341,12 +342,12 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
         monitor.init_cnt ++;
 
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
-        tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
-        tmr_output_enable(To_Timer_Instance(obj->instance), FALSE);
-        return true;
     }
+    
+    tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
+    tmr_output_enable(To_Timer_Instance(obj->instance), FALSE);
 
-    return false;
+    return true;
 }
 
 static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj)
