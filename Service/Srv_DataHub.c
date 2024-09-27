@@ -45,7 +45,6 @@ static bool SrvDataHub_Get_Arm(bool *arm);
 static bool SrvDataHub_Get_Failsafe(bool *failsafe);
 static bool SrvDataHub_Get_Telemetry_ControlData(ControlData_TypeDef *data);
 static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir);
-static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
 static bool SrvDataHub_Get_IMU_InitState(bool *state);
 static bool SrvDataHub_Get_Mag_InitState(bool *state);
 static bool SrvDataHub_Get_Bar_InitState(bool *state);
@@ -77,7 +76,6 @@ SrvDataHub_TypeDef SrvDataHub = {
     .get_failsafe = SrvDataHub_Get_Failsafe,
     .get_rc_control_data = SrvDataHub_Get_Telemetry_ControlData,
     .get_moto = SrvDataHub_Get_MotoChannel,
-    .get_servo = SrvDataHub_Get_ServoChannel,
     .get_imu_init_state = SrvDataHub_Get_IMU_InitState,
     .get_mag_init_state = SrvDataHub_Get_Mag_InitState,
     .get_baro_init_state = SrvDataHub_Get_Bar_InitState,
@@ -266,19 +264,12 @@ static void SrvDataHub_Actuator_DataPipe_Finish_Callback(DataPipeObj_TypeDef *ob
 
         SrvDataHub_Monitor.data.actuator_update_time = DataPipe_DataObj(Hub_Actuator).time_stamp;
         SrvDataHub_Monitor.data.moto_num = DataPipe_DataObj(Hub_Actuator).moto_cnt;
-        SrvDataHub_Monitor.data.servo_num = DataPipe_DataObj(Hub_Actuator).servo_cnt;
 
         memset(SrvDataHub_Monitor.data.moto, 0, sizeof(SrvDataHub_Monitor.data.moto));
-        memset(SrvDataHub_Monitor.data.servo, 0, sizeof(SrvDataHub_Monitor.data.servo));
 
         for (uint8_t moto_i = 0; moto_i < SrvDataHub_Monitor.data.moto_num; moto_i++)
         {
             SrvDataHub_Monitor.data.moto[moto_i] = DataPipe_DataObj(Hub_Actuator).moto[moto_i];
-        }
-
-        for (uint8_t servo_i = 0; servo_i < SrvDataHub_Monitor.data.servo_num; servo_i++)
-        {
-            SrvDataHub_Monitor.data.servo[servo_i] = DataPipe_DataObj(Hub_Actuator).servo[servo_i];
         }
 
         SrvDataHub_Monitor.update_reg.bit.actuator = false;
@@ -883,30 +874,6 @@ reupdate_baro_state:
         goto reupdate_baro_state;
 
     SrvDataHub_Monitor.inuse_reg.bit.baro_init = false;
-
-    return true;
-}
-
-static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir)
-{
-    if ((cnt == NULL) || (servo_ch == NULL) || (servo_dir == NULL))
-        return false;
-
-reupdate_servo_channel:
-    SrvDataHub_Monitor.inuse_reg.bit.actuator = true;
-
-    *time_stamp = SrvDataHub_Monitor.data.actuator_update_time;
-    *cnt = SrvDataHub_Monitor.data.servo_num;
-
-    if (*cnt)
-    {
-        memcpy(servo_ch, SrvDataHub_Monitor.data.servo, *cnt);
-    }
-
-    if (!SrvDataHub_Monitor.inuse_reg.bit.actuator)
-        goto reupdate_servo_channel;
-
-    SrvDataHub_Monitor.inuse_reg.bit.actuator = false;
 
     return true;
 }

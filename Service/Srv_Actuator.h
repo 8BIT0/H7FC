@@ -326,7 +326,6 @@ typedef struct
 {
     uint8_t total_cnt;
     uint8_t moto_cnt;
-    uint8_t servo_cnt;
 } SrvActuator_ModelComponentNum_TypeDef;
 
 typedef struct
@@ -345,12 +344,8 @@ typedef struct
 typedef struct
 {
     uint32_t time_stamp;
-
     uint8_t moto_cnt;
-    uint8_t servo_cnt;
-
     uint16_t moto[8];
-    uint16_t servo[8];
 } SrvActuatorPipeData_TypeDef;
 
 #pragma pack(1)
@@ -360,7 +355,6 @@ typedef struct
     
     uint8_t moto_num;
     uint8_t esc_type;
-    uint8_t servo_num;
     uint8_t pwm_ch_map[MAX_PWM_OUT]; /* pwm channel map [moto + servo] moto pwm channle at the head pos */
 } SrvActuator_Setting_TypeDef;
 #pragma pack()
