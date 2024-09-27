@@ -91,9 +91,7 @@ static bool SrvActuator_Lock(void);
 static SrvActuator_ModelComponentNum_TypeDef SrvActuator_Get_NumData(void);
 static SrvActuator_Model_List SrvActuator_GetModel(void);
 static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max);
-static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max);
 static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value);
-static bool SrvActuator_Servo_DirectDrive(uint8_t index, uint16_t value);
 static SrvActuator_Setting_TypeDef SrvActuator_Default_Setting(void);
 static bool SrvActuator_SetSpin_Dir(uint8_t component_index, uint8_t dir);
 static void SrvActuator_Saving(uint8_t component_index);
@@ -109,9 +107,7 @@ SrvActuator_TypeDef SrvActuator = {
     .get_cnt = SrvActuator_Get_NumData,
     .get_model = SrvActuator_GetModel,
     .get_moto_control_range = SrvActuator_Get_MotoControlRange,
-    .get_servo_control_range = SrvActuator_Get_ServoControlRange,
     .moto_direct_drive = SrvActuator_Moto_DirectDrive,
-    .servo_direct_drive = SrvActuator_Servo_DirectDrive,
     .default_param = SrvActuator_Default_Setting,
     .save = SrvActuator_Saving,
 };
@@ -536,23 +532,6 @@ static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, i
     return false;
 } 
 
-static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max)
-{
-    if(SrvActuator_Obj.init && \
-       SrvActuator_Obj.drive_module.num.servo_cnt && \
-       min && max && idle && \
-       servo_index < SrvActuator_Obj.drive_module.num.servo_cnt)
-    {
-        (*min) = 0;
-        (*idle) = 0;
-        (*max) = 0;
-        /* still in developping */
-        return true;
-    }
-
-    return false;
-}
-
 static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value)
 {
     if (index < SrvActuator_Obj.drive_module.num.moto_cnt)
@@ -580,11 +559,6 @@ static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value)
         }
     }
 
-    return false;
-}
-
-static bool SrvActuator_Servo_DirectDrive(uint8_t index, uint16_t value)
-{
     return false;
 }
 
