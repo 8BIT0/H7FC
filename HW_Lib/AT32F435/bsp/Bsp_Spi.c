@@ -91,8 +91,9 @@ static bool BspSPI_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance
 {
     spi_init_type spi_init_struct;
     crm_periph_clock_type clk = 0;
+    spi_master_slave_mode_type mode = SPI_MODE_MASTER;
 
-    if((spi_cfg.Instance == NULL) || !BspSPI_Pin_Init(spi_cfg.Pin))
+    if((spi_cfg.Instance == NULL) || !BspSPI_Pin_Init(spi_cfg.Pin) || (spi_cfg.work_mode > BspSPI_Mode_Slave))
         return false;
 
     clk = BspSPI_Get_Clock(spi_cfg.Instance);
@@ -102,8 +103,11 @@ static bool BspSPI_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance
     crm_periph_clock_enable(clk, TRUE);
     spi_default_para_init(&spi_init_struct);
 
+    if (spi_cfg.work_mode == BspSPI_Mode_Slave)
+        mode = SPI_MODE_SLAVE;
+
     spi_init_struct.transmission_mode = SPI_TRANSMIT_FULL_DUPLEX;
-    spi_init_struct.master_slave_mode = SPI_MODE_MASTER;
+    spi_init_struct.master_slave_mode = mode;
     spi_init_struct.mclk_freq_division = spi_cfg.BaudRatePrescaler;
     spi_init_struct.first_bit_transmission = SPI_FIRST_BIT_MSB;
     spi_init_struct.frame_bit_num = SPI_FRAME_8BIT;

@@ -162,6 +162,7 @@ BspSPI_NorModeConfig_TypeDef Baro_BusCfg = {
     .CLKPolarity = SPI_CLOCK_POLARITY_HIGH,
     .CLKPhase = SPI_CLOCK_PHASE_2EDGE,
     .BaudRatePrescaler = SPI_MCLK_DIV_8,
+    .work_mode = BspSPI_Mode_Master,
     .Pin = {
         .port_mosi = (void *)GPIOC,
         .port_miso = (void *)GPIOC,
@@ -193,6 +194,7 @@ BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg = {
     .CLKPolarity = SPI_CLOCK_POLARITY_HIGH,
     .CLKPhase = SPI_CLOCK_PHASE_2EDGE,
     .BaudRatePrescaler = SPI_MCLK_DIV_8,
+    .work_mode = BspSPI_Mode_Master,
 };
 
 /* external flash chip cs */

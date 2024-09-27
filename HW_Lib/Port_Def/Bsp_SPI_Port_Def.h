@@ -26,9 +26,16 @@ typedef struct
     uint32_t pin_Alternate;
 } BspSPI_PinConfig_TypeDef;
 
+typedef enum
+{
+    BspSPI_Mode_Master = 0,
+    BspSPI_Mode_Slave,
+} BspSPI_WorkMode_List;
+
 typedef struct
 {
     BspSPI_PinConfig_TypeDef Pin;
+    BspSPI_WorkMode_List work_mode;
     void *Instance;
     uint32_t CLKPolarity;
     uint32_t CLKPhase;

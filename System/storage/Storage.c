@@ -126,6 +126,7 @@ static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
                 To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->CLKPolarity = ExtFlash_Bus_CLKPolarity;
                 To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->Instance = ExtFLash_Bus_Instance;
                 To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->Pin = ExtFlash_Bus_Pin;
+                To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->work_mode = BspSPI_Mode_Master;
 
                 /* bus init & cs pin init */
                 if (ExtFlash_Bus_Api.init(To_NormalSPI_Obj(ext_flash_bus_cfg), &ExtFlash_Bus_InstObj) && \
