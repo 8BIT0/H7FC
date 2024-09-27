@@ -326,6 +326,7 @@ typedef struct
 {
     uint8_t total_cnt;
     uint8_t moto_cnt;
+    uint8_t servo_cnt;
 } SrvActuator_ModelComponentNum_TypeDef;
 
 typedef struct
@@ -344,8 +345,12 @@ typedef struct
 typedef struct
 {
     uint32_t time_stamp;
+
     uint8_t moto_cnt;
+    uint8_t servo_cnt;
+
     uint16_t moto[8];
+    uint16_t servo[8];
 } SrvActuatorPipeData_TypeDef;
 
 #pragma pack(1)
@@ -355,6 +360,7 @@ typedef struct
     
     uint8_t moto_num;
     uint8_t esc_type;
+    uint8_t servo_num;
     uint8_t pwm_ch_map[MAX_PWM_OUT]; /* pwm channel map [moto + servo] moto pwm channle at the head pos */
 } SrvActuator_Setting_TypeDef;
 #pragma pack()
@@ -370,9 +376,11 @@ typedef struct
     bool (*tmp_reverse_spin)(uint8_t component_index);
     bool (*set_spin_dir)(uint8_t component_index, uint8_t dir);
     bool (*get_moto_control_range)(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max);
+    bool (*get_servo_control_range)(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max);
     SrvActuator_ModelComponentNum_TypeDef (*get_cnt)(void);
     SrvActuator_Model_List (*get_model)(void);
     bool (*moto_direct_drive)(uint8_t index, uint16_t value);
+    bool (*servo_direct_drive)(uint8_t index, uint16_t value);
     void (*save)(uint8_t component_index);
 } SrvActuator_TypeDef;
 

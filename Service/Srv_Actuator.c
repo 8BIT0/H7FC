@@ -91,7 +91,9 @@ static bool SrvActuator_Lock(void);
 static SrvActuator_ModelComponentNum_TypeDef SrvActuator_Get_NumData(void);
 static SrvActuator_Model_List SrvActuator_GetModel(void);
 static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, int16_t *idle, int16_t *max);
+static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max);
 static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value);
+static bool SrvActuator_Servo_DirectDrive(uint8_t index, uint16_t value);
 static SrvActuator_Setting_TypeDef SrvActuator_Default_Setting(void);
 static bool SrvActuator_SetSpin_Dir(uint8_t component_index, uint8_t dir);
 static void SrvActuator_Saving(uint8_t component_index);
@@ -107,7 +109,9 @@ SrvActuator_TypeDef SrvActuator = {
     .get_cnt = SrvActuator_Get_NumData,
     .get_model = SrvActuator_GetModel,
     .get_moto_control_range = SrvActuator_Get_MotoControlRange,
+    .get_servo_control_range = SrvActuator_Get_ServoControlRange,
     .moto_direct_drive = SrvActuator_Moto_DirectDrive,
+    .servo_direct_drive = SrvActuator_Servo_DirectDrive,
     .default_param = SrvActuator_Default_Setting,
     .save = SrvActuator_Saving,
 };
@@ -142,6 +146,13 @@ static bool SrvActuator_DeInit(void)
 
                     default: break;
                 }
+            }
+
+            /* deinit servo timer */
+            /* still in developping */
+            for (; s_i < actuator_num.servo_cnt; s_i ++)
+            {
+
             }
         }
     }
@@ -248,6 +259,12 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
         }
     }
 
+    /* create servo object */
+    if (SrvActuator_Obj.drive_module.num.servo_cnt)
+    {
+        /* reserved */
+    }
+
     /* data pipe init */
     Actuator_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Actuator);
     Actuator_Smp_DataPipe.data_size = DataPipe_DataSize(Actuator);
@@ -269,7 +286,10 @@ static SrvActuator_Setting_TypeDef SrvActuator_Default_Setting(void)
 
     default_setting.model = Model_Quad;
     default_setting.esc_type = DevDshot_300;
+
     default_setting.moto_num = 4;
+    default_setting.servo_num = 0;
+
     memcpy(default_setting.pwm_ch_map, default_sig_serial, 4);
 
     return default_setting;
@@ -333,7 +353,9 @@ static void SrvActuator_PipeData(void)
     /* pipe actuator control data to data hub */
     DataPipe_DataObj(Actuator).time_stamp = SrvOsCommon.get_os_ms();
     DataPipe_DataObj(Actuator).moto_cnt = SrvActuator_Obj.drive_module.num.moto_cnt;
+    DataPipe_DataObj(Actuator).servo_cnt = SrvActuator_Obj.drive_module.num.servo_cnt;
     /* reserved */
+    memset(DataPipe_DataObj(Actuator).servo, 0, sizeof(DataPipe_DataObj(Actuator).servo));
     m = DataPipe_DataObj(Actuator).moto_cnt;
     if (DataPipe_DataObj(Actuator).moto_cnt > (sizeof(DataPipe_DataObj(Actuator).moto) / sizeof(DataPipe_DataObj(Actuator).moto[0])))
         m = sizeof(DataPipe_DataObj(Actuator).moto) / sizeof(DataPipe_DataObj(Actuator).moto[0]);
@@ -361,10 +383,18 @@ static void SrvActuator_MotoControl(uint16_t *p_val)
         default:
             for (i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i ++)
                 SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].lock_val;
+            
+            offset = SrvActuator_Obj.drive_module.num.moto_cnt;
+            for (i = 0; i < SrvActuator_Obj.drive_module.num.servo_cnt; i ++)
+                SrvActuator_Obj.drive_module.obj_list[i + offset].ctl_val = 0;
             break;
     }
 
     SrvActuator_PipeData();
+}
+
+static void SrvActuator_ServoControl(uint8_t index, uint16_t val)
+{
 }
 
 static void SrvActuator_SendCommand(DevDshotObj_TypeDef *p_moto, uint8_t cmd)
@@ -506,6 +536,23 @@ static bool SrvActuator_Get_MotoControlRange(uint8_t moto_index, int16_t *min, i
     return false;
 } 
 
+static bool SrvActuator_Get_ServoControlRange(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max)
+{
+    if(SrvActuator_Obj.init && \
+       SrvActuator_Obj.drive_module.num.servo_cnt && \
+       min && max && idle && \
+       servo_index < SrvActuator_Obj.drive_module.num.servo_cnt)
+    {
+        (*min) = 0;
+        (*idle) = 0;
+        (*max) = 0;
+        /* still in developping */
+        return true;
+    }
+
+    return false;
+}
+
 static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value)
 {
     if (index < SrvActuator_Obj.drive_module.num.moto_cnt)
@@ -533,6 +580,11 @@ static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value)
         }
     }
 
+    return false;
+}
+
+static bool SrvActuator_Servo_DirectDrive(uint8_t index, uint16_t value)
+{
     return false;
 }
 
