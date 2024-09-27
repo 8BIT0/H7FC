@@ -91,6 +91,10 @@ static bool Controller_PID_AttControl_ParamLoad(void)
         }
     }
 
+    /* test */
+    /* set parameter */
+    /* test */
+
     return Att_CasecadePID_Controller.init(pid_param);
 }
 
