@@ -13,6 +13,10 @@
 #include "debug_util.h"
 #include "debug_util.h"
 
+/* create storage assert function */
+
+/* create storage assert function */
+
 #define STORAGE_TAG "[ STORAGE INFO ] "
 #define STORAGE_INFO(fmt, ...) Debug_Print(&DebugPort, STORAGE_TAG, fmt, ##__VA_ARGS__)
 
