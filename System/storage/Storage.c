@@ -11,12 +11,16 @@
 #include "HW_Def.h"
 #include "Srv_OsCommon.h"
 #include "debug_util.h"
+#include "debug_util.h"
+
+#define STORAGE_TAG "[ STORAGE INFO ] "
+#define STORAGE_INFO(fmt, ...) Debug_Print(&DebugPort, STORAGE_TAG, fmt, ##__VA_ARGS__)
 
 #define Storage_Malloc(size) SrvOsCommon.malloc(size)
 #define Storage_Free(ptr) SrvOsCommon.free(ptr)
 #define Storage_GetSysTick_Ptr SrvOsCommon.get_os_ms
 
-#define STORAGE_DEBUG 1
+#define STORAGE_DEBUG 0
 
 #define InternalFlash_BootDataSec_Size (4 Kb)
 #define InternalFlash_SysDataSec_Size (16 Kb)
@@ -128,10 +132,12 @@ static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
                 To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->Pin = ExtFlash_Bus_Pin;
                 To_NormalSPI_ObjPtr(ext_flash_bus_cfg)->work_mode = BspSPI_Mode_Master;
 
+                STORAGE_INFO("Bus Init\r\n");
                 /* bus init & cs pin init */
                 if (ExtFlash_Bus_Api.init(To_NormalSPI_Obj(ext_flash_bus_cfg), &ExtFlash_Bus_InstObj) && \
                     BspGPIO.out_init(ExtFlash_CS_Pin))
                 {
+                    STORAGE_INFO("Bus init accomplished\r\n");
                     Storage_Monitor.ExtBusCfg_Ptr = ext_flash_bus_cfg;
 
                     if (ExtDev->chip_type == Storage_ChipType_W25Qxx)
@@ -147,6 +153,7 @@ static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
                             To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
                             To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
                             To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
+                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->delay_ms = SrvOsCommon.delay_ms;
                             Storage_Monitor.ExtDev_ptr = ExtDev;
                             Storage_Monitor.ExternalFlash_ReInit_cnt = ExternalModule_ReInit_Cnt;
 
@@ -199,12 +206,17 @@ reformat_external_flash_info:
                                     }
                                 }
                                 else
+                                {
+                                    STORAGE_INFO("chip init done\r\n");
                                     Storage_Monitor.init_state = true;
+                                }
                             }
                             else
                             {
+                                STORAGE_INFO("chip init failed\r\n");
                                 if (Storage_Monitor.ExternalFlash_ReInit_cnt)
                                 {
+                                    STORAGE_INFO("init retry\r\n");
                                     Storage_Monitor.ExternalFlash_ReInit_cnt --;
                                     goto reinit_external_flash_module;
                                 }
@@ -216,10 +228,16 @@ reformat_external_flash_info:
                             Storage_Monitor.ExternalFlash_Error_Code = Storage_ExtDevObj_Error;
                     }
                     else
+                    {
+                        STORAGE_INFO("Unknown chip type\r\n");
                         Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleType_Error;
+                    }
                 }
                 else
+                {
+                    STORAGE_INFO("Bus Init Failed\r\n");
                     Storage_Monitor.ExternalFlash_Error_Code = Storage_BusInit_Error;
+                }
             }
             else
                 Storage_Monitor.ExternalFlash_Error_Code = Storage_BusCfg_Malloc_Failed;

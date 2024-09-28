@@ -19,7 +19,7 @@
 #define FLASH_CHIP_ENABLE_STATE OFF
 #define RADIO_NUM 1
 
-#elif defined BATEAT32F435_AIO || defined CCRC_AT32_20
+#elif defined BATEAT32F435_AIO || defined CCRC_AT32_20 || defined CAIFPV_AIO
 
 #define IMU_CNT 1
 #define BARO_CNT 1

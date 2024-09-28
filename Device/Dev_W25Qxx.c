@@ -1,5 +1,13 @@
 #include "Dev_W25Qxx.h"
 
+/* test code */
+#include "HW_Def.h"
+#include "debug_util.h"
+
+#define W25Qxx_TAG "[ W25Qxx INFO ] "
+#define W25Qxx_INFO(fmt, ...) Debug_Print(&DebugPort, W25Qxx_TAG, fmt, ##__VA_ARGS__)
+/* test code */
+
 /* internal function */
 static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev, uint16_t *id);
 
@@ -134,18 +142,44 @@ static DevW25Qxx_Error_List DevW25Qxx_WriteEnable(DevW25QxxObj_TypeDef *dev)
 
 static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev)
 {
-    if ((dev == NULL) ||
-        (dev->cs_ctl == NULL))
+    if ((dev == NULL) || \
+        (dev->delay_ms == NULL) || \
+        (dev->systick == NULL) || \
+        (dev->cs_ctl == NULL) || \
+        (dev->bus_trans == NULL))
         return DevW25Qxx_Error;
 
     dev->init_state = DevW25Qxx_Error;
-    
+    DevW25Qxx_Error_List err = DevW25Qxx_Ok;
+    uint32_t tickstart = 0;
+
     /* Reset W25Qxxx */
     if (DevW25Qxx_Reset(dev) != DevW25Qxx_Ok)
         return DevW25Qxx_Error;
 
-    if (DevW25Qxx_GetStatue(dev) != DevW25Qxx_Ok)
-        return DevW25Qxx_Error;
+    dev->delay_ms(100);
+    err = DevW25Qxx_GetStatue(dev);
+    tickstart = dev->systick();
+
+    /* Wait the end of Flash writing */
+    while (err == DevW25Qxx_Busy)
+    {
+        /* Check for the Timeout */
+        if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
+        {
+            W25Qxx_INFO("get statue time out\r\n");
+            return DevW25Qxx_TimeOut;
+        }
+
+        dev->delay_ms(1);
+        err = DevW25Qxx_GetStatue(dev);
+
+        if (err == DevW25Qxx_Error)
+        {
+            W25Qxx_INFO("get statue failed\r\n");
+            return DevW25Qxx_Error;
+        }
+    }
 
     dev->prod_type = DevW25Qxx_Get_ProdType(dev, &dev->prod_code);
 
@@ -173,24 +207,31 @@ static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev,
         ID |= ID_Rx_buf[1];
         *id = ID;
 
+        W25Qxx_INFO("Type:    ");
         switch(ID)
         {
             case W25Q08_DEV_ID:
+                W25Qxx_INFO("W25Q08\r\n");
                 return DevW25Q_08;
 
             case W25Q16_DEV_ID:
+                W25Qxx_INFO("W25Q16\r\n");
                 return DevW25Q_16;
 
             case W25Q32_DEV_ID:
+                W25Qxx_INFO("W25Q32\r\n");
                 return DevW25Q_32;
 
             case W25Q64_DEV_ID:
+                W25Qxx_INFO("W25Q64\r\n");
                 return DevW25Q_64;
 
             case W25Q128_DEV_ID:
+                W25Qxx_INFO("W25Q128\r\n");
                 return DevW25Q_128;
 
             default:
+                W25Qxx_INFO("Unknown %d\r\n", ID);
                 return DevW25Q_None;
         }
     }

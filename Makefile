@@ -26,9 +26,11 @@ HARDWARE := $(HW_MATEK_H743_V1_5)
 else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 HW_BETAFPV_AIO_AT32 := 1
 HW_CCRC_AT32_20 := 2
+HW_Cai_AIO_AT32 := 3
 
 # HARDWARE := $(HW_BETAFPV_AIO_AT32)
-HARDWARE := $(HW_CCRC_AT32_20)
+# HARDWARE := $(HW_CCRC_AT32_20)
+HARDWARE := $(HW_Cai_AIO_AT32)
 endif
 
 ######################################
@@ -234,6 +236,9 @@ HW_Lib/AT32F435/PinPort_Def/BETAFPV_AIO_AT32/HW_Def.c
 else ifeq ($(HARDWARE), $(HW_CCRC_AT32_20))
 C_SOURCES +=  \
 HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c
+else ifeq ($(HARDWARE), $(HW_Cai_AIO_AT32))
+C_SOURCES +=  \
+HW_Lib/AT32F435/PinPort_Def/CaiFPV/HW_Def.c
 endif
 
 ASM_SOURCES =  \
@@ -294,6 +299,9 @@ C_DEFS += \
 else ifeq ($(HARDWARE), $(HW_CCRC_AT32_20))
 C_DEFS += \
 -DCCRC_AT32_20
+else ifeq ($(HARDWARE), $(HW_Cai_AIO_AT32))
+C_DEFS += \
+-DCAIFPV_AIO
 endif
 
 # fpu
@@ -380,6 +388,9 @@ C_INCLUDES += \
 else ifeq ($(HARDWARE), $(HW_CCRC_AT32_20))
 C_INCLUDES += \
 -IHW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20
+else ifeq ($(HARDWARE), $(HW_Cai_AIO_AT32))
+C_INCLUDES += \
+-IHW_Lib/AT32F435/PinPort_Def/CaiFPV
 endif
 endif
 

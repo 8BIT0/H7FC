@@ -148,6 +148,7 @@ typedef struct
     uint16_t (*bus_rx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
     uint16_t (*bus_trans)(uint8_t *tx_data, uint8_t *rx_data, uint16_t len, uint32_t time_out);
     bool (*cs_ctl)(bool state);
+    void (*delay_ms)(uint32_t ms);
 
     DevW25Qxx_Error_List init_state;
     get_systick systick;

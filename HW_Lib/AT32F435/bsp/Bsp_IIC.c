@@ -3,15 +3,6 @@
 #include "at32f435_437.h"
 #include "i2c_application.h"
 
-/* test code */
-#include "HW_Def.h"
-/* test code */
-
-/* test code */
-#define I2C_TAG "[ I2C ] "
-#define I2C_INFO(fmt, ...) Debug_Print(&DebugPort, I2C_TAG, fmt, ##__VA_ARGS__)
-/* test code */
-
 #define I2C_TIMEOUT     0xFFFFFFFF
 
 #define I2Cx_CLK_10K    0xB170FFFF   //10K
@@ -165,7 +156,6 @@ static bool BspIIC_Read(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg,
     if(obj && obj->handle && p_buf && len)
     {
         state = i2c_memory_read(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT);
-        I2C_INFO("Rx addr: 0x%02x --- reg: 0x%02x --- Err_code: %d\r\n", dev_addr, reg, state);
 
         if (state == I2C_OK)
             return true;
@@ -181,7 +171,6 @@ static bool BspIIC_Write(BspIICObj_TypeDef *obj, uint16_t dev_addr, uint16_t reg
     if(obj && obj->handle && p_buf && len)
     {
         state = i2c_memory_write(obj->handle, I2C_MEM_ADDR_WIDIH_8, dev_addr, reg, p_buf, len, I2C_TIMEOUT);
-        I2C_INFO("Tx addr: 0x%02x --- reg: 0x%02x --- Err_code: %d\r\n", dev_addr, reg, state);
 
         if (state == I2C_OK)
             return true;

@@ -35,7 +35,7 @@ static BspGPIO_Obj_TypeDef *p_Baro_CS = NULL;
 #elif defined BATEAT32F435_AIO
 static void *Baro_Bus_Instance = NULL;
 static BspGPIO_Obj_TypeDef *p_Baro_CS = &Baro_CSPin;
-#elif defined CCRC_AT32_20
+#elif defined CCRC_AT32_20 || defined CAIFPV_AIO
 static void *Baro_Bus_Instance = NULL;
 static BspGPIO_Obj_TypeDef *p_Baro_CS = NULL;
 #endif
