@@ -166,8 +166,8 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
     W25NXX_INFO("ID 0x%08x\r\n", ID);
     switch (ID)
     {
-        case W25N01GVZEIG_ID: W25NXX_INFO("W25N01G\r\n"); return DevW25N_01;
-        default: return DevW25N_None;
+        case W25N01GVZEIG_ID: W25NXX_INFO("type W25N01G\r\n"); return DevW25N_01;
+        default: W25NXX_INFO("type Unknown\r\n"); return DevW25N_None;
     }
 
     return DevW25N_None;
