@@ -31,14 +31,11 @@ static bool DevW25Nxx_Write(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t l
 
     if ((dev == NULL) || \
         (dev->bus_tx == NULL) || \
-        (dev->cs_ctl == NULL) || \
         (p_tx == NULL) || \
         (len == 0))
         return false;
 
-    dev->cs_ctl(false);
     tx_out = dev->bus_tx(p_tx, len, W25NXX_BUS_COMMU_TIMEOUT);
-    dev->cs_ctl(true);
 
     return tx_out ? true : false;
 }
@@ -49,14 +46,11 @@ static bool DevW25Nxx_Read(DevW25NxxObj_TypeDef *dev, uint8_t *p_rx, uint16_t le
 
     if ((dev == NULL) || \
         (dev->bus_rx == NULL) || \
-        (dev->cs_ctl == NULL) || \
         (p_rx == NULL) || \
         (len == 0))
         return false;
 
-    dev->cs_ctl(false);
     rx_out = dev->bus_rx(p_rx, len, W25NXX_BUS_COMMU_TIMEOUT);
-    dev->cs_ctl(true);
 
     return rx_out ? true : false;
 }
@@ -67,15 +61,12 @@ static bool DevW25Nxx_Trans(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p
 
     if ((dev == NULL) || \
         (dev->bus_trans == NULL) || \
-        (dev->cs_ctl == NULL) || \
         (p_rx == NULL) || \
         (p_tx == NULL) || \
         (len == 0))
         return false;
 
-    dev->cs_ctl(false);
     trans_out = dev->bus_trans(p_tx, p_rx, len, W25NXX_BUS_COMMU_TIMEOUT);
-    dev->cs_ctl(true);
 
     return trans_out ? true : false;
 }
@@ -84,8 +75,12 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
 {
     DevW25Nxx_ProdType_List ProdID = DevW25N_None;
 
-    W25NXX_INFO("dev addr 0x%08x\r\n", dev);
-    W25NXX_INFO("get ID\r\n");
+    if (dev->delay_ms == NULL)
+        return DevW25Nxx_Error;
+
+    /* soft reset */
+
+    dev->delay_ms(100);
 
     /* get product id */
     ProdID = DevW25Nxx_Get_ProductID(dev);
@@ -97,7 +92,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
 
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev)
 {
-    uint8_t tx_tmp[4] = {0};
+    uint8_t tx_tmp[2] = {0};
     uint8_t rx_tmp[4] = {0};
     uint32_t ID = 0;
 
@@ -105,8 +100,11 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
     memset(rx_tmp, 0, sizeof(rx_tmp));
     tx_tmp[0] = W25NXX_JEDEC_ID;
 
-    DevW25Nxx_Trans(dev, tx_tmp, rx_tmp, sizeof(rx_tmp));
-    
+    dev->cs_ctl(false);
+    DevW25Nxx_Write(dev, tx_tmp, sizeof(tx_tmp));
+    DevW25Nxx_Read(dev, rx_tmp, sizeof(rx_tmp));
+    dev->cs_ctl(true);
+
     memcpy(&ID, rx_tmp, sizeof(rx_tmp));
     W25NXX_INFO("ID 0x%08x\r\n", ID);
 

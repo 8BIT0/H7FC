@@ -32,6 +32,19 @@ osThreadId TaskTelemetry_Handle = NULL;
 osThreadId TaskFrameCTL_Handle = NULL;
 osThreadId TaskManager_Handle = NULL;
 
+#if defined MATEKH743_V1_5
+#define Select_Hardware "Hardware MATEKH743"
+#elif defined BATEAT32F435_AIO
+#define Select_Hardware "Hardware BATE_AT32_AIO"
+#elif defined CCRC_AT32_20
+#define Select_Hardware "Hardware CCRC_AT32"
+#elif defined CAIFPV_AIO
+#define Select_Hardware "Hardware CaiFPV_AIO"
+#endif
+
+#define SYS_TAG "[ HARDWARE INFO ] "
+#define SYS_INFO(fmt, ...) Debug_Print(&DebugPort, SYS_TAG, fmt, ##__VA_ARGS__)
+
 void Task_Manager_Init(void)
 {
     DevLED.init(Led1);
@@ -70,6 +83,8 @@ void Task_Manager_CreateTask(void const *arg)
 {
     bool init = false;
     Storage_ExtFLashDevObj_TypeDef *storage_ExtFlashObj = NULL;
+
+    SYS_INFO("%s\r\n", Select_Hardware);
 
 #if (FLASH_CHIP_STATE == ON)
     storage_ExtFlashObj = (Storage_ExtFLashDevObj_TypeDef *)SrvOsCommon.malloc(sizeof(Storage_ExtFLashDevObj_TypeDef));
