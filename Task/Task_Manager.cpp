@@ -78,8 +78,8 @@ void Task_Manager_CreateTask(void const *arg)
     {
         storage_ExtFlashObj->bus_type = ExtFlash_Bus_Type;
         storage_ExtFlashObj->chip_type = ExtFlash_Chip_Type;
-        storage_ExtFlashObj->dev_api = ExtFlash_Dev_Api;
-        storage_ExtFlashObj->dev_obj = NULL;
+        storage_ExtFlashObj->api = ExtFlash_Dev_Api;
+        storage_ExtFlashObj->obj = NULL;
     }
     else
     {

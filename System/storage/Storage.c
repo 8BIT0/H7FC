@@ -163,8 +163,8 @@ static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
                 return false;
             }
 
-            ExtDev->dev_obj = Storage_Malloc(sizeof(DevW25QxxObj_TypeDef));
-            if (ExtDev->dev_obj == NULL)
+            ExtDev->obj = Storage_Malloc(sizeof(DevW25QxxObj_TypeDef));
+            if (ExtDev->obj == NULL)
             {
                 Storage_Monitor.ExternalFlash_Error_Code = Storage_ExtDevObj_Error;
                 return false;
@@ -189,11 +189,11 @@ reinit_external_flash_module:
             }
 
             ExtDev->start_addr  = W25QXX_BASE_ADDRESS;
-            ExtDev->sector_num  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_num;
-            ExtDev->sector_size = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_size;
-            ExtDev->total_size  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).flash_size;
-            ExtDev->page_num    = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).page_num;
-            ExtDev->page_size   = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).page_size;
+            ExtDev->sector_num  = To_DevW25Qxx_API(ExtDev->api)->info(To_DevW25Qxx_OBJ(ExtDev->obj)).subsector_num;
+            ExtDev->sector_size = To_DevW25Qxx_API(ExtDev->api)->info(To_DevW25Qxx_OBJ(ExtDev->obj)).subsector_size;
+            ExtDev->total_size  = To_DevW25Qxx_API(ExtDev->api)->info(To_DevW25Qxx_OBJ(ExtDev->obj)).flash_size;
+            ExtDev->page_num    = To_DevW25Qxx_API(ExtDev->api)->info(To_DevW25Qxx_OBJ(ExtDev->obj)).page_num;
+            ExtDev->page_size   = To_DevW25Qxx_API(ExtDev->api)->info(To_DevW25Qxx_OBJ(ExtDev->obj)).page_size;
 
             /* set external flash device read write base address */
             Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
@@ -1658,7 +1658,7 @@ static bool Storage_Write_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
     Storage_ExtFLashDevObj_TypeDef *p_dev = NULL;
 
     p_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
-    if (addr && p_data && len && p_dev && p_dev->dev_api && p_dev->dev_obj)
+    if (addr && p_data && len && p_dev && p_dev->api && p_dev->obj)
     {
         if ((addr % p_dev->sector_size) || \
             (len % p_dev->sector_size))
@@ -1673,14 +1673,14 @@ static bool Storage_Write_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
             {
                 case Storage_ChipType_W25Qxx:
                     /* erase sector */
-                    if (To_DevW25Qxx_API(p_dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->dev_obj), addr_tmp) != DevW25Qxx_Ok)
+                    if (To_DevW25Qxx_API(p_dev->api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp) != DevW25Qxx_Ok)
                     {
                         STORAGE_INFO("section erase failed\r\n");
                         return false;
                     }
 
                     /* update sector */
-                    if (To_DevW25Qxx_API(p_dev->dev_api)->write(To_DevW25Qxx_OBJ(p_dev->dev_obj), addr_tmp, p_data, p_dev->sector_size))
+                    if (To_DevW25Qxx_API(p_dev->api)->write(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, p_dev->sector_size))
                     {
                         STORAGE_INFO("section write failed\r\n");
                         return false;
@@ -1706,7 +1706,7 @@ static bool Storage_Read_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
     Storage_ExtFLashDevObj_TypeDef *p_dev = NULL;
 
     p_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
-    if (addr && p_data && len && p_dev && p_dev->dev_api && p_dev->dev_obj)
+    if (addr && p_data && len && p_dev && p_dev->api && p_dev->obj)
     {
         if ((addr % p_dev->sector_size) || \
             (len % p_dev->sector_size))
@@ -1721,7 +1721,7 @@ static bool Storage_Read_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
             {
                 case Storage_ChipType_W25Qxx:
                     /* read sector */
-                    if (To_DevW25Qxx_API(p_dev->dev_api)->read(To_DevW25Qxx_OBJ(p_dev->dev_obj), addr_tmp, p_data, len) != DevW25Qxx_Ok)
+                    if (To_DevW25Qxx_API(p_dev->api)->read(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, len) != DevW25Qxx_Ok)
                     {
                         STORAGE_INFO("section read failed\r\n");
                         memset(p_data, 0, len);
@@ -1748,7 +1748,7 @@ static bool Storage_Erase_Section(uint32_t addr, uint16_t len)
     Storage_ExtFLashDevObj_TypeDef *p_dev = NULL;
 
     p_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
-    if (addr && len && p_dev && p_dev->dev_api && p_dev->dev_obj)
+    if (addr && len && p_dev && p_dev->api && p_dev->obj)
     {
         if ((addr % p_dev->sector_size) || \
             (len % p_dev->sector_size))
@@ -1763,7 +1763,7 @@ static bool Storage_Erase_Section(uint32_t addr, uint16_t len)
             {
                 case Storage_ChipType_W25Qxx:
                     /* erase sector */
-                    if (To_DevW25Qxx_API(p_dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->dev_obj), addr_tmp) != DevW25Qxx_Ok)
+                    if (To_DevW25Qxx_API(p_dev->api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp) != DevW25Qxx_Ok)
                         return false;
                     break;
 
@@ -1804,12 +1804,12 @@ static bool Storage_Firmware_Format(void)
         switch (dev->chip_type)
         {
             case Storage_ChipType_W25Qxx:
-                if (dev->dev_api && dev->dev_obj)
+                if (dev->api && dev->obj)
                 {
                     if (format_size == 0)
                         return true;
 
-                    if (To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), erase_addr) != DevW25Qxx_Ok)
+                    if (To_DevW25Qxx_API(dev->api)->erase_sector(To_DevW25Qxx_OBJ(dev->obj), erase_addr) != DevW25Qxx_Ok)
                         return false;
                 
                     erase_addr += Storage_TabSize;
@@ -1837,8 +1837,8 @@ static bool Storage_Frimware_Read(uint32_t addr_offset, uint8_t *p_data, uint16_
         read_addr = addr_offset + App_Firmware_Addr;
         while (true)
         {
-            section_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), read_addr);
-            if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
+            section_addr = To_DevW25Qxx_API(dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->obj), read_addr);
+            if (To_DevW25Qxx_API(dev->api)->read(To_DevW25Qxx_OBJ(dev->obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
                 return false;
 
             if ((read_addr + size) > (section_addr + Storage_TabSize))
@@ -1888,7 +1888,7 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, uint32_t addr
             {
                 case Storage_ChipType_W25Qxx:
                     write_addr = App_Firmware_Addr + addr_offset;
-                    section_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr);
+                    section_addr = To_DevW25Qxx_API(dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->obj), write_addr);
 
                     while (true)
                     {
@@ -1897,11 +1897,11 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, uint32_t addr
 
                         /* read section first */
                         memset(flash_read_tmp, 0, Storage_TabSize);
-                        if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
+                        if (To_DevW25Qxx_API(dev->api)->read(To_DevW25Qxx_OBJ(dev->obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
                             return false;
 
                         /* erase whole section */
-                        if (To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), section_addr) != DevW25Qxx_Ok)
+                        if (To_DevW25Qxx_API(dev->api)->erase_sector(To_DevW25Qxx_OBJ(dev->obj), section_addr) != DevW25Qxx_Ok)
                             return false;
 
                         if ((write_addr + size) >= (section_addr + Storage_TabSize))
@@ -1917,13 +1917,13 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, uint32_t addr
 
                         /* update to flash */
                         memcpy(&flash_read_tmp[write_addr - section_addr], p_data, write_size);
-                        if (To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
+                        if (To_DevW25Qxx_API(dev->api)->write(To_DevW25Qxx_OBJ(dev->obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
                             return false;
 
                         /* update section address */
                         p_data += write_size;
                         write_addr += write_size;
-                        section_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_addr);
+                        section_addr = To_DevW25Qxx_API(dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->obj), write_addr);
                     }
                     break;
 
@@ -2011,23 +2011,23 @@ static bool Storage_ExtFlash_ParaSec_Read(uint32_t addr_offset, uint8_t *p_data,
         switch((uint8_t)dev->chip_type)
         {
             case Storage_ChipType_W25Qxx:
-                if (dev->dev_api && dev->dev_obj)
+                if (dev->api && dev->obj)
                 {
-                    section_size = To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).subsector_size;
+                    section_size = To_DevW25Qxx_API(dev->api)->info(To_DevW25Qxx_OBJ(dev->obj)).subsector_size;
                     /* get w25qxx device info */
                     /* address check */
-                    flash_end_addr = To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).start_addr;
+                    flash_end_addr = To_DevW25Qxx_API(dev->api)->info(To_DevW25Qxx_OBJ(dev->obj)).start_addr;
                     if (flash_end_addr > read_start_addr)
                         return false;
 
                     /* range check */
-                    flash_end_addr += To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).flash_size;
+                    flash_end_addr += To_DevW25Qxx_API(dev->api)->info(To_DevW25Qxx_OBJ(dev->obj)).flash_size;
                     if ((len + read_start_addr) > flash_end_addr)
                         return false;
 
                     if (section_size)
                     {
-                        section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), read_start_addr);
+                        section_start_addr = To_DevW25Qxx_API(dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->obj), read_start_addr);
                         read_offset = read_start_addr - section_start_addr;
                         if (section_size > sizeof(flash_read_tmp))
                             return false;
@@ -2041,7 +2041,7 @@ static bool Storage_ExtFlash_ParaSec_Read(uint32_t addr_offset, uint8_t *p_data,
                                 read_len = section_size - read_offset;
 
                             /* read whole section */
-                            if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, flash_read_tmp, section_size) != DevW25Qxx_Ok)
+                            if (To_DevW25Qxx_API(dev->api)->read(To_DevW25Qxx_OBJ(dev->obj), section_start_addr, flash_read_tmp, section_size) != DevW25Qxx_Ok)
                                 return false;
                         
                             memcpy(p_data, flash_read_tmp + read_offset, read_len);
@@ -2052,7 +2052,7 @@ static bool Storage_ExtFlash_ParaSec_Read(uint32_t addr_offset, uint8_t *p_data,
                                 return true;
                         
                             read_offset = 0;
-                            next_read_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr + read_len);
+                            next_read_addr = To_DevW25Qxx_API(dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->obj), section_start_addr + read_len);
                             if (next_read_addr == section_start_addr)
                                 read_offset = read_len;
                             
@@ -2092,23 +2092,23 @@ static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data
         switch((uint8_t)dev->chip_type)
         {
             case Storage_ChipType_W25Qxx:
-                if (dev->dev_api && dev->dev_obj)
+                if (dev->api && dev->obj)
                 {
-                    section_size = To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).subsector_size;
+                    section_size = To_DevW25Qxx_API(dev->api)->info(To_DevW25Qxx_OBJ(dev->obj)).subsector_size;
                     /* get w25qxx device info */
                     /* address check */
-                    flash_end_addr = To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).start_addr;
+                    flash_end_addr = To_DevW25Qxx_API(dev->api)->info(To_DevW25Qxx_OBJ(dev->obj)).start_addr;
                     if (flash_end_addr > write_start_addr)
                         return false;
 
                     /* range check */
-                    flash_end_addr += To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).flash_size;
+                    flash_end_addr += To_DevW25Qxx_API(dev->api)->info(To_DevW25Qxx_OBJ(dev->obj)).flash_size;
                     if ((len + write_start_addr) > flash_end_addr)
                         return false;
                     
                     if (section_size)
                     {
-                        section_start_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), write_start_addr);
+                        section_start_addr = To_DevW25Qxx_API(dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->obj), write_start_addr);
                         write_offset = write_start_addr - section_start_addr;
                         if (section_size > sizeof(flash_write_tmp))
                             return false;
@@ -2119,11 +2119,11 @@ static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data
                             /* circumstances 2: store data size less than flash sector length but need to write from the end of the sector N to the start of the sector N + 1 */
                             /* circumstances 3: store data size large than flash sector length */
                             /* read whole section */
-                            if (To_DevW25Qxx_API(dev->dev_api)->read(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, flash_write_tmp, section_size) != DevW25Qxx_Ok)
+                            if (To_DevW25Qxx_API(dev->api)->read(To_DevW25Qxx_OBJ(dev->obj), section_start_addr, flash_write_tmp, section_size) != DevW25Qxx_Ok)
                                 return false;
 
                             /* erase whole section */
-                            if (To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr) != DevW25Qxx_Ok)
+                            if (To_DevW25Qxx_API(dev->api)->erase_sector(To_DevW25Qxx_OBJ(dev->obj), section_start_addr) != DevW25Qxx_Ok)
                                 return false;
 
                             /* update whole section */
@@ -2133,7 +2133,7 @@ static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data
                             /* copy data to section data read out */
                             memcpy(flash_write_tmp + write_offset, p_data, write_len);
 
-                            state = To_DevW25Qxx_API(dev->dev_api)->write(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr, flash_write_tmp, section_size);
+                            state = To_DevW25Qxx_API(dev->api)->write(To_DevW25Qxx_OBJ(dev->obj), section_start_addr, flash_write_tmp, section_size);
 
                             /* clear cache buff */
                             memset(flash_write_tmp, 0, section_size);
@@ -2148,7 +2148,7 @@ static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data
                                 return false;
 
                             write_offset = 0;
-                            next_write_addr = To_DevW25Qxx_API(dev->dev_api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->dev_obj), section_start_addr + write_len);
+                            next_write_addr = To_DevW25Qxx_API(dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->obj), section_start_addr + write_len);
                             if (next_write_addr == section_start_addr)
                                 write_offset = write_len;
 
@@ -2182,15 +2182,15 @@ static bool Storage_ExtFlash_ParaSec_Erase(uint32_t addr_offset, uint32_t len)
         switch((uint8_t)dev->chip_type)
         {
             case Storage_ChipType_W25Qxx:
-                if (dev->dev_api && dev->dev_obj)
+                if (dev->api && dev->obj)
                 {
                     /* get w25qxx device info */
                     /* address check */
-                    if (erase_start_addr < To_DevW25Qxx_API(dev->dev_api)->info(To_DevW25Qxx_OBJ(dev->dev_obj)).start_addr)
+                    if (erase_start_addr < To_DevW25Qxx_API(dev->api)->info(To_DevW25Qxx_OBJ(dev->obj)).start_addr)
                         return false;
 
                     /* W25Qxx device read */
-                    if (To_DevW25Qxx_API(dev->dev_api)->erase_sector(To_DevW25Qxx_OBJ(dev->dev_obj), erase_start_addr) == DevW25Qxx_Ok)
+                    if (To_DevW25Qxx_API(dev->api)->erase_sector(To_DevW25Qxx_OBJ(dev->obj), erase_start_addr) == DevW25Qxx_Ok)
                         return true;
                 }
                 break;
@@ -2208,6 +2208,44 @@ static bool Storage_ExtFlash_EraseAll(void)
     return false;
 }
 
+static void Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
+{
+    if (ext_dev == NULL)
+        return;
+
+    ext_dev->start_addr  = 0;
+    ext_dev->sector_num  = 0;
+    ext_dev->sector_size = 0;
+    ext_dev->total_size  = 0;
+    ext_dev->page_num    = 0;
+    ext_dev->page_size   = 0;
+
+    if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
+    {
+        if (To_DevW25Qxx_API(ext_dev->api)->info == NULL)
+            return;
+
+        ext_dev->start_addr  = W25QXX_BASE_ADDRESS;
+        ext_dev->sector_num  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).subsector_num;
+        ext_dev->sector_size = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).subsector_size;
+        ext_dev->total_size  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).flash_size;
+        ext_dev->page_num    = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_num;
+        ext_dev->page_size   = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_size;
+    }
+    else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
+    {
+        if (To_DevW25Nxx_API(ext_dev->api)->info == NULL)
+            return;
+        
+        ext_dev->start_addr  = W25QXX_BASE_ADDRESS;
+        ext_dev->sector_num  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).subsector_num;
+        ext_dev->sector_size = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).subsector_size;
+        ext_dev->total_size  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).flash_size;
+        ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
+        ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;
+    }
+}
+
 static void Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
 {
     if (ext_dev == NULL)
@@ -2215,21 +2253,21 @@ static void Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
 
     if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
     {
-        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->systick = Storage_GetSysTick_Ptr;
-        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
-        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
-        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
-        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
-        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->delay_ms = SrvOsCommon.delay_ms;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->systick = Storage_GetSysTick_Ptr;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->delay_ms = SrvOsCommon.delay_ms;
     }
     else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
     {
-        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->systick = Storage_GetSysTick_Ptr;
-        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
-        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
-        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
-        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
-        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->delay_ms = SrvOsCommon.delay_ms;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->systick = Storage_GetSysTick_Ptr;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->delay_ms = SrvOsCommon.delay_ms;
     }
 }
 
@@ -2242,25 +2280,25 @@ static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev)
 
     if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
     {
-        if ((To_DevW25Qxx_API(ext_dev->dev_api)->init == NULL) || \
-            (To_DevW25Qxx_API(ext_dev->dev_api)->info == NULL))
+        if ((To_DevW25Qxx_API(ext_dev->api)->init == NULL) || \
+            (To_DevW25Qxx_API(ext_dev->api)->info == NULL))
             return false;
 
-        init_state = To_DevW25Qxx_API(ext_dev->dev_api)->init(To_DevW25Qxx_OBJ(ext_dev->dev_obj));
-        Storage_Monitor.module_prod_type = To_DevW25Qxx_API(ext_dev->dev_api)->info(To_DevW25Qxx_OBJ(ext_dev->dev_obj)).prod_type;
-        Storage_Monitor.module_prod_code = To_DevW25Qxx_API(ext_dev->dev_api)->info(To_DevW25Qxx_OBJ(ext_dev->dev_obj)).prod_code;
+        init_state = To_DevW25Qxx_API(ext_dev->api)->init(To_DevW25Qxx_OBJ(ext_dev->obj));
+        Storage_Monitor.module_prod_type = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_type;
+        Storage_Monitor.module_prod_code = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_code;
     
         return ((DevW25Qxx_Error_List)init_state == DevW25Qxx_Ok) ? true : false;
     }
     else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
     {
-        if ((To_DevW25Nxx_API(ext_dev->dev_api)->init == NULL) || \
-            (To_DevW25Nxx_API(ext_dev->dev_api)->info == NULL))
+        if ((To_DevW25Nxx_API(ext_dev->api)->init == NULL) || \
+            (To_DevW25Nxx_API(ext_dev->api)->info == NULL))
             return false;
 
-        init_state = To_DevW25Nxx_API(ext_dev->dev_api)->init(To_DevW25Nxx_OBJ(ext_dev->dev_obj));
-        Storage_Monitor.module_prod_type = To_DevW25Nxx_API(ext_dev->dev_api)->info(To_DevW25Nxx_OBJ(ext_dev->dev_obj)).prod_type;
-        Storage_Monitor.module_prod_code = To_DevW25Nxx_API(ext_dev->dev_api)->info(To_DevW25Nxx_OBJ(ext_dev->dev_obj)).prod_code;
+        init_state = To_DevW25Nxx_API(ext_dev->api)->init(To_DevW25Nxx_OBJ(ext_dev->obj));
+        Storage_Monitor.module_prod_type = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_type;
+        Storage_Monitor.module_prod_code = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_code;
 
         return ((DevW25Nxx_Error_List)init_state == DevW25Nxx_Ok) ? true : false;
     }
@@ -2559,8 +2597,8 @@ static void Storage_Show_ModuleInfo(void)
             break;
     }
 
-    dev_api = p_ext_flash->dev_api;
-    dev_obj = p_ext_flash->dev_obj;
+    dev_api = p_ext_flash->api;
+    dev_obj = p_ext_flash->obj;
     
     switch (p_ext_flash->chip_type)
     {
@@ -2989,7 +3027,7 @@ static void Storage_Dump_DataSection(Storage_ParaClassType_List class)
         ext_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
         if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
         {
-            flash_sector_size = To_DevW25Qxx_API(ext_dev->dev_api)->info(ext_dev->dev_obj).subsector_size;
+            flash_sector_size = To_DevW25Qxx_API(ext_dev->api)->info(ext_dev->obj).subsector_size;
         }
     }
 

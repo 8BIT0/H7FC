@@ -220,8 +220,8 @@ typedef struct
     uint32_t sector_num;
     uint32_t sector_size;
 
-    void *dev_obj;
-    void *dev_api;
+    void *obj;
+    void *api;
 } Storage_ExtFLashDevObj_TypeDef;
 
 typedef struct
