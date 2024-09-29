@@ -1,5 +1,13 @@
 #include "Dev_W25Nxx.h"
 
+/* test code */
+#include "HW_Def.h"
+#include "debug_util.h"
+
+#define W25NXX_TAG "[ W25NXX INFO ]"
+#define W25NXX_INFO(fmt, ...) Debug_Print(&DebugPort, W25NXX_TAG, fmt, ##__VA_ARGS__)
+/* test code */
+
 #define W25NXX_BUS_COMMU_TIMEOUT 100 /* unit: ms */
 
 /* internal function */
@@ -10,6 +18,7 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
 
 /* external function */
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
+static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev);
 
 DevW25Nxx_TypeDef DevW25Nxx = {
     .init = DevW25Nxx_Init,
@@ -102,6 +111,13 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
         return DevW25N_None;
 
     memcpy(&ID, rx_tmp, sizeof(rx_tmp));
+    W25NXX_INFO("ID 0x%08x\r\n", ID);
 }
 
+static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev)
+{
+    DevW25Nxx_DeviceInfo_TypeDef info_tmp;
+    memset(&info_tmp, 0, sizeof(DevW25Nxx_DeviceInfo_TypeDef));
+    return info_tmp;
+}
 

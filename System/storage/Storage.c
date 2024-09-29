@@ -123,7 +123,7 @@ static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
         {
             Storage_Monitor.ExtDev_ptr = NULL;
             bus_cfg = Storage_Malloc(sizeof(BspSPI_NorModeConfig_TypeDef));
-            if (bus_cfg)
+            if (bus_cfg == NULL)
             {
                 STORAGE_INFO("bus config data malloc failed\r\n");
                 Storage_Monitor.ExternalFlash_Error_Code = Storage_BusCfg_Malloc_Failed;
