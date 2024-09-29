@@ -40,6 +40,8 @@ extern "C" {
 #define W25NXX_FAST_READ_QUAD_IO                0xEB
 #define W25NXX_FAST_READ_QUAD_IO_4BYTE          0xEC
 
+#define W25N01GVZEIG_ID     0x00EFAA21
+
 #define W25NXX_BASE_ADDRESS 0x00000000
 
 typedef enum

@@ -1,13 +1,5 @@
 #include "Dev_W25Qxx.h"
 
-/* test code */
-#include "HW_Def.h"
-#include "debug_util.h"
-
-#define W25QXX_TAG "[ W25QXX INFO ]"
-#define W25QXX_INFO(fmt, ...) Debug_Print(&DebugPort, W25QXX_TAG, fmt, ##__VA_ARGS__)
-/* test code */
-
 /* internal function */
 static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev, uint16_t *id);
 
@@ -148,8 +140,6 @@ static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev)
         (dev->cs_ctl == NULL) || \
         (dev->bus_trans == NULL))
         return DevW25Qxx_Error;
-
-    W25QXX_INFO(" init\r\n");
 
     dev->init_state = DevW25Qxx_Error;
     DevW25Qxx_Error_List err = DevW25Qxx_Ok;

@@ -175,7 +175,7 @@ reinit_external_flash_module:
                 STORAGE_INFO("chip init failed\r\n");
                 if (Storage_Monitor.ExternalFlash_ReInit_cnt)
                 {
-                    STORAGE_INFO("init retry remain %d\r\n", Storage_Monitor.ExternalFlash_ReInit_cnt);
+                    STORAGE_INFO("init retry remain %d\r\n\r\n", Storage_Monitor.ExternalFlash_ReInit_cnt);
                     Storage_Monitor.ExternalFlash_ReInit_cnt --;
                     goto reinit_external_flash_module;
                 }
@@ -2308,9 +2308,6 @@ static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev)
             return false;
 
         STORAGE_INFO("W25Nxx init\r\n");
-        STORAGE_INFO("dev obj 0x%08x\r\n", To_DevW25Nxx_OBJ(ext_dev->obj));
-        STORAGE_INFO("init api 0x%08x\r\n", To_DevW25Nxx_API(ext_dev->api)->init);
-
         init_state = To_DevW25Nxx_API(ext_dev->api)->init(To_DevW25Nxx_OBJ(ext_dev->obj));
         Storage_Monitor.module_prod_type = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_type;
         Storage_Monitor.module_prod_code = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_code;
