@@ -10,6 +10,7 @@ extern "C" {
 #include "Bsp_Flash.h"
 #include "Bsp_GPIO.h"
 #include "Dev_W25Qxx.h"
+#include "Dev_W25Nxx.h"
 #include "Srv_OsCommon.h"
 #include "util.h"
 
@@ -58,6 +59,8 @@ typedef enum
 {
     Storage_Chip_None = 0,
     Storage_ChipType_W25Qxx,
+    Storage_ChipType_W25Nxx,
+    Storage_ChipType_All,
 } Storage_ExtFlashChipType_List;
 
 typedef enum

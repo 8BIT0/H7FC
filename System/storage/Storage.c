@@ -49,6 +49,9 @@ static uint8_t page_data_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = 
 static uint8_t flash_write_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
 static uint8_t flash_read_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
 
+static void Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev);
+static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev);
+
 static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num);
 static bool Storage_Establish_Tab(Storage_ParaClassType_List class);
 
@@ -109,7 +112,6 @@ Storage_TypeDef Storage = {
 static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
 {
     void *ext_flash_bus_cfg = NULL;
-    uint8_t extmodule_init_state;
     memset(&Storage_Monitor, 0, sizeof(Storage_Monitor));
 
     Storage_Monitor.init_state = false;
@@ -138,109 +140,95 @@ static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
 
                 STORAGE_INFO("Bus Init\r\n");
                 /* bus init & cs pin init */
-                if (ExtFlash_Bus_Api.init(To_NormalSPI_Obj(ext_flash_bus_cfg), &ExtFlash_Bus_InstObj) && \
-                    BspGPIO.out_init(ExtFlash_CS_Pin))
+                if (!ExtFlash_Bus_Api.init(To_NormalSPI_Obj(ext_flash_bus_cfg), &ExtFlash_Bus_InstObj) || \
+                    !BspGPIO.out_init(ExtFlash_CS_Pin))
                 {
-                    STORAGE_INFO("Bus init accomplished\r\n");
-                    Storage_Monitor.ExtBusCfg_Ptr = ext_flash_bus_cfg;
+                    STORAGE_INFO("Bus Init Failed\r\n");
+                    Storage_Monitor.ExternalFlash_Error_Code = Storage_BusInit_Error;
+                    return false;
+                }
 
-                    if (ExtDev->chip_type == Storage_ChipType_W25Qxx)
-                    {
-                        ExtDev->dev_obj = Storage_Malloc(sizeof(DevW25QxxObj_TypeDef));
-                        if (ExtDev->dev_obj)
-                        {
-                            /* set get time callback */
-                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->systick = Storage_GetSysTick_Ptr;
+                STORAGE_INFO("Bus init accomplished\r\n");
+                Storage_Monitor.ExtBusCfg_Ptr = ext_flash_bus_cfg;
 
-                            /* set bus control callback */
-                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
-                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
-                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
-                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
-                            To_DevW25Qxx_OBJ(ExtDev->dev_obj)->delay_ms = SrvOsCommon.delay_ms;
-                            Storage_Monitor.ExtDev_ptr = ExtDev;
-                            Storage_Monitor.ExternalFlash_ReInit_cnt = ExternalModule_ReInit_Cnt;
+                if ((ExtDev->chip_type == Storage_Chip_None) || \
+                    (ExtDev->chip_type >= Storage_ChipType_All))
+                {
+                    STORAGE_INFO("Unknown chip type\r\n");
+                    Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleType_Error;
+                    return false;
+                }
+
+                ExtDev->dev_obj = Storage_Malloc(sizeof(DevW25QxxObj_TypeDef));
+                if (ExtDev->dev_obj == NULL)
+                {
+                    Storage_Monitor.ExternalFlash_Error_Code = Storage_ExtDevObj_Error;
+                    return false;
+                }
+
+                Storage_Set_DeviceObj(ExtDev); 
+                Storage_Monitor.ExtDev_ptr = ExtDev;
+                Storage_Monitor.ExternalFlash_ReInit_cnt = ExternalModule_ReInit_Cnt;
 
 reinit_external_flash_module:
-                            extmodule_init_state = To_DevW25Qxx_API(ExtDev->dev_api)->init(To_DevW25Qxx_OBJ(ExtDev->dev_obj));
-                            Storage_Monitor.module_prod_type = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).prod_type;
-                            Storage_Monitor.module_prod_code = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).prod_code;
+                if (!Storage_Device_Init(ExtDev))
+                {
+                    Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
+                    STORAGE_INFO("chip init failed\r\n");
+                    if (Storage_Monitor.ExternalFlash_ReInit_cnt)
+                    {
+                        STORAGE_INFO("init retry remain %d\r\n", Storage_Monitor.ExternalFlash_ReInit_cnt);
+                        Storage_Monitor.ExternalFlash_ReInit_cnt --;
+                        goto reinit_external_flash_module;
+                    }
+                    return false;
+                }
 
-                            if (extmodule_init_state == DevW25Qxx_Ok)
-                            {
-                                ExtDev->start_addr  = W25QXX_BASE_ADDRESS;
-                                ExtDev->sector_num  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_num;
-                                ExtDev->sector_size = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_size;
-                                ExtDev->total_size  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).flash_size;
-                                ExtDev->page_num    = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).page_num;
-                                ExtDev->page_size   = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).page_size;
+                ExtDev->start_addr  = W25QXX_BASE_ADDRESS;
+                ExtDev->sector_num  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_num;
+                ExtDev->sector_size = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).subsector_size;
+                ExtDev->total_size  = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).flash_size;
+                ExtDev->page_num    = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).page_num;
+                ExtDev->page_size   = To_DevW25Qxx_API(ExtDev->dev_api)->info(To_DevW25Qxx_OBJ(ExtDev->dev_obj)).page_size;
 
-                                /* set external flash device read write base address */
-                                Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
-                                Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
+                /* set external flash device read write base address */
+                Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
+                Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
                             
 reupdate_external_flash_info:
-                                /* get storage info */
-                                if (!Storage_Get_StorageInfo())
-                                {
+                /* get storage info */
+                if (!Storage_Get_StorageInfo())
+                {
 reformat_external_flash_info:
-                                    if (Storage_Monitor.ExternalFlash_Format_cnt)
-                                    {
-                                        /* format storage device */
-                                        if (!Storage_Format())
-                                        {
-                                            Storage_Monitor.ExternalFlash_Format_cnt --;
-                                            Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
-                                            if (Storage_Monitor.ExternalFlash_Format_cnt)
-                                                goto reformat_external_flash_info;
-                                        }
-                                        else
-                                        {
-                                            /* external flash module format successed */
-                                            /* build storage tab */
-                                            if (Storage_Build_StorageInfo())
-                                            {
-                                                Storage_Monitor.ExternalFlash_BuildTab_cnt ++;
-                                                Storage_Monitor.init_state = true;
-
-                                                /* after tab builded read storage info again */
-                                                goto reupdate_external_flash_info;
-                                            }
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    STORAGE_INFO("chip init done\r\n");
-                                    Storage_Monitor.init_state = true;
-                                }
-                            }
-                            else
-                            {
-                                STORAGE_INFO("chip init failed\r\n");
-                                if (Storage_Monitor.ExternalFlash_ReInit_cnt)
-                                {
-                                    STORAGE_INFO("init retry\r\n");
-                                    Storage_Monitor.ExternalFlash_ReInit_cnt --;
-                                    goto reinit_external_flash_module;
-                                }
-
-                                Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
-                            }
+                    if (Storage_Monitor.ExternalFlash_Format_cnt)
+                    {
+                        /* format storage device */
+                        if (!Storage_Format())
+                        {
+                            Storage_Monitor.ExternalFlash_Format_cnt --;
+                            Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
+                            if (Storage_Monitor.ExternalFlash_Format_cnt)
+                                goto reformat_external_flash_info;
                         }
                         else
-                            Storage_Monitor.ExternalFlash_Error_Code = Storage_ExtDevObj_Error;
-                    }
-                    else
-                    {
-                        STORAGE_INFO("Unknown chip type\r\n");
-                        Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleType_Error;
+                        {
+                            /* external flash module format successed */
+                            /* build storage tab */
+                            if (Storage_Build_StorageInfo())
+                            {
+                                Storage_Monitor.ExternalFlash_BuildTab_cnt ++;
+                                Storage_Monitor.init_state = true;
+
+                                /* after tab builded read storage info again */
+                                goto reupdate_external_flash_info;
+                            }
+                        }
                     }
                 }
                 else
                 {
-                    STORAGE_INFO("Bus Init Failed\r\n");
-                    Storage_Monitor.ExternalFlash_Error_Code = Storage_BusInit_Error;
+                    STORAGE_INFO("chip init done\r\n");
+                    Storage_Monitor.init_state = true;
                 }
             }
             else
@@ -2216,6 +2204,66 @@ static bool Storage_ExtFlash_ParaSec_Erase(uint32_t addr_offset, uint32_t len)
 
 static bool Storage_ExtFlash_EraseAll(void)
 {
+    return false;
+}
+
+static void Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
+{
+    if (ext_dev == NULL)
+        return;
+
+    if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
+    {
+        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->systick = Storage_GetSysTick_Ptr;
+        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
+        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
+        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
+        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
+        To_DevW25Qxx_OBJ(ext_dev->dev_obj)->delay_ms = SrvOsCommon.delay_ms;
+    }
+    else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
+    {
+        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->systick = Storage_GetSysTick_Ptr;
+        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
+        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
+        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
+        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
+        To_DevW25Nxx_OBJ(ext_dev->dev_obj)->delay_ms = SrvOsCommon.delay_ms;
+    }
+}
+
+static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev)
+{
+    uint8_t init_state = 0;
+
+    if (ext_dev == NULL)
+        return false;
+
+    if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
+    {
+        if ((To_DevW25Qxx_API(ext_dev->dev_api)->init == NULL) || \
+            (To_DevW25Qxx_API(ext_dev->dev_api)->info == NULL))
+            return false;
+
+        init_state = To_DevW25Qxx_API(ext_dev->dev_api)->init(To_DevW25Qxx_OBJ(ext_dev->dev_obj));
+        Storage_Monitor.module_prod_type = To_DevW25Qxx_API(ext_dev->dev_api)->info(To_DevW25Qxx_OBJ(ext_dev->dev_obj)).prod_type;
+        Storage_Monitor.module_prod_code = To_DevW25Qxx_API(ext_dev->dev_api)->info(To_DevW25Qxx_OBJ(ext_dev->dev_obj)).prod_code;
+    
+        return ((DevW25Qxx_Error_List)init_state == DevW25Qxx_Ok) ? true : false;
+    }
+    else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
+    {
+        if ((To_DevW25Nxx_API(ext_dev->dev_api)->init == NULL) || \
+            (To_DevW25Nxx_API(ext_dev->dev_api)->info == NULL))
+            return false;
+
+        init_state = To_DevW25Nxx_API(ext_dev->dev_api)->init(To_DevW25Nxx_OBJ(ext_dev->dev_obj));
+        Storage_Monitor.module_prod_type = To_DevW25Nxx_API(ext_dev->dev_api)->info(To_DevW25Nxx_OBJ(ext_dev->dev_obj)).prod_type;
+        Storage_Monitor.module_prod_code = To_DevW25Nxx_API(ext_dev->dev_api)->info(To_DevW25Nxx_OBJ(ext_dev->dev_obj)).prod_code;
+
+        return ((DevW25Nxx_Error_List)init_state == DevW25Nxx_Ok) ? true : false;
+    }
+
     return false;
 }
 

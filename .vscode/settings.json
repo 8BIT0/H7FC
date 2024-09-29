@@ -200,7 +200,8 @@
                 "att_casecade_pid.h": "c",
                 "att_control_base.h": "c",
                 "pid.h": "c",
-                "bsp_spi_port_def.h": "c"
+                "bsp_spi_port_def.h": "c",
+                "*.tcc": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

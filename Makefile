@@ -80,6 +80,7 @@ Device/Dev_ICM426xx.c \
 Device/Dev_Flow_3901U.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
+Device/Dev_W25Nxx.c \
 Device/Dev_Sbus.c \
 Device/Dev_CRSF.c \
 Device/Dev_Dshot.c \
