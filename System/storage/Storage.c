@@ -13,34 +13,31 @@
 #include "debug_util.h"
 #include "debug_util.h"
 
-#define STORAGE_TAG "[ STORAGE INFO ] "
-#define STORAGE_INFO(fmt, ...)      Debug_Print(&DebugPort, STORAGE_TAG, fmt, ##__VA_ARGS__)
-#define STORAGE_ASSERT(fmt, ...)    STORAGE_INFO(fmt, ##__VA_ARGS__); \
-                                    SrvOsCommon.enter_critical(); \
-                                    while (true)
+#define STORAGE_TAG                     "[ STORAGE INFO ] "
+#define STORAGE_INFO(fmt, ...)          Debug_Print(&DebugPort, STORAGE_TAG, fmt, ##__VA_ARGS__)
+#define STORAGE_ASSERT(fmt, ...)        STORAGE_INFO(fmt, ##__VA_ARGS__); \
+                                        SrvOsCommon.enter_critical(); \
+                                        while (true)
 
-#define Storage_Malloc(size) SrvOsCommon.malloc(size)
-#define Storage_Free(ptr) SrvOsCommon.free(ptr)
-#define Storage_GetSysTick_Ptr SrvOsCommon.get_os_ms
+#define Storage_Malloc(size)            SrvOsCommon.malloc(size)
+#define Storage_Free(ptr)               SrvOsCommon.free(ptr)
+#define Storage_GetSysTick_Ptr          SrvOsCommon.get_os_ms
 
-#define STORAGE_DEBUG 0
+#define STORAGE_DEBUG                   0
 
-#define InternalFlash_BootDataSec_Size (4 Kb)
-#define InternalFlash_SysDataSec_Size (16 Kb)
-#define InternalFlash_UserDataSec_Size (32 Kb)
+#define InternalFlash_BootDataSec_Size  (4 Kb)
+#define InternalFlash_SysDataSec_Size   (16 Kb)
+#define InternalFlash_UserDataSec_Size  (32 Kb)
 
-#define Storage_TabSize Flash_Storage_TabSize
-#define Storage_InfoPageSize Flash_Storage_InfoPageSize
+#define Storage_TabSize                 Flash_Storage_TabSize
+#define Storage_InfoPageSize            Flash_Storage_InfoPageSize
 
-#define Item_Capacity_Per_Tab (Storage_TabSize / sizeof(Storage_Item_TypeDef))
+#define Item_Capacity_Per_Tab           (Storage_TabSize / sizeof(Storage_Item_TypeDef))
 #if defined STM32H743xx
 static SPI_HandleTypeDef ExtFlash_Bus_InstObj;
 #elif defined AT32F435_437
 void *ExtFlash_Bus_InstObj = NULL;
 #endif
-
-#define STORAGE_TAG "[ STORAGE INFO ] "
-#define STORAGE_INFO(fmt, ...) Debug_Print(&DebugPort, STORAGE_TAG , fmt, ##__VA_ARGS__)
 
 /* internal vriable */
 Storage_Monitor_TypeDef Storage_Monitor;
