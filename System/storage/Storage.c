@@ -51,6 +51,7 @@ static uint8_t flash_read_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) _
 
 static void Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev);
 static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev);
+static bool Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev);
 
 static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num);
 static bool Storage_Establish_Tab(Storage_ParaClassType_List class);
@@ -188,12 +189,12 @@ reinit_external_flash_module:
                 return false;
             }
 
-            ExtDev->start_addr  = W25QXX_BASE_ADDRESS;
-            ExtDev->sector_num  = To_DevW25Qxx_API(ExtDev->api)->info(To_DevW25Qxx_OBJ(ExtDev->obj)).subsector_num;
-            ExtDev->sector_size = To_DevW25Qxx_API(ExtDev->api)->info(To_DevW25Qxx_OBJ(ExtDev->obj)).subsector_size;
-            ExtDev->total_size  = To_DevW25Qxx_API(ExtDev->api)->info(To_DevW25Qxx_OBJ(ExtDev->obj)).flash_size;
-            ExtDev->page_num    = To_DevW25Qxx_API(ExtDev->api)->info(To_DevW25Qxx_OBJ(ExtDev->obj)).page_num;
-            ExtDev->page_size   = To_DevW25Qxx_API(ExtDev->api)->info(To_DevW25Qxx_OBJ(ExtDev->obj)).page_size;
+            if (!Storage_Set_BaseInfo(ExtDev))
+            {
+                STORAGE_INFO("set base info failed\r\n");
+                Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
+                return false;
+            }
 
             /* set external flash device read write base address */
             Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
@@ -2208,10 +2209,10 @@ static bool Storage_ExtFlash_EraseAll(void)
     return false;
 }
 
-static void Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
+static bool Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
 {
     if (ext_dev == NULL)
-        return;
+        return false;
 
     ext_dev->start_addr  = 0;
     ext_dev->sector_num  = 0;
@@ -2223,7 +2224,7 @@ static void Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
     if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
     {
         if (To_DevW25Qxx_API(ext_dev->api)->info == NULL)
-            return;
+            return false;
 
         ext_dev->start_addr  = W25QXX_BASE_ADDRESS;
         ext_dev->sector_num  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).subsector_num;
@@ -2235,7 +2236,7 @@ static void Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
     else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
     {
         if (To_DevW25Nxx_API(ext_dev->api)->info == NULL)
-            return;
+            return false;
         
         ext_dev->start_addr  = W25QXX_BASE_ADDRESS;
         ext_dev->sector_num  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).subsector_num;
@@ -2244,6 +2245,8 @@ static void Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
         ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
         ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;
     }
+
+    return true;
 }
 
 static void Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
