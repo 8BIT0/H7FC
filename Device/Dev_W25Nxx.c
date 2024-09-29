@@ -22,6 +22,7 @@ static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev
 
 DevW25Nxx_TypeDef DevW25Nxx = {
     .init = DevW25Nxx_Init,
+    .info = DevW25Nxx_Get_Info,
 };
 
 static bool DevW25Nxx_Write(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t len)
@@ -83,13 +84,15 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
 {
     DevW25Nxx_ProdType_List ProdID = DevW25N_None;
 
-    if (dev == NULL)
-        return DevW25Nxx_Error;
+    W25NXX_INFO("dev addr 0x%08x\r\n", dev);
+    W25NXX_INFO("get ID\r\n");
 
     /* get product id */
     ProdID = DevW25Nxx_Get_ProductID(dev);
     if (ProdID == DevW25N_None)
         return DevW25Nxx_Error;
+
+    return DevW25Nxx_Ok;
 }
 
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev)
@@ -97,21 +100,17 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
     uint8_t tx_tmp[4] = {0};
     uint8_t rx_tmp[4] = {0};
     uint32_t ID = 0;
-    bool trans_state = false;
 
     memset(tx_tmp, 0, sizeof(tx_tmp));
     memset(rx_tmp, 0, sizeof(rx_tmp));
     tx_tmp[0] = W25NXX_JEDEC_ID;
 
-    if (dev == NULL)
-        return DevW25N_None;
-
-    trans_state = DevW25Nxx_Trans(dev, tx_tmp, rx_tmp, sizeof(rx_tmp));
-    if (!trans_state)
-        return DevW25N_None;
-
+    DevW25Nxx_Trans(dev, tx_tmp, rx_tmp, sizeof(rx_tmp));
+    
     memcpy(&ID, rx_tmp, sizeof(rx_tmp));
     W25NXX_INFO("ID 0x%08x\r\n", ID);
+
+    return DevW25N_None;
 }
 
 static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev)

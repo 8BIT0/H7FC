@@ -18,7 +18,7 @@ extern "C" {
 #include "../../common/gen_physic_def/imu_data.h"
 
 /* device support */
-#include "Dev_W25Qxx.h"
+#include "Dev_W25Nxx.h"
 
 #define RECEIVER_PORT USART3
 #define CRSF_PIN_SWAP false
@@ -119,7 +119,7 @@ extern "C" {
 #define App_Firmware_Addr (Reserve_Addr + Reserve_Size)
 #define App_Firmware_Size (1 Mb)
 
-#define ExtFlash_Dev_Api (void *)(&DevW25Qxx)
+#define ExtFlash_Dev_Api (void *)(&DevW25Nxx)
 #define ExtFlash_Start_Addr (App_Firmware_Addr + App_Firmware_Size)
 
 #define ExtFlash_Storage_DefaultData FLASH_DEFAULT_DATA

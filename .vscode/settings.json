@@ -201,7 +201,8 @@
                 "att_control_base.h": "c",
                 "pid.h": "c",
                 "bsp_spi_port_def.h": "c",
-                "*.tcc": "c"
+                "*.tcc": "c",
+                "dev_w25nxx.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

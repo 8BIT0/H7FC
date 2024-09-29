@@ -45,7 +45,7 @@ static uint8_t page_data_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = 
 static uint8_t flash_write_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
 static uint8_t flash_read_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
 
-static void Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev);
+static bool Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev);
 static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev);
 static bool Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev);
 
@@ -59,9 +59,9 @@ static bool Storage_ExtFlash_EraseAll(void);
 
 /* internal function */
 static bool Storage_External_Chip_W25Qxx_SelectPin_Ctl(bool state);
-static uint16_t Storage_External_Chip_W25Qxx_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out);
-static uint16_t Storage_External_Chip_W25Qxx_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out);
-static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out);
+static uint16_t Storage_External_Chip_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out);
+static uint16_t Storage_External_Chip_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out);
+static uint16_t Storage_External_Chip_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out);
 static bool Storage_Build_StorageInfo(void);
 static bool Storage_Get_StorageInfo(void);
 static bool Storage_Format(void);
@@ -152,22 +152,19 @@ static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
             STORAGE_INFO("Bus init accomplished\r\n");
             Storage_Monitor.ExtBusCfg_Ptr = bus_cfg;
 
-            if ((ExtDev->chip_type == Storage_Chip_None) || \
-                (ExtDev->chip_type >= Storage_ChipType_All))
+            if (ExtDev->chip_type >= Storage_ChipType_All)
             {
                 STORAGE_INFO("Unknown chip type\r\n");
                 Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleType_Error;
                 return false;
             }
 
-            ExtDev->obj = Storage_Malloc(sizeof(DevW25QxxObj_TypeDef));
-            if (ExtDev->obj == NULL)
+            if (!Storage_Set_DeviceObj(ExtDev))
             {
                 Storage_Monitor.ExternalFlash_Error_Code = Storage_ExtDevObj_Error;
                 return false;
             }
 
-            Storage_Set_DeviceObj(ExtDev); 
             Storage_Monitor.ExtDev_ptr = ExtDev;
             Storage_Monitor.ExternalFlash_ReInit_cnt = ExternalModule_ReInit_Cnt;
 
@@ -1933,7 +1930,7 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, uint32_t addr
 }
 
 /************************************************** External Flash IO API Section ************************************************/
-static bool Storage_External_Chip_W25Qxx_SelectPin_Ctl(bool state)
+static bool Storage_External_Chip_SelectPin_Ctl(bool state)
 {
 #if (FLASH_CHIP_STATE == ON)
     BspGPIO.write(ExtFlash_CS_Pin, state);
@@ -1943,7 +1940,7 @@ static bool Storage_External_Chip_W25Qxx_SelectPin_Ctl(bool state)
 #endif
 }
 
-static uint16_t Storage_External_Chip_W25Qxx_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out)
+static uint16_t Storage_External_Chip_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out)
 {
 #if (FLASH_CHIP_STATE == ON)
     BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
@@ -1958,7 +1955,7 @@ static uint16_t Storage_External_Chip_W25Qxx_BusTx(uint8_t *p_data, uint16_t len
     return 0;
 }
 
-static uint16_t Storage_External_Chip_W25Qxx_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out)
+static uint16_t Storage_External_Chip_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out)
 {
     BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
 
@@ -1973,7 +1970,7 @@ static uint16_t Storage_External_Chip_W25Qxx_BusRx(uint8_t *p_data, uint16_t len
     return 0;
 }
 
-static uint16_t Storage_External_Chip_W25Qxx_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out)
+static uint16_t Storage_External_Chip_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out)
 {
     BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
 
@@ -2234,7 +2231,7 @@ static bool Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
         if (To_DevW25Nxx_API(ext_dev->api)->info == NULL)
             return false;
         
-        ext_dev->start_addr  = W25QXX_BASE_ADDRESS;
+        ext_dev->start_addr  = W25NXX_BASE_ADDRESS;
         ext_dev->sector_num  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).subsector_num;
         ext_dev->sector_size = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).subsector_size;
         ext_dev->total_size  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).flash_size;
@@ -2245,29 +2242,43 @@ static bool Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
     return true;
 }
 
-static void Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
+static bool Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
 {
     if (ext_dev == NULL)
-        return;
+        return false;
 
     if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
     {
+        ext_dev->obj = Storage_Malloc(sizeof(DevW25QxxObj_TypeDef));
+        if (ext_dev->obj == NULL)
+            return false;
+
         To_DevW25Qxx_OBJ(ext_dev->obj)->systick = Storage_GetSysTick_Ptr;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->cs_ctl = Storage_External_Chip_SelectPin_Ctl;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_tx = Storage_External_Chip_BusTx;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_rx = Storage_External_Chip_BusRx;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_trans = Storage_External_Chip_BusTrans;
         To_DevW25Qxx_OBJ(ext_dev->obj)->delay_ms = SrvOsCommon.delay_ms;
+
+        return true;
     }
     else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
     {
+        ext_dev->obj = Storage_Malloc(sizeof(DevW25NxxObj_TypeDef));
+        if (ext_dev->obj == NULL)
+            return false;
+
         To_DevW25Nxx_OBJ(ext_dev->obj)->systick = Storage_GetSysTick_Ptr;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->cs_ctl = Storage_External_Chip_W25Qxx_SelectPin_Ctl;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_tx = Storage_External_Chip_W25Qxx_BusTx;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_rx = Storage_External_Chip_W25Qxx_BusRx;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_trans = Storage_External_Chip_W25Qxx_BusTrans;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->cs_ctl = Storage_External_Chip_SelectPin_Ctl;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_tx = Storage_External_Chip_BusTx;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_rx = Storage_External_Chip_BusRx;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_trans = Storage_External_Chip_BusTrans;
         To_DevW25Nxx_OBJ(ext_dev->obj)->delay_ms = SrvOsCommon.delay_ms;
+
+        return true;
     }
+    
+    return false;
 }
 
 static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev)
@@ -2283,6 +2294,7 @@ static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev)
             (To_DevW25Qxx_API(ext_dev->api)->info == NULL))
             return false;
 
+        STORAGE_INFO("W25Qxx init\r\n");
         init_state = To_DevW25Qxx_API(ext_dev->api)->init(To_DevW25Qxx_OBJ(ext_dev->obj));
         Storage_Monitor.module_prod_type = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_type;
         Storage_Monitor.module_prod_code = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_code;
@@ -2294,6 +2306,10 @@ static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev)
         if ((To_DevW25Nxx_API(ext_dev->api)->init == NULL) || \
             (To_DevW25Nxx_API(ext_dev->api)->info == NULL))
             return false;
+
+        STORAGE_INFO("W25Nxx init\r\n");
+        STORAGE_INFO("dev obj 0x%08x\r\n", To_DevW25Nxx_OBJ(ext_dev->obj));
+        STORAGE_INFO("init api 0x%08x\r\n", To_DevW25Nxx_API(ext_dev->api)->init);
 
         init_state = To_DevW25Nxx_API(ext_dev->api)->init(To_DevW25Nxx_OBJ(ext_dev->obj));
         Storage_Monitor.module_prod_type = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_type;
