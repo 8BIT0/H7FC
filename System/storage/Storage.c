@@ -13,12 +13,14 @@
 #include "debug_util.h"
 #include "debug_util.h"
 
-/* create storage assert function */
-
-/* create storage assert function */
-
 #define STORAGE_TAG "[ STORAGE INFO ] "
 #define STORAGE_INFO(fmt, ...) Debug_Print(&DebugPort, STORAGE_TAG, fmt, ##__VA_ARGS__)
+
+/* create storage assert function */
+#define STORAGE_ASSERT(fmt, ...) STORAGE_INFO(fmt, ##__VA_ARGS__); \
+                                    SrvOsCommon.enter_critical(); \
+                                    while (true)
+/* create storage assert function */
 
 #define Storage_Malloc(size) SrvOsCommon.malloc(size)
 #define Storage_Free(ptr) SrvOsCommon.free(ptr)
