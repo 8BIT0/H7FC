@@ -16,6 +16,7 @@ static bool DevW25Nxx_Read(DevW25NxxObj_TypeDef *dev, uint8_t *p_rx, uint16_t le
 static bool DevW25Nxx_Trans(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev);
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
+static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev);
 
 /* external function */
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
@@ -74,10 +75,32 @@ static bool DevW25Nxx_Trans(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p
 
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
 {
-    if (dev->delay_ms == NULL)
+    DevW25Nxx_Error_List err = DevW25Nxx_Ok;
+    uint32_t sys_time = 0;
+
+    if ((dev->delay_ms == NULL) || \
+        (dev->systick == NULL))
         return DevW25Nxx_Error;
 
     /* check read status */
+    err = DevW25Nxx_Check_Read_Status(dev);
+    if (err == DevW25Nxx_Error)
+        return DevW25Nxx_Error;
+    
+    sys_time = dev->systick();
+    while (err == DevW25Nxx_Busy)
+    {
+        if ((dev->systick() - sys_time) >= W25NXX_BUS_COMMU_TIMEOUT)
+        {
+            W25NXX_INFO("time out\r\n");
+            return DevW25Nxx_TimeOut;
+        }
+
+        dev->delay_ms(1);
+        err = DevW25Nxx_Check_Read_Status(dev);
+        if (err == DevW25Nxx_Error)
+            return DevW25Nxx_Error;
+    }
 
     /* get product id */
     dev->prod_type = DevW25Nxx_Get_ProductID(dev);
@@ -87,6 +110,8 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
     /* soft reset */
     if (!DevW25Nxx_Soft_Reset(dev))
         return DevW25Nxx_Error;
+
+    dev->delay_ms(100);
 
     return DevW25Nxx_Ok;
 }
@@ -146,6 +171,31 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
     }
 
     return DevW25N_None;
+}
+
+static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev)
+{
+    bool state = false;
+    uint8_t cmd = W25NXX_READ_STATUS_CMD;
+    uint8_t reg_val = 0;
+
+    if ((dev == NULL) || \
+        (dev->cs_ctl == NULL))
+        return DevW25Nxx_Error;
+
+    dev->cs_ctl(false);
+    state = DevW25Nxx_Write(dev, &cmd, sizeof(cmd));
+    state &= DevW25Nxx_Read(dev, &reg_val, sizeof(reg_val));
+    dev->cs_ctl(true);
+
+    W25NXX_INFO("read status: 0x%02x\r\n", reg_val);
+
+    if (!state)
+        return DevW25Nxx_Error;
+
+    /* check status */
+
+    return DevW25Nxx_Ok;
 }
 
 static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev)
