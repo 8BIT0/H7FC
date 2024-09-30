@@ -233,7 +233,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
     DevW25Nxx_Error_List err = DevW25Nxx_Ok;
     uint32_t sys_time = 0;
     uint32_t start_page = 0;
-    uint16_t page_num = size / W25NXX_PAGE_SIZE;
+    uint16_t read_num = size / W25NXX_PAGE_SIZE;
     uint8_t cmd[4];
 
     memset(cmd, 0, sizeof(cmd));
@@ -246,27 +246,27 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
         (size < (W25NXX_PAGE_SIZE + W25N0GV_ECC_INFO_SIZE)))
         return DevW25Nxx_Error;
 
-    start_page = DevW25Nxx_Get_Page(dev, addr);
-
-    /* get chip status */
-    err = DevW25Nxx_Check_Read_Status(dev);
-    if (err == DevW25Nxx_Error)
-        return DevW25Nxx_Error;
-    
-    sys_time = dev->systick();
-    while (err == DevW25Nxx_Busy)
+    for (uint8_t i = 0; i < read_num; i++)
     {
-        if ((dev->systick() - sys_time) >= W25NXX_BUS_COMMU_TIMEOUT)
-            return DevW25Nxx_TimeOut;
+        start_page = DevW25Nxx_Get_Page(dev, addr);
 
+        /* get chip status */
         err = DevW25Nxx_Check_Read_Status(dev);
         if (err == DevW25Nxx_Error)
             return DevW25Nxx_Error;
-    }
+        
+        sys_time = dev->systick();
+        while (err == DevW25Nxx_Busy)
+        {
+            if ((dev->systick() - sys_time) >= W25NXX_BUS_COMMU_TIMEOUT)
+                return DevW25Nxx_TimeOut;
 
-    /* read page */
-    for (uint8_t i = 0; i < page_num; i++)
-    {
+            err = DevW25Nxx_Check_Read_Status(dev);
+            if (err == DevW25Nxx_Error)
+                return DevW25Nxx_Error;
+        }
+
+        /* read page */
         // cmd[0] = ;
         // cmd[1] = ;
         // cmd[2] = ;
