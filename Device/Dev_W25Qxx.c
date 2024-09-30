@@ -242,16 +242,12 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
     current_addr = 0;
 
     while (current_addr <= WriteAddr)
-    {
         current_addr += W25Q128FV_PAGE_SIZE;
-    }
     current_size = current_addr - WriteAddr;
 
     /* Check if the size of the data is less than the remaining place in the page */
     if (current_size > Size)
-    {
         current_size = Size;
-    }
 
     /* Initialize the adress variables */
     current_addr = WriteAddr;
@@ -283,9 +279,7 @@ static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t 
         {
             /* Check for the Timeout */
             if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
-            {
                 return DevW25Qxx_TimeOut;
-            }
         }
 
         /* Update the address and size variables for next page programming */
@@ -323,9 +317,7 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
     {
         /* Check for the Timeout */
         if ((dev->systick() - tickstart) > W25Q128FV_BULK_ERASE_MAX_TIME)
-        {
             return DevW25Qxx_TimeOut;
-        }
     }
 
     return DevW25Qxx_Ok;
@@ -362,9 +354,7 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseSector(DevW25QxxObj_TypeDef *dev, uin
     {
         /* Check for the Timeout */
         if ((dev->systick() - tickstart) > W25Q128FV_SECTOR_ERASE_MAX_TIME)
-        {
             return DevW25Qxx_TimeOut;
-        }
     }
 
     return DevW25Qxx_Ok;
