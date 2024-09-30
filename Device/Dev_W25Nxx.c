@@ -136,7 +136,6 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
 {
     uint8_t tx_tmp[2] = {0};
     uint8_t rx_tmp[3] = {0};
-    uint32_t ID = 0;
     bool state = false;
 
     if ((dev == NULL) || \
@@ -155,13 +154,12 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
     if (!state)
         return DevW25N_None;
 
-    ((uint8_t *)&ID)[3] = 0;
-    ((uint8_t *)&ID)[2] = rx_tmp[0];
-    ((uint8_t *)&ID)[1] = rx_tmp[1];
-    ((uint8_t *)&ID)[0] = rx_tmp[2];
+    ((uint8_t *)&dev->prod_code)[3] = 0;
+    ((uint8_t *)&dev->prod_code)[2] = rx_tmp[0];
+    ((uint8_t *)&dev->prod_code)[1] = rx_tmp[1];
+    ((uint8_t *)&dev->prod_code)[0] = rx_tmp[2];
     
-    dev->prod_code = ID;
-    switch (ID)
+    switch (dev->prod_code)
     {
         case W25N01GVZEIG_ID: return DevW25N_01;
         default: return DevW25N_None;
