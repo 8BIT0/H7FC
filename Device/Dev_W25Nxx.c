@@ -22,11 +22,13 @@ static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *de
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev);
 static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr);
+static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint16_t size);
 
 DevW25Nxx_TypeDef DevW25Nxx = {
     .init = DevW25Nxx_Init,
     .info = DevW25Nxx_Get_Info,
     .get_page = DevW25Nxx_Get_Page,
+    .read = DevW25Nxx_Read_Page,
 };
 
 static bool DevW25Nxx_Write(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t len)
@@ -237,4 +239,46 @@ static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr)
         return 0;
 
     return (addr / W25N01GV_PAGE_SIZE);
+}
+
+static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint16_t size)
+{
+    DevW25Nxx_Error_List err = DevW25Nxx_Ok;
+    uint32_t sys_time = 0;
+    uint32_t start_page = 0;
+    uint16_t page_num = size / W25NXX_PAGE_SIZE;
+
+    if ((dev == NULL) || \
+        !dev->init_state || \
+        (p_data == NULL) || \
+        (dev->systick == NULL) || \
+        (dev->delay_ms == NULL) || \
+        (size == 0))
+        return DevW25Nxx_Error;
+
+    start_page = DevW25Nxx_Get_Page(dev, addr);
+
+    /* get chip status */
+    err = DevW25Nxx_Check_Read_Status(dev);
+    if (err == DevW25Nxx_Error)
+        return DevW25Nxx_Error;
+    
+    sys_time = dev->systick();
+    while (err == DevW25Nxx_Busy)
+    {
+        if ((dev->systick() - sys_time) >= W25NXX_BUS_COMMU_TIMEOUT)
+        {
+            W25NXX_INFO("time out\r\n");
+            return DevW25Nxx_TimeOut;
+        }
+
+        dev->delay_ms(1);
+        err = DevW25Nxx_Check_Read_Status(dev);
+        if (err == DevW25Nxx_Error)
+            return DevW25Nxx_Error;
+    }
+
+    /* read page */
+
+    return DevW25Nxx_Error;
 }

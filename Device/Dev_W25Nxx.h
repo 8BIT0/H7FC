@@ -153,7 +153,7 @@ typedef struct
     DevW25Nxx_Error_List (*init)(DevW25NxxObj_TypeDef *dev);
     DevW25Nxx_Error_List (*write)(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *tx, uint32_t size);
     DevW25Nxx_Error_List (*read)(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *rx, uint32_t size);
-    DevW25Nxx_Error_List (*erase_sector)(DevW25NxxObj_TypeDef *dev, uint32_t addr);
+    DevW25Nxx_Error_List (*erase_page)(DevW25NxxObj_TypeDef *dev, uint32_t addr);
     DevW25Nxx_Error_List (*erase_chip)(DevW25NxxObj_TypeDef *dev);
     DevW25Nxx_DeviceInfo_TypeDef (*info)(DevW25NxxObj_TypeDef *dev);
     uint32_t (*get_page)(DevW25NxxObj_TypeDef *dev, uint32_t addr);
