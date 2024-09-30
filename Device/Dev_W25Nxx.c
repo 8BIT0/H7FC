@@ -265,10 +265,13 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
     }
 
     /* read page */
-    // cmd[0] = ;
-    // cmd[1] = ;
-    // cmd[2] = ;
-    // cmd[3] = ;
+    for (uint8_t i = 0; i < page_num; i++)
+    {
+        // cmd[0] = ;
+        // cmd[1] = ;
+        // cmd[2] = ;
+        // cmd[3] = ;
+    }
 
     return DevW25Nxx_Error;
 }

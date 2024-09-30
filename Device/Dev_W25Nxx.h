@@ -137,6 +137,7 @@ typedef struct
 {
     DevW25Nxx_ProdType_List prod_type;
     uint16_t prod_code;
+    uint8_t *tmp_buf;
 
     uint16_t (*bus_tx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
     uint16_t (*bus_rx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
