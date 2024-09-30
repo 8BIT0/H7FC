@@ -40,9 +40,68 @@ extern "C" {
 #define W25NXX_FAST_READ_QUAD_IO                0xEB
 #define W25NXX_FAST_READ_QUAD_IO_4BYTE          0xEC
 
-#define W25N01GVZEIG_ID     0x00EFAA21
+#define W25NXX_SR0_ADDR                         0xA0
+#define W25NXX_SR1_ADDR                         0xB0
+#define W25NXX_SR2_ADDR                         0xC0
 
-#define W25NXX_BASE_ADDRESS 0x00000000
+#define W25N01GVZEIG_ID                         0x00EFAA21
+
+#define W25NXX_BASE_ADDRESS                     0x00000000
+#define W25NXX_PAGE_SIZE                        0x800
+
+#define W25N01GV_FLASH_SIZE                     0x8000000
+#define W25N01GV_BLOCK_SIZE                     0x40000
+#define W25N01GV_BLOCK_NUM                      0x400
+#define W25N01GV_PAGE_SIZE                      W25NXX_PAGE_SIZE
+#define W25N01GV_PAGE_NUM                       65536
+#define W25N01GV_BUFFER_MODE_SIZE               W25NXX_PAGE_SIZE
+#define W25N0GV_ECC_INFO_SIZE                   0x40
+
+typedef union
+{
+    uint8_t val;
+    struct
+    {
+        uint8_t SRP_1 : 1;
+        uint8_t WPE   : 1;
+        uint8_t TB    : 1;
+        uint8_t BP_0  : 1;
+        uint8_t BP_1  : 1;
+        uint8_t BP_2  : 1;
+        uint8_t BP_3  : 1;
+        uint8_t SRP_0 : 1;
+    } bit;
+} DevW25Nxx_SR0_TypeDef;
+
+typedef union
+{
+    uint8_t val;
+    struct
+    {
+        uint8_t RES   : 3;
+        uint8_t BUF   : 1;
+        uint8_t ECC_E : 1;
+        uint8_t SR1_L : 1;
+        uint8_t OTP_E : 1;
+        uint8_t OTP_L : 1;
+    } bit;
+} DevW25Nxx_SR1_TypeDef;
+
+typedef union
+{
+    uint8_t val;
+    struct
+    {
+        uint8_t BUSY   : 1;
+        uint8_t WEL    : 1;
+        uint8_t E_FAIL : 1;
+        uint8_t P_FAIL : 1;
+        uint8_t ECC_0  : 1;
+        uint8_t ECC_1  : 1;
+        uint8_t LUT_F  : 1;
+        uint8_t RES    : 1;
+    } bit;
+} DevW25Nxx_SR2_TypeDef;
 
 typedef enum
 {
@@ -94,8 +153,6 @@ typedef struct
 typedef struct
 {
     DevW25Nxx_Error_List (*init)(DevW25NxxObj_TypeDef *dev);
-    DevW25Nxx_ProdType_List (*type)(DevW25NxxObj_TypeDef *dev);
-    DevW25Nxx_Error_List (*reset)(DevW25NxxObj_TypeDef *dev);
     DevW25Nxx_Error_List (*write)(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *tx, uint32_t size);
     DevW25Nxx_Error_List (*read)(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *rx, uint32_t size);
     DevW25Nxx_Error_List (*erase_sector)(DevW25NxxObj_TypeDef *dev, uint32_t addr);

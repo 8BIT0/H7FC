@@ -163,11 +163,11 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
     ((uint8_t *)&ID)[1] = rx_tmp[1];
     ((uint8_t *)&ID)[0] = rx_tmp[2];
     
-    W25NXX_INFO("ID 0x%08x\r\n", ID);
+    dev->prod_code = ID;
     switch (ID)
     {
         case W25N01GVZEIG_ID: W25NXX_INFO("type W25N01G\r\n"); return DevW25N_01;
-        default: W25NXX_INFO("type Unknown\r\n"); return DevW25N_None;
+        default: W25NXX_INFO("type Unknown 0x%08x\r\n", ID); return DevW25N_None;
     }
 
     return DevW25N_None;
@@ -176,32 +176,51 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
 static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev)
 {
     bool state = false;
-    uint8_t cmd = W25NXX_READ_STATUS_CMD;
-    uint8_t reg_val = 0;
+    uint8_t cmd[3] = {W25NXX_READ_STATUS_CMD, W25NXX_SR2_ADDR, 0};
+    uint8_t reg_val[3] = {0, 0, 0};
+    DevW25Nxx_SR2_TypeDef sr2;
 
     if ((dev == NULL) || \
         (dev->cs_ctl == NULL))
         return DevW25Nxx_Error;
 
     dev->cs_ctl(false);
-    state = DevW25Nxx_Write(dev, &cmd, sizeof(cmd));
-    state &= DevW25Nxx_Read(dev, &reg_val, sizeof(reg_val));
+    state = DevW25Nxx_Trans(dev, cmd, reg_val, sizeof(cmd));
     dev->cs_ctl(true);
-
-    W25NXX_INFO("read status: 0x%02x\r\n", reg_val);
-
     if (!state)
         return DevW25Nxx_Error;
 
-    /* check status */
+    sr2.val = reg_val[2];
+    if (sr2.bit.BUSY == 0)
+        return DevW25Nxx_Ok;
 
-    return DevW25Nxx_Ok;
+    return DevW25Nxx_Busy;
 }
 
 static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev)
 {
-    DevW25Nxx_DeviceInfo_TypeDef info_tmp;
-    memset(&info_tmp, 0, sizeof(DevW25Nxx_DeviceInfo_TypeDef));
-    return info_tmp;
+    DevW25Nxx_DeviceInfo_TypeDef info;
+    memset(&info, 0, sizeof(DevW25Nxx_DeviceInfo_TypeDef));
+
+    switch ((uint8_t) dev->prod_type)
+    {
+        case DevW25N_01:
+            info.flash_size = W25N01GV_FLASH_SIZE;
+            info.page_num = W25N01GV_PAGE_NUM;
+            info.page_size = W25N01GV_PAGE_SIZE;
+            info.prod_code = dev->prod_code;
+            info.prod_type = dev->prod_type;
+            info.sector_num = 1;   /* set as buffer mode num */
+            info.sector_size = W25N01GV_BUFFER_MODE_SIZE + W25N0GV_ECC_INFO_SIZE; /* set as buffer mode transmit size */
+            info.start_addr = W25NXX_BASE_ADDRESS;
+            
+            info.subsector_num = W25N01GV_BLOCK_NUM;
+            info.subsector_size = W25N01GV_BLOCK_SIZE;
+            break;
+    
+        default: break;
+    }
+
+    return info;
 }
 

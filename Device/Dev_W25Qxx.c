@@ -15,7 +15,6 @@ static uint32_t DevW25Qxx_Get_Section_StartAddr(DevW25QxxObj_TypeDef *dev, uint3
 
 DevW25Qxx_TypeDef DevW25Qxx = {
     .init = DevW25Qxx_Init,
-    .reset = DevW25Qxx_Reset,
     .write = DevW25Qxx_Write,
     .read = DevW25Qxx_Read,
     .erase_sector = DevW25Qxx_EraseSector,

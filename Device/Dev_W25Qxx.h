@@ -151,8 +151,6 @@ typedef struct
 typedef struct
 {
     DevW25Qxx_Error_List (*init)(DevW25QxxObj_TypeDef *dev);
-    DevW25Qxx_ProdType_List (*type)(DevW25QxxObj_TypeDef *dev);
-    DevW25Qxx_Error_List (*reset)(DevW25QxxObj_TypeDef *dev);
     DevW25Qxx_Error_List (*write)(DevW25QxxObj_TypeDef *dev, uint32_t addr, uint8_t *tx, uint32_t size);
     DevW25Qxx_Error_List (*read)(DevW25QxxObj_TypeDef *dev, uint32_t addr, uint8_t *rx, uint32_t size);
     DevW25Qxx_Error_List (*erase_sector)(DevW25QxxObj_TypeDef *dev, uint32_t addr);
