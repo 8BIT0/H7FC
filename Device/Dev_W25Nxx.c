@@ -247,6 +247,9 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
     uint32_t sys_time = 0;
     uint32_t start_page = 0;
     uint16_t page_num = size / W25NXX_PAGE_SIZE;
+    uint8_t cmd[4];
+
+    memset(cmd, 0, sizeof(cmd));
 
     if ((dev == NULL) || \
         !dev->init_state || \
@@ -279,6 +282,10 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
     }
 
     /* read page */
+    // cmd[0] = ;
+    // cmd[1] = ;
+    // cmd[2] = ;
+    // cmd[3] = ;
 
     return DevW25Nxx_Error;
 }
