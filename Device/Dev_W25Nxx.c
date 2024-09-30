@@ -1,13 +1,5 @@
 #include "Dev_W25Nxx.h"
 
-/* test code */
-#include "HW_Def.h"
-#include "debug_util.h"
-
-#define W25NXX_TAG "[ W25NXX INFO ] "
-#define W25NXX_INFO(fmt, ...) Debug_Print(&DebugPort, W25NXX_TAG, fmt, ##__VA_ARGS__)
-/* test code */
-
 #define W25NXX_BUS_COMMU_TIMEOUT 100 /* unit: ms */
 
 /* internal function */
@@ -98,10 +90,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
     while (err == DevW25Nxx_Busy)
     {
         if ((dev->systick() - sys_time) >= W25NXX_BUS_COMMU_TIMEOUT)
-        {
-            W25NXX_INFO("time out\r\n");
             return DevW25Nxx_TimeOut;
-        }
 
         dev->delay_ms(1);
         err = DevW25Nxx_Check_Read_Status(dev);
@@ -174,8 +163,8 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
     dev->prod_code = ID;
     switch (ID)
     {
-        case W25N01GVZEIG_ID: W25NXX_INFO("type W25N01G\r\n"); return DevW25N_01;
-        default: W25NXX_INFO("type Unknown 0x%08x\r\n", ID); return DevW25N_None;
+        case W25N01GVZEIG_ID: return DevW25N_01;
+        default: return DevW25N_None;
     }
 
     return DevW25N_None;
@@ -270,12 +259,8 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
     while (err == DevW25Nxx_Busy)
     {
         if ((dev->systick() - sys_time) >= W25NXX_BUS_COMMU_TIMEOUT)
-        {
-            W25NXX_INFO("time out\r\n");
             return DevW25Nxx_TimeOut;
-        }
 
-        dev->delay_ms(1);
         err = DevW25Nxx_Check_Read_Status(dev);
         if (err == DevW25Nxx_Error)
             return DevW25Nxx_Error;
