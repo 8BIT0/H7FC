@@ -126,13 +126,11 @@ typedef struct
     uint32_t start_addr;
     uint32_t flash_size;
 
-    uint32_t sector_size;
-    uint32_t subsector_size;
     uint16_t page_size;
-
-    uint16_t sector_num;
-    uint16_t subsector_num;
     uint16_t page_num;
+
+    uint16_t block_num;
+    uint16_t block_size;
 } DevW25Nxx_DeviceInfo_TypeDef;
 
 typedef struct
@@ -158,7 +156,7 @@ typedef struct
     DevW25Nxx_Error_List (*erase_sector)(DevW25NxxObj_TypeDef *dev, uint32_t addr);
     DevW25Nxx_Error_List (*erase_chip)(DevW25NxxObj_TypeDef *dev);
     DevW25Nxx_DeviceInfo_TypeDef (*info)(DevW25NxxObj_TypeDef *dev);
-    uint32_t (*get_section_start_addr)(DevW25NxxObj_TypeDef *dev, uint32_t addr);
+    uint32_t (*get_page_index)(DevW25NxxObj_TypeDef *dev, uint32_t addr);
 } DevW25Nxx_TypeDef;
 
 extern DevW25Nxx_TypeDef DevW25Nxx;

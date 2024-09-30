@@ -2232,8 +2232,6 @@ static bool Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
             return false;
         
         ext_dev->start_addr  = W25NXX_BASE_ADDRESS;
-        ext_dev->sector_num  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).subsector_num;
-        ext_dev->sector_size = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).subsector_size;
         ext_dev->total_size  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).flash_size;
         ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
         ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;

@@ -78,9 +78,12 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
     DevW25Nxx_Error_List err = DevW25Nxx_Ok;
     uint32_t sys_time = 0;
 
-    if ((dev->delay_ms == NULL) || \
+    if ((dev == NULL) || \
+        (dev->delay_ms == NULL) || \
         (dev->systick == NULL))
         return DevW25Nxx_Error;
+
+    dev->init_state = false;
 
     /* check read status */
     err = DevW25Nxx_Check_Read_Status(dev);
@@ -112,6 +115,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
         return DevW25Nxx_Error;
 
     dev->delay_ms(100);
+    dev->init_state = true;
 
     return DevW25Nxx_Ok;
 }
@@ -207,15 +211,12 @@ static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev
         case DevW25N_01:
             info.flash_size = W25N01GV_FLASH_SIZE;
             info.page_num = W25N01GV_PAGE_NUM;
-            info.page_size = W25N01GV_PAGE_SIZE;
+            info.page_size = W25N01GV_PAGE_SIZE + W25N0GV_ECC_INFO_SIZE;
+            info.block_num = W25N01GV_BLOCK_NUM;
+            info.block_size = W25N01GV_BLOCK_SIZE;
             info.prod_code = dev->prod_code;
             info.prod_type = dev->prod_type;
-            info.sector_num = 1;   /* set as buffer mode num */
-            info.sector_size = W25N01GV_BUFFER_MODE_SIZE + W25N0GV_ECC_INFO_SIZE; /* set as buffer mode transmit size */
             info.start_addr = W25NXX_BASE_ADDRESS;
-            
-            info.subsector_num = W25N01GV_BLOCK_NUM;
-            info.subsector_size = W25N01GV_BLOCK_SIZE;
             break;
     
         default: break;
@@ -224,3 +225,14 @@ static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev
     return info;
 }
 
+static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr)
+{
+    if ((dev == NULL) || \
+        !dev->init_state || \
+        (dev->prod_type == DevW25N_None) || \
+        (dev->prod_type > DevW25N_02) || \
+        (addr > W25N01GV_FLASH_SIZE))
+        return 0;
+
+    return (addr / W25N01GV_PAGE_SIZE);
+}
