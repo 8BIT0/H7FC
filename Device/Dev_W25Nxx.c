@@ -235,6 +235,8 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
     uint32_t start_page = 0;
     uint16_t read_num = size / W25NXX_PAGE_SIZE;
     uint8_t cmd[4];
+    bool state = false;
+    uint16_t offset = 0;
 
     memset(cmd, 0, sizeof(cmd));
 
@@ -271,6 +273,14 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
         // cmd[1] = ;
         // cmd[2] = ;
         // cmd[3] = ;
+
+        dev->cs_ctl(false);
+        state = dev->bus_tx(cmd, sizeof(cmd), W25NXX_BUS_COMMU_TIMEOUT);  /* send cmd */
+        // state &= dev->bus_rx();
+        dev->cs_ctl(true);
+
+        if (!state)
+            return DevW25Nxx_Error;
     }
 
     return DevW25Nxx_Error;
