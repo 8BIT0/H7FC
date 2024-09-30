@@ -253,7 +253,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
         (p_data == NULL) || \
         (dev->systick == NULL) || \
         (dev->delay_ms == NULL) || \
-        (size == 0))
+        (size < (W25NXX_PAGE_SIZE + W25N0GV_ECC_INFO_SIZE)))
         return DevW25Nxx_Error;
 
     start_page = DevW25Nxx_Get_Page(dev, addr);

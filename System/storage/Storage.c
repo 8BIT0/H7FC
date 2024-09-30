@@ -1988,17 +1988,18 @@ static uint16_t Storage_External_Chip_BusTrans(uint8_t *tx, uint8_t *rx, uint16_
 /************************************************** External Flash Parameter IO API Section ************************************************/
 static bool Storage_ExtFlash_ParaSec_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
-    uint32_t read_start_addr = 0;
-    uint32_t flash_end_addr = 0;
-    uint32_t section_start_addr = 0;
-    uint32_t next_read_addr = 0;
-    uint32_t section_size = 0;
     uint32_t read_offset = 0;
     uint32_t read_len = len;
     Storage_ExtFLashDevObj_TypeDef *dev = NULL;
 
     if ((Storage_Monitor.ExtDev_ptr != NULL) && p_data && len)
     {
+        uint32_t read_start_addr = 0;
+        uint32_t flash_end_addr = 0;
+        uint32_t section_start_addr = 0;
+        uint32_t next_read_addr = 0;
+        uint32_t section_size = 0;
+
         read_start_addr = Storage_Monitor.external_info.base_addr + addr_offset;       
         dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
 
@@ -2068,18 +2069,18 @@ static bool Storage_ExtFlash_ParaSec_Read(uint32_t addr_offset, uint8_t *p_data,
 
 static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
-    uint32_t write_start_addr = 0;
-    uint32_t flash_end_addr = 0;
-    uint32_t section_start_addr = 0;
-    uint32_t next_write_addr = 0;
-    uint32_t section_size = 0;
     uint32_t write_offset = 0;
     uint32_t write_len = len;
     Storage_ExtFLashDevObj_TypeDef *dev = NULL;
-    DevW25Qxx_Error_List state = DevW25Qxx_Ok;
 
     if ((Storage_Monitor.ExtDev_ptr != NULL) && p_data && len)
     {
+        uint32_t write_start_addr = 0;
+        uint32_t flash_end_addr = 0;
+        uint32_t section_start_addr = 0;
+        uint32_t next_write_addr = 0;
+        uint32_t section_size = 0;
+
         write_start_addr = Storage_Monitor.external_info.base_addr + addr_offset;
         dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
     
@@ -2127,7 +2128,7 @@ static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data
                             /* copy data to section data read out */
                             memcpy(flash_write_tmp + write_offset, p_data, write_len);
 
-                            state = To_DevW25Qxx_API(dev->api)->write(To_DevW25Qxx_OBJ(dev->obj), section_start_addr, flash_write_tmp, section_size);
+                            DevW25Qxx_Error_List state = To_DevW25Qxx_API(dev->api)->write(To_DevW25Qxx_OBJ(dev->obj), section_start_addr, flash_write_tmp, section_size);
 
                             /* clear cache buff */
                             memset(flash_write_tmp, 0, section_size);
