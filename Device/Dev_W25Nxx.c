@@ -29,11 +29,14 @@ static bool DevW25Nxx_Write(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t l
 
     if ((dev == NULL) || \
         (dev->bus_tx == NULL) || \
+        (dev->cs_ctl == NULL) || \
         (p_tx == NULL) || \
         (len == 0))
         return false;
 
+    dev->cs_ctl(false);
     tx_out = dev->bus_tx(p_tx, len, W25NXX_BUS_COMMU_TIMEOUT);
+    dev->cs_ctl(true);
 
     return tx_out ? true : false;
 }
@@ -124,10 +127,7 @@ static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev)
 
     memset(tx_tmp, 0, sizeof(tx_tmp));
     tx_tmp[0] = W25NXX_RESET_CMD;
-
-    dev->cs_ctl(false);
     state = DevW25Nxx_Write(dev, tx_tmp, sizeof(tx_tmp));
-    dev->cs_ctl(true);
 
     return state;
 }
@@ -228,6 +228,62 @@ static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr)
     return (addr / W25N01GV_PAGE_SIZE);
 }
 
+static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t val)
+{
+    uint8_t cmd[3];
+    bool state = false;
+
+    if ((dev == NULL) || \
+        (dev->cs_ctl == NULL) || \
+        (dev->bus_tx == NULL) || \
+        ((reg_addr != W25NXX_SR0_ADDR) && \
+         (reg_addr != W25NXX_SR1_ADDR) && \
+         (reg_addr != W25NXX_SR2_ADDR)))
+        return DevW25Nxx_Error;
+
+    cmd[0] = W25NXX_WRITE_STATUS_CMD;
+    cmd[1] = reg_addr;
+    cmd[2] = val;
+
+    dev->cs_ctl(false);
+    state = dev->bus_tx(cmd, sizeof(cmd), W25NXX_BUS_COMMU_TIMEOUT);
+    dev->cs_ctl(true);
+
+    return state ? DevW25Nxx_Ok : DevW25Nxx_Error;
+}
+
+static DevW25Nxx_Error_List DevW25Nxx_WriteEn_Ctl(DevW25NxxObj_TypeDef *dev, bool en)
+{
+    uint8_t cmd[2];
+    bool state = false;
+    DevW25Nxx_SR0_TypeDef sr0;
+
+    sr0.val = 0;
+    memset(cmd, 0, sizeof(cmd));
+    if ((dev == NULL) || \
+        (dev->cs_ctl == NULL) || \
+        (dev->bus_tx) || \
+        (dev->bus_rx) || \
+        !dev->init_state)
+        return DevW25Nxx_Error;
+
+    /* check write protect status */
+    cmd[0] = W25NXX_READ_STATUS_CMD;
+    cmd[1] = W25NXX_SR0_ADDR;
+
+    dev->cs_ctl(false);
+    dev->bus_tx(cmd, 2, W25NXX_BUS_COMMU_TIMEOUT);
+    dev->bus_rx(&sr0.val, 1, W25NXX_BUS_COMMU_TIMEOUT);
+    dev->cs_ctl(true);
+
+    if (sr0.bit.WPE)
+    {
+        dev->cs_ctl(false);
+        
+        dev->cs_ctl(true);
+    }
+}
+
 static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint16_t size)
 {
     DevW25Nxx_Error_List err = DevW25Nxx_Ok;
@@ -235,7 +291,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
     uint32_t start_page = 0;
     uint16_t read_num = size / W25NXX_PAGE_SIZE;
     uint8_t cmd[4];
-    bool state = false;
+    uint16_t state = false;
     uint16_t offset = 0;
 
     memset(cmd, 0, sizeof(cmd));
@@ -269,7 +325,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
         }
 
         /* read page */
-        // cmd[0] = ;
+        // cmd[0] = W25NXX_PAGE_DATA_READ;
         // cmd[1] = ;
         // cmd[2] = ;
         // cmd[3] = ;
