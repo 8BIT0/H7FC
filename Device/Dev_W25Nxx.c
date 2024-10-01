@@ -5,7 +5,7 @@
 /* internal function */
 static bool DevW25Nxx_Write(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t len);
 static bool DevW25Nxx_Read(DevW25NxxObj_TypeDef *dev, uint8_t *p_rx, uint16_t len);
-static bool DevW25Nxx_Trans(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
+static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev);
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev);
@@ -56,18 +56,21 @@ static bool DevW25Nxx_Read(DevW25NxxObj_TypeDef *dev, uint8_t *p_rx, uint16_t le
     return rx_out ? true : false;
 }
 
-static bool DevW25Nxx_Trans(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
+static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
 {
     uint16_t trans_out = 0;
 
     if ((dev == NULL) || \
         (dev->bus_trans == NULL) || \
+        (dev->cs_ctl == NULL) || \
         (p_rx == NULL) || \
         (p_tx == NULL) || \
         (len == 0))
         return false;
 
+    dev->cs_ctl(false);
     trans_out = dev->bus_trans(p_tx, p_rx, len, W25NXX_BUS_COMMU_TIMEOUT);
+    dev->cs_ctl(true);
 
     return trans_out ? true : false;
 }
@@ -118,7 +121,6 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
 
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev)
 {
-    bool state = false;
     uint8_t tx_tmp[2] = {0};
 
     if ((dev == NULL) || \
@@ -127,9 +129,7 @@ static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev)
 
     memset(tx_tmp, 0, sizeof(tx_tmp));
     tx_tmp[0] = W25NXX_RESET_CMD;
-    state = DevW25Nxx_Write(dev, tx_tmp, sizeof(tx_tmp));
-
-    return state;
+    return DevW25Nxx_Write(dev, tx_tmp, sizeof(tx_tmp));
 }
 
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev)
@@ -170,19 +170,12 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
 
 static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev)
 {
-    bool state = false;
     uint8_t cmd[3] = {W25NXX_READ_STATUS_CMD, W25NXX_SR2_ADDR, 0};
     uint8_t reg_val[3] = {0, 0, 0};
     DevW25Nxx_SR2_TypeDef sr2;
 
     if ((dev == NULL) || \
-        (dev->cs_ctl == NULL))
-        return DevW25Nxx_Error;
-
-    dev->cs_ctl(false);
-    state = DevW25Nxx_Trans(dev, cmd, reg_val, sizeof(cmd));
-    dev->cs_ctl(true);
-    if (!state)
+        !DevW25Nxx_Trans_Duplex(dev, cmd, reg_val, sizeof(cmd)))
         return DevW25Nxx_Error;
 
     sr2.val = reg_val[2];
