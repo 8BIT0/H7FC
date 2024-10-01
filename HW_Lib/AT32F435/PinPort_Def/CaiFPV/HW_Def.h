@@ -98,7 +98,7 @@ extern "C" {
 /* external flash storage */
 #if (FLASH_CHIP_STATE == ON)
 #define ExtFlash_Bus_Type Storage_ChipBus_Spi
-#define ExtFlash_Bus_Clock_Div SPI_MCLK_DIV_4
+#define ExtFlash_Bus_Clock_Div SPI_MCLK_DIV_2
 #define ExtFlash_Chip_Type Storage_ChipType_W25Nxx
 #define ExtFlash_Bus_Api BspSPI
 #define ExtFLash_Bus_Instance (void *)SPI2

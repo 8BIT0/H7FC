@@ -1,10 +1,22 @@
 #include "Dev_W25Nxx.h"
 
-#define W25NXX_BUS_COMMU_TIMEOUT 100 /* unit: ms */
+#define W25NXX_BUS_COMMU_TIMEOUT    100 /* unit: ms */
+#define ConvertPageFormat(x)        ((x / W25NXX_PAGE_PRE_BLOCK) << 6) | (x %  W25NXX_PAGE_PRE_BLOCK)
+
+typedef union
+{
+    uint16_t val;
+    struct
+    {
+        uint16_t b_index : 10;
+        uint16_t p_index : 6;
+    } bit;
+} DevW25Nx_PageAddr_TypeDef;
 
 /* internal function */
 static bool DevW25Nxx_Write(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t len);
 static bool DevW25Nxx_Read(DevW25NxxObj_TypeDef *dev, uint8_t *p_rx, uint16_t len);
+static bool DevW25Nxx_Trans_Receive(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t tx_len, uint8_t *p_rx, uint16_t rx_len);
 static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev);
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
@@ -47,13 +59,43 @@ static bool DevW25Nxx_Read(DevW25NxxObj_TypeDef *dev, uint8_t *p_rx, uint16_t le
 
     if ((dev == NULL) || \
         (dev->bus_rx == NULL) || \
+        (dev->cs_ctl) || \
         (p_rx == NULL) || \
         (len == 0))
         return false;
 
+    dev->cs_ctl(false);
     rx_out = dev->bus_rx(p_rx, len, W25NXX_BUS_COMMU_TIMEOUT);
+    dev->cs_ctl(true);
 
     return rx_out ? true : false;
+}
+
+static bool DevW25Nxx_Trans_Receive(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t tx_len, uint8_t *p_rx, uint16_t rx_len)
+{
+    uint16_t tx_out = 0;
+    uint16_t rx_out = 0;
+
+    if ((dev == NULL) || \
+        (dev->bus_rx == NULL) || \
+        (dev->bus_tx == NULL) || \
+        (dev->cs_ctl) || \
+        (p_rx == NULL) || \
+        (p_tx == NULL) || \
+        (tx_len == 0) || \
+        (rx_len == 0))
+        return false;
+
+    dev->cs_ctl(false);
+    tx_out = dev->bus_tx(p_tx, tx_len, W25NXX_BUS_COMMU_TIMEOUT);
+    rx_out = dev->bus_rx(p_rx, rx_len, W25NXX_BUS_COMMU_TIMEOUT);
+    dev->cs_ctl(true);
+
+    if ((tx_out == 0) || \
+        (rx_out == 0))
+        return false;
+
+    return true;
 }
 
 static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
@@ -136,7 +178,6 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
 {
     uint8_t tx_tmp[2] = {0};
     uint8_t rx_tmp[3] = {0};
-    bool state = false;
 
     if ((dev == NULL) || \
         (dev->cs_ctl == NULL))
@@ -146,12 +187,7 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
     memset(rx_tmp, 0, sizeof(rx_tmp));
     tx_tmp[0] = W25NXX_JEDEC_ID;
 
-    dev->cs_ctl(false);
-    state = DevW25Nxx_Write(dev, tx_tmp, sizeof(tx_tmp));
-    state &= DevW25Nxx_Read(dev, rx_tmp, sizeof(rx_tmp));
-    dev->cs_ctl(true);
-
-    if (!state)
+    if (!DevW25Nxx_Trans_Receive(dev, tx_tmp, sizeof(tx_tmp), rx_tmp, sizeof(rx_tmp)))
         return DevW25N_None;
 
     ((uint8_t *)&dev->prod_code)[3] = 0;
@@ -223,58 +259,61 @@ static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr)
 
 static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t val)
 {
-    uint8_t cmd[3];
-    bool state = false;
+    uint8_t cmd[3] = {W25NXX_WRITE_STATUS_CMD, reg_addr, val};
 
     if ((dev == NULL) || \
-        (dev->cs_ctl == NULL) || \
-        (dev->bus_tx == NULL) || \
         ((reg_addr != W25NXX_SR0_ADDR) && \
          (reg_addr != W25NXX_SR1_ADDR) && \
-         (reg_addr != W25NXX_SR2_ADDR)))
+         (reg_addr != W25NXX_SR2_ADDR)) || \
+         !DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
         return DevW25Nxx_Error;
 
-    cmd[0] = W25NXX_WRITE_STATUS_CMD;
-    cmd[1] = reg_addr;
-    cmd[2] = val;
-
-    dev->cs_ctl(false);
-    state = dev->bus_tx(cmd, sizeof(cmd), W25NXX_BUS_COMMU_TIMEOUT);
-    dev->cs_ctl(true);
-
-    return state ? DevW25Nxx_Ok : DevW25Nxx_Error;
+    return DevW25Nxx_Ok;
 }
 
 static DevW25Nxx_Error_List DevW25Nxx_WriteEn_Ctl(DevW25NxxObj_TypeDef *dev, bool en)
 {
-    uint8_t cmd[2];
-    bool state = false;
+    if (dev == NULL)
+        return DevW25Nxx_Error;
+
+    return DevW25Nxx_Ok;
+}
+
+static DevW25Nxx_Error_List DevW25Nxx_Write_Page(DevW25NxxObj_TypeDef *dev, uint16_t page, uint8_t *p_data, uint16_t len)
+{
+    uint8_t cmd[3];
     DevW25Nxx_SR0_TypeDef sr0;
 
     sr0.val = 0;
     memset(cmd, 0, sizeof(cmd));
     if ((dev == NULL) || \
-        (dev->cs_ctl == NULL) || \
-        (dev->bus_tx) || \
-        (dev->bus_rx) || \
-        !dev->init_state)
+        !dev->init_state || \
+        (page > W25N01GV_PAGE_NUM) || \
+        (p_data == NULL) || \
+        (len == 0))
         return DevW25Nxx_Error;
 
     /* check write protect status */
     cmd[0] = W25NXX_READ_STATUS_CMD;
     cmd[1] = W25NXX_SR0_ADDR;
 
-    dev->cs_ctl(false);
-    dev->bus_tx(cmd, 2, W25NXX_BUS_COMMU_TIMEOUT);
-    dev->bus_rx(&sr0.val, 1, W25NXX_BUS_COMMU_TIMEOUT);
-    dev->cs_ctl(true);
+    if (!DevW25Nxx_Trans_Receive(dev, cmd, 2, &sr0.val, 1))
+        return DevW25Nxx_Error;
 
     if (sr0.bit.WPE)
     {
-        dev->cs_ctl(false);
-        
-        dev->cs_ctl(true);
+        /* clear write protect */
+        sr0.bit.WPE = false;
+        cmd[2] = sr0.val;
+        if (!DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
+            return DevW25Nxx_Error;
     }
+
+    /* set write enable */
+
+    /* set write disable */
+
+    return DevW25Nxx_Ok;
 }
 
 static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint16_t size)

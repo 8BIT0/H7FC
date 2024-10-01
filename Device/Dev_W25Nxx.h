@@ -48,9 +48,10 @@ extern "C" {
 
 #define W25NXX_BASE_ADDRESS                     0x00000000
 #define W25NXX_PAGE_SIZE                        0x800
+#define W25NXX_PAGE_PRE_BLOCK                   0x40
 
 #define W25N01GV_FLASH_SIZE                     0x8000000
-#define W25N01GV_BLOCK_SIZE                     0x40000
+#define W25N01GV_BLOCK_SIZE                     0x20000
 #define W25N01GV_BLOCK_NUM                      0x400
 #define W25N01GV_PAGE_SIZE                      W25NXX_PAGE_SIZE
 #define W25N01GV_PAGE_NUM                       65536
