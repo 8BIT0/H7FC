@@ -58,6 +58,40 @@ extern "C" {
 #define W25N01GV_BUFFER_MODE_SIZE               W25NXX_PAGE_SIZE
 #define W25N0GV_ECC_INFO_SIZE                   0x40
 
+typedef enum
+{
+    BF_SRP_1 = 0,
+    BF_WPE,
+    BF_TB,
+    BF_BP_0,
+    BF_BP_1,
+    BF_BP_2,
+    BF_BP_3,
+    BF_SRP_0,
+} DevW25Nxx_SR0_BitField_TypeDef;
+
+typedef enum
+{
+    BF_RES_SR1 = 0,
+    BF_BUF,
+    BF_ECC_E,
+    BF_SR1_L,
+    BF_OTP_E,
+    BF_OTP_L,
+} DevW25Nxx_SR1_BitField_TypeDef;
+
+typedef enum
+{
+    BF_BUSY = 0,
+    BF_WEL,
+    BF_E_FAIL,
+    BF_P_FAIL,
+    BF_ECC_0,
+    BF_ECC_1,
+    BF_LUT_F,
+    BF_RES_SR2,
+} DevW25Nxx_SR2_BitField_TypeDef;
+
 typedef union
 {
     uint8_t val;

@@ -2,6 +2,9 @@
 
 #define W25NXX_BUS_COMMU_TIMEOUT    100 /* unit: ms */
 #define ConvertPageFormat(x)        ((x / W25NXX_PAGE_PRE_BLOCK) << 6) | (x %  W25NXX_PAGE_PRE_BLOCK)
+#define ConvertToSR0_RegFormat(x)   ((DevW25Nxx_SR0_TypeDef)x)
+#define ConvertToSR1_RegFormat(x)   ((DevW25Nxx_SR1_TypeDef)x)
+#define ConvertToSR2_RegFormat(x)   ((DevW25Nxx_SR2_TypeDef)x)
 
 typedef union
 {
@@ -21,6 +24,7 @@ static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uin
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev);
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev);
+static DevW25Nxx_Error_List DevW25Nxx_WriteEn_Ctl(DevW25NxxObj_TypeDef *dev);
 
 /* external function */
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
@@ -257,23 +261,90 @@ static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr)
     return (addr / W25N01GV_PAGE_SIZE);
 }
 
-static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t val)
+static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field_index, uint8_t val)
 {
-    uint8_t cmd[3] = {W25NXX_WRITE_STATUS_CMD, reg_addr, val};
+    uint8_t cmd[3] = {W25NXX_WRITE_STATUS_CMD, reg_addr};
 
     if ((dev == NULL) || \
         ((reg_addr != W25NXX_SR0_ADDR) && \
          (reg_addr != W25NXX_SR1_ADDR) && \
-         (reg_addr != W25NXX_SR2_ADDR)) || \
-         !DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
+         (reg_addr != W25NXX_SR2_ADDR)))
+        return DevW25Nxx_Error;
+
+    if (!DevW25Nxx_Read(dev, cmd, sizeof(cmd)))
+        return DevW25Nxx_Error;
+
+    if (reg_addr == W25NXX_SR0_ADDR)
+    {
+        switch (field_index)
+        {
+            case BF_SRP_1:
+                ConvertToSR0_RegFormat(cmd[0]);
+                break;
+
+            case BF_WPE: 
+                break;
+
+            case BF_TB: 
+                break;
+
+            case BF_BP_0: 
+                break;
+
+            case BF_BP_1: 
+                break;
+
+            case BF_BP_2: 
+                break;
+
+            case BF_BP_3: 
+                break;
+
+            case BF_SRP_0: 
+                break;
+
+            default: return DevW25Nxx_Error;
+        }
+    }
+    else if (reg_addr == W25NXX_SR1_ADDR)
+    {
+        if (field_index > BF_OTP_L)
+            return DevW25Nxx_Error;
+
+        ConvertToSR1_RegFormat(cmd[0]);
+    }
+    else if (reg_addr == W25NXX_SR2_ADDR)
+    {
+        if (field_index > BF_LUT_F)
+            return DevW25Nxx_Error;
+
+        ConvertToSR2_RegFormat(cmd[0]);
+    }
+
+    if (!DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
         return DevW25Nxx_Error;
 
     return DevW25Nxx_Ok;
 }
 
-static DevW25Nxx_Error_List DevW25Nxx_WriteEn_Ctl(DevW25NxxObj_TypeDef *dev, bool en)
+static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev)
 {
-    if (dev == NULL)
+    uint8_t cmd[3];
+    DevW25Nxx_SR2_TypeDef sr2;
+
+    cmd[0] = W25NXX_WRITE_STATUS_CMD;
+    cmd[1] = W25NXX_SR2_ADDR;
+    cmd[2] = 0;
+
+    if ((dev == NULL) || \
+        (!DevW25Nxx_Read(dev, cmd, sizeof(cmd))))
+        return DevW25Nxx_Error;
+
+    sr2.val = cmd[2];
+    sr2.bit.WEL = 0;
+    cmd[2] = sr2.val;
+
+    if (!DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
         return DevW25Nxx_Error;
 
     return DevW25Nxx_Ok;
@@ -310,8 +381,10 @@ static DevW25Nxx_Error_List DevW25Nxx_Write_Page(DevW25NxxObj_TypeDef *dev, uint
     }
 
     /* set write enable */
+    if (DevW25Nxx_WriteEn(dev) == DevW25Nxx_Error)
+        return DevW25Nxx_Error;
 
-    /* set write disable */
+    
 
     return DevW25Nxx_Ok;
 }
