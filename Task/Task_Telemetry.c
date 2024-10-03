@@ -30,6 +30,16 @@
 #include "Srv_ComProto.h"
 #include "Storage.h"
 
+#if defined MATEKH743_V1_5
+#define Noti_LED_Ptr NULL
+#elif defined BATEAT32F435_AIO
+#define Noti_LED_Ptr NULL
+#elif defined CCRC_AT32_20
+#define Noti_LED_Ptr NULL
+#elif defined CAIFPV_AIO
+#define Noti_LED_Ptr &Led2
+#endif
+
 static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_Monitor_TypeDef Telemetry_Monitor;
 static bool RCData_To_Configuretor = false;
@@ -130,19 +140,18 @@ void Telemetry_blink(void)
     static uint32_t Lst_Rt = 0;
     static bool led_state = false;
 
-    // DebugPin.ctl(Debug_PB4, true);
-    // DebugPin.ctl(Debug_PB4, false);
-
     Rt = SrvOsCommon.get_os_ms();
 
-    if ((Rt % 100 == 0) && (Lst_Rt != Rt))
+    if ((Rt % TaskTelemetry_Period == 0) && (Lst_Rt != Rt))
     {
         led_state = !led_state;
         Lst_Rt = Rt;
     }
 
-    DevLED.ctl(Led1, led_state);
-    // DevLED.ctl(Led3, led_state);
+    if (Noti_LED_Ptr)
+    {
+        DevLED.ctl(*Noti_LED_Ptr, led_state);
+    }
 }
 
 static void Telemetry_Led_Control(bool state)
@@ -159,7 +168,7 @@ void TaskTelemetry_Core(void const *arg)
 
     while(1)
     {
-        // Telemetry_blink();
+        Telemetry_blink();
         
         if (SrvDataHub.get_upgrade_state(&upgrade_state) && !upgrade_state)
         {
