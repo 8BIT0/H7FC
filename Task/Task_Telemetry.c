@@ -807,6 +807,9 @@ static bool Telemetry_BlackBox_OnChange(Telemetry_RCSig_TypeDef RCSig)
     static bool lst_blackbox_state = false;
     bool state = false;
 
+    if (RCSig.failsafe)
+        return false;
+
     /* when on power and blackbox toggle is on */
     if (first_trigger)
     {    

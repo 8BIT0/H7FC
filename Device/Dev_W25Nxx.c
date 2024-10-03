@@ -1,5 +1,13 @@
 #include "Dev_W25Nxx.h"
 
+/* test code */
+#include "HW_Def.h"
+#include "debug_util.h"
+
+#define W25NXX_TAG "[ W25NXX INFO ] "
+#define W25NXX_INFO(fmt, ...) Debug_Print(&DebugPort, W25NXX_TAG, fmt, ##__VA_ARGS__)
+/* test code */
+
 #define W25NXX_BUS_COMMU_TIMEOUT    100 /* unit: ms */
 #define ConvertPageFormat(x)        ((x / W25NXX_PAGE_PRE_BLOCK) << 6) | (x %  W25NXX_PAGE_PRE_BLOCK)
 #define ConvertToSR0_RegFormat(x)   ((DevW25Nxx_SR0_TypeDef *)x)
@@ -26,6 +34,7 @@ static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field_index, uint8_t val);
+static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev);
 
 /* external function */
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
@@ -164,6 +173,8 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
     dev->init_state = true;
 
     /* bad block management */
+    if (DevW25Nxx_BadBlock_Managemnet(dev) != DevW25Nxx_Ok)
+        return DevW25Nxx_Error;
 
     return DevW25Nxx_Ok;
 }
@@ -230,11 +241,12 @@ static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *de
 
 static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev)
 {
-    uint8_t cmd[2] = {}:
+    uint8_t cmd[2] = {W25NXX_BB_MANAGEMENT};
 
-    if (dev == NULL)
+    if ((dev == NULL) || \
+        DevW25Nxx_Read(dev, cmd, sizeof(cmd)) != DevW25Nxx_Ok)
         return DevW25Nxx_Error;
-    DevW25Nxx_Read();
+
     return DevW25Nxx_Ok;
 }
 

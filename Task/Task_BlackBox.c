@@ -12,7 +12,6 @@
 #include "error_log.h"
 #include "../DataPipe/DataPipe.h"
 #include "../System/storage/Storage.h"
-#include "Task_Telemetry.h"
 #include "Task_Sample.h"
 #include "HW_Def.h"
 #include "minilzo.h"
@@ -89,7 +88,6 @@ DataPipe_CreateDataObj(ExpControlData_TypeDef,    LogCtl_Data);
 
 /* internal function */
 static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj);
-static void TaskBlackBox_Write_Core(void const *arg);
 static void TaskBlackBox_PushFinish_Callback(void);
 
 void TaskBlackBox_Init(void)
