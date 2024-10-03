@@ -308,15 +308,55 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, ui
     }
     else if (reg_addr == W25NXX_SR1_ADDR)
     {
-        if (field_index > BF_OTP_L)
-            return DevW25Nxx_Error;
+        switch (field_index)
+        {
+            case BF_BUF:
+                break;
+
+            case BF_ECC_E:
+                break;
+
+            case BF_SR1_L:
+                break;
+
+            case BF_OTP_E:
+                break;
+
+            case BF_OTP_L:
+                break;
+
+            default: return DevW25Nxx_Error;
+        }
 
         ConvertToSR1_RegFormat(cmd[0]);
     }
     else if (reg_addr == W25NXX_SR2_ADDR)
     {
-        if (field_index > BF_LUT_F)
-            return DevW25Nxx_Error;
+        switch (field_index)
+        {
+            case BF_BUSY:
+                break;
+
+            case BF_WEL:
+                break;
+
+            case BF_E_FAIL:
+                break;
+
+            case BF_P_FAIL:
+                break;
+
+            case BF_ECC_0:
+                break;
+
+            case BF_ECC_1:
+                break;
+
+            case BF_LUT_F:
+                break;
+
+            default: return DevW25Nxx_Error;
+        }
 
         ConvertToSR2_RegFormat(cmd[0]);
     }
