@@ -162,10 +162,10 @@ typedef struct
     uint32_t flash_size;
 
     uint16_t page_size;
-    uint16_t page_num;
+    uint32_t page_num;
 
     uint16_t block_num;
-    uint16_t block_size;
+    uint32_t block_size;
 } DevW25Nxx_DeviceInfo_TypeDef;
 
 typedef struct
