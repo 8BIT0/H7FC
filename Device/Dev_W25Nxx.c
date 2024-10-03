@@ -228,6 +228,16 @@ static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *de
     return DevW25Nxx_Busy;
 }
 
+static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev)
+{
+    uint8_t cmd[2] = {}:
+
+    if (dev == NULL)
+        return DevW25Nxx_Error;
+    DevW25Nxx_Read();
+    return DevW25Nxx_Ok;
+}
+
 static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev)
 {
     DevW25Nxx_DeviceInfo_TypeDef info;
