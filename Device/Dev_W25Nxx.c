@@ -2,9 +2,9 @@
 
 #define W25NXX_BUS_COMMU_TIMEOUT    100 /* unit: ms */
 #define ConvertPageFormat(x)        ((x / W25NXX_PAGE_PRE_BLOCK) << 6) | (x %  W25NXX_PAGE_PRE_BLOCK)
-#define ConvertToSR0_RegFormat(x)   ((DevW25Nxx_SR0_TypeDef)x)
-#define ConvertToSR1_RegFormat(x)   ((DevW25Nxx_SR1_TypeDef)x)
-#define ConvertToSR2_RegFormat(x)   ((DevW25Nxx_SR2_TypeDef)x)
+#define ConvertToSR0_RegFormat(x)   ((DevW25Nxx_SR0_TypeDef *)x)
+#define ConvertToSR1_RegFormat(x)   ((DevW25Nxx_SR1_TypeDef *)x)
+#define ConvertToSR2_RegFormat(x)   ((DevW25Nxx_SR2_TypeDef *)x)
 
 typedef union
 {
@@ -267,8 +267,7 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, ui
 
     if ((dev == NULL) || \
         ((reg_addr != W25NXX_SR0_ADDR) && \
-         (reg_addr != W25NXX_SR1_ADDR) && \
-         (reg_addr != W25NXX_SR2_ADDR)))
+         (reg_addr != W25NXX_SR1_ADDR)))
         return DevW25Nxx_Error;
 
     if (!DevW25Nxx_Read(dev, cmd, sizeof(cmd)))
@@ -278,31 +277,14 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, ui
     {
         switch (field_index)
         {
-            case BF_SRP_1:
-                ConvertToSR0_RegFormat(cmd[0]);
-                break;
-
-            case BF_WPE: 
-                break;
-
-            case BF_TB: 
-                break;
-
-            case BF_BP_0: 
-                break;
-
-            case BF_BP_1: 
-                break;
-
-            case BF_BP_2: 
-                break;
-
-            case BF_BP_3: 
-                break;
-
-            case BF_SRP_0: 
-                break;
-
+            case BF_SRP_1: ConvertToSR0_RegFormat(&cmd[2])->bit.SRP_1 = val; break;
+            case BF_WPE:   ConvertToSR0_RegFormat(&cmd[2])->bit.WPE   = val; break;
+            case BF_TB:    ConvertToSR0_RegFormat(&cmd[2])->bit.TB    = val; break;
+            case BF_BP_0:  ConvertToSR0_RegFormat(&cmd[2])->bit.BP_0  = val; break;
+            case BF_BP_1:  ConvertToSR0_RegFormat(&cmd[2])->bit.BP_1  = val; break;
+            case BF_BP_2:  ConvertToSR0_RegFormat(&cmd[2])->bit.BP_2  = val; break;
+            case BF_BP_3:  ConvertToSR0_RegFormat(&cmd[2])->bit.BP_3  = val; break;
+            case BF_SRP_0: ConvertToSR0_RegFormat(&cmd[2])->bit.SRP_0 = val; break;
             default: return DevW25Nxx_Error;
         }
     }
@@ -310,57 +292,15 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, ui
     {
         switch (field_index)
         {
-            case BF_BUF:
-                break;
-
-            case BF_ECC_E:
-                break;
-
-            case BF_SR1_L:
-                break;
-
-            case BF_OTP_E:
-                break;
-
-            case BF_OTP_L:
-                break;
-
+            case BF_BUF:   ConvertToSR1_RegFormat(&cmd[2])->bit.BUF   = val; break;
+            case BF_ECC_E: ConvertToSR1_RegFormat(&cmd[2])->bit.ECC_E = val; break;
+            case BF_SR1_L: ConvertToSR1_RegFormat(&cmd[2])->bit.SR1_L = val; break;
+            case BF_OTP_E: ConvertToSR1_RegFormat(&cmd[2])->bit.OTP_E = val; break;
+            case BF_OTP_L: ConvertToSR1_RegFormat(&cmd[2])->bit.OTP_L = val; break;
             default: return DevW25Nxx_Error;
         }
-
-        ConvertToSR1_RegFormat(cmd[0]);
     }
-    else if (reg_addr == W25NXX_SR2_ADDR)
-    {
-        switch (field_index)
-        {
-            case BF_BUSY:
-                break;
-
-            case BF_WEL:
-                break;
-
-            case BF_E_FAIL:
-                break;
-
-            case BF_P_FAIL:
-                break;
-
-            case BF_ECC_0:
-                break;
-
-            case BF_ECC_1:
-                break;
-
-            case BF_LUT_F:
-                break;
-
-            default: return DevW25Nxx_Error;
-        }
-
-        ConvertToSR2_RegFormat(cmd[0]);
-    }
-
+    
     if (!DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
         return DevW25Nxx_Error;
 
