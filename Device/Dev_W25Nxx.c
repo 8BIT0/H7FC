@@ -26,7 +26,6 @@ static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_WriteEn_Ctl(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field_index, uint8_t val);
-static DevW25Nxx_Error_List DevW25Nxx_ReadReg(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t *val);
 
 /* external function */
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
@@ -263,22 +262,6 @@ static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr)
         return 0;
 
     return (addr / W25N01GV_PAGE_SIZE);
-}
-
-static DevW25Nxx_Error_List DevW25Nxx_ReadReg(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t *val)
-{
-    uint8_t cmd[3] = {W25NXX_READ_STATUS_CMD, reg_addr};
-
-    if ((dev == NULL) || \
-        (val == NULL) || \
-        ((reg_addr != W25NXX_SR0_ADDR) && \
-         (reg_addr != W25NXX_SR1_ADDR) && \
-         (reg_addr != W25NXX_SR2_ADDR)) || \
-        !DevW25Nxx_Read(dev, cmd, sizeof(cmd)))
-        return DevW25Nxx_Error;
-
-    *val = cmd[2];
-    return DevW25Nxx_Ok;
 }
 
 static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field_index, uint8_t val)
