@@ -294,7 +294,7 @@ static SrvActuator_Setting_TypeDef SrvActuator_Default_Setting(void)
     default_setting.moto_num = 4;
     default_setting.servo_num = 0;
 
-    memcpy(default_setting.pwm_ch_map, default_sig_serial, 4);
+    memcpy(default_setting.moto_map, default_sig_serial, 4);
 
     return default_setting;
 }
@@ -309,8 +309,8 @@ static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg)
     {
         for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
         {
-            SrvActuator_Obj.drive_module.obj_list[i].sig_id = cfg.pwm_ch_map[i];
-            SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = (SrvActuator_PeriphSet_TypeDef *)&SrvActuator_Periph_List[cfg.pwm_ch_map[i]];
+            SrvActuator_Obj.drive_module.obj_list[i].sig_id = cfg.moto_map[i];
+            SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = (SrvActuator_PeriphSet_TypeDef *)&SrvActuator_Periph_List[cfg.moto_map[i]];
             periph_ptr = SrvActuator_Obj.drive_module.obj_list[i].periph_ptr;
 
             DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj,
