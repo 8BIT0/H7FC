@@ -162,6 +162,8 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
     dev->delay_ms(100);
     dev->init_state = true;
 
+    /* bad block management */
+
     return DevW25Nxx_Ok;
 }
 
