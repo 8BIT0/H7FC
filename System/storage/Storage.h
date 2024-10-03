@@ -12,6 +12,7 @@ extern "C" {
 #include "Dev_W25Qxx.h"
 #include "Dev_W25Nxx.h"
 #include "Srv_OsCommon.h"
+#include "Storage_Bus_Port.h"
 #include "util.h"
 
 typedef uint32_t storage_handle;
@@ -48,12 +49,6 @@ typedef uint32_t storage_handle;
 #define STORAGE_DATA_ALIGN 4
 #define STORAGE_MIN_BYTE_SIZE 1
 #define STORAGE_FREEITEM_NAME "Item_Avaliable"
-
-typedef enum
-{
-    Storage_ChipBus_None = 0,
-    Storage_ChipBus_Spi,
-} Storage_ExtFlash_BusType_List;
 
 typedef enum
 {

@@ -65,6 +65,7 @@ void TaskTelemetry_Set_DataIO_Enable(bool state)
     RCData_To_Configuretor = state;
 }
 
+/* operating frequence at least at 100Hz */
 void TaskTelemetry_Init(uint32_t period)
 {
     memset(&Telemetry_Monitor, 0, sizeof(Telemetry_Monitor));
@@ -142,7 +143,7 @@ void Telemetry_blink(void)
 
     Rt = SrvOsCommon.get_os_ms();
 
-    if ((Rt % TaskTelemetry_Period == 0) && (Lst_Rt != Rt))
+    if ((Rt % 50 == 0) && (Lst_Rt != Rt))
     {
         led_state = !led_state;
         Lst_Rt = Rt;
@@ -168,7 +169,7 @@ void TaskTelemetry_Core(void const *arg)
 
     while(1)
     {
-        Telemetry_blink();
+        // Telemetry_blink();
         
         if (SrvDataHub.get_upgrade_state(&upgrade_state) && !upgrade_state)
         {

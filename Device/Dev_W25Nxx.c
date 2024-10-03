@@ -32,9 +32,9 @@ static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uin
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev);
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev);
-static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev);
+static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev, bool en);
 static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field_index, uint8_t val);
-static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev);
+static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev); 
 
 /* external function */
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
@@ -171,10 +171,6 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
 
     dev->delay_ms(100);
     dev->init_state = true;
-
-    /* bad block management */
-    if (DevW25Nxx_BadBlock_Managemnet(dev) != DevW25Nxx_Ok)
-        return DevW25Nxx_Error;
 
     return DevW25Nxx_Ok;
 }
@@ -332,24 +328,15 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, ui
     return DevW25Nxx_Ok;
 }
 
-static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev)
+static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev, bool en)
 {
-    uint8_t cmd[3];
-    DevW25Nxx_SR2_TypeDef sr2;
+    uint8_t cmd[2] = {W25NXX_WRITE_DISABLE, 0};
 
-    cmd[0] = W25NXX_WRITE_STATUS_CMD;
-    cmd[1] = W25NXX_SR2_ADDR;
-    cmd[2] = 0;
+    if (en)
+        cmd[0] = W25NXX_WRITE_ENABLE;
 
     if ((dev == NULL) || \
-        (!DevW25Nxx_Read(dev, cmd, sizeof(cmd))))
-        return DevW25Nxx_Error;
-
-    sr2.val = cmd[2];
-    sr2.bit.WEL = 0;
-    cmd[2] = sr2.val;
-
-    if (!DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
+        !DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
         return DevW25Nxx_Error;
 
     return DevW25Nxx_Ok;
@@ -385,10 +372,8 @@ static DevW25Nxx_Error_List DevW25Nxx_Write_Page(DevW25NxxObj_TypeDef *dev, uint
     }
 
     /* set write enable */
-    if (DevW25Nxx_WriteEn(dev) == DevW25Nxx_Error)
+    if (DevW25Nxx_WriteEn(dev, true) == DevW25Nxx_Error)
         return DevW25Nxx_Error;
-
-    
 
     return DevW25Nxx_Ok;
 }

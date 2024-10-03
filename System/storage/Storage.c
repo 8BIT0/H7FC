@@ -9,8 +9,8 @@
 #include "shell_port.h"
 #include "util.h"
 #include "HW_Def.h"
+#include "Storage_Bus_Port.h"
 #include "Srv_OsCommon.h"
-#include "debug_util.h"
 #include "debug_util.h"
 
 #define STORAGE_TAG                     "[ STORAGE INFO ] "
@@ -33,11 +33,6 @@
 #define Storage_InfoPageSize            Flash_Storage_InfoPageSize
 
 #define Item_Capacity_Per_Tab           (Storage_TabSize / sizeof(Storage_Item_TypeDef))
-#if defined STM32H743xx
-static SPI_HandleTypeDef ExtFlash_Bus_InstObj;
-#elif defined AT32F435_437
-void *ExtFlash_Bus_InstObj = NULL;
-#endif
 
 /* internal vriable */
 Storage_Monitor_TypeDef Storage_Monitor;
@@ -1928,62 +1923,6 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, uint32_t addr
     }
 
     return false;
-}
-
-/************************************************** External Flash IO API Section ************************************************/
-static bool Storage_External_Chip_SelectPin_Ctl(bool state)
-{
-#if (FLASH_CHIP_STATE == ON)
-    BspGPIO.write(ExtFlash_CS_Pin, state);
-    return true;
-#else
-    return false;
-#endif
-}
-
-static uint16_t Storage_External_Chip_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out)
-{
-#if (FLASH_CHIP_STATE == ON)
-    BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
-
-    if (p_data && len && p_cfg && p_cfg->Instance && ExtFlash_Bus_InstObj)
-    {
-        if (ExtFlash_Bus_Api.trans(&ExtFlash_Bus_InstObj, p_data, len, time_out))
-            return len;
-    }
-#endif
-
-    return 0;
-}
-
-static uint16_t Storage_External_Chip_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out)
-{
-    BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
-
-#if (FLASH_CHIP_STATE == ON)
-    if (p_data && len && p_cfg && p_cfg->Instance && ExtFlash_Bus_InstObj)
-    {
-        if (ExtFlash_Bus_Api.receive(&ExtFlash_Bus_InstObj, p_data, len, time_out))
-            return len;
-    }
-#endif
-
-    return 0;
-}
-
-static uint16_t Storage_External_Chip_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out)
-{
-    BspSPI_NorModeConfig_TypeDef *p_cfg = To_NormalSPI_ObjPtr(Storage_Monitor.ExtBusCfg_Ptr);
-
-#if (FLASH_CHIP_STATE == ON)
-    if (tx && rx && len && p_cfg && p_cfg->Instance && ExtFlash_Bus_InstObj)
-    {
-        if (ExtFlash_Bus_Api.trans_receive(&ExtFlash_Bus_InstObj, tx, rx, len, time_out))
-            return len;
-    }
-#endif
-
-    return 0;
 }
 
 /************************************************** External Flash Parameter IO API Section ************************************************/
