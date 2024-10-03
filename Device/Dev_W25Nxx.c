@@ -339,7 +339,6 @@ static DevW25Nxx_Error_List DevW25Nxx_Write_Page(DevW25NxxObj_TypeDef *dev, uint
     memset(cmd, 0, sizeof(cmd));
     if ((dev == NULL) || \
         !dev->init_state || \
-        (page > W25N01GV_PAGE_NUM) || \
         (p_data == NULL) || \
         (len == 0))
         return DevW25Nxx_Error;
