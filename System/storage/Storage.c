@@ -111,96 +111,93 @@ static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
     if (ExtDev && StoragePort_Api.bus_type_check(ExtDev->chip_type))
         return false;
 
-    if (ExtDev->bus_type == Storage_ChipBus_Spi)
+    Storage_Monitor.ExtDev_ptr = NULL;
+    bus_cfg = StoragePort_Api.init(ExtDev->bus_type, SrvOsCommon.malloc, SrvOsCommon.free);
+    if (bus_cfg == NULL)
     {
-        Storage_Monitor.ExtDev_ptr = NULL;
-        bus_cfg = StoragePort_Api.init(ExtDev->bus_type, SrvOsCommon.malloc, SrvOsCommon.free);
-        if (bus_cfg == NULL)
-        {
-            STORAGE_INFO("Bus Init Failed\r\n");
-            Storage_Monitor.ExternalFlash_Error_Code = Storage_BusInit_Error;
-            return false;
-        }
+        STORAGE_INFO("Bus Init Failed\r\n");
+        Storage_Monitor.ExternalFlash_Error_Code = Storage_BusInit_Error;
+        return false;
+    }
 
-        STORAGE_INFO("Bus init accomplished\r\n");
-        Storage_Monitor.ExtBusCfg_Ptr = bus_cfg;
+    STORAGE_INFO("Bus init accomplished\r\n");
+    Storage_Monitor.ExtBusCfg_Ptr = bus_cfg;
 
-        if (ExtDev->chip_type >= Storage_ChipType_All)
-        {
-            STORAGE_INFO("Unknown chip type\r\n");
-            Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleType_Error;
-            return false;
-        }
+    if (ExtDev->chip_type >= Storage_ChipType_All)
+    {
+        STORAGE_INFO("Unknown chip type\r\n");
+        Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleType_Error;
+        return false;
+    }
 
-        if (!Storage_Set_DeviceObj(ExtDev))
-        {
-            Storage_Monitor.ExternalFlash_Error_Code = Storage_ExtDevObj_Error;
-            return false;
-        }
+    if (!Storage_Set_DeviceObj(ExtDev))
+    {
+        Storage_Monitor.ExternalFlash_Error_Code = Storage_ExtDevObj_Error;
+        return false;
+    }
 
-        Storage_Monitor.ExtDev_ptr = ExtDev;
-        Storage_Monitor.ExternalFlash_ReInit_cnt = ExternalModule_ReInit_Cnt;
+    Storage_Monitor.ExtDev_ptr = ExtDev;
+    Storage_Monitor.ExternalFlash_ReInit_cnt = ExternalModule_ReInit_Cnt;
 
 reinit_external_flash_module:
-        if (!Storage_Device_Init(ExtDev))
+    if (!Storage_Device_Init(ExtDev))
+    {
+        Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
+        STORAGE_INFO("chip init failed\r\n");
+        if (Storage_Monitor.ExternalFlash_ReInit_cnt)
         {
-            Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
-            STORAGE_INFO("chip init failed\r\n");
-            if (Storage_Monitor.ExternalFlash_ReInit_cnt)
-            {
-                STORAGE_INFO("init retry remain %d\r\n\r\n", Storage_Monitor.ExternalFlash_ReInit_cnt);
-                Storage_Monitor.ExternalFlash_ReInit_cnt --;
-                goto reinit_external_flash_module;
-            }
-            return false;
+            STORAGE_INFO("init retry remain %d\r\n\r\n", Storage_Monitor.ExternalFlash_ReInit_cnt);
+            Storage_Monitor.ExternalFlash_ReInit_cnt --;
+            goto reinit_external_flash_module;
         }
+        return false;
+    }
 
-        if (!Storage_Set_BaseInfo(ExtDev))
-        {
-            STORAGE_INFO("set base info failed\r\n");
-            Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
-            return false;
-        }
+    if (!Storage_Set_BaseInfo(ExtDev))
+    {
+        STORAGE_INFO("set base info failed\r\n");
+        Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
+        return false;
+    }
 
-        /* set external flash device read write base address */
-        Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
-        Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
+    /* set external flash device read write base address */
+    Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
+    Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
                         
 reupdate_external_flash_info:
-        /* get storage info */
-        if (!Storage_Get_StorageInfo())
-        {
+    /* get storage info */
+    if (!Storage_Get_StorageInfo())
+    {
 reformat_external_flash_info:
-            if (Storage_Monitor.ExternalFlash_Format_cnt)
+        if (Storage_Monitor.ExternalFlash_Format_cnt)
+        {
+            /* format storage device */
+            if (!Storage_Format())
             {
-                /* format storage device */
-                if (!Storage_Format())
-                {
-                    Storage_Monitor.ExternalFlash_Format_cnt --;
-                    Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
-                    if (Storage_Monitor.ExternalFlash_Format_cnt == 0)
-                        return false;
-                        
-                    goto reformat_external_flash_info;
-                }
+                Storage_Monitor.ExternalFlash_Format_cnt --;
+                Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
+                if (Storage_Monitor.ExternalFlash_Format_cnt == 0)
+                    return false;
+                    
+                goto reformat_external_flash_info;
+            }
 
-                /* external flash module format successed */
-                /* build storage tab */
-                if (Storage_Build_StorageInfo())
-                {
-                    Storage_Monitor.ExternalFlash_BuildTab_cnt ++;
-                    Storage_Monitor.init_state = true;
+            /* external flash module format successed */
+            /* build storage tab */
+            if (Storage_Build_StorageInfo())
+            {
+                Storage_Monitor.ExternalFlash_BuildTab_cnt ++;
+                Storage_Monitor.init_state = true;
 
-                    /* after tab builded read storage info again */
-                    goto reupdate_external_flash_info;
-                }
+                /* after tab builded read storage info again */
+                goto reupdate_external_flash_info;
             }
         }
-        else
-        {
-            STORAGE_INFO("chip init done\r\n");
-            Storage_Monitor.init_state = true;
-        }
+    }
+    else
+    {
+        STORAGE_INFO("chip init done\r\n");
+        Storage_Monitor.init_state = true;
     }
 #endif
 
