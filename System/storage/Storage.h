@@ -64,7 +64,6 @@ typedef enum
     Storage_Param_Error,
     Storage_BusInit_Error,
     Storage_BusType_Error,
-    Storage_BusCfg_Malloc_Failed,
     Storage_ExtDevObj_Error,
     Storage_ModuleType_Error,
     Storage_ModuleInit_Error,
