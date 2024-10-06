@@ -327,11 +327,10 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
     tmr_output_channel_config(obj->instance, obj->tim_channel, &tmr_output_struct);
     tmr_channel_enable(obj->instance, obj->tim_channel, TRUE);
+    tmr_output_channel_buffer_enable(obj->instance, obj->tim_channel, FALSE);
 
     if (BspTimer_DMA_Init(obj))
     {
-        // tmr_output_channel_buffer_enable(obj->instance, obj->tim_channel, TRUE);
-
         if (obj->dma_callback_obj)
         {
             To_DMA_IrqCallbackObj_Ptr(obj->dma_callback_obj)->cus_data = (void *)obj;
@@ -393,7 +392,7 @@ static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj)
         tmr_counter_enable(To_Timer_Instance(obj->instance), FALSE);
         tmr_channel_value_set(To_Timer_Instance(obj->instance), obj->tim_channel, 0);
         tmr_counter_enable(To_Timer_Instance(obj->instance), TRUE);
-        
+
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), TRUE);
         tmr_output_enable(To_Timer_Instance(obj->instance), TRUE);
     }

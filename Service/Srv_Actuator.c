@@ -562,9 +562,9 @@ static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value)
     if (index < SrvActuator_Obj.drive_module.num.moto_cnt)
     {
         SrvActuator_Obj.drive_module.obj_list[index].ctl_val = value;
-        if (value < SrvActuator_Obj.drive_module.obj_list[index].idle_val)
+        if (value < SrvActuator_Obj.drive_module.obj_list[index].min_val)
         {
-            SrvActuator_Obj.drive_module.obj_list[index].ctl_val = SrvActuator_Obj.drive_module.obj_list[index].idle_val;
+            SrvActuator_Obj.drive_module.obj_list[index].ctl_val = SrvActuator_Obj.drive_module.obj_list[index].min_val;
         }
         else if (value > SrvActuator_Obj.drive_module.obj_list[index].max_val)
         {

@@ -550,7 +550,6 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
     int16_t moto_max = 0;
     int16_t moto_idle = 0;
     int16_t moto_min = 0;
-    uint32_t time_stamp = SrvOsCommon.get_os_ms();
     Shell *shell_obj = Shell_GetInstence();
     TaskControl_CLIData_TypeDef *p_CLIData = NULL;
     bool ctl_enable = true;
@@ -585,25 +584,25 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
             if (!SrvActuator.get_moto_control_range(i, &moto_min, &moto_idle, &moto_max))
             {
                 ctl_enable = false;
-                shellPrint(shell_obj, "moto %d control range down below\r\n", i);
-                shellPrint(shell_obj, "\tmax  : %d\r\n", moto_max);
-                shellPrint(shell_obj, "\tidle : %d\r\n", moto_idle);
-                shellPrint(shell_obj, "\tmin  : %d\r\n", moto_min);
                 break;
             }
+            
+            shellPrint(shell_obj, "moto %d control range down below\r\n", i);
+            shellPrint(shell_obj, "\tmax  : %d\r\n", moto_max);
+            shellPrint(shell_obj, "\tidle : %d\r\n", moto_idle);
+            shellPrint(shell_obj, "\tmin  : %d\r\n", moto_min);
         }
     }
     else
     {
         shellPrint(shell_obj, "moto %d is selected\r\n", moto_index);
         if(!SrvActuator.get_moto_control_range(moto_index, &moto_min, &moto_idle, &moto_max))
-        {
             ctl_enable = false;
-            shellPrint(shell_obj, "moto %d control range down below\r\n", moto_index);
-            shellPrint(shell_obj, "\tmax  : %d\r\n", moto_max);
-            shellPrint(shell_obj, "\tidle : %d\r\n", moto_idle);
-            shellPrint(shell_obj, "\tmin  : %d\r\n", moto_min);
-        }
+
+        shellPrint(shell_obj, "control range down below\r\n");
+        shellPrint(shell_obj, "\tmax  : %d\r\n", moto_max);
+        shellPrint(shell_obj, "\tidle : %d\r\n", moto_idle);
+        shellPrint(shell_obj, "\tmin  : %d\r\n", moto_min);
     }
 
     if (!ctl_enable)
@@ -629,7 +628,7 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
         {
             p_CLIData->cli_type = TaskControl_Moto_Set_Spin;
             p_CLIData->index = moto_index;
-            p_CLIData->timestamp = time_stamp;
+            p_CLIData->timestamp = SrvOsCommon.get_os_ms();
             p_CLIData->value = test_val;
 
             if(osMessagePut(TaskControl_Monitor.CLIMessage_ID, (uint32_t)p_CLIData, CLI_MESSAGE_OPEARATE_TIMEOUT) != osOK)
@@ -646,6 +645,63 @@ static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, moto_spin, TaskControl_CLI_MotoSpinTest, Single Moto Spin);
+
+static void TaskControl_Reverse_SpinDir(uint8_t moto_index, uint8_t dir)
+{
+    Shell *shell_obj = Shell_GetInstence();
+    uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
+    TaskControl_CLIData_TypeDef *p_CLIData = NULL;
+    bool arm_state = false;
+
+    if (shell_obj == NULL)
+        return;
+    
+    SrvDataHub.get_arm_state(&arm_state);
+
+    if(TaskControl_Monitor.CLIMessage_ID == NULL)
+    {
+        shellPrint(shell_obj, "TaskControl semaphore create failed\r\n");
+        return;
+    }
+
+    if(arm_state == DRONE_DISARM)
+    {
+        TaskControl_Monitor.CLI_enable = false;
+        shellPrint(shell_obj, "Set drone in ARM state first\r\n");
+        return;
+    }
+
+    TaskControl_Monitor.CLI_enable = true;
+    shellPrint(shell_obj, "make sure all propeller is already disassmabled\r\n");
+
+    if((moto_index >= moto_num) || (dir > 2))
+    {
+        shellPrint(shell_obj, "parameter error\r\n");
+        return;
+    }
+
+    shellPrint(shell_obj, "moto %d is selected dir %d\r\n", moto_index, dir);
+    p_CLIData = SrvOsCommon.malloc(sizeof(TaskControl_CLIData_TypeDef));
+    if(p_CLIData)
+    {
+        p_CLIData->cli_type = TaskControl_Moto_Set_SpinDir;
+        p_CLIData->index = moto_index;
+        p_CLIData->timestamp = SrvOsCommon.get_os_ms();
+        p_CLIData->value = dir;
+
+        if(osMessagePut(TaskControl_Monitor.CLIMessage_ID, (uint32_t)p_CLIData, CLI_MESSAGE_OPEARATE_TIMEOUT) != osOK)
+        {
+            SrvOsCommon.free(p_CLIData);
+            shellPrint(shell_obj, "TaskControl CLI set failed\r\n");
+        }
+    }
+    else
+    {
+        shellPrint(shell_obj, "Moto control test data malloc failed\r\n");
+        SrvOsCommon.free(p_CLIData);
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, rev_spin, TaskControl_Reverse_SpinDir, reverse moto Spin);
 
 static void TaskControl_Close_CLI(void)
 {
