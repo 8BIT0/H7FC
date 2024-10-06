@@ -140,6 +140,7 @@ void Telemetry_blink(void)
     uint32_t Rt = 0;
     static uint32_t Lst_Rt = 0;
     static bool led_state = false;
+    DevLedObj_TypeDef LedObj_tmp;
 
     Rt = SrvOsCommon.get_os_ms();
 
@@ -151,7 +152,8 @@ void Telemetry_blink(void)
 
     if (Noti_LED_Ptr)
     {
-        DevLED.ctl(*Noti_LED_Ptr, led_state);
+        memcpy(&LedObj_tmp, Noti_LED_Ptr, sizeof(LedObj_tmp));
+        DevLED.ctl(LedObj_tmp, led_state);
     }
 }
 

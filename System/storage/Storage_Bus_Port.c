@@ -38,8 +38,7 @@ static void* Storage_External_Chip_Bus_Init(Storage_ExtFlash_BusType_List bus_ty
 {
     void *obj = NULL;
 
-    if ((ExtFlash_Bus_InstObj == NULL) || \
-        (p_malloc == NULL) || \
+    if ((p_malloc == NULL) || \
         (p_free == NULL))
         return NULL;
 

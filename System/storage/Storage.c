@@ -15,15 +15,12 @@
 
 #define STORAGE_TAG                     "[ STORAGE INFO ] "
 #define STORAGE_INFO(fmt, ...)          Debug_Print(&DebugPort, STORAGE_TAG, fmt, ##__VA_ARGS__)
-#define STORAGE_ASSERT(fmt, ...)        STORAGE_INFO(fmt, ##__VA_ARGS__); \
-                                        SrvOsCommon.enter_critical(); \
-                                        while (true)
 
 #define Storage_Malloc(size)            SrvOsCommon.malloc(size)
 #define Storage_Free(ptr)               SrvOsCommon.free(ptr)
 #define Storage_GetSysTick_Ptr          SrvOsCommon.get_os_ms
 
-#define STORAGE_DEBUG                   0
+#define STORAGE_DEBUG                   1
 
 #define InternalFlash_BootDataSec_Size  (4 Kb)
 #define InternalFlash_SysDataSec_Size   (16 Kb)
@@ -108,7 +105,7 @@ static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
 
     /* external flash init */
 #if (FLASH_CHIP_STATE == ON)
-    if (ExtDev && StoragePort_Api.bus_type_check(ExtDev->chip_type))
+    if ((ExtDev == NULL) || !StoragePort_Api.bus_type_check(ExtDev->chip_type))
         return false;
 
     Storage_Monitor.ExtDev_ptr = NULL;
@@ -2253,7 +2250,6 @@ static const char* Storage_Error_Print(Storage_ErrorCode_List code)
     {
         case Storage_Error_None:                    return Storage_ErrorCode_ToStr(Storage_Error_None);
         case Storage_BusType_Error:                 return Storage_ErrorCode_ToStr(Storage_BusType_Error);
-        case Storage_BusCfg_Malloc_Failed:          return Storage_ErrorCode_ToStr(Storage_BusCfg_Malloc_Failed);
         case Storage_Param_Error:                   return Storage_ErrorCode_ToStr(Storage_Param_Error);
         case Storage_ExtDevObj_Error:               return Storage_ErrorCode_ToStr(Storage_ExtDevObj_Error);
         case Storage_ModuleType_Error:              return Storage_ErrorCode_ToStr(Storage_ModuleType_Error);

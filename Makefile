@@ -29,8 +29,8 @@ HW_CCRC_AT32_20 := 2
 HW_Cai_AIO_AT32 := 3
 
 # HARDWARE := $(HW_BETAFPV_AIO_AT32)
-# HARDWARE := $(HW_CCRC_AT32_20)
-HARDWARE := $(HW_Cai_AIO_AT32)
+HARDWARE := $(HW_CCRC_AT32_20)
+# HARDWARE := $(HW_Cai_AIO_AT32)
 endif
 
 ######################################

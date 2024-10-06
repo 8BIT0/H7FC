@@ -330,7 +330,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
 
     if (BspTimer_DMA_Init(obj))
     {
-        tmr_output_channel_buffer_enable(obj->instance, obj->tim_channel, TRUE);
+        // tmr_output_channel_buffer_enable(obj->instance, obj->tim_channel, TRUE);
 
         if (obj->dma_callback_obj)
         {
