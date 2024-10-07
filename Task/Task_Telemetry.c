@@ -40,7 +40,6 @@
 
 static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_Monitor_TypeDef Telemetry_Monitor;
-static bool RCData_To_Configuretor = false;
 static uint32_t TaskTelemetry_Period = 0;
 DataPipe_CreateDataObj(ControlData_TypeDef, Rc);
 
@@ -57,11 +56,6 @@ static bool Telemetry_Bind_Gimbal(uint8_t throttle_ch, uint8_t pitch_ch, uint8_t
 static bool Telemetry_Bind_Toggle(uint8_t arm_toggle_ch, uint8_t mode_toggle_ch, uint8_t buzzer_toggle_ch, uint8_t flipover_toggle_ch, uint8_t blackbox_toggle_ch);
 static void Telemetry_ConvertRCData_To_ControlData(Telemetry_RCSig_TypeDef RCSig, ControlData_TypeDef *CTLSig);
 static bool Telemetry_Bind_CalibCombo(void);
-
-void TaskTelemetry_Set_DataIO_Enable(bool state)
-{
-    RCData_To_Configuretor = state;
-}
 
 /* operating frequence at least at 100Hz */
 void TaskTelemetry_Init(uint32_t period)
