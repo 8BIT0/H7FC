@@ -34,9 +34,7 @@
 #define Noti_LED_Ptr NULL
 #elif defined BATEAT32F435_AIO
 #define Noti_LED_Ptr NULL
-#elif defined CCRC_AT32_20
-#define Noti_LED_Ptr NULL
-#elif defined CAIFPV_AIO
+#elif defined CAIFPV_AIO || defined CCRC_AT32_20
 #define Noti_LED_Ptr &Led2
 #endif
 
@@ -135,31 +133,33 @@ void TaskTelemetry_Init(uint32_t period)
     TaskTelemetry_Period = period;
 }
 
-void Telemetry_blink(void)
+static void Telemetry_blink(bool arm)
 {
     uint32_t Rt = 0;
     static uint32_t Lst_Rt = 0;
     static bool led_state = false;
     DevLedObj_TypeDef LedObj_tmp;
+    
+    if (Noti_LED_Ptr == NULL)
+        return;
+
+    memcpy(&LedObj_tmp, Noti_LED_Ptr, sizeof(LedObj_tmp));
+
+    /* disarm state */
+    if (!arm)
+    {
+        DevLED.ctl(LedObj_tmp, true);
+        return;
+    }
 
     Rt = SrvOsCommon.get_os_ms();
-
     if ((Rt % 50 == 0) && (Lst_Rt != Rt))
     {
         led_state = !led_state;
         Lst_Rt = Rt;
     }
 
-    if (Noti_LED_Ptr)
-    {
-        memcpy(&LedObj_tmp, Noti_LED_Ptr, sizeof(LedObj_tmp));
-        DevLED.ctl(LedObj_tmp, led_state);
-    }
-}
-
-static void Telemetry_Led_Control(bool state)
-{
-    DevLED.ctl(Led1, state);
+    DevLED.ctl(LedObj_tmp, led_state);
 }
 
 void TaskTelemetry_Core(void const *arg)
@@ -171,8 +171,6 @@ void TaskTelemetry_Core(void const *arg)
 
     while(1)
     {
-        // Telemetry_blink();
-        
         if (SrvDataHub.get_upgrade_state(&upgrade_state) && !upgrade_state)
         {
             /* RC receiver process */
@@ -187,6 +185,7 @@ void TaskTelemetry_Core(void const *arg)
             DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
         }
         
+        Telemetry_blink(RCSig.arm_state);
         SrvOsCommon.precise_delay(&sys_time, TaskTelemetry_Period);
     }
 }
@@ -605,8 +604,6 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
 
         Telemetry_Monitor.lst_arm_state = RC_Input_obj->sig.arm_state;
-
-        Telemetry_Led_Control(false);
     }
     else
     {
@@ -619,7 +616,6 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
             RC_Input_obj->sig.gimbal_percent[i] = 0;
 
         Telemetry_Monitor.recover_failsafe = true;
-        Telemetry_Led_Control(true);
     }
 
     memcpy(&sig_tmp, &RC_Input_obj->sig, sizeof(Telemetry_RCSig_TypeDef));
