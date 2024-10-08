@@ -39,7 +39,6 @@ static uint8_t flash_read_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) _
 
 static bool Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev);
 static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev);
-static bool Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev);
 
 static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num);
 static bool Storage_Establish_Tab(Storage_ParaClassType_List class);
@@ -147,13 +146,6 @@ reinit_external_flash_module:
             Storage_Monitor.ExternalFlash_ReInit_cnt --;
             goto reinit_external_flash_module;
         }
-        return false;
-    }
-
-    if (!Storage_Set_BaseInfo(ExtDev))
-    {
-        STORAGE_INFO("set base info failed\r\n");
-        Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
         return false;
     }
 
@@ -2109,12 +2101,14 @@ static bool Storage_ExtFlash_ParaSec_Erase(uint32_t addr_offset, uint32_t len)
 
 static bool Storage_ExtFlash_EraseAll(void)
 {
+    /* still in developping */
     return false;
 }
 
-static bool Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
+static bool Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
 {
-    if (ext_dev == NULL)
+    if ((ext_dev == NULL) || \
+        (ext_dev->api == NULL))
         return false;
 
     ext_dev->start_addr  = 0;
@@ -2126,7 +2120,9 @@ static bool Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
 
     if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
     {
-        if (To_DevW25Qxx_API(ext_dev->api)->info == NULL)
+        ext_dev->obj = Storage_Malloc(sizeof(DevW25QxxObj_TypeDef));
+        if ((ext_dev->obj == NULL) || \
+            (To_DevW25Qxx_API(ext_dev->api)->info == NULL))
             return false;
 
         ext_dev->start_addr  = W25QXX_BASE_ADDRESS;
@@ -2135,31 +2131,6 @@ static bool Storage_Set_BaseInfo(Storage_ExtFLashDevObj_TypeDef *ext_dev)
         ext_dev->total_size  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).flash_size;
         ext_dev->page_num    = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_num;
         ext_dev->page_size   = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_size;
-    }
-    else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
-    {
-        if (To_DevW25Nxx_API(ext_dev->api)->info == NULL)
-            return false;
-        
-        ext_dev->start_addr  = W25NXX_BASE_ADDRESS;
-        ext_dev->total_size  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).flash_size;
-        ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
-        ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;
-    }
-
-    return true;
-}
-
-static bool Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
-{
-    if (ext_dev == NULL)
-        return false;
-
-    if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
-    {
-        ext_dev->obj = Storage_Malloc(sizeof(DevW25QxxObj_TypeDef));
-        if (ext_dev->obj == NULL)
-            return false;
 
         To_DevW25Qxx_OBJ(ext_dev->obj)->systick = Storage_GetSysTick_Ptr;
         To_DevW25Qxx_OBJ(ext_dev->obj)->cs_ctl = StoragePort_Api.cs_ctl;
@@ -2173,8 +2144,14 @@ static bool Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
     else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
     {
         ext_dev->obj = Storage_Malloc(sizeof(DevW25NxxObj_TypeDef));
-        if (ext_dev->obj == NULL)
+        if ((ext_dev->obj == NULL) || \
+            (To_DevW25Nxx_API(ext_dev->api)->info == NULL))
             return false;
+        
+        ext_dev->start_addr  = W25NXX_BASE_ADDRESS;
+        ext_dev->total_size  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).flash_size;
+        ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
+        ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;
 
         To_DevW25Nxx_OBJ(ext_dev->obj)->systick = Storage_GetSysTick_Ptr;
         To_DevW25Nxx_OBJ(ext_dev->obj)->cs_ctl = StoragePort_Api.cs_ctl;
