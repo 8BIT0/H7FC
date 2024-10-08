@@ -187,11 +187,11 @@ void TaskBlackBox_Init(void)
     memset(&Altitude_Log_DataPipe, 0, sizeof(DataPipeObj_TypeDef));
     memset(&CtlData_Log_DataPipe,  0, sizeof(DataPipeObj_TypeDef));
 
-    memset(DataPipe_DataObjAddr(LogImu_Data),     0, DataPipe_DataSize(LogImu_Data));
-    memset(DataPipe_DataObjAddr(LogBaro_Data),    0, DataPipe_DataSize(LogBaro_Data));
-    memset(DataPipe_DataObjAddr(LogAtt_Data),     0, DataPipe_DataSize(LogAtt_Data));
-    memset(DataPipe_DataObjAddr(LogAlt_Data),     0, DataPipe_DataSize(LogAlt_Data));
-    memset(DataPipe_DataObjAddr(LogCtl_Data),     0, DataPipe_DataSize(LogCtl_Data));
+    memset(DataPipe_DataObjAddr(LogImu_Data),  0, DataPipe_DataSize(LogImu_Data));
+    memset(DataPipe_DataObjAddr(LogBaro_Data), 0, DataPipe_DataSize(LogBaro_Data));
+    memset(DataPipe_DataObjAddr(LogAtt_Data),  0, DataPipe_DataSize(LogAtt_Data));
+    memset(DataPipe_DataObjAddr(LogAlt_Data),  0, DataPipe_DataSize(LogAlt_Data));
+    memset(DataPipe_DataObjAddr(LogCtl_Data),  0, DataPipe_DataSize(LogCtl_Data));
 
     if (!Queue.create_with_buf(&BlackBox_Queue, "BlackBox_Queue", BlackBox_Buff, BlackBox_Buff_Size))
         return;
