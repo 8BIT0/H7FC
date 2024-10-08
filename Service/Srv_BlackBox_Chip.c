@@ -1,7 +1,4 @@
 #include "Srv_BlackBox_Def.h"
-#include "../System/storage/Storage.h"
-#include "HW_Def.h"
-#include "debug_util.h"
 
 typedef struct
 {
@@ -40,16 +37,13 @@ static  Chip_BlackBox_Monitor_TypeDef ChipBlackBox_Monitor = {
     .rom_size = 0,
 };
 
-#define BLACKBOX_CHIP_TAG "[ BLACKBOX CHIP INFO ] "
-#define BLACKBOX_CHIP_INFO(fmt, ...) Debug_Print(&DebugPort, BLACKBOX_CHIP_TAG , fmt, ##__VA_ARGS__)
-
 /* external function */
-static uint32_t SrvChip_BlackBox_Init(SrvBlackBox_Log_Callback callback);
-static bool SrvChip_BlackBox_PushData(uint8_t *p_data, uint32_t len);
-static bool SrvChip_BlackBox_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len);
-static bool SrvChip_BlackBox_GetInfo(uint32_t *cnt, uint32_t *size, bool *enable_state);
+static uint32_t SrvChip_BlackBox_Init(SrvBlackBox_Log_Callback callback, SrvBlackBox_DevInfo_TypeDef devinfo);
+static bool SrvChip_BlackBox_PushData(SrvBlackBox_write_callback p_write, uint8_t *p_data, uint32_t len);
+static bool SrvChip_BlackBox_Read(SrvBlackBox_read_callback p_read, uint32_t addr_offset, uint8_t *p_data, uint32_t len);
+static bool SrvChip_BlackBox_GetInfo(SrvBlackBox_read_callback p_read, uint32_t *cnt, uint32_t *size, bool *enable_state);
 static bool SrvChip_BlackBox_Enable(void);
-static bool SrvChip_BlackBox_Disable(void);
+static bool SrvChip_BlackBox_Disable(SrvBlackBox_write_callback p_write);
 
 SrvBlackBox_TypeDef SrvChip_BlackBox = {
     .init = SrvChip_BlackBox_Init,
@@ -61,47 +55,43 @@ SrvBlackBox_TypeDef SrvChip_BlackBox = {
 };
 
 /* return log unit size */
-static uint32_t SrvChip_BlackBox_Init(SrvBlackBox_Log_Callback callback)
+static uint32_t SrvChip_BlackBox_Init(SrvBlackBox_Log_Callback callback, SrvBlackBox_DevInfo_TypeDef devinfo)
 {
-    Storage_ExtFLashDevObj_TypeDef dev;
-    memset(&dev, 0, sizeof(Storage_ExtFLashDevObj_TypeDef));
+    UNUSED(callback);
 
     ChipBlackBox_Monitor.init = false;
     /* get external storage flash info */
-    if (Storage.get_dev_info(&dev) == Storage_Error_None)
+    if ((devinfo.total_str_size + devinfo.str_start_addr) > devinfo.phy_start_addr)
     {
-        if ((dev.total_size + dev.start_addr) > BlackBox_Storage_Start_Addr)
+        ChipBlackBox_Monitor.info_addr = devinfo.phy_start_addr;
+        ChipBlackBox_Monitor.info_size = devinfo.sector_size;
+        ChipBlackBox_Monitor.rom_addr = ChipBlackBox_Monitor.info_addr + ChipBlackBox_Monitor.info_size;
+        ChipBlackBox_Monitor.rom_size = (devinfo.total_str_size + devinfo.str_start_addr) - (devinfo.phy_start_addr + devinfo.sector_size);
+        ChipBlackBox_Monitor.log_unit = devinfo.sector_size;
+
+        if (ChipBlackBox_Monitor.log_unit)
         {
-            ChipBlackBox_Monitor.info_addr = BlackBox_Storage_Start_Addr;
-            ChipBlackBox_Monitor.info_size = dev.sector_size;
-            ChipBlackBox_Monitor.rom_addr = ChipBlackBox_Monitor.info_addr + ChipBlackBox_Monitor.info_size;
-            ChipBlackBox_Monitor.rom_size = (dev.total_size + dev.start_addr) - (BlackBox_Storage_Start_Addr + dev.sector_size);
-            ChipBlackBox_Monitor.log_unit = dev.sector_size;
-
-            if (ChipBlackBox_Monitor.log_unit)
+            ChipBlackBox_Monitor.p_buf = SrvOsCommon.malloc(ChipBlackBox_Monitor.log_unit);
+            if (ChipBlackBox_Monitor.p_buf == NULL)
             {
-                ChipBlackBox_Monitor.p_buf = SrvOsCommon.malloc(ChipBlackBox_Monitor.log_unit);
-                if (ChipBlackBox_Monitor.p_buf == NULL)
-                {
-                    SrvOsCommon.free(ChipBlackBox_Monitor.p_buf);
-                    return 0;
-                }
-            }
-            else
+                SrvOsCommon.free(ChipBlackBox_Monitor.p_buf);
                 return 0;
-
-            ChipBlackBox_Monitor.init = true;
+            }
         }
+        else
+            return 0;
+
+        ChipBlackBox_Monitor.init = true;
     }
 
     return ChipBlackBox_Monitor.log_unit;
 }
 
-static bool SrvChip_BlackBox_PushData(uint8_t *p_data, uint32_t len)
+static bool SrvChip_BlackBox_PushData(SrvBlackBox_write_callback p_write, uint8_t *p_data, uint32_t len)
 {
     uint32_t update_addr = 0;
 
-    if (ChipBlackBox_Monitor.init && ChipBlackBox_Monitor.enable)
+    if (ChipBlackBox_Monitor.init && ChipBlackBox_Monitor.enable && p_write)
     {
         if ((ChipBlackBox_Monitor.rom_size - ChipBlackBox_Monitor.log_size) < len)
         {
@@ -114,11 +104,8 @@ static bool SrvChip_BlackBox_PushData(uint8_t *p_data, uint32_t len)
         update_addr = ChipBlackBox_Monitor.rom_addr + ChipBlackBox_Monitor.log_size;
 
         /* write data to balckbox data section */
-        if (!Storage.write_section(update_addr, p_data, len))
-        {
-            BLACKBOX_CHIP_INFO("log failed\r\n");
+        if (!p_write(update_addr, p_data, len))
             return false;
-        }
 
         ChipBlackBox_Monitor.log_cnt ++;
         ChipBlackBox_Monitor.log_size += ChipBlackBox_Monitor.log_unit;
@@ -132,13 +119,13 @@ static bool SrvChip_BlackBox_PushData(uint8_t *p_data, uint32_t len)
 }
 
 /* still in developping */
-static bool SrvChip_BlackBox_Read(uint32_t addr_offset, uint8_t *p_data, uint32_t len)
+static bool SrvChip_BlackBox_Read(SrvBlackBox_read_callback p_read, uint32_t addr_offset, uint8_t *p_data, uint32_t len)
 {
     Chip_BlackBox_Info_TypeDef info;
     uint32_t read_addr = 0;
 
     memset(&info, 0, sizeof(Chip_BlackBox_Info_TypeDef));
-    if (ChipBlackBox_Monitor.init && p_data && len && \
+    if (ChipBlackBox_Monitor.init && p_data && len && p_read && \
         ((addr_offset % ChipBlackBox_Monitor.log_unit) == 0) && \
         ((len % ChipBlackBox_Monitor.log_unit) == 0) && \
         (addr_offset < ChipBlackBox_Monitor.rom_size))
@@ -146,7 +133,7 @@ static bool SrvChip_BlackBox_Read(uint32_t addr_offset, uint8_t *p_data, uint32_
         read_addr = ChipBlackBox_Monitor.rom_addr + addr_offset;
 
         /* get info first */
-        if (!Storage.read_section(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_buf, ChipBlackBox_Monitor.info_size))
+        if (!p_read(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_buf, ChipBlackBox_Monitor.info_size))
             return false;
 
         memcpy(&info, ChipBlackBox_Monitor.p_buf, sizeof(Chip_BlackBox_Info_TypeDef));
@@ -154,7 +141,7 @@ static bool SrvChip_BlackBox_Read(uint32_t addr_offset, uint8_t *p_data, uint32_
             return false;
 
         /* get balckbox data */
-        if (!Storage.read_section(read_addr, p_data, len))
+        if (!p_read(read_addr, p_data, len))
             return false;
 
         return true;
@@ -172,19 +159,17 @@ static bool SrvChip_BlackBox_Enable(void)
         ChipBlackBox_Monitor.enable = true;
         return true;
     }
-    else
-        BLACKBOX_CHIP_INFO("enable failed\r\n");
 
     return false;
 }
 
-static bool SrvChip_BlackBox_Disable(void)
+static bool SrvChip_BlackBox_Disable(SrvBlackBox_write_callback p_write)
 {
     Chip_BlackBox_Info_TypeDef BlackBoxDataInfo;
     uint8_t retry = 10;
 
     memset(&BlackBoxDataInfo, 0, sizeof(Chip_BlackBox_Info_TypeDef));
-    if (ChipBlackBox_Monitor.init)
+    if (ChipBlackBox_Monitor.init && p_write)
     {
         ChipBlackBox_Monitor.enable = false;
         BlackBoxDataInfo.cnt = ChipBlackBox_Monitor.log_cnt;
@@ -196,16 +181,11 @@ static bool SrvChip_BlackBox_Disable(void)
         while (retry)
         {
             /* update info section */
-            if (!Storage.write_section(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_buf, ChipBlackBox_Monitor.info_size))
+            if (!p_write(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_buf, ChipBlackBox_Monitor.info_size))
             {
                 retry --;
                 if (retry == 0)
-                {
-                    BLACKBOX_CHIP_INFO("write info failed\r\n");
                     return false;
-                }
-                else
-                    BLACKBOX_CHIP_INFO("info update retry\r\n");
             }
             else
                 return true;
@@ -213,26 +193,26 @@ static bool SrvChip_BlackBox_Disable(void)
             SrvOsCommon.delay_ms(10);
         }
     }
-    else
-        BLACKBOX_CHIP_INFO("disable failed\r\n");
 
     return false;
 }
 
-static bool SrvChip_BlackBox_GetInfo(uint32_t *cnt, uint32_t *size, bool *enable_state)
+static bool SrvChip_BlackBox_GetInfo(SrvBlackBox_read_callback p_read, uint32_t *cnt, uint32_t *size, bool *enable_state)
 {
     Chip_BlackBox_Info_TypeDef info;
 
     memset(&info, 0, sizeof(Chip_BlackBox_Info_TypeDef));
-    if (ChipBlackBox_Monitor.init && cnt && size && enable_state)
+    if (ChipBlackBox_Monitor.init && cnt && size && enable_state && p_read)
     {
-        if (!Storage.read_section(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_buf, ChipBlackBox_Monitor.info_size))
+        if (!p_read(ChipBlackBox_Monitor.info_addr, ChipBlackBox_Monitor.p_buf, ChipBlackBox_Monitor.info_size))
             return false;
 
         memcpy(&info, ChipBlackBox_Monitor.p_buf, sizeof(Chip_BlackBox_Info_TypeDef));
         *cnt = info.cnt;
         *size = info.size;
         *enable_state = ChipBlackBox_Monitor.enable;
+
+        return true;
     }
 
     return false;

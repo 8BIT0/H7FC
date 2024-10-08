@@ -82,12 +82,12 @@ void Task_Manager_Init(void)
 void Task_Manager_CreateTask(void const *arg)
 {
     bool init = false;
-    Storage_ExtFLashDevObj_TypeDef *storage_ExtFlashObj = NULL;
+    StorageDevObj_TypeDef *storage_ExtFlashObj = NULL;
 
     SYS_INFO("%s\r\n", Select_Hardware);
 
 #if (FLASH_CHIP_STATE == ON)
-    storage_ExtFlashObj = (Storage_ExtFLashDevObj_TypeDef *)SrvOsCommon.malloc(sizeof(Storage_ExtFLashDevObj_TypeDef));
+    storage_ExtFlashObj = (StorageDevObj_TypeDef *)SrvOsCommon.malloc(sizeof(StorageDevObj_TypeDef));
 
     if (storage_ExtFlashObj)
     {

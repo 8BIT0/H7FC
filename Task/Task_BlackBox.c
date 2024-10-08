@@ -93,6 +93,8 @@ static void TaskBlackBox_PushFinish_Callback(void);
 void TaskBlackBox_Init(void)
 {
     uint32_t unit = 0;
+    StorageDevObj_TypeDef StorageDevInfo; 
+    SrvBlackBox_DevInfo_TypeDef BlackBoxDevInfo;
     BlackBox_LogInfo_TypeDef BlackBoxInfo;
     /* medium init */
     /* medium auto detect */
@@ -101,6 +103,8 @@ void TaskBlackBox_Init(void)
         --- W25Qxx Storage Chip
         --- Com Output
      */
+    memset(&StorageDevInfo, 0, sizeof(StorageDevObj_TypeDef));
+    memset(&BlackBoxDevInfo, 0, sizeof(SrvBlackBox_DevInfo_TypeDef));
     memset(&BlackBoxInfo, 0, sizeof(BlackBox_LogInfo_TypeDef));
     memset(&Monitor, 0, sizeof(BlackBox_Monitor_TypeDef));
     Monitor.state = BlackBox_Log_Idle;
@@ -126,20 +130,25 @@ void TaskBlackBox_Init(void)
     }
 
     Monitor.write_thread_state = false;
+    Storage.get_dev_info(&StorageDevInfo);
+    BlackBoxDevInfo.phy_start_addr = BlackBox_Storage_Start_Addr;
+    BlackBoxDevInfo.str_start_addr = StorageDevInfo.start_addr;
+    BlackBoxDevInfo.total_str_size = StorageDevInfo.total_size;
+    BlackBoxDevInfo.sector_size = StorageDevInfo.sector_size;
     switch ((uint8_t)Monitor.medium)
     {
         case BlackBox_Medium_Com:
-            unit = SrvCom_BlackBox.init(TaskBlackBox_PushFinish_Callback);
+            unit = SrvCom_BlackBox.init(TaskBlackBox_PushFinish_Callback, BlackBoxDevInfo);
             p_blackbox = &SrvCom_BlackBox;
             break;
 
         case BlackBox_Medium_Chip:
-            unit = SrvChip_BlackBox.init(TaskBlackBox_PushFinish_Callback);
+            unit = SrvChip_BlackBox.init(TaskBlackBox_PushFinish_Callback, BlackBoxDevInfo);
             p_blackbox = &SrvChip_BlackBox;
             break;
 
         case BlackBox_Medium_Card:
-            unit = SrvCard_BlackBox.init(TaskBlackBox_PushFinish_Callback);
+            unit = SrvCard_BlackBox.init(TaskBlackBox_PushFinish_Callback, BlackBoxDevInfo);
             p_blackbox = &SrvCard_BlackBox;
             break;
 
@@ -235,14 +244,14 @@ void TaskBlackBox_Core(void const *arg)
             vTaskDelete(NULL);
 
         osSemaphoreWait(BlackBox_Sem, osWaitForever);
-        if ((Monitor.state == BlackBox_Log_Disable) && p_blackbox->disable && p_blackbox->disable())
+        if ((Monitor.state == BlackBox_Log_Disable) && p_blackbox->disable && p_blackbox->disable(Storage.write_section))
         {
             Monitor.state = BlackBox_Log_Idle;
             Queue.reset(&BlackBox_Queue);
         }
         else if (p_blackbox->push && Monitor.log_unit)
         {
-            if(p_blackbox->push(Monitor.p_log_buf, Monitor.log_unit))
+            if(p_blackbox->push(Storage.write_section, Monitor.p_log_buf, Monitor.log_unit))
             {
                 Monitor.log_cnt ++;
                 Monitor.log_byte_size += Monitor.log_unit;
@@ -864,7 +873,7 @@ static void TaskBlackBox_GetLogInfo(void)
         return;
     }
 
-    p_blackbox->get_info(&log_cnt, &log_size, &log_enable);
+    p_blackbox->get_info(Storage.read_section, &log_cnt, &log_size, &log_enable);
     if (log_enable)
     {
         shellPrint(shell_obj, "[ BlackBox ] is logging\r\n");
@@ -885,7 +894,7 @@ static void TaskBlackBox_GetLogInfo(void)
     memset(&header, 0, BLACKBOX_HEADER_SIZE);
     for (uint16_t i = 0; i < log_cnt; i++)
     {
-        if (p_blackbox->read(addr, Monitor.p_log_buf, Monitor.log_unit))
+        if (p_blackbox->read(Storage.read_section, addr, Monitor.p_log_buf, Monitor.log_unit))
         {
             log_size = Monitor.log_unit;
             p_log_data = Monitor.p_log_buf;

@@ -37,8 +37,8 @@ static uint8_t page_data_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = 
 static uint8_t flash_write_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
 static uint8_t flash_read_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
 
-static bool Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev);
-static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev);
+static bool Storage_Set_DeviceObj(StorageDevObj_TypeDef *ext_dev);
+static bool Storage_Device_Init(StorageDevObj_TypeDef *ext_dev);
 
 static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num);
 static bool Storage_Establish_Tab(Storage_ParaClassType_List class);
@@ -61,13 +61,13 @@ static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behind_free
 static Storage_ErrorCode_List Storage_ItemSlot_Update(uint32_t tab_addr, uint8_t item_index, Storage_BaseSecInfo_TypeDef *p_Sec, Storage_Item_TypeDef item);
 
 /* external function */
-static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev);
+static bool Storage_Init(StorageDevObj_TypeDef *ExtDev);
 static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_ParaClassType_List _class, const char *name);
 static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List _class, const char *name, uint32_t size);
 static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List _class, const char *name, uint8_t *p_data, uint16_t size);
 static Storage_ErrorCode_List Storage_SlotData_Update(Storage_ParaClassType_List _class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size);
 static Storage_ErrorCode_List Storage_Get_Data(Storage_ParaClassType_List _class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size);
-static Storage_ErrorCode_List Storage_Get_DevInfo(Storage_ExtFLashDevObj_TypeDef *info);
+static Storage_ErrorCode_List Storage_Get_DevInfo(StorageDevObj_TypeDef *info);
 static bool Storage_Write_Section(uint32_t addr, uint8_t *p_data, uint16_t len);
 static bool Storage_Read_Section(uint32_t addr, uint8_t *p_data, uint16_t len);
 static bool Storage_Erase_Section(uint32_t addr, uint16_t len);
@@ -93,7 +93,7 @@ Storage_TypeDef Storage = {
     .write_firmware = Storage_Firmware_Write,
 };
 
-static bool Storage_Init(Storage_ExtFLashDevObj_TypeDef *ExtDev)
+static bool Storage_Init(StorageDevObj_TypeDef *ExtDev)
 {
     void *bus_cfg = NULL;
     memset(&Storage_Monitor, 0, sizeof(Storage_Monitor));
@@ -193,17 +193,17 @@ reformat_external_flash_info:
     return Storage_Monitor.init_state;
 }
 
-static Storage_ErrorCode_List Storage_Get_DevInfo(Storage_ExtFLashDevObj_TypeDef *info)
+static Storage_ErrorCode_List Storage_Get_DevInfo(StorageDevObj_TypeDef *info)
 {
-    Storage_ExtFLashDevObj_TypeDef *p_dev = NULL;
+    StorageDevObj_TypeDef *p_dev = NULL;
 
     if (info)
     {
-        memset(info, 0, sizeof(Storage_ExtFLashDevObj_TypeDef));
+        memset(info, 0, sizeof(StorageDevObj_TypeDef));
         if (Storage_Monitor.init_state && Storage_Monitor.ExtDev_ptr)
         {
-            p_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
-            memcpy(info, p_dev, sizeof(Storage_ExtFLashDevObj_TypeDef));
+            p_dev = (StorageDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
+            memcpy(info, p_dev, sizeof(StorageDevObj_TypeDef));
             return Storage_Error_None;
         }
 
@@ -1607,9 +1607,9 @@ static bool Storage_Write_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
 {
     uint32_t write_cnt = 0;
     uint32_t addr_tmp = 0;
-    Storage_ExtFLashDevObj_TypeDef *p_dev = NULL;
+    StorageDevObj_TypeDef *p_dev = NULL;
 
-    p_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
+    p_dev = (StorageDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
     if (addr && p_data && len && p_dev && p_dev->api && p_dev->obj)
     {
         if ((addr % p_dev->sector_size) || \
@@ -1655,9 +1655,9 @@ static bool Storage_Read_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
 {
     uint32_t read_cnt = 0;
     uint32_t addr_tmp = 0;
-    Storage_ExtFLashDevObj_TypeDef *p_dev = NULL;
+    StorageDevObj_TypeDef *p_dev = NULL;
 
-    p_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
+    p_dev = (StorageDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
     if (addr && p_data && len && p_dev && p_dev->api && p_dev->obj)
     {
         if ((addr % p_dev->sector_size) || \
@@ -1697,9 +1697,9 @@ static bool Storage_Erase_Section(uint32_t addr, uint16_t len)
 {
     uint32_t erase_cnt = 0;
     uint32_t addr_tmp = 0;
-    Storage_ExtFLashDevObj_TypeDef *p_dev = NULL;
+    StorageDevObj_TypeDef *p_dev = NULL;
 
-    p_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
+    p_dev = (StorageDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
     if (addr && len && p_dev && p_dev->api && p_dev->obj)
     {
         if ((addr % p_dev->sector_size) || \
@@ -1736,12 +1736,12 @@ static bool Storage_Firmware_Format(void)
 {
     uint32_t format_size = 0;
     uint32_t erase_addr = 0;
-    Storage_ExtFLashDevObj_TypeDef *dev = NULL;
+    StorageDevObj_TypeDef *dev = NULL;
 
     if (!Storage_Monitor.init_state)
         return false;
 
-    dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
+    dev = (StorageDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
     if (dev == NULL)
         return false;
 
@@ -1781,8 +1781,8 @@ static bool Storage_Frimware_Read(uint32_t addr_offset, uint8_t *p_data, uint16_
     uint32_t read_addr = 0;
     uint32_t section_addr = 0;
     uint32_t read_size = 0;
-    Storage_ExtFLashDevObj_TypeDef *dev = NULL;
-    dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
+    StorageDevObj_TypeDef *dev = NULL;
+    dev = (StorageDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
 
     if (dev && p_data && size)
     {
@@ -1821,7 +1821,7 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, uint32_t addr
     uint32_t write_addr = 0;
     uint32_t section_addr = 0;
     uint32_t write_size = 0;
-    Storage_ExtFLashDevObj_TypeDef *dev = NULL;
+    StorageDevObj_TypeDef *dev = NULL;
 
     if ((p_data == NULL) || (size == 0))
         return false;
@@ -1834,7 +1834,7 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, uint32_t addr
     
     if (medium == External_Flash)
     {
-        dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
+        dev = (StorageDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
         if (dev == NULL)
             return false;
 
@@ -1898,7 +1898,7 @@ static bool Storage_ExtFlash_ParaSec_Read(uint32_t addr_offset, uint8_t *p_data,
     uint32_t section_size = 0;
     uint32_t read_offset = 0;
     uint32_t read_len = len;
-    Storage_ExtFLashDevObj_TypeDef *dev = NULL;
+    StorageDevObj_TypeDef *dev = NULL;
 
     if ((Storage_Monitor.ExtDev_ptr == NULL) || \
         (p_data == 0) || \
@@ -1906,7 +1906,7 @@ static bool Storage_ExtFlash_ParaSec_Read(uint32_t addr_offset, uint8_t *p_data,
         return false;
         
     read_start_addr = Storage_Monitor.external_info.base_addr + addr_offset;       
-    dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
+    dev = (StorageDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
     if ((dev->api == NULL) || (dev->obj == NULL))
         return false;
 
@@ -1978,7 +1978,7 @@ static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data
     uint32_t section_size = 0;
     uint32_t write_offset = 0;
     uint32_t write_len = len;
-    Storage_ExtFLashDevObj_TypeDef *dev = NULL;
+    StorageDevObj_TypeDef *dev = NULL;
 
     if ((Storage_Monitor.ExtDev_ptr == NULL) || \
         (p_data == NULL) || \
@@ -1986,7 +1986,7 @@ static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data
         return false;
         
     write_start_addr = Storage_Monitor.external_info.base_addr + addr_offset;
-    dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
+    dev = (StorageDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
     if ((dev->api == NULL) || (dev->obj == NULL))
         return false;
 
@@ -2067,13 +2067,13 @@ static bool Storage_ExtFlash_ParaSec_Write(uint32_t addr_offset, uint8_t *p_data
 static bool Storage_ExtFlash_ParaSec_Erase(uint32_t addr_offset, uint32_t len)
 {
     uint32_t erase_start_addr = 0;
-    Storage_ExtFLashDevObj_TypeDef *dev = NULL;
+    StorageDevObj_TypeDef *dev = NULL;
 
     if ((Storage_Monitor.ExtDev_ptr != NULL) && len)
     {
         /* erase external flash sector */
         erase_start_addr = Storage_Monitor.external_info.base_addr + addr_offset;
-        dev = (Storage_ExtFLashDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
+        dev = (StorageDevObj_TypeDef *)(Storage_Monitor.ExtDev_ptr);
     
         switch((uint8_t)dev->chip_type)
         {
@@ -2105,7 +2105,7 @@ static bool Storage_ExtFlash_EraseAll(void)
     return false;
 }
 
-static bool Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
+static bool Storage_Set_DeviceObj(StorageDevObj_TypeDef *ext_dev)
 {
     if ((ext_dev == NULL) || \
         (ext_dev->api == NULL))
@@ -2132,12 +2132,12 @@ static bool Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
         ext_dev->page_num    = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_num;
         ext_dev->page_size   = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_size;
 
-        To_DevW25Qxx_OBJ(ext_dev->obj)->systick = Storage_GetSysTick_Ptr;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->cs_ctl = StoragePort_Api.cs_ctl;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_tx = StoragePort_Api.bus_tx;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_rx = StoragePort_Api.bus_rx;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->systick   = Storage_GetSysTick_Ptr;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->cs_ctl    = StoragePort_Api.cs_ctl;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_tx    = StoragePort_Api.bus_tx;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_rx    = StoragePort_Api.bus_rx;
         To_DevW25Qxx_OBJ(ext_dev->obj)->bus_trans = StoragePort_Api.bus_trans;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->delay_ms = SrvOsCommon.delay_ms;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->delay_ms  = SrvOsCommon.delay_ms;
 
         return true;
     }
@@ -2153,12 +2153,12 @@ static bool Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
         ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
         ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;
 
-        To_DevW25Nxx_OBJ(ext_dev->obj)->systick = Storage_GetSysTick_Ptr;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->cs_ctl = StoragePort_Api.cs_ctl;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_tx = StoragePort_Api.bus_tx;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_rx = StoragePort_Api.bus_rx;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->systick   = Storage_GetSysTick_Ptr;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->cs_ctl    = StoragePort_Api.cs_ctl;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_tx    = StoragePort_Api.bus_tx;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_rx    = StoragePort_Api.bus_rx;
         To_DevW25Nxx_OBJ(ext_dev->obj)->bus_trans = StoragePort_Api.bus_trans;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->delay_ms = SrvOsCommon.delay_ms;
+        To_DevW25Nxx_OBJ(ext_dev->obj)->delay_ms  = SrvOsCommon.delay_ms;
 
         return true;
     }
@@ -2166,7 +2166,7 @@ static bool Storage_Set_DeviceObj(Storage_ExtFLashDevObj_TypeDef *ext_dev)
     return false;
 }
 
-static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev)
+static bool Storage_Device_Init(StorageDevObj_TypeDef *ext_dev)
 {
     uint8_t init_state = 0;
 
@@ -2179,7 +2179,6 @@ static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev)
             (To_DevW25Qxx_API(ext_dev->api)->info == NULL))
             return false;
 
-        STORAGE_INFO("W25Qxx init\r\n");
         init_state = To_DevW25Qxx_API(ext_dev->api)->init(To_DevW25Qxx_OBJ(ext_dev->obj));
         Storage_Monitor.module_prod_type = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_type;
         Storage_Monitor.module_prod_code = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_code;
@@ -2192,7 +2191,6 @@ static bool Storage_Device_Init(Storage_ExtFLashDevObj_TypeDef *ext_dev)
             (To_DevW25Nxx_API(ext_dev->api)->info == NULL))
             return false;
 
-        STORAGE_INFO("W25Nxx init\r\n");
         init_state = To_DevW25Nxx_API(ext_dev->api)->init(To_DevW25Nxx_OBJ(ext_dev->obj));
         Storage_Monitor.module_prod_type = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_type;
         Storage_Monitor.module_prod_code = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_code;
@@ -2464,7 +2462,7 @@ SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) |
 
 static void Storage_Show_ModuleInfo(void)
 {
-    Storage_ExtFLashDevObj_TypeDef *p_ext_flash = NULL; 
+    StorageDevObj_TypeDef *p_ext_flash = NULL; 
     Shell *shell_obj = Shell_GetInstence();
     void *dev_api = NULL;
     void *dev_obj = NULL;
@@ -2900,7 +2898,7 @@ static void Storage_Dump_DataSection(Storage_ParaClassType_List class)
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Shell *shell_obj = Shell_GetInstence();
-    Storage_ExtFLashDevObj_TypeDef *ext_dev = NULL;
+    StorageDevObj_TypeDef *ext_dev = NULL;
 
     if (shell_obj == NULL)
         return;
@@ -2920,7 +2918,7 @@ static void Storage_Dump_DataSection(Storage_ParaClassType_List class)
 
     if (Storage_Monitor.ExtDev_ptr)
     {
-        ext_dev = (Storage_ExtFLashDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
+        ext_dev = (StorageDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
         if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
         {
             flash_sector_size = To_DevW25Qxx_API(ext_dev->api)->info(ext_dev->obj).subsector_size;

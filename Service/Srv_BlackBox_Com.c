@@ -3,12 +3,12 @@
 #define COM_BLACKBOX_BAUDRATE 921600
 
 /* external function */
-static uint32_t SrvCom_BlackBox_Init(SrvBlackBox_Log_Callback callback);
-static bool SrvCom_BlackBox_PushData(uint8_t *p_data, uint16_t len);
-static bool SrvCom_BlackBox_Read(uint32_t addr_offset, uint8_t *p_data, uint16_t len);
-static bool SrvCom_BlackBox_GetInfo(uint32_t *cnt, uint32_t *size, bool *enable_state);
+static uint32_t SrvCom_BlackBox_Init(SrvBlackBox_Log_Callback callback, SrvBlackBox_DevInfo_TypeDef devinfo);
+static bool SrvCom_BlackBox_PushData(SrvBlackBox_write_callback p_write, uint8_t *p_data, uint16_t len);
+static bool SrvCom_BlackBox_Read(SrvBlackBox_read_callback p_read, uint32_t addr_offset, uint8_t *p_data, uint16_t len);
+static bool SrvCom_BlackBox_GetInfo(SrvBlackBox_read_callback p_read, uint32_t *cnt, uint32_t *size, bool *enable_state);
 static bool SrvCom_BlackBox_Enable(void);
-static bool SrvCom_BlackBox_Disable(void);
+static bool SrvCom_BlackBox_Disable(SrvBlackBox_write_callback p_write);
 
 SrvBlackBox_TypeDef SrvCom_BlackBox = {
     .init = SrvCom_BlackBox_Init,
@@ -19,17 +19,17 @@ SrvBlackBox_TypeDef SrvCom_BlackBox = {
     .get_info = SrvCom_BlackBox_GetInfo,
 };
 
-static uint32_t SrvCom_BlackBox_Init(SrvBlackBox_Log_Callback callback)
+static uint32_t SrvCom_BlackBox_Init(SrvBlackBox_Log_Callback callback, SrvBlackBox_DevInfo_TypeDef devinfo)
 {
     return 0;
 }
 
-static bool SrvCom_BlackBox_PushData(uint8_t *p_data, uint16_t len)
+static bool SrvCom_BlackBox_PushData(SrvBlackBox_write_callback p_write, uint8_t *p_data, uint16_t len)
 {
     return false;
 }
 
-static bool SrvCom_BlackBox_Read(uint32_t addr_offset, uint8_t *p_data, uint16_t len)
+static bool SrvCom_BlackBox_Read(SrvBlackBox_read_callback p_read, uint32_t addr_offset, uint8_t *p_data, uint16_t len)
 {
     return false;
 }
@@ -39,12 +39,12 @@ static bool SrvCom_BlackBox_Enable(void)
     return false;
 }
 
-static bool SrvCom_BlackBox_Disable(void)
+static bool SrvCom_BlackBox_Disable(SrvBlackBox_write_callback p_write)
 {
     return false;
 }
 
-static bool SrvCom_BlackBox_GetInfo(uint32_t *cnt, uint32_t *size, bool *enable_state)
+static bool SrvCom_BlackBox_GetInfo(SrvBlackBox_read_callback p_read, uint32_t *cnt, uint32_t *size, bool *enable_state)
 {
     if (cnt && size && enable_state)
     {
