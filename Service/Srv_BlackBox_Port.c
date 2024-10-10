@@ -10,7 +10,7 @@ static bool SrvCom_BlackBox_GetInfo(SrvBlackBox_read_callback p_read, uint32_t *
 static bool SrvCom_BlackBox_Enable(void);
 static bool SrvCom_BlackBox_Disable(SrvBlackBox_write_callback p_write);
 
-SrvBlackBox_TypeDef SrvCom_BlackBox = {
+SrvBlackBox_TypeDef SrvPort_BlackBox = {
     .init = SrvCom_BlackBox_Init,
     .push = SrvCom_BlackBox_PushData,
     .read = SrvCom_BlackBox_Read,

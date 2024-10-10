@@ -30,7 +30,7 @@ typedef struct
     bool (*get_info)(SrvBlackBox_read_callback p_read, uint32_t *cnt, uint32_t *size, bool *enable_state);
 } SrvBlackBox_TypeDef;
 
-extern SrvBlackBox_TypeDef SrvCom_BlackBox;
+extern SrvBlackBox_TypeDef SrvPort_BlackBox;
 extern SrvBlackBox_TypeDef SrvCard_BlackBox;
 extern SrvBlackBox_TypeDef SrvChip_BlackBox;
 
