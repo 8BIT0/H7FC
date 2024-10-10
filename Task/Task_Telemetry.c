@@ -197,41 +197,42 @@ static bool Telemetry_RC_Sig_Init(Telemetry_RCInput_TypeDef *RC_Input_obj, SrvRe
     /* create receiver port */
     switch (receiver_obj->port_type)
     {
-    case Receiver_Port_Serial:
-        if (receiver_obj->Frame_type == Receiver_Type_CRSF)
-        {
-            port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
-                                                     RECEIVER_CRSF_RX_DMA,
-                                                     RECEIVER_CRSF_RX_DMA_STREAM,
-                                                     RECEIVER_CRSF_TX_DMA,
-                                                     RECEIVER_CRSF_TX_DMA_STREAM,
-                                                     CRSF_PIN_SWAP,
-                                                     CRSF_TX_PIN,
-                                                     CRSF_RX_PIN);
-        }
-        else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
-        {
+        case Receiver_Port_Serial:
+            if (receiver_obj->Frame_type == Receiver_Type_CRSF)
+            {
+                port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
+                                                        RECEIVER_CRSF_RX_DMA,
+                                                        RECEIVER_CRSF_RX_DMA_STREAM,
+                                                        RECEIVER_CRSF_TX_DMA,
+                                                        RECEIVER_CRSF_TX_DMA_STREAM,
+                                                        CRSF_PIN_SWAP,
+                                                        CRSF_TX_PIN,
+                                                        CRSF_RX_PIN);
+            }
+            else if (receiver_obj->Frame_type == Receiver_Type_Sbus)
+            {
+                /* still in developing */
+                port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
+                                                        RECEIVER_SBUS_RX_DMA,
+                                                        RECEIVER_SBUS_RX_DMA_STREAM,
+                                                        RECEIVER_SBUS_TX_DMA,
+                                                        RECEIVER_SBUS_TX_DMA_STREAM,
+                                                        false,
+                                                        SBUS_TX_PIN,
+                                                        SBUS_RX_PIN);
+
+                /* set inverter pin */
+            }
+            break;
+
+        case Receiver_Port_Spi:
             /* still in developing */
-            port_ptr = SrvReceiver.create_serial_obj(RECEIVER_PORT,
-                                                     RECEIVER_SBUS_RX_DMA,
-                                                     RECEIVER_SBUS_RX_DMA_STREAM,
-                                                     RECEIVER_SBUS_TX_DMA,
-                                                     RECEIVER_SBUS_TX_DMA_STREAM,
-                                                     false,
-                                                     SBUS_TX_PIN,
-                                                     SBUS_RX_PIN);
+            port_ptr = SrvReceiver.create_spi_obj();
+            if (port_ptr == NULL)
+                return false;
+            break;
 
-            /* set inverter pin */
-        }
-        break;
-
-    case Receiver_Port_Spi:
-        /* still in developing */
-        port_ptr = SrvReceiver.create_spi_obj();
-        break;
-
-    default:
-        return false;
+        default: return false;
     }
 
     /* init receiver object */
