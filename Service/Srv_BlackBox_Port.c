@@ -1,50 +1,50 @@
 #include "Srv_BlackBox_Def.h"
 
-#define COM_BLACKBOX_BAUDRATE 921600
+#define Port_BLACKBOX_BAUDRATE 921600
 
 /* external function */
-static uint32_t SrvCom_BlackBox_Init(SrvBlackBox_Log_Callback callback, SrvBlackBox_DevInfo_TypeDef devinfo);
-static bool SrvCom_BlackBox_PushData(SrvBlackBox_write_callback p_write, uint8_t *p_data, uint16_t len);
-static bool SrvCom_BlackBox_Read(SrvBlackBox_read_callback p_read, uint32_t addr_offset, uint8_t *p_data, uint16_t len);
-static bool SrvCom_BlackBox_GetInfo(SrvBlackBox_read_callback p_read, uint32_t *cnt, uint32_t *size, bool *enable_state);
-static bool SrvCom_BlackBox_Enable(void);
-static bool SrvCom_BlackBox_Disable(SrvBlackBox_write_callback p_write);
+static uint32_t SrvPort_BlackBox_Init(SrvBlackBox_Log_Callback callback, SrvBlackBox_DevInfo_TypeDef devinfo);
+static bool SrvPort_BlackBox_PushData(SrvBlackBox_write_callback p_write, uint8_t *p_data, uint16_t len);
+static bool SrvPort_BlackBox_Read(SrvBlackBox_read_callback p_read, uint32_t addr_offset, uint8_t *p_data, uint16_t len);
+static bool SrvPort_BlackBox_GetInfo(SrvBlackBox_read_callback p_read, uint32_t *cnt, uint32_t *size, bool *enable_state);
+static bool SrvPort_BlackBox_Enable(void);
+static bool SrvPort_BlackBox_Disable(SrvBlackBox_write_callback p_write);
 
 SrvBlackBox_TypeDef SrvPort_BlackBox = {
-    .init = SrvCom_BlackBox_Init,
-    .push = SrvCom_BlackBox_PushData,
-    .read = SrvCom_BlackBox_Read,
-    .enable = SrvCom_BlackBox_Enable,
-    .disable = SrvCom_BlackBox_Disable,
-    .get_info = SrvCom_BlackBox_GetInfo,
+    .init = SrvPort_BlackBox_Init,
+    .push = SrvPort_BlackBox_PushData,
+    .read = SrvPort_BlackBox_Read,
+    .enable = SrvPort_BlackBox_Enable,
+    .disable = SrvPort_BlackBox_Disable,
+    .get_info = SrvPort_BlackBox_GetInfo,
 };
 
-static uint32_t SrvCom_BlackBox_Init(SrvBlackBox_Log_Callback callback, SrvBlackBox_DevInfo_TypeDef devinfo)
+static uint32_t SrvPort_BlackBox_Init(SrvBlackBox_Log_Callback callback, SrvBlackBox_DevInfo_TypeDef devinfo)
 {
     return 0;
 }
 
-static bool SrvCom_BlackBox_PushData(SrvBlackBox_write_callback p_write, uint8_t *p_data, uint16_t len)
+static bool SrvPort_BlackBox_PushData(SrvBlackBox_write_callback p_write, uint8_t *p_data, uint16_t len)
 {
     return false;
 }
 
-static bool SrvCom_BlackBox_Read(SrvBlackBox_read_callback p_read, uint32_t addr_offset, uint8_t *p_data, uint16_t len)
+static bool SrvPort_BlackBox_Read(SrvBlackBox_read_callback p_read, uint32_t addr_offset, uint8_t *p_data, uint16_t len)
 {
     return false;
 }
 
-static bool SrvCom_BlackBox_Enable(void)
+static bool SrvPort_BlackBox_Enable(void)
 {
     return false;
 }
 
-static bool SrvCom_BlackBox_Disable(SrvBlackBox_write_callback p_write)
+static bool SrvPort_BlackBox_Disable(SrvBlackBox_write_callback p_write)
 {
     return false;
 }
 
-static bool SrvCom_BlackBox_GetInfo(SrvBlackBox_read_callback p_read, uint32_t *cnt, uint32_t *size, bool *enable_state)
+static bool SrvPort_BlackBox_GetInfo(SrvBlackBox_read_callback p_read, uint32_t *cnt, uint32_t *size, bool *enable_state)
 {
     if (cnt && size && enable_state)
     {
