@@ -394,8 +394,7 @@ static uint32_t TaskFrameCTL_Set_RadioPort(FrameCTL_PortType_List port_type, uin
             }
             break;
 
-        default:
-            return port_hdl;
+        default: break;
     }
 
     return port_hdl;
