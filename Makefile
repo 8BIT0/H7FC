@@ -97,7 +97,7 @@ Service/Srv_FileAdapter.c \
 Service/Srv_Upgrade.c \
 Service/Srv_BlackBox_Chip.c \
 Service/Srv_BlackBox_Card.c \
-Service/Srv_BlackBox_Com.c \
+Service/Srv_BlackBox_Port.c \
 DataStructure/Data_Convert_Util.c \
 DataStructure/CusQueue.c \
 DataStructure/linked_list.c \

@@ -1,0 +1,3508 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Srv_Baro.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.SrvBaro_BusInit,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	SrvBaro_BusInit:
+  26              	.LVL0:
+  27              	.LFB144:
+  28              		.file 1 "Service/Srv_Baro.c"
+   1:Service/Srv_Baro.c **** /*
+   2:Service/Srv_Baro.c ****  * Auther: 8_B!T0
+   3:Service/Srv_Baro.c ****  * Baro Sensor Sample Service
+   4:Service/Srv_Baro.c ****  * this file still can be optimized in a big way
+   5:Service/Srv_Baro.c ****  * for currently only one baro sensor can be used
+   6:Service/Srv_Baro.c ****  */
+   7:Service/Srv_Baro.c **** #include "Srv_Baro.h"
+   8:Service/Srv_Baro.c **** #include "Srv_OsCommon.h"
+   9:Service/Srv_Baro.c **** #include "../FCHW_Config.h"
+  10:Service/Srv_Baro.c **** #include "error_log.h"
+  11:Service/Srv_Baro.c **** #include "bsp_iic.h"
+  12:Service/Srv_Baro.c **** #include "bsp_gpio.h"
+  13:Service/Srv_Baro.c **** #include "HW_Def.h"
+  14:Service/Srv_Baro.c **** #include <math.h>
+  15:Service/Srv_Baro.c **** 
+  16:Service/Srv_Baro.c **** #define STANDER_ATMOSPHERIC_PRESSURE (101.325f * 1000)
+  17:Service/Srv_Baro.c **** #define SRVBARO_SMOOTHWINDOW_SIZE 5
+  18:Service/Srv_Baro.c **** 
+  19:Service/Srv_Baro.c **** #define SRVBARO_MAX_SAMPLE_PERIOD 10    // unit: ms 10ms 100hz
+  20:Service/Srv_Baro.c **** #define SRVBARO_MIN_SAMPLE_PERIOD 100   // unit: ms 100ms 10hz
+  21:Service/Srv_Baro.c **** 
+  22:Service/Srv_Baro.c **** /* internal vriable */
+  23:Service/Srv_Baro.c **** SrvBaroObj_TypeDef SrvBaroObj = {
+  24:Service/Srv_Baro.c ****     .type = Baro_Type_DPS310,   /* default set */
+  25:Service/Srv_Baro.c ****     .sample_rate = SRVBARO_SAMPLE_RATE_20HZ,
+  26:Service/Srv_Baro.c ****     .init_err = SrvBaro_Error_None,
+  27:Service/Srv_Baro.c ****     .sensor_data = NULL,
+  28:Service/Srv_Baro.c **** };
+  29:Service/Srv_Baro.c **** 
+  30:Service/Srv_Baro.c **** #if defined MATEKH743_V1_5
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 2
+
+
+  31:Service/Srv_Baro.c **** #if defined  STM32H743xx
+  32:Service/Srv_Baro.c **** static SPI_HandleTypeDef Baro_Bus_Instance;
+  33:Service/Srv_Baro.c **** #endif
+  34:Service/Srv_Baro.c **** static BspGPIO_Obj_TypeDef *p_Baro_CS = NULL;
+  35:Service/Srv_Baro.c **** #elif defined BATEAT32F435_AIO
+  36:Service/Srv_Baro.c **** static void *Baro_Bus_Instance = NULL;
+  37:Service/Srv_Baro.c **** static BspGPIO_Obj_TypeDef *p_Baro_CS = &Baro_CSPin;
+  38:Service/Srv_Baro.c **** #elif defined CCRC_AT32_20 || defined CAIFPV_AIO
+  39:Service/Srv_Baro.c **** static void *Baro_Bus_Instance = NULL;
+  40:Service/Srv_Baro.c **** static BspGPIO_Obj_TypeDef *p_Baro_CS = NULL;
+  41:Service/Srv_Baro.c **** #endif
+  42:Service/Srv_Baro.c **** 
+  43:Service/Srv_Baro.c **** SrvBaroBusObj_TypeDef SrvBaroBus = {
+  44:Service/Srv_Baro.c ****     .type = SrvBaro_Bus_None,
+  45:Service/Srv_Baro.c ****     .init = false,
+  46:Service/Srv_Baro.c ****     .bus_obj = NULL,
+  47:Service/Srv_Baro.c ****     .bus_api = NULL,
+  48:Service/Srv_Baro.c **** };
+  49:Service/Srv_Baro.c **** 
+  50:Service/Srv_Baro.c **** /* internal function */
+  51:Service/Srv_Baro.c **** static bool SrvBaro_IICBus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);
+  52:Service/Srv_Baro.c **** static bool SrvBaro_IICBus_Rx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len);
+  53:Service/Srv_Baro.c **** 
+  54:Service/Srv_Baro.c **** static uint16_t SrvBaro_SPIBus_Tx(uint8_t *p_data, uint16_t len);
+  55:Service/Srv_Baro.c **** static uint16_t SrvBaro_SPIBus_Rx(uint8_t *p_data, uint16_t len);
+  56:Service/Srv_Baro.c **** static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
+  57:Service/Srv_Baro.c **** 
+  58:Service/Srv_Baro.c **** static float SrvBaro_PessureCnvToMeter(float pa);
+  59:Service/Srv_Baro.c **** 
+  60:Service/Srv_Baro.c **** /************************************************************************ Error Tree Item *********
+  61:Service/Srv_Baro.c **** static Error_Handler SrvBaro_Error_Handle = 0;
+  62:Service/Srv_Baro.c **** 
+  63:Service/Srv_Baro.c **** static void SrvBaro_BusInitError(int16_t code, uint8_t *p_arg, uint16_t size);
+  64:Service/Srv_Baro.c **** 
+  65:Service/Srv_Baro.c **** static Error_Obj_Typedef SrvBaro_ErrorList[] = {
+  66:Service/Srv_Baro.c ****     {
+  67:Service/Srv_Baro.c ****         .out = true,
+  68:Service/Srv_Baro.c ****         .log = false,
+  69:Service/Srv_Baro.c ****         .prc_callback = SrvBaro_BusInitError,
+  70:Service/Srv_Baro.c ****         .code = SrvBaro_Error_BadRate,
+  71:Service/Srv_Baro.c ****         .desc = "SrvBaro Bad Sample Rate\r\n",
+  72:Service/Srv_Baro.c ****         .proc_type = Error_Proc_Ignore,
+  73:Service/Srv_Baro.c ****         .prc_data_stream = {
+  74:Service/Srv_Baro.c ****             .p_data = NULL,
+  75:Service/Srv_Baro.c ****             .size = 0,
+  76:Service/Srv_Baro.c ****         },
+  77:Service/Srv_Baro.c ****     },
+  78:Service/Srv_Baro.c ****     {
+  79:Service/Srv_Baro.c ****         .out = true,
+  80:Service/Srv_Baro.c ****         .log = false,
+  81:Service/Srv_Baro.c ****         .prc_callback = SrvBaro_BusInitError,
+  82:Service/Srv_Baro.c ****         .code = SrvBaro_Error_BadType,
+  83:Service/Srv_Baro.c ****         .desc = "SrvBaro Bad Sensor Type\r\n",
+  84:Service/Srv_Baro.c ****         .proc_type = Error_Proc_Ignore,
+  85:Service/Srv_Baro.c ****         .prc_data_stream = {
+  86:Service/Srv_Baro.c ****             .p_data = NULL,
+  87:Service/Srv_Baro.c ****             .size = 0,
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 3
+
+
+  88:Service/Srv_Baro.c ****         },
+  89:Service/Srv_Baro.c ****     },
+  90:Service/Srv_Baro.c ****     {
+  91:Service/Srv_Baro.c ****         .out = true,
+  92:Service/Srv_Baro.c ****         .log = false,
+  93:Service/Srv_Baro.c ****         .prc_callback = SrvBaro_BusInitError,
+  94:Service/Srv_Baro.c ****         .code = SrvBaro_Error_BadSensorObj,
+  95:Service/Srv_Baro.c ****         .desc = "SrvBaro Bad Sensor Object\r\n",
+  96:Service/Srv_Baro.c ****         .proc_type = Error_Proc_Ignore,
+  97:Service/Srv_Baro.c ****         .prc_data_stream = {
+  98:Service/Srv_Baro.c ****             .p_data = NULL,
+  99:Service/Srv_Baro.c ****             .size = 0,
+ 100:Service/Srv_Baro.c ****         },
+ 101:Service/Srv_Baro.c ****     },
+ 102:Service/Srv_Baro.c ****     {
+ 103:Service/Srv_Baro.c ****         .out = true,
+ 104:Service/Srv_Baro.c ****         .log = false,
+ 105:Service/Srv_Baro.c ****         .prc_callback = SrvBaro_BusInitError,
+ 106:Service/Srv_Baro.c ****         .code = SrvBaro_Error_BadSamplePeriod,
+ 107:Service/Srv_Baro.c ****         .desc = "SrvBaro Bad Sample Period\r\n",
+ 108:Service/Srv_Baro.c ****         .proc_type = Error_Proc_Ignore,
+ 109:Service/Srv_Baro.c ****         .prc_data_stream = {
+ 110:Service/Srv_Baro.c ****             .p_data = NULL,
+ 111:Service/Srv_Baro.c ****             .size = 0,
+ 112:Service/Srv_Baro.c ****         },
+ 113:Service/Srv_Baro.c ****     },
+ 114:Service/Srv_Baro.c ****     {
+ 115:Service/Srv_Baro.c ****         .out = true,
+ 116:Service/Srv_Baro.c ****         .log = false,
+ 117:Service/Srv_Baro.c ****         .prc_callback = SrvBaro_BusInitError,
+ 118:Service/Srv_Baro.c ****         .code = SrvBaro_Error_BusInit,
+ 119:Service/Srv_Baro.c ****         .desc = "SrvBaro Bus Init Failed\r\n",
+ 120:Service/Srv_Baro.c ****         .proc_type = Error_Proc_Ignore,
+ 121:Service/Srv_Baro.c ****         .prc_data_stream = {
+ 122:Service/Srv_Baro.c ****             .p_data = NULL,
+ 123:Service/Srv_Baro.c ****             .size = 0,
+ 124:Service/Srv_Baro.c ****         },
+ 125:Service/Srv_Baro.c ****     },
+ 126:Service/Srv_Baro.c ****     {
+ 127:Service/Srv_Baro.c ****         .out = true,
+ 128:Service/Srv_Baro.c ****         .log = false,
+ 129:Service/Srv_Baro.c ****         .prc_callback = SrvBaro_BusInitError,
+ 130:Service/Srv_Baro.c ****         .code = SrvBaro_Error_FilterInit,
+ 131:Service/Srv_Baro.c ****         .desc = "SrvBaro Sensor Filter Init Failed\r\n",
+ 132:Service/Srv_Baro.c ****         .proc_type = Error_Proc_Immd, 
+ 133:Service/Srv_Baro.c ****         .prc_data_stream = {
+ 134:Service/Srv_Baro.c ****             .p_data = NULL,
+ 135:Service/Srv_Baro.c ****             .size = 0,
+ 136:Service/Srv_Baro.c ****         },
+ 137:Service/Srv_Baro.c ****     },
+ 138:Service/Srv_Baro.c ****     {
+ 139:Service/Srv_Baro.c ****         .out = true,
+ 140:Service/Srv_Baro.c ****         .log = false,
+ 141:Service/Srv_Baro.c ****         .prc_callback = SrvBaro_BusInitError,
+ 142:Service/Srv_Baro.c ****         .code = SrvBaro_Error_DevInit,
+ 143:Service/Srv_Baro.c ****         .desc = "SrvBaro Sensor Device Init Failed\r\n",
+ 144:Service/Srv_Baro.c ****         .proc_type = Error_Proc_Immd, 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 4
+
+
+ 145:Service/Srv_Baro.c ****         .prc_data_stream = {
+ 146:Service/Srv_Baro.c ****             .p_data = NULL,
+ 147:Service/Srv_Baro.c ****             .size = 0,
+ 148:Service/Srv_Baro.c ****         },
+ 149:Service/Srv_Baro.c ****     },
+ 150:Service/Srv_Baro.c **** };
+ 151:Service/Srv_Baro.c **** /************************************************************************ Error Tree Item *********
+ 152:Service/Srv_Baro.c **** 
+ 153:Service/Srv_Baro.c **** /* external function */
+ 154:Service/Srv_Baro.c **** static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bus_type);
+ 155:Service/Srv_Baro.c **** static bool SrvBaro_Sample(void);
+ 156:Service/Srv_Baro.c **** static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data);
+ 157:Service/Srv_Baro.c **** static GenCalib_State_TypeList SrvBaro_Set_Calib(uint16_t cyc);
+ 158:Service/Srv_Baro.c **** static GenCalib_State_TypeList SrvBaro_Get_Calib(void);
+ 159:Service/Srv_Baro.c **** 
+ 160:Service/Srv_Baro.c **** SrvBaro_TypeDef SrvBaro = {
+ 161:Service/Srv_Baro.c ****     .init = SrvBaro_Init,
+ 162:Service/Srv_Baro.c ****     .sample = SrvBaro_Sample,
+ 163:Service/Srv_Baro.c ****     .get_data = SrvBaro_Get_Date,
+ 164:Service/Srv_Baro.c ****     .set_calib = SrvBaro_Set_Calib,
+ 165:Service/Srv_Baro.c ****     .get_calib = SrvBaro_Get_Calib,
+ 166:Service/Srv_Baro.c **** };
+ 167:Service/Srv_Baro.c **** 
+ 168:Service/Srv_Baro.c **** static bool SrvBaro_BusInit(SrvBaroBus_TypeList bus_type)
+ 169:Service/Srv_Baro.c **** {
+  29              		.loc 1 169 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 169 1 is_stmt 0 view .LVU1
+  34 0000 30B5     		push	{r4, r5, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 12
+  37              		.cfi_offset 4, -12
+  38              		.cfi_offset 5, -8
+  39              		.cfi_offset 14, -4
+  40 0002 8BB0     		sub	sp, sp, #44
+  41              	.LCFI1:
+  42              		.cfi_def_cfa_offset 56
+ 170:Service/Srv_Baro.c ****     SrvBaroBus.init = false;
+  43              		.loc 1 170 5 is_stmt 1 view .LVU2
+  44              		.loc 1 170 21 is_stmt 0 view .LVU3
+  45 0004 2B4B     		ldr	r3, .L8
+  46 0006 0022     		movs	r2, #0
+  47 0008 5A70     		strb	r2, [r3, #1]
+ 171:Service/Srv_Baro.c ****     SrvBaroBus.bus_obj = (void *)&Baro_BusCfg;
+  48              		.loc 1 171 5 is_stmt 1 view .LVU4
+  49              		.loc 1 171 24 is_stmt 0 view .LVU5
+  50 000a 2B4A     		ldr	r2, .L8+4
+  51 000c 9A60     		str	r2, [r3, #8]
+ 172:Service/Srv_Baro.c ****     SrvBaroBus.type = bus_type;
+  52              		.loc 1 172 5 is_stmt 1 view .LVU6
+  53              		.loc 1 172 21 is_stmt 0 view .LVU7
+  54 000e 1870     		strb	r0, [r3]
+ 173:Service/Srv_Baro.c ****     
+ 174:Service/Srv_Baro.c ****     switch((uint8_t)bus_type)
+  55              		.loc 1 174 5 is_stmt 1 view .LVU8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 5
+
+
+  56 0010 0128     		cmp	r0, #1
+  57 0012 05D0     		beq	.L2
+  58 0014 0228     		cmp	r0, #2
+  59 0016 20D0     		beq	.L3
+  60 0018 0024     		movs	r4, #0
+  61              	.LVL1:
+  62              	.L4:
+ 175:Service/Srv_Baro.c ****     {
+ 176:Service/Srv_Baro.c ****         case SrvBaro_Bus_IIC:
+ 177:Service/Srv_Baro.c ****             SrvBaroBus.bus_api = (void *)&BspIIC;
+ 178:Service/Srv_Baro.c **** 
+ 179:Service/Srv_Baro.c **** #if defined STM32H743xx
+ 180:Service/Srv_Baro.c ****             ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(I2C_HandleType_Size);
+ 181:Service/Srv_Baro.c ****             if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
+ 182:Service/Srv_Baro.c ****             {
+ 183:Service/Srv_Baro.c ****                 SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
+ 184:Service/Srv_Baro.c ****                 return false;
+ 185:Service/Srv_Baro.c ****             }
+ 186:Service/Srv_Baro.c **** 
+ 187:Service/Srv_Baro.c ****             ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct = SrvOsCommon.malloc(I2C_PeriphCL
+ 188:Service/Srv_Baro.c ****             if (ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct == NULL)
+ 189:Service/Srv_Baro.c ****             {
+ 190:Service/Srv_Baro.c ****                 SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
+ 191:Service/Srv_Baro.c ****                 SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->PeriphClkInitStruct);
+ 192:Service/Srv_Baro.c ****                 return false;
+ 193:Service/Srv_Baro.c ****             }
+ 194:Service/Srv_Baro.c **** #elif defined AT32F435_437
+ 195:Service/Srv_Baro.c ****             ToIIC_BusObj(SrvBaroBus.bus_obj)->handle = SrvOsCommon.malloc(sizeof(I2C_Handle));
+ 196:Service/Srv_Baro.c ****             if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
+ 197:Service/Srv_Baro.c ****             {
+ 198:Service/Srv_Baro.c ****                 SrvOsCommon.free(ToIIC_BusObj(SrvBaroBus.bus_obj)->handle);
+ 199:Service/Srv_Baro.c ****                 return false;
+ 200:Service/Srv_Baro.c ****             }
+ 201:Service/Srv_Baro.c **** #endif
+ 202:Service/Srv_Baro.c ****             if (!ToIIC_BusAPI(SrvBaroBus.bus_api)->init(ToIIC_BusObj(SrvBaroBus.bus_obj)))
+ 203:Service/Srv_Baro.c ****                 return false;
+ 204:Service/Srv_Baro.c **** 
+ 205:Service/Srv_Baro.c ****             SrvBaroBus.init = true;
+ 206:Service/Srv_Baro.c ****             return true;
+ 207:Service/Srv_Baro.c **** 
+ 208:Service/Srv_Baro.c ****         case SrvBaro_Bus_SPI:
+ 209:Service/Srv_Baro.c ****             SrvBaroBus.bus_api = (void *)&BspSPI;
+ 210:Service/Srv_Baro.c **** 
+ 211:Service/Srv_Baro.c ****             /* spi cs pin init */
+ 212:Service/Srv_Baro.c ****             if (!BspGPIO.out_init(*p_Baro_CS))
+ 213:Service/Srv_Baro.c ****                 return false;
+ 214:Service/Srv_Baro.c **** 
+ 215:Service/Srv_Baro.c ****             /* spi bus port init */
+ 216:Service/Srv_Baro.c ****             if (!ToSPI_BusAPI(SrvBaroBus.bus_api)->init(To_NormalSPI_Obj(SrvBaroBus.bus_obj), &Baro
+ 217:Service/Srv_Baro.c ****                 return false;
+ 218:Service/Srv_Baro.c **** 
+ 219:Service/Srv_Baro.c ****             /* set cs pin high */
+ 220:Service/Srv_Baro.c ****             BspGPIO.write(*p_Baro_CS, true);
+ 221:Service/Srv_Baro.c ****             SrvBaroBus.init = true;
+ 222:Service/Srv_Baro.c ****             
+ 223:Service/Srv_Baro.c ****             return true;
+ 224:Service/Srv_Baro.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 6
+
+
+ 225:Service/Srv_Baro.c ****         default: return false;
+ 226:Service/Srv_Baro.c ****     }
+ 227:Service/Srv_Baro.c **** 
+ 228:Service/Srv_Baro.c ****     return false;
+ 229:Service/Srv_Baro.c **** }
+  63              		.loc 1 229 1 is_stmt 0 view .LVU9
+  64 001a 2046     		mov	r0, r4
+  65 001c 0BB0     		add	sp, sp, #44
+  66              	.LCFI2:
+  67              		.cfi_remember_state
+  68              		.cfi_def_cfa_offset 12
+  69              		@ sp needed
+  70 001e 30BD     		pop	{r4, r5, pc}
+  71              	.LVL2:
+  72              	.L2:
+  73              	.LCFI3:
+  74              		.cfi_restore_state
+ 177:Service/Srv_Baro.c **** 
+  75              		.loc 1 177 13 is_stmt 1 view .LVU10
+ 177:Service/Srv_Baro.c **** 
+  76              		.loc 1 177 32 is_stmt 0 view .LVU11
+  77 0020 244C     		ldr	r4, .L8
+  78 0022 264B     		ldr	r3, .L8+8
+  79 0024 6360     		str	r3, [r4, #4]
+ 195:Service/Srv_Baro.c ****             if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
+  80              		.loc 1 195 13 is_stmt 1 view .LVU12
+ 195:Service/Srv_Baro.c ****             if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
+  81              		.loc 1 195 67 is_stmt 0 view .LVU13
+  82 0026 264B     		ldr	r3, .L8+12
+  83 0028 9B6A     		ldr	r3, [r3, #40]
+ 195:Service/Srv_Baro.c ****             if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
+  84              		.loc 1 195 56 view .LVU14
+  85 002a 3420     		movs	r0, #52
+  86              	.LVL3:
+ 195:Service/Srv_Baro.c ****             if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
+  87              		.loc 1 195 56 view .LVU15
+  88 002c 9847     		blx	r3
+  89              	.LVL4:
+ 195:Service/Srv_Baro.c ****             if (ToIIC_BusObj(SrvBaroBus.bus_obj)->handle == NULL)
+  90              		.loc 1 195 54 view .LVU16
+  91 002e 224B     		ldr	r3, .L8+4
+  92 0030 D860     		str	r0, [r3, #12]
+ 196:Service/Srv_Baro.c ****             {
+  93              		.loc 1 196 13 is_stmt 1 view .LVU17
+ 196:Service/Srv_Baro.c ****             {
+  94              		.loc 1 196 17 is_stmt 0 view .LVU18
+  95 0032 A068     		ldr	r0, [r4, #8]
+ 196:Service/Srv_Baro.c ****             {
+  96              		.loc 1 196 49 view .LVU19
+  97 0034 C368     		ldr	r3, [r0, #12]
+ 196:Service/Srv_Baro.c ****             {
+  98              		.loc 1 196 16 view .LVU20
+  99 0036 53B1     		cbz	r3, .L7
+ 202:Service/Srv_Baro.c ****                 return false;
+ 100              		.loc 1 202 13 is_stmt 1 view .LVU21
+ 202:Service/Srv_Baro.c ****                 return false;
+ 101              		.loc 1 202 18 is_stmt 0 view .LVU22
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 7
+
+
+ 102 0038 1E4B     		ldr	r3, .L8
+ 103 003a 5B68     		ldr	r3, [r3, #4]
+ 202:Service/Srv_Baro.c ****                 return false;
+ 104              		.loc 1 202 50 view .LVU23
+ 105 003c 1B68     		ldr	r3, [r3]
+ 202:Service/Srv_Baro.c ****                 return false;
+ 106              		.loc 1 202 18 view .LVU24
+ 107 003e 9847     		blx	r3
+ 108              	.LVL5:
+ 202:Service/Srv_Baro.c ****                 return false;
+ 109              		.loc 1 202 16 view .LVU25
+ 110 0040 0446     		mov	r4, r0
+ 111 0042 0028     		cmp	r0, #0
+ 112 0044 E9D0     		beq	.L4
+ 205:Service/Srv_Baro.c ****             return true;
+ 113              		.loc 1 205 13 is_stmt 1 view .LVU26
+ 205:Service/Srv_Baro.c ****             return true;
+ 114              		.loc 1 205 29 is_stmt 0 view .LVU27
+ 115 0046 1B4B     		ldr	r3, .L8
+ 116 0048 0122     		movs	r2, #1
+ 117 004a 5A70     		strb	r2, [r3, #1]
+ 206:Service/Srv_Baro.c **** 
+ 118              		.loc 1 206 13 is_stmt 1 view .LVU28
+ 206:Service/Srv_Baro.c **** 
+ 119              		.loc 1 206 20 is_stmt 0 view .LVU29
+ 120 004c E5E7     		b	.L4
+ 121              	.L7:
+ 198:Service/Srv_Baro.c ****                 return false;
+ 122              		.loc 1 198 17 is_stmt 1 view .LVU30
+ 198:Service/Srv_Baro.c ****                 return false;
+ 123              		.loc 1 198 28 is_stmt 0 view .LVU31
+ 124 004e 1C4A     		ldr	r2, .L8+12
+ 125 0050 D26A     		ldr	r2, [r2, #44]
+ 198:Service/Srv_Baro.c ****                 return false;
+ 126              		.loc 1 198 17 view .LVU32
+ 127 0052 1846     		mov	r0, r3
+ 128 0054 9047     		blx	r2
+ 129              	.LVL6:
+ 199:Service/Srv_Baro.c ****             }
+ 130              		.loc 1 199 17 is_stmt 1 view .LVU33
+ 199:Service/Srv_Baro.c ****             }
+ 131              		.loc 1 199 24 is_stmt 0 view .LVU34
+ 132 0056 0024     		movs	r4, #0
+ 133 0058 DFE7     		b	.L4
+ 134              	.LVL7:
+ 135              	.L3:
+ 209:Service/Srv_Baro.c **** 
+ 136              		.loc 1 209 13 is_stmt 1 view .LVU35
+ 209:Service/Srv_Baro.c **** 
+ 137              		.loc 1 209 32 is_stmt 0 view .LVU36
+ 138 005a 164B     		ldr	r3, .L8
+ 139 005c 194A     		ldr	r2, .L8+16
+ 140 005e 5A60     		str	r2, [r3, #4]
+ 212:Service/Srv_Baro.c ****                 return false;
+ 141              		.loc 1 212 13 is_stmt 1 view .LVU37
+ 212:Service/Srv_Baro.c ****                 return false;
+ 142              		.loc 1 212 25 is_stmt 0 view .LVU38
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 8
+
+
+ 143 0060 194B     		ldr	r3, .L8+20
+ 144 0062 5C68     		ldr	r4, [r3, #4]
+ 212:Service/Srv_Baro.c ****                 return false;
+ 145              		.loc 1 212 18 view .LVU39
+ 146 0064 0023     		movs	r3, #0
+ 147 0066 93E80700 		ldm	r3, {r0, r1, r2}
+ 148              	.LVL8:
+ 212:Service/Srv_Baro.c ****                 return false;
+ 149              		.loc 1 212 18 view .LVU40
+ 150 006a A047     		blx	r4
+ 151              	.LVL9:
+ 212:Service/Srv_Baro.c ****                 return false;
+ 152              		.loc 1 212 16 view .LVU41
+ 153 006c 0446     		mov	r4, r0
+ 154 006e 0028     		cmp	r0, #0
+ 155 0070 D3D0     		beq	.L4
+ 216:Service/Srv_Baro.c ****                 return false;
+ 156              		.loc 1 216 13 is_stmt 1 view .LVU42
+ 216:Service/Srv_Baro.c ****                 return false;
+ 157              		.loc 1 216 18 is_stmt 0 view .LVU43
+ 158 0072 104B     		ldr	r3, .L8
+ 159 0074 5A68     		ldr	r2, [r3, #4]
+ 216:Service/Srv_Baro.c ****                 return false;
+ 160              		.loc 1 216 50 view .LVU44
+ 161 0076 1568     		ldr	r5, [r2]
+ 216:Service/Srv_Baro.c ****                 return false;
+ 162              		.loc 1 216 57 view .LVU45
+ 163 0078 9C68     		ldr	r4, [r3, #8]
+ 216:Service/Srv_Baro.c ****                 return false;
+ 164              		.loc 1 216 18 view .LVU46
+ 165 007a 144B     		ldr	r3, .L8+24
+ 166 007c 0893     		str	r3, [sp, #32]
+ 167 007e EC46     		mov	ip, sp
+ 168 0080 04F1100E 		add	lr, r4, #16
+ 169 0084 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 170 0088 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 171 008c 9EE80F00 		ldm	lr, {r0, r1, r2, r3}
+ 172 0090 8CE80F00 		stm	ip, {r0, r1, r2, r3}
+ 173 0094 94E80F00 		ldm	r4, {r0, r1, r2, r3}
+ 174 0098 A847     		blx	r5
+ 175              	.LVL10:
+ 216:Service/Srv_Baro.c ****                 return false;
+ 176              		.loc 1 216 16 view .LVU47
+ 177 009a 0446     		mov	r4, r0
+ 178 009c 0028     		cmp	r0, #0
+ 179 009e BCD0     		beq	.L4
+ 220:Service/Srv_Baro.c ****             SrvBaroBus.init = true;
+ 180              		.loc 1 220 13 is_stmt 1 view .LVU48
+ 220:Service/Srv_Baro.c ****             SrvBaroBus.init = true;
+ 181              		.loc 1 220 20 is_stmt 0 view .LVU49
+ 182 00a0 094B     		ldr	r3, .L8+20
+ 183 00a2 DD69     		ldr	r5, [r3, #28]
+ 220:Service/Srv_Baro.c ****             SrvBaroBus.init = true;
+ 184              		.loc 1 220 13 view .LVU50
+ 185 00a4 0022     		movs	r2, #0
+ 186 00a6 0123     		movs	r3, #1
+ 187 00a8 07CA     		ldm	r2, {r0, r1, r2}
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 9
+
+
+ 188 00aa A847     		blx	r5
+ 189              	.LVL11:
+ 221:Service/Srv_Baro.c ****             
+ 190              		.loc 1 221 13 is_stmt 1 view .LVU51
+ 221:Service/Srv_Baro.c ****             
+ 191              		.loc 1 221 29 is_stmt 0 view .LVU52
+ 192 00ac 014B     		ldr	r3, .L8
+ 193 00ae 0122     		movs	r2, #1
+ 194 00b0 5A70     		strb	r2, [r3, #1]
+ 223:Service/Srv_Baro.c **** 
+ 195              		.loc 1 223 13 is_stmt 1 view .LVU53
+ 223:Service/Srv_Baro.c **** 
+ 196              		.loc 1 223 20 is_stmt 0 view .LVU54
+ 197 00b2 B2E7     		b	.L4
+ 198              	.L9:
+ 199              		.align	2
+ 200              	.L8:
+ 201 00b4 00000000 		.word	.LANCHOR0
+ 202 00b8 00000000 		.word	Baro_BusCfg
+ 203 00bc 00000000 		.word	BspIIC
+ 204 00c0 00000000 		.word	SrvOsCommon
+ 205 00c4 00000000 		.word	BspSPI
+ 206 00c8 00000000 		.word	BspGPIO
+ 207 00cc 00000000 		.word	.LANCHOR1
+ 208              		.cfi_endproc
+ 209              	.LFE144:
+ 211              		.section	.text.SrvBaro_Set_Calib,"ax",%progbits
+ 212              		.align	1
+ 213              		.syntax unified
+ 214              		.thumb
+ 215              		.thumb_func
+ 217              	SrvBaro_Set_Calib:
+ 218              	.LVL12:
+ 219              	.LFB147:
+ 230:Service/Srv_Baro.c **** 
+ 231:Service/Srv_Baro.c **** static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bus_type)
+ 232:Service/Srv_Baro.c **** {
+ 233:Service/Srv_Baro.c ****     /* create error log handle */
+ 234:Service/Srv_Baro.c ****     SrvBaro_Error_Handle = ErrorLog.create("SrvBaro_Error");
+ 235:Service/Srv_Baro.c **** 
+ 236:Service/Srv_Baro.c ****     /* regist all error to the error tree */
+ 237:Service/Srv_Baro.c ****     ErrorLog.registe(SrvBaro_Error_Handle, SrvBaro_ErrorList, sizeof(SrvBaro_ErrorList) / sizeof(Sr
+ 238:Service/Srv_Baro.c **** 
+ 239:Service/Srv_Baro.c ****     if (!SrvBaro_BusInit(bus_type))
+ 240:Service/Srv_Baro.c ****     {
+ 241:Service/Srv_Baro.c ****         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BusInit, NULL, 0);
+ 242:Service/Srv_Baro.c ****         return SrvBaro_Error_BusInit;
+ 243:Service/Srv_Baro.c ****     }
+ 244:Service/Srv_Baro.c **** 
+ 245:Service/Srv_Baro.c ****     if (SrvBaroObj.sample_rate)
+ 246:Service/Srv_Baro.c ****     {
+ 247:Service/Srv_Baro.c ****         switch((uint8_t)sensor_type)
+ 248:Service/Srv_Baro.c ****         {
+ 249:Service/Srv_Baro.c ****             case Baro_Type_DPS310:
+ 250:Service/Srv_Baro.c ****                 SrvBaroObj.type = sensor_type;
+ 251:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevDPS310Obj_TypeDef));
+ 252:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_api = &DevDPS310;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 10
+
+
+ 253:Service/Srv_Baro.c **** 
+ 254:Service/Srv_Baro.c ****                 if ((SrvBaroObj.sensor_obj != NULL) &&
+ 255:Service/Srv_Baro.c ****                     (SrvBaroObj.sensor_api != NULL))
+ 256:Service/Srv_Baro.c ****                 {
+ 257:Service/Srv_Baro.c ****                     /* set sensor object */
+ 258:Service/Srv_Baro.c ****                     switch (SrvBaroBus.type)
+ 259:Service/Srv_Baro.c ****                     {
+ 260:Service/Srv_Baro.c ****                         case SrvBaro_Bus_IIC:
+ 261:Service/Srv_Baro.c ****                             ToDPS310_OBJ(SrvBaroObj.sensor_obj)->DevAddr = DPS310_I2C_ADDR;
+ 262:Service/Srv_Baro.c ****                             ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_rx = (DevDPS310_BusRead)SrvBar
+ 263:Service/Srv_Baro.c ****                             ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_tx = (DevDPS310_BusWrite)SrvBa
+ 264:Service/Srv_Baro.c ****                             break;
+ 265:Service/Srv_Baro.c **** 
+ 266:Service/Srv_Baro.c ****                         case SrvBaro_Bus_SPI:
+ 267:Service/Srv_Baro.c ****                         default: return SrvBaro_Error_BusType;
+ 268:Service/Srv_Baro.c ****                     }
+ 269:Service/Srv_Baro.c **** 
+ 270:Service/Srv_Baro.c ****                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
+ 271:Service/Srv_Baro.c ****                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
+ 272:Service/Srv_Baro.c **** 
+ 273:Service/Srv_Baro.c ****                     /* device init */
+ 274:Service/Srv_Baro.c ****                     if (!ToDPS310_API(SrvBaroObj.sensor_api)->init(ToDPS310_OBJ(SrvBaroObj.sensor_o
+ 275:Service/Srv_Baro.c ****                     {
+ 276:Service/Srv_Baro.c ****                         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
+ 277:Service/Srv_Baro.c ****                         return SrvBaro_Error_DevInit;
+ 278:Service/Srv_Baro.c ****                     }
+ 279:Service/Srv_Baro.c **** 
+ 280:Service/Srv_Baro.c ****                     SrvBaroObj.calib_state = Calib_Start;
+ 281:Service/Srv_Baro.c ****                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
+ 282:Service/Srv_Baro.c **** 
+ 283:Service/Srv_Baro.c ****                     SrvBaroObj.data_size = DPS310_DataSize;
+ 284:Service/Srv_Baro.c ****                     SrvBaroObj.sensor_data = SrvOsCommon.malloc(SrvBaroObj.data_size);
+ 285:Service/Srv_Baro.c ****                 }
+ 286:Service/Srv_Baro.c ****                 else
+ 287:Service/Srv_Baro.c ****                 {
+ 288:Service/Srv_Baro.c ****                     ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSensorObj, NULL, 0);
+ 289:Service/Srv_Baro.c ****                     return SrvBaro_Error_BadSensorObj;
+ 290:Service/Srv_Baro.c ****                 }
+ 291:Service/Srv_Baro.c ****                 break;
+ 292:Service/Srv_Baro.c **** 
+ 293:Service/Srv_Baro.c ****             case Baro_Type_BMP280:
+ 294:Service/Srv_Baro.c ****                 SrvBaroObj.type = sensor_type;
+ 295:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevBMP280Obj_TypeDef));
+ 296:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_api = &DevBMP280;
+ 297:Service/Srv_Baro.c **** 
+ 298:Service/Srv_Baro.c ****                 if ((SrvBaroObj.sensor_obj != NULL) && \
+ 299:Service/Srv_Baro.c ****                     (SrvBaroObj.sensor_api != NULL))
+ 300:Service/Srv_Baro.c ****                 {
+ 301:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->send = NULL;
+ 302:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->recv = NULL;
+ 303:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->trans = NULL;
+ 304:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_tx = NULL;
+ 305:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_rx = NULL;
+ 306:Service/Srv_Baro.c **** 
+ 307:Service/Srv_Baro.c ****                     /* set sensor object */
+ 308:Service/Srv_Baro.c ****                     switch (SrvBaroBus.type)
+ 309:Service/Srv_Baro.c ****                     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 11
+
+
+ 310:Service/Srv_Baro.c ****                         case SrvBaro_Bus_SPI:
+ 311:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->send = SrvBaro_SPIBus_Tx;
+ 312:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->recv = SrvBaro_SPIBus_Rx;
+ 313:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->trans = SrvBaro_SPIBus_Trans;
+ 314:Service/Srv_Baro.c ****                             break;
+ 315:Service/Srv_Baro.c ****                         
+ 316:Service/Srv_Baro.c ****                         case SrvBaro_Bus_IIC:
+ 317:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->DevAddr = BMP280_ADDR_1;
+ 318:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_tx = SrvBaro_IICBus_Tx;
+ 319:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_rx = SrvBaro_IICBus_Rx;
+ 320:Service/Srv_Baro.c ****                             break;
+ 321:Service/Srv_Baro.c **** 
+ 322:Service/Srv_Baro.c ****                         default: return SrvBaro_Error_BusType;
+ 323:Service/Srv_Baro.c ****                     }
+ 324:Service/Srv_Baro.c **** 
+ 325:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->get_tick = SrvOsCommon.get_os_ms;
+ 326:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->delay_ms = SrvOsCommon.delay_ms;
+ 327:Service/Srv_Baro.c **** 
+ 328:Service/Srv_Baro.c ****                     /* device init */
+ 329:Service/Srv_Baro.c ****                     if (!ToBMP280_API(SrvBaroObj.sensor_api)->init(ToBMP280_OBJ(SrvBaroObj.sensor_o
+ 330:Service/Srv_Baro.c ****                     {
+ 331:Service/Srv_Baro.c ****                         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_DevInit, NULL, 0);
+ 332:Service/Srv_Baro.c ****                         return SrvBaro_Error_DevInit;
+ 333:Service/Srv_Baro.c ****                     }
+ 334:Service/Srv_Baro.c **** 
+ 335:Service/Srv_Baro.c ****                     SrvBaroObj.calib_state = Calib_Start;
+ 336:Service/Srv_Baro.c ****                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
+ 337:Service/Srv_Baro.c ****                     
+ 338:Service/Srv_Baro.c ****                     SrvBaroObj.data_size = BMP280_DataSize;
+ 339:Service/Srv_Baro.c ****                     SrvBaroObj.sensor_data = SrvOsCommon.malloc(SrvBaroObj.data_size);
+ 340:Service/Srv_Baro.c ****                 }
+ 341:Service/Srv_Baro.c ****                 else
+ 342:Service/Srv_Baro.c ****                 {
+ 343:Service/Srv_Baro.c ****                     ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSensorObj, NULL, 0);
+ 344:Service/Srv_Baro.c ****                     return SrvBaro_Error_BadSensorObj;
+ 345:Service/Srv_Baro.c ****                 }
+ 346:Service/Srv_Baro.c ****                 break;
+ 347:Service/Srv_Baro.c ****             
+ 348:Service/Srv_Baro.c ****             default:
+ 349:Service/Srv_Baro.c ****                 ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadType, NULL, 0);
+ 350:Service/Srv_Baro.c ****                 return SrvBaro_Error_BadType;
+ 351:Service/Srv_Baro.c ****         }
+ 352:Service/Srv_Baro.c **** 
+ 353:Service/Srv_Baro.c ****         SrvBaroObj.sample_period = round(1000.0 / (double)SrvBaroObj.sample_rate);
+ 354:Service/Srv_Baro.c **** 
+ 355:Service/Srv_Baro.c ****         /* filter init */
+ 356:Service/Srv_Baro.c ****         SrvBaroObj.smoothwindow_filter_hdl = SmoothWindow.init(SRVBARO_SMOOTHWINDOW_SIZE);
+ 357:Service/Srv_Baro.c ****         if (SrvBaroObj.smoothwindow_filter_hdl == 0)
+ 358:Service/Srv_Baro.c ****         {
+ 359:Service/Srv_Baro.c ****             ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_FilterInit, NULL, 0);
+ 360:Service/Srv_Baro.c ****             return SrvBaro_Error_FilterInit;
+ 361:Service/Srv_Baro.c ****         }
+ 362:Service/Srv_Baro.c **** 
+ 363:Service/Srv_Baro.c ****         if ((SrvBaroObj.sample_period < SRVBARO_MAX_SAMPLE_PERIOD) || \
+ 364:Service/Srv_Baro.c ****             (SrvBaroObj.sample_period > SRVBARO_MIN_SAMPLE_PERIOD))
+ 365:Service/Srv_Baro.c ****         {
+ 366:Service/Srv_Baro.c ****             ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadSamplePeriod, NULL, 0);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 12
+
+
+ 367:Service/Srv_Baro.c ****             return SrvBaro_Error_BadSamplePeriod;
+ 368:Service/Srv_Baro.c ****         }
+ 369:Service/Srv_Baro.c ****     }
+ 370:Service/Srv_Baro.c ****     else
+ 371:Service/Srv_Baro.c ****     {
+ 372:Service/Srv_Baro.c ****         ErrorLog.trigger(SrvBaro_Error_Handle, SrvBaro_Error_BadRate, NULL, 0);
+ 373:Service/Srv_Baro.c ****         return SrvBaro_Error_BadRate;
+ 374:Service/Srv_Baro.c ****     }
+ 375:Service/Srv_Baro.c **** 
+ 376:Service/Srv_Baro.c ****     return SrvBaro_Error_None;
+ 377:Service/Srv_Baro.c **** }
+ 378:Service/Srv_Baro.c **** 
+ 379:Service/Srv_Baro.c **** static bool SrvBaro_Sample(void)
+ 380:Service/Srv_Baro.c **** {
+ 381:Service/Srv_Baro.c ****     if (SrvBaroObj.init_err == SrvBaro_Error_None)
+ 382:Service/Srv_Baro.c ****     {
+ 383:Service/Srv_Baro.c ****         switch((uint8_t) SrvBaroObj.type)
+ 384:Service/Srv_Baro.c ****         {
+ 385:Service/Srv_Baro.c ****             case Baro_Type_DPS310:
+ 386:Service/Srv_Baro.c ****                 if (ToDPS310_API(SrvBaroObj.sensor_api)->sample(ToDPS310_OBJ(SrvBaroObj.sensor_obj)
+ 387:Service/Srv_Baro.c ****                 {
+ 388:Service/Srv_Baro.c ****                     SrvBaroObj.sample_cnt ++;
+ 389:Service/Srv_Baro.c **** 
+ 390:Service/Srv_Baro.c ****                     if (((SrvBaroObj.calib_state == Calib_Start) || 
+ 391:Service/Srv_Baro.c ****                         (SrvBaroObj.calib_state == Calib_InProcess)) &&
+ 392:Service/Srv_Baro.c ****                         SrvBaroObj.calib_cycle)
+ 393:Service/Srv_Baro.c ****                     {
+ 394:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum += ToDPS310_OBJ(SrvBaroObj.sensor_obj)->pressur
+ 395:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum /= 2;
+ 396:Service/Srv_Baro.c **** 
+ 397:Service/Srv_Baro.c ****                         SrvBaroObj.calib_cycle --;
+ 398:Service/Srv_Baro.c **** 
+ 399:Service/Srv_Baro.c ****                         if (SrvBaroObj.calib_cycle == 0)
+ 400:Service/Srv_Baro.c ****                         {
+ 401:Service/Srv_Baro.c ****                             SrvBaroObj.calib_state = Calib_Done;
+ 402:Service/Srv_Baro.c ****                             SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_a
+ 403:Service/Srv_Baro.c ****                             SrvBaroObj.pressure_add_sum = 0.0f;
+ 404:Service/Srv_Baro.c ****                         }
+ 405:Service/Srv_Baro.c ****                         else
+ 406:Service/Srv_Baro.c ****                             SrvBaroObj.calib_state = Calib_InProcess;
+ 407:Service/Srv_Baro.c ****                     }
+ 408:Service/Srv_Baro.c **** 
+ 409:Service/Srv_Baro.c ****                     return true;
+ 410:Service/Srv_Baro.c ****                 }
+ 411:Service/Srv_Baro.c ****                 else
+ 412:Service/Srv_Baro.c ****                 {
+ 413:Service/Srv_Baro.c ****                     SrvBaroObj.sample_err_cnt ++;
+ 414:Service/Srv_Baro.c ****                     return false;
+ 415:Service/Srv_Baro.c ****                 }
+ 416:Service/Srv_Baro.c **** 
+ 417:Service/Srv_Baro.c ****             case  Baro_Type_BMP280:
+ 418:Service/Srv_Baro.c ****                 if (ToBMP280_API(SrvBaroObj.sensor_api)->sample(ToBMP280_OBJ(SrvBaroObj.sensor_obj)
+ 419:Service/Srv_Baro.c ****                 {
+ 420:Service/Srv_Baro.c ****                     SrvBaroObj.sample_cnt ++;
+ 421:Service/Srv_Baro.c **** 
+ 422:Service/Srv_Baro.c ****                     if (((SrvBaroObj.calib_state == Calib_Start) || \
+ 423:Service/Srv_Baro.c ****                         (SrvBaroObj.calib_state == Calib_InProcess)) && \
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 13
+
+
+ 424:Service/Srv_Baro.c ****                         SrvBaroObj.calib_cycle)
+ 425:Service/Srv_Baro.c ****                     {
+ 426:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum += ToBMP280_OBJ(SrvBaroObj.sensor_obj)->pressur
+ 427:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum /= 2;
+ 428:Service/Srv_Baro.c **** 
+ 429:Service/Srv_Baro.c ****                         SrvBaroObj.calib_cycle --;
+ 430:Service/Srv_Baro.c **** 
+ 431:Service/Srv_Baro.c ****                         if (SrvBaroObj.calib_cycle == 0)
+ 432:Service/Srv_Baro.c ****                         {
+ 433:Service/Srv_Baro.c ****                             SrvBaroObj.calib_state = Calib_Done;
+ 434:Service/Srv_Baro.c ****                             SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_a
+ 435:Service/Srv_Baro.c ****                             SrvBaroObj.pressure_add_sum = 0.0f;
+ 436:Service/Srv_Baro.c ****                         }
+ 437:Service/Srv_Baro.c ****                         else
+ 438:Service/Srv_Baro.c ****                             SrvBaroObj.calib_state = Calib_InProcess;
+ 439:Service/Srv_Baro.c ****                     }
+ 440:Service/Srv_Baro.c **** 
+ 441:Service/Srv_Baro.c ****                     return true;
+ 442:Service/Srv_Baro.c ****                 }
+ 443:Service/Srv_Baro.c ****                 else
+ 444:Service/Srv_Baro.c ****                 {
+ 445:Service/Srv_Baro.c ****                     SrvBaroObj.sample_err_cnt ++;
+ 446:Service/Srv_Baro.c ****                     return false;
+ 447:Service/Srv_Baro.c ****                 }
+ 448:Service/Srv_Baro.c **** 
+ 449:Service/Srv_Baro.c ****             default:
+ 450:Service/Srv_Baro.c ****                 return false;
+ 451:Service/Srv_Baro.c ****         }
+ 452:Service/Srv_Baro.c ****     }
+ 453:Service/Srv_Baro.c **** 
+ 454:Service/Srv_Baro.c ****     return false;
+ 455:Service/Srv_Baro.c **** }
+ 456:Service/Srv_Baro.c **** 
+ 457:Service/Srv_Baro.c **** static GenCalib_State_TypeList SrvBaro_Set_Calib(uint16_t cyc)
+ 458:Service/Srv_Baro.c **** {
+ 220              		.loc 1 458 1 is_stmt 1 view -0
+ 221              		.cfi_startproc
+ 222              		@ args = 0, pretend = 0, frame = 0
+ 223              		@ frame_needed = 0, uses_anonymous_args = 0
+ 224              		@ link register save eliminated.
+ 225              		.loc 1 458 1 is_stmt 0 view .LVU56
+ 226 0000 0346     		mov	r3, r0
+ 459:Service/Srv_Baro.c ****     if (SrvBaroObj.calib_state != Calib_InProcess)
+ 227              		.loc 1 459 5 is_stmt 1 view .LVU57
+ 228              		.loc 1 459 19 is_stmt 0 view .LVU58
+ 229 0002 074A     		ldr	r2, .L13
+ 230 0004 92F84200 		ldrb	r0, [r2, #66]	@ zero_extendqisi2
+ 231              	.LVL13:
+ 232              		.loc 1 459 8 view .LVU59
+ 233 0008 0228     		cmp	r0, #2
+ 234 000a 00D1     		bne	.L12
+ 235              	.L11:
+ 460:Service/Srv_Baro.c ****     {
+ 461:Service/Srv_Baro.c ****         SrvBaroObj.calib_cycle = cyc;
+ 462:Service/Srv_Baro.c ****         SrvBaroObj.calib_state = Calib_Start;
+ 463:Service/Srv_Baro.c ****         SrvBaroObj.alt_offset = 0.0f;
+ 464:Service/Srv_Baro.c ****         return Calib_InProcess;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 14
+
+
+ 465:Service/Srv_Baro.c ****     }
+ 466:Service/Srv_Baro.c **** 
+ 467:Service/Srv_Baro.c ****     return SrvBaroObj.calib_state;
+ 468:Service/Srv_Baro.c **** }
+ 236              		.loc 1 468 1 view .LVU60
+ 237 000c 7047     		bx	lr
+ 238              	.L12:
+ 461:Service/Srv_Baro.c ****         SrvBaroObj.calib_state = Calib_Start;
+ 239              		.loc 1 461 9 is_stmt 1 view .LVU61
+ 461:Service/Srv_Baro.c ****         SrvBaroObj.calib_state = Calib_Start;
+ 240              		.loc 1 461 32 is_stmt 0 view .LVU62
+ 241 000e A2F84030 		strh	r3, [r2, #64]	@ movhi
+ 462:Service/Srv_Baro.c ****         SrvBaroObj.alt_offset = 0.0f;
+ 242              		.loc 1 462 9 is_stmt 1 view .LVU63
+ 462:Service/Srv_Baro.c ****         SrvBaroObj.alt_offset = 0.0f;
+ 243              		.loc 1 462 32 is_stmt 0 view .LVU64
+ 244 0012 0123     		movs	r3, #1
+ 245 0014 82F84230 		strb	r3, [r2, #66]
+ 463:Service/Srv_Baro.c ****         return Calib_InProcess;
+ 246              		.loc 1 463 9 is_stmt 1 view .LVU65
+ 463:Service/Srv_Baro.c ****         return Calib_InProcess;
+ 247              		.loc 1 463 31 is_stmt 0 view .LVU66
+ 248 0018 0023     		movs	r3, #0
+ 249 001a 9364     		str	r3, [r2, #72]	@ float
+ 464:Service/Srv_Baro.c ****     }
+ 250              		.loc 1 464 9 is_stmt 1 view .LVU67
+ 464:Service/Srv_Baro.c ****     }
+ 251              		.loc 1 464 16 is_stmt 0 view .LVU68
+ 252 001c 0220     		movs	r0, #2
+ 253 001e F5E7     		b	.L11
+ 254              	.L14:
+ 255              		.align	2
+ 256              	.L13:
+ 257 0020 00000000 		.word	.LANCHOR2
+ 258              		.cfi_endproc
+ 259              	.LFE147:
+ 261              		.section	.text.SrvBaro_Get_Calib,"ax",%progbits
+ 262              		.align	1
+ 263              		.syntax unified
+ 264              		.thumb
+ 265              		.thumb_func
+ 267              	SrvBaro_Get_Calib:
+ 268              	.LFB148:
+ 469:Service/Srv_Baro.c **** 
+ 470:Service/Srv_Baro.c **** static GenCalib_State_TypeList SrvBaro_Get_Calib(void)
+ 471:Service/Srv_Baro.c **** {
+ 269              		.loc 1 471 1 is_stmt 1 view -0
+ 270              		.cfi_startproc
+ 271              		@ args = 0, pretend = 0, frame = 0
+ 272              		@ frame_needed = 0, uses_anonymous_args = 0
+ 273              		@ link register save eliminated.
+ 472:Service/Srv_Baro.c ****     return SrvBaroObj.calib_state;
+ 274              		.loc 1 472 5 view .LVU70
+ 473:Service/Srv_Baro.c **** }
+ 275              		.loc 1 473 1 is_stmt 0 view .LVU71
+ 276 0000 014B     		ldr	r3, .L16
+ 277 0002 93F84200 		ldrb	r0, [r3, #66]	@ zero_extendqisi2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 15
+
+
+ 278 0006 7047     		bx	lr
+ 279              	.L17:
+ 280              		.align	2
+ 281              	.L16:
+ 282 0008 00000000 		.word	.LANCHOR2
+ 283              		.cfi_endproc
+ 284              	.LFE148:
+ 286              		.section	.text.SrvBaro_IICBus_Tx,"ax",%progbits
+ 287              		.align	1
+ 288              		.syntax unified
+ 289              		.thumb
+ 290              		.thumb_func
+ 292              	SrvBaro_IICBus_Tx:
+ 293              	.LVL14:
+ 294              	.LFB151:
+ 474:Service/Srv_Baro.c **** 
+ 475:Service/Srv_Baro.c **** static float SrvBaro_PessureCnvToMeter(float pa)
+ 476:Service/Srv_Baro.c **** {
+ 477:Service/Srv_Baro.c ****     return ((1 - pow((pa / STANDER_ATMOSPHERIC_PRESSURE), 0.1903))) * 44330;
+ 478:Service/Srv_Baro.c **** }
+ 479:Service/Srv_Baro.c **** 
+ 480:Service/Srv_Baro.c **** static bool SrvBaro_Get_Date(SrvBaro_UnionData_TypeDef *data)
+ 481:Service/Srv_Baro.c **** {
+ 482:Service/Srv_Baro.c ****     SrvBaro_UnionData_TypeDef baro_data_tmp;
+ 483:Service/Srv_Baro.c ****     float alt = 0.0f;
+ 484:Service/Srv_Baro.c ****     uint8_t check_sum = 0;
+ 485:Service/Srv_Baro.c **** 
+ 486:Service/Srv_Baro.c ****     memset(baro_data_tmp.buff, 0, sizeof(SrvBaro_UnionData_TypeDef));
+ 487:Service/Srv_Baro.c **** 
+ 488:Service/Srv_Baro.c ****     if ((SrvBaroObj.init_err == SrvBaro_Error_None) && data && SrvBaroObj.sensor_data && SrvBaroObj
+ 489:Service/Srv_Baro.c ****     {
+ 490:Service/Srv_Baro.c ****         switch ((uint8_t) SrvBaroObj.type)
+ 491:Service/Srv_Baro.c ****         {
+ 492:Service/Srv_Baro.c ****             case Baro_Type_DPS310:
+ 493:Service/Srv_Baro.c ****                 if (ToDPS310_API(SrvBaroObj.sensor_api)->ready(ToDPS310_OBJ(SrvBaroObj.sensor_obj))
+ 494:Service/Srv_Baro.c ****                 {
+ 495:Service/Srv_Baro.c ****                     memset(SrvBaroObj.sensor_data, 0, DPS310_DataSize);
+ 496:Service/Srv_Baro.c ****                     *ToDPS310_DataPtr(SrvBaroObj.sensor_data) = ToDPS310_API(SrvBaroObj.sensor_api)
+ 497:Service/Srv_Baro.c ****                     
+ 498:Service/Srv_Baro.c ****                     /* convert baro pressure to meter */
+ 499:Service/Srv_Baro.c ****                     alt = SrvBaro_PessureCnvToMeter(ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scale
+ 500:Service/Srv_Baro.c **** 
+ 501:Service/Srv_Baro.c ****                     baro_data_tmp.data.time_stamp = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->time_
+ 502:Service/Srv_Baro.c ****                     baro_data_tmp.data.cyc = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->cyc;
+ 503:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
+ 504:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
+ 505:Service/Srv_Baro.c ****                     baro_data_tmp.data.tempra = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scaled_te
+ 506:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scaled_
+ 507:Service/Srv_Baro.c **** 
+ 508:Service/Srv_Baro.c ****                     /* doing baro filter */
+ 509:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_f
+ 510:Service/Srv_Baro.c ****                     for(uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.c
+ 511:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 512:Service/Srv_Baro.c ****                     baro_data_tmp.data.check_sum = check_sum;
+ 513:Service/Srv_Baro.c ****                     memcpy(data, &baro_data_tmp, sizeof(SrvBaroData_TypeDef));
+ 514:Service/Srv_Baro.c ****                     
+ 515:Service/Srv_Baro.c ****                     return true;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 16
+
+
+ 516:Service/Srv_Baro.c ****                 }
+ 517:Service/Srv_Baro.c ****                 break;
+ 518:Service/Srv_Baro.c ****             
+ 519:Service/Srv_Baro.c ****             case Baro_Type_BMP280:
+ 520:Service/Srv_Baro.c ****                 if (ToBMP280_API(SrvBaroObj.sensor_api)->ready(ToBMP280_OBJ(SrvBaroObj.sensor_obj))
+ 521:Service/Srv_Baro.c ****                 {
+ 522:Service/Srv_Baro.c ****                     memset(SrvBaroObj.sensor_data, 0, BMP280_DataSize);
+ 523:Service/Srv_Baro.c ****                     *ToBMP280_DataPtr(SrvBaroObj.sensor_data) = ToBMP280_API(SrvBaroObj.sensor_api)
+ 524:Service/Srv_Baro.c ****                     
+ 525:Service/Srv_Baro.c ****                     /* convert baro pressure to meter */
+ 526:Service/Srv_Baro.c ****                     alt = SrvBaro_PessureCnvToMeter(ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scale
+ 527:Service/Srv_Baro.c **** 
+ 528:Service/Srv_Baro.c ****                     baro_data_tmp.data.time_stamp = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->time_
+ 529:Service/Srv_Baro.c ****                     baro_data_tmp.data.cyc = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->cyc;
+ 530:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
+ 531:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
+ 532:Service/Srv_Baro.c ****                     baro_data_tmp.data.tempra = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scaled_te
+ 533:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scaled_
+ 534:Service/Srv_Baro.c **** 
+ 535:Service/Srv_Baro.c ****                     /* doing baro filter */
+ 536:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt = SmoothWindow.update(SrvBaroObj.smoothwindow_f
+ 537:Service/Srv_Baro.c ****                     for (uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.
+ 538:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 539:Service/Srv_Baro.c ****                     baro_data_tmp.data.check_sum = check_sum;
+ 540:Service/Srv_Baro.c ****                     memcpy(data, &baro_data_tmp, sizeof(SrvBaroData_TypeDef));
+ 541:Service/Srv_Baro.c ****                     
+ 542:Service/Srv_Baro.c ****                     return true;
+ 543:Service/Srv_Baro.c ****                 }
+ 544:Service/Srv_Baro.c ****                 break;
+ 545:Service/Srv_Baro.c **** 
+ 546:Service/Srv_Baro.c ****             default: break;
+ 547:Service/Srv_Baro.c ****         }
+ 548:Service/Srv_Baro.c ****     }
+ 549:Service/Srv_Baro.c **** 
+ 550:Service/Srv_Baro.c ****     return false;
+ 551:Service/Srv_Baro.c **** }
+ 552:Service/Srv_Baro.c **** 
+ 553:Service/Srv_Baro.c **** /*************************************************************** Bus Comunicate Callback **********
+ 554:Service/Srv_Baro.c **** static bool SrvBaro_IICBus_Tx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len)
+ 555:Service/Srv_Baro.c **** {
+ 295              		.loc 1 555 1 is_stmt 1 view -0
+ 296              		.cfi_startproc
+ 297              		@ args = 0, pretend = 0, frame = 0
+ 298              		@ frame_needed = 0, uses_anonymous_args = 0
+ 299              		.loc 1 555 1 is_stmt 0 view .LVU73
+ 300 0000 30B5     		push	{r4, r5, lr}
+ 301              	.LCFI4:
+ 302              		.cfi_def_cfa_offset 12
+ 303              		.cfi_offset 4, -12
+ 304              		.cfi_offset 5, -8
+ 305              		.cfi_offset 14, -4
+ 306 0002 83B0     		sub	sp, sp, #12
+ 307              	.LCFI5:
+ 308              		.cfi_def_cfa_offset 24
+ 309 0004 8646     		mov	lr, r0
+ 556:Service/Srv_Baro.c ****     BspIICObj_TypeDef *IICBusObj = NULL;
+ 310              		.loc 1 556 5 is_stmt 1 view .LVU74
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 17
+
+
+ 311              	.LVL15:
+ 557:Service/Srv_Baro.c **** 
+ 558:Service/Srv_Baro.c ****     if (SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
+ 312              		.loc 1 558 5 view .LVU75
+ 313              		.loc 1 558 19 is_stmt 0 view .LVU76
+ 314 0006 0B4C     		ldr	r4, .L24
+ 315 0008 6078     		ldrb	r0, [r4, #1]	@ zero_extendqisi2
+ 316              	.LVL16:
+ 317              		.loc 1 558 8 view .LVU77
+ 318 000a 60B1     		cbz	r0, .L19
+ 319 000c 8C46     		mov	ip, r1
+ 320              		.loc 1 558 25 discriminator 1 view .LVU78
+ 321 000e 62B1     		cbz	r2, .L23
+ 322              	.L20:
+ 559:Service/Srv_Baro.c ****     {
+ 560:Service/Srv_Baro.c ****         IICBusObj = ToIIC_BusObj(SrvBaroBus.bus_obj);
+ 323              		.loc 1 560 9 is_stmt 1 view .LVU79
+ 324              		.loc 1 560 19 is_stmt 0 view .LVU80
+ 325 0010 084C     		ldr	r4, .L24
+ 326              	.LVL17:
+ 561:Service/Srv_Baro.c ****         return ToIIC_BusAPI(SrvBaroBus.bus_api)->write(IICBusObj, dev_addr << 1, reg_addr, p_data, 
+ 327              		.loc 1 561 9 is_stmt 1 view .LVU81
+ 328              		.loc 1 561 16 is_stmt 0 view .LVU82
+ 329 0012 6168     		ldr	r1, [r4, #4]
+ 330              	.LVL18:
+ 331              		.loc 1 561 48 view .LVU83
+ 332 0014 CD68     		ldr	r5, [r1, #12]
+ 333              		.loc 1 561 16 view .LVU84
+ 334 0016 4FEA4E00 		lsl	r0, lr, #1
+ 335 001a 81B2     		uxth	r1, r0
+ 336 001c 0093     		str	r3, [sp]
+ 337 001e 1346     		mov	r3, r2
+ 338              	.LVL19:
+ 339              		.loc 1 561 16 view .LVU85
+ 340 0020 6246     		mov	r2, ip
+ 341              	.LVL20:
+ 342              		.loc 1 561 16 view .LVU86
+ 343 0022 A068     		ldr	r0, [r4, #8]
+ 344 0024 A847     		blx	r5
+ 345              	.LVL21:
+ 346              	.L19:
+ 562:Service/Srv_Baro.c ****     }
+ 563:Service/Srv_Baro.c **** 
+ 564:Service/Srv_Baro.c ****     return false;
+ 565:Service/Srv_Baro.c **** }
+ 347              		.loc 1 565 1 view .LVU87
+ 348 0026 03B0     		add	sp, sp, #12
+ 349              	.LCFI6:
+ 350              		.cfi_remember_state
+ 351              		.cfi_def_cfa_offset 12
+ 352              		@ sp needed
+ 353 0028 30BD     		pop	{r4, r5, pc}
+ 354              	.LVL22:
+ 355              	.L23:
+ 356              	.LCFI7:
+ 357              		.cfi_restore_state
+ 558:Service/Srv_Baro.c ****     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 18
+
+
+ 358              		.loc 1 558 46 discriminator 2 view .LVU88
+ 359 002a 002B     		cmp	r3, #0
+ 360 002c F0D1     		bne	.L20
+ 564:Service/Srv_Baro.c **** }
+ 361              		.loc 1 564 12 view .LVU89
+ 362 002e 0020     		movs	r0, #0
+ 363 0030 F9E7     		b	.L19
+ 364              	.L25:
+ 365 0032 00BF     		.align	2
+ 366              	.L24:
+ 367 0034 00000000 		.word	.LANCHOR0
+ 368              		.cfi_endproc
+ 369              	.LFE151:
+ 371              		.section	.text.SrvBaro_IICBus_Rx,"ax",%progbits
+ 372              		.align	1
+ 373              		.syntax unified
+ 374              		.thumb
+ 375              		.thumb_func
+ 377              	SrvBaro_IICBus_Rx:
+ 378              	.LVL23:
+ 379              	.LFB152:
+ 566:Service/Srv_Baro.c **** 
+ 567:Service/Srv_Baro.c **** static bool SrvBaro_IICBus_Rx(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint8_t len)
+ 568:Service/Srv_Baro.c **** {
+ 380              		.loc 1 568 1 is_stmt 1 view -0
+ 381              		.cfi_startproc
+ 382              		@ args = 0, pretend = 0, frame = 0
+ 383              		@ frame_needed = 0, uses_anonymous_args = 0
+ 384              		.loc 1 568 1 is_stmt 0 view .LVU91
+ 385 0000 30B5     		push	{r4, r5, lr}
+ 386              	.LCFI8:
+ 387              		.cfi_def_cfa_offset 12
+ 388              		.cfi_offset 4, -12
+ 389              		.cfi_offset 5, -8
+ 390              		.cfi_offset 14, -4
+ 391 0002 83B0     		sub	sp, sp, #12
+ 392              	.LCFI9:
+ 393              		.cfi_def_cfa_offset 24
+ 394 0004 8646     		mov	lr, r0
+ 569:Service/Srv_Baro.c ****     BspIICObj_TypeDef *IICBusObj = NULL;
+ 395              		.loc 1 569 5 is_stmt 1 view .LVU92
+ 396              	.LVL24:
+ 570:Service/Srv_Baro.c **** 
+ 571:Service/Srv_Baro.c ****     if (SrvBaroBus.init && ((p_data != NULL) || (len != 0)))
+ 397              		.loc 1 571 5 view .LVU93
+ 398              		.loc 1 571 19 is_stmt 0 view .LVU94
+ 399 0006 0B4C     		ldr	r4, .L32
+ 400 0008 6078     		ldrb	r0, [r4, #1]	@ zero_extendqisi2
+ 401              	.LVL25:
+ 402              		.loc 1 571 8 view .LVU95
+ 403 000a 60B1     		cbz	r0, .L27
+ 404 000c 8C46     		mov	ip, r1
+ 405              		.loc 1 571 25 discriminator 1 view .LVU96
+ 406 000e 62B1     		cbz	r2, .L31
+ 407              	.L28:
+ 572:Service/Srv_Baro.c ****     {
+ 573:Service/Srv_Baro.c ****         IICBusObj = ToIIC_BusObj(SrvBaroBus.bus_obj);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 19
+
+
+ 408              		.loc 1 573 9 is_stmt 1 view .LVU97
+ 409              		.loc 1 573 19 is_stmt 0 view .LVU98
+ 410 0010 084C     		ldr	r4, .L32
+ 411              	.LVL26:
+ 574:Service/Srv_Baro.c ****         return ToIIC_BusAPI(SrvBaroBus.bus_api)->read(IICBusObj, dev_addr << 1, reg_addr, p_data, l
+ 412              		.loc 1 574 9 is_stmt 1 view .LVU99
+ 413              		.loc 1 574 16 is_stmt 0 view .LVU100
+ 414 0012 6168     		ldr	r1, [r4, #4]
+ 415              	.LVL27:
+ 416              		.loc 1 574 48 view .LVU101
+ 417 0014 8D68     		ldr	r5, [r1, #8]
+ 418              		.loc 1 574 16 view .LVU102
+ 419 0016 4FEA4E00 		lsl	r0, lr, #1
+ 420 001a 81B2     		uxth	r1, r0
+ 421 001c 0093     		str	r3, [sp]
+ 422 001e 1346     		mov	r3, r2
+ 423              	.LVL28:
+ 424              		.loc 1 574 16 view .LVU103
+ 425 0020 6246     		mov	r2, ip
+ 426              	.LVL29:
+ 427              		.loc 1 574 16 view .LVU104
+ 428 0022 A068     		ldr	r0, [r4, #8]
+ 429 0024 A847     		blx	r5
+ 430              	.LVL30:
+ 431              	.L27:
+ 575:Service/Srv_Baro.c ****     }
+ 576:Service/Srv_Baro.c **** 
+ 577:Service/Srv_Baro.c ****     return false;
+ 578:Service/Srv_Baro.c **** }
+ 432              		.loc 1 578 1 view .LVU105
+ 433 0026 03B0     		add	sp, sp, #12
+ 434              	.LCFI10:
+ 435              		.cfi_remember_state
+ 436              		.cfi_def_cfa_offset 12
+ 437              		@ sp needed
+ 438 0028 30BD     		pop	{r4, r5, pc}
+ 439              	.LVL31:
+ 440              	.L31:
+ 441              	.LCFI11:
+ 442              		.cfi_restore_state
+ 571:Service/Srv_Baro.c ****     {
+ 443              		.loc 1 571 46 discriminator 2 view .LVU106
+ 444 002a 002B     		cmp	r3, #0
+ 445 002c F0D1     		bne	.L28
+ 577:Service/Srv_Baro.c **** }
+ 446              		.loc 1 577 12 view .LVU107
+ 447 002e 0020     		movs	r0, #0
+ 448 0030 F9E7     		b	.L27
+ 449              	.L33:
+ 450 0032 00BF     		.align	2
+ 451              	.L32:
+ 452 0034 00000000 		.word	.LANCHOR0
+ 453              		.cfi_endproc
+ 454              	.LFE152:
+ 456              		.section	.text.SrvBaro_SPIBus_Trans,"ax",%progbits
+ 457              		.align	1
+ 458              		.syntax unified
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 20
+
+
+ 459              		.thumb
+ 460              		.thumb_func
+ 462              	SrvBaro_SPIBus_Trans:
+ 463              	.LVL32:
+ 464              	.LFB153:
+ 579:Service/Srv_Baro.c **** 
+ 580:Service/Srv_Baro.c **** static uint16_t SrvBaro_SPIBus_Trans(uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
+ 581:Service/Srv_Baro.c **** {
+ 465              		.loc 1 581 1 is_stmt 1 view -0
+ 466              		.cfi_startproc
+ 467              		@ args = 0, pretend = 0, frame = 0
+ 468              		@ frame_needed = 0, uses_anonymous_args = 0
+ 469              		@ link register save eliminated.
+ 582:Service/Srv_Baro.c ****     uint16_t res = 0;
+ 470              		.loc 1 582 5 view .LVU109
+ 583:Service/Srv_Baro.c **** 
+ 584:Service/Srv_Baro.c ****     if (p_tx && p_rx && len && \
+ 471              		.loc 1 584 5 view .LVU110
+ 585:Service/Srv_Baro.c ****         SrvBaroBus.init && \
+ 586:Service/Srv_Baro.c ****         (p_Baro_CS != NULL) && \
+ 587:Service/Srv_Baro.c ****         (SrvBaroBus.type == SrvBaro_Bus_SPI))
+ 588:Service/Srv_Baro.c ****     {
+ 589:Service/Srv_Baro.c ****         /* CS Low */
+ 590:Service/Srv_Baro.c ****         BspGPIO.write(*p_Baro_CS, false);
+ 591:Service/Srv_Baro.c **** 
+ 592:Service/Srv_Baro.c ****         if (ToSPI_BusAPI(SrvBaroBus.bus_api)->trans_receive(&Baro_Bus_Instance, p_tx, p_rx, len, 10
+ 593:Service/Srv_Baro.c ****             res = len;
+ 594:Service/Srv_Baro.c **** 
+ 595:Service/Srv_Baro.c ****         /* CS High */
+ 596:Service/Srv_Baro.c ****         BspGPIO.write(*p_Baro_CS, true);
+ 597:Service/Srv_Baro.c ****     }
+ 598:Service/Srv_Baro.c **** 
+ 599:Service/Srv_Baro.c ****     return res;
+ 472              		.loc 1 599 5 view .LVU111
+ 600:Service/Srv_Baro.c **** }
+ 473              		.loc 1 600 1 is_stmt 0 view .LVU112
+ 474 0000 0020     		movs	r0, #0
+ 475              	.LVL33:
+ 476              		.loc 1 600 1 view .LVU113
+ 477 0002 7047     		bx	lr
+ 478              		.cfi_endproc
+ 479              	.LFE153:
+ 481              		.section	.text.SrvBaro_SPIBus_Tx,"ax",%progbits
+ 482              		.align	1
+ 483              		.syntax unified
+ 484              		.thumb
+ 485              		.thumb_func
+ 487              	SrvBaro_SPIBus_Tx:
+ 488              	.LVL34:
+ 489              	.LFB154:
+ 601:Service/Srv_Baro.c **** 
+ 602:Service/Srv_Baro.c **** static uint16_t SrvBaro_SPIBus_Tx(uint8_t *p_data, uint16_t len)
+ 603:Service/Srv_Baro.c **** {
+ 490              		.loc 1 603 1 is_stmt 1 view -0
+ 491              		.cfi_startproc
+ 492              		@ args = 0, pretend = 0, frame = 0
+ 493              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 21
+
+
+ 494              		@ link register save eliminated.
+ 604:Service/Srv_Baro.c ****     uint16_t res = 0;
+ 495              		.loc 1 604 5 view .LVU115
+ 605:Service/Srv_Baro.c **** 
+ 606:Service/Srv_Baro.c ****     if (p_data && len && \
+ 496              		.loc 1 606 5 view .LVU116
+ 607:Service/Srv_Baro.c ****         SrvBaroBus.init && \
+ 608:Service/Srv_Baro.c ****         (p_Baro_CS != NULL) && \
+ 609:Service/Srv_Baro.c ****         (SrvBaroBus.type == SrvBaro_Bus_SPI))
+ 610:Service/Srv_Baro.c ****     {
+ 611:Service/Srv_Baro.c ****         /* CS Low */
+ 612:Service/Srv_Baro.c ****         BspGPIO.write(*p_Baro_CS, false);
+ 613:Service/Srv_Baro.c **** 
+ 614:Service/Srv_Baro.c ****         if (ToSPI_BusAPI(SrvBaroBus.bus_api)->trans(&Baro_Bus_Instance, p_data, len, 100))
+ 615:Service/Srv_Baro.c ****             res = len;
+ 616:Service/Srv_Baro.c **** 
+ 617:Service/Srv_Baro.c ****         /* CS High */
+ 618:Service/Srv_Baro.c ****         BspGPIO.write(*p_Baro_CS, true);
+ 619:Service/Srv_Baro.c ****     }
+ 620:Service/Srv_Baro.c **** 
+ 621:Service/Srv_Baro.c ****     return res;
+ 497              		.loc 1 621 5 view .LVU117
+ 622:Service/Srv_Baro.c **** }
+ 498              		.loc 1 622 1 is_stmt 0 view .LVU118
+ 499 0000 0020     		movs	r0, #0
+ 500              	.LVL35:
+ 501              		.loc 1 622 1 view .LVU119
+ 502 0002 7047     		bx	lr
+ 503              		.cfi_endproc
+ 504              	.LFE154:
+ 506              		.section	.text.SrvBaro_SPIBus_Rx,"ax",%progbits
+ 507              		.align	1
+ 508              		.syntax unified
+ 509              		.thumb
+ 510              		.thumb_func
+ 512              	SrvBaro_SPIBus_Rx:
+ 513              	.LVL36:
+ 514              	.LFB155:
+ 623:Service/Srv_Baro.c **** 
+ 624:Service/Srv_Baro.c **** static uint16_t SrvBaro_SPIBus_Rx(uint8_t *p_data, uint16_t len)
+ 625:Service/Srv_Baro.c **** {
+ 515              		.loc 1 625 1 is_stmt 1 view -0
+ 516              		.cfi_startproc
+ 517              		@ args = 0, pretend = 0, frame = 0
+ 518              		@ frame_needed = 0, uses_anonymous_args = 0
+ 626:Service/Srv_Baro.c ****     uint16_t res = 0;
+ 519              		.loc 1 626 5 view .LVU121
+ 627:Service/Srv_Baro.c **** 
+ 628:Service/Srv_Baro.c ****     if (p_data && len && \
+ 520              		.loc 1 628 5 view .LVU122
+ 521              		.loc 1 628 8 is_stmt 0 view .LVU123
+ 522 0000 20B3     		cbz	r0, .L39
+ 625:Service/Srv_Baro.c ****     uint16_t res = 0;
+ 523              		.loc 1 625 1 discriminator 1 view .LVU124
+ 524 0002 70B5     		push	{r4, r5, r6, lr}
+ 525              	.LCFI12:
+ 526              		.cfi_def_cfa_offset 16
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 22
+
+
+ 527              		.cfi_offset 4, -16
+ 528              		.cfi_offset 5, -12
+ 529              		.cfi_offset 6, -8
+ 530              		.cfi_offset 14, -4
+ 531 0004 0C46     		mov	r4, r1
+ 532 0006 0546     		mov	r5, r0
+ 533              		.loc 1 628 16 discriminator 1 view .LVU125
+ 534 0008 11B3     		cbz	r1, .L40
+ 629:Service/Srv_Baro.c ****         SrvBaroBus.init && \
+ 535              		.loc 1 629 19 discriminator 2 view .LVU126
+ 536 000a 134B     		ldr	r3, .L48
+ 537 000c 5B78     		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 628:Service/Srv_Baro.c ****         SrvBaroBus.init && \
+ 538              		.loc 1 628 23 discriminator 2 view .LVU127
+ 539 000e 0BB3     		cbz	r3, .L41
+ 630:Service/Srv_Baro.c ****         (SrvBaroBus.type == SrvBaro_Bus_SPI))
+ 540              		.loc 1 630 20 view .LVU128
+ 541 0010 114B     		ldr	r3, .L48
+ 542 0012 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 629:Service/Srv_Baro.c ****         SrvBaroBus.init && \
+ 543              		.loc 1 629 25 view .LVU129
+ 544 0014 022B     		cmp	r3, #2
+ 545 0016 01D0     		beq	.L47
+ 626:Service/Srv_Baro.c **** 
+ 546              		.loc 1 626 14 view .LVU130
+ 547 0018 0020     		movs	r0, #0
+ 548              	.LVL37:
+ 626:Service/Srv_Baro.c **** 
+ 549              		.loc 1 626 14 view .LVU131
+ 550 001a 1AE0     		b	.L37
+ 551              	.LVL38:
+ 552              	.L47:
+ 631:Service/Srv_Baro.c ****     {
+ 632:Service/Srv_Baro.c ****         /* CS Low */
+ 633:Service/Srv_Baro.c ****         BspGPIO.write(*p_Baro_CS, false);
+ 553              		.loc 1 633 9 is_stmt 1 view .LVU132
+ 554              		.loc 1 633 16 is_stmt 0 view .LVU133
+ 555 001c 0F4B     		ldr	r3, .L48+4
+ 556 001e DE69     		ldr	r6, [r3, #28]
+ 557              		.loc 1 633 9 view .LVU134
+ 558 0020 0023     		movs	r3, #0
+ 559 0022 93E80700 		ldm	r3, {r0, r1, r2}
+ 560              	.LVL39:
+ 561              		.loc 1 633 9 view .LVU135
+ 562 0026 B047     		blx	r6
+ 563              	.LVL40:
+ 634:Service/Srv_Baro.c **** 
+ 635:Service/Srv_Baro.c ****         if (ToSPI_BusAPI(SrvBaroBus.bus_api)->receive(&Baro_Bus_Instance, p_data, len, 100))
+ 564              		.loc 1 635 9 is_stmt 1 view .LVU136
+ 565              		.loc 1 635 13 is_stmt 0 view .LVU137
+ 566 0028 0B4B     		ldr	r3, .L48
+ 567 002a 5B68     		ldr	r3, [r3, #4]
+ 568              		.loc 1 635 45 view .LVU138
+ 569 002c DE68     		ldr	r6, [r3, #12]
+ 570              		.loc 1 635 13 view .LVU139
+ 571 002e 6423     		movs	r3, #100
+ 572 0030 2246     		mov	r2, r4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 23
+
+
+ 573 0032 2946     		mov	r1, r5
+ 574 0034 0A48     		ldr	r0, .L48+8
+ 575 0036 B047     		blx	r6
+ 576              	.LVL41:
+ 577              		.loc 1 635 12 view .LVU140
+ 578 0038 00B9     		cbnz	r0, .L38
+ 626:Service/Srv_Baro.c **** 
+ 579              		.loc 1 626 14 view .LVU141
+ 580 003a 0024     		movs	r4, #0
+ 581              	.L38:
+ 582              	.LVL42:
+ 636:Service/Srv_Baro.c ****             res = len;
+ 637:Service/Srv_Baro.c ****         
+ 638:Service/Srv_Baro.c ****         /* CS High */
+ 639:Service/Srv_Baro.c ****         BspGPIO.write(*p_Baro_CS, true);
+ 583              		.loc 1 639 9 is_stmt 1 view .LVU142
+ 584              		.loc 1 639 16 is_stmt 0 view .LVU143
+ 585 003c 074B     		ldr	r3, .L48+4
+ 586 003e DD69     		ldr	r5, [r3, #28]
+ 587              	.LVL43:
+ 588              		.loc 1 639 9 view .LVU144
+ 589 0040 0022     		movs	r2, #0
+ 590 0042 0123     		movs	r3, #1
+ 591 0044 07CA     		ldm	r2, {r0, r1, r2}
+ 592 0046 A847     		blx	r5
+ 593              	.LVL44:
+ 594 0048 2046     		mov	r0, r4
+ 595 004a 02E0     		b	.L37
+ 596              	.LVL45:
+ 597              	.L39:
+ 598              	.LCFI13:
+ 599              		.cfi_def_cfa_offset 0
+ 600              		.cfi_restore 4
+ 601              		.cfi_restore 5
+ 602              		.cfi_restore 6
+ 603              		.cfi_restore 14
+ 626:Service/Srv_Baro.c **** 
+ 604              		.loc 1 626 14 view .LVU145
+ 605 004c 0020     		movs	r0, #0
+ 606              	.LVL46:
+ 640:Service/Srv_Baro.c ****     }
+ 641:Service/Srv_Baro.c ****     
+ 642:Service/Srv_Baro.c ****     return res;
+ 607              		.loc 1 642 5 is_stmt 1 view .LVU146
+ 643:Service/Srv_Baro.c **** }
+ 608              		.loc 1 643 1 is_stmt 0 view .LVU147
+ 609 004e 7047     		bx	lr
+ 610              	.LVL47:
+ 611              	.L40:
+ 612              	.LCFI14:
+ 613              		.cfi_def_cfa_offset 16
+ 614              		.cfi_offset 4, -16
+ 615              		.cfi_offset 5, -12
+ 616              		.cfi_offset 6, -8
+ 617              		.cfi_offset 14, -4
+ 626:Service/Srv_Baro.c **** 
+ 618              		.loc 1 626 14 view .LVU148
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 24
+
+
+ 619 0050 0846     		mov	r0, r1
+ 620              	.LVL48:
+ 621              	.L37:
+ 642:Service/Srv_Baro.c **** }
+ 622              		.loc 1 642 5 is_stmt 1 view .LVU149
+ 623              		.loc 1 643 1 is_stmt 0 view .LVU150
+ 624 0052 70BD     		pop	{r4, r5, r6, pc}
+ 625              	.LVL49:
+ 626              	.L41:
+ 626:Service/Srv_Baro.c **** 
+ 627              		.loc 1 626 14 view .LVU151
+ 628 0054 0020     		movs	r0, #0
+ 629              	.LVL50:
+ 626:Service/Srv_Baro.c **** 
+ 630              		.loc 1 626 14 view .LVU152
+ 631 0056 FCE7     		b	.L37
+ 632              	.L49:
+ 633              		.align	2
+ 634              	.L48:
+ 635 0058 00000000 		.word	.LANCHOR0
+ 636 005c 00000000 		.word	BspGPIO
+ 637 0060 00000000 		.word	.LANCHOR1
+ 638              		.cfi_endproc
+ 639              	.LFE155:
+ 641              		.section	.rodata.SrvBaro_BusInitError.str1.4,"aMS",%progbits,1
+ 642              		.align	2
+ 643              	.LC0:
+ 644 0000 53727642 		.ascii	"SrvBaro Triggered Unknow ErrorCode: %d\015\012\000"
+ 644      61726F20 
+ 644      54726967 
+ 644      67657265 
+ 644      6420556E 
+ 645              		.section	.text.SrvBaro_BusInitError,"ax",%progbits
+ 646              		.align	1
+ 647              		.syntax unified
+ 648              		.thumb
+ 649              		.thumb_func
+ 651              	SrvBaro_BusInitError:
+ 652              	.LVL51:
+ 653              	.LFB156:
+ 644:Service/Srv_Baro.c **** 
+ 645:Service/Srv_Baro.c **** /*************************************************************** Error Process Callback ***********
+ 646:Service/Srv_Baro.c **** static void SrvBaro_BusInitError(int16_t code, uint8_t *p_arg, uint16_t size)
+ 647:Service/Srv_Baro.c **** {
+ 654              		.loc 1 647 1 is_stmt 1 view -0
+ 655              		.cfi_startproc
+ 656              		@ args = 0, pretend = 0, frame = 0
+ 657              		@ frame_needed = 0, uses_anonymous_args = 0
+ 648:Service/Srv_Baro.c ****     switch(code)
+ 658              		.loc 1 648 5 view .LVU154
+ 659 0000 0128     		cmp	r0, #1
+ 660 0002 0CD0     		beq	.L54
+ 647:Service/Srv_Baro.c ****     switch(code)
+ 661              		.loc 1 647 1 is_stmt 0 view .LVU155
+ 662 0004 08B5     		push	{r3, lr}
+ 663              	.LCFI15:
+ 664              		.cfi_def_cfa_offset 8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 25
+
+
+ 665              		.cfi_offset 3, -8
+ 666              		.cfi_offset 14, -4
+ 667 0006 0146     		mov	r1, r0
+ 668              	.LVL52:
+ 669              		.loc 1 648 5 view .LVU156
+ 670 0008 0028     		cmp	r0, #0
+ 671 000a 03DD     		ble	.L52
+ 672 000c C31E     		subs	r3, r0, #3
+ 673 000e 9BB2     		uxth	r3, r3
+ 674 0010 052B     		cmp	r3, #5
+ 675 0012 03D9     		bls	.L50
+ 676              	.L52:
+ 649:Service/Srv_Baro.c ****     {
+ 650:Service/Srv_Baro.c ****         case SrvBaro_Error_BadRate: break;
+ 651:Service/Srv_Baro.c ****         case SrvBaro_Error_BadType: break;
+ 652:Service/Srv_Baro.c ****         case SrvBaro_Error_BadSensorObj: break;
+ 653:Service/Srv_Baro.c ****         case SrvBaro_Error_BadSamplePeriod: break;
+ 654:Service/Srv_Baro.c ****         case SrvBaro_Error_BusInit: break;
+ 655:Service/Srv_Baro.c ****         case SrvBaro_Error_DevInit: break;
+ 656:Service/Srv_Baro.c ****         case SrvBaro_Error_FilterInit: break;
+ 657:Service/Srv_Baro.c ****         default:
+ 658:Service/Srv_Baro.c ****             ErrorLog.add_desc("SrvBaro Triggered Unknow ErrorCode: %d\r\n", code);
+ 677              		.loc 1 658 13 is_stmt 1 view .LVU157
+ 678              		.loc 1 658 21 is_stmt 0 view .LVU158
+ 679 0014 024B     		ldr	r3, .L57
+ 680 0016 5B69     		ldr	r3, [r3, #20]
+ 681              		.loc 1 658 13 view .LVU159
+ 682 0018 0248     		ldr	r0, .L57+4
+ 683              	.LVL53:
+ 684              		.loc 1 658 13 view .LVU160
+ 685 001a 9847     		blx	r3
+ 686              	.LVL54:
+ 659:Service/Srv_Baro.c ****         break;
+ 687              		.loc 1 659 9 is_stmt 1 view .LVU161
+ 688              	.L50:
+ 660:Service/Srv_Baro.c ****     }
+ 661:Service/Srv_Baro.c **** }
+ 689              		.loc 1 661 1 is_stmt 0 view .LVU162
+ 690 001c 08BD     		pop	{r3, pc}
+ 691              	.LVL55:
+ 692              	.L54:
+ 693              	.LCFI16:
+ 694              		.cfi_def_cfa_offset 0
+ 695              		.cfi_restore 3
+ 696              		.cfi_restore 14
+ 697              		.loc 1 661 1 view .LVU163
+ 698 001e 7047     		bx	lr
+ 699              	.L58:
+ 700              		.align	2
+ 701              	.L57:
+ 702 0020 00000000 		.word	ErrorLog
+ 703 0024 00000000 		.word	.LC0
+ 704              		.cfi_endproc
+ 705              	.LFE156:
+ 707              		.global	__aeabi_f2d
+ 708              		.global	__aeabi_dsub
+ 709              		.global	__aeabi_dmul
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 26
+
+
+ 710              		.global	__aeabi_d2f
+ 711              		.section	.text.SrvBaro_PessureCnvToMeter,"ax",%progbits
+ 712              		.align	1
+ 713              		.syntax unified
+ 714              		.thumb
+ 715              		.thumb_func
+ 717              	SrvBaro_PessureCnvToMeter:
+ 718              	.LVL56:
+ 719              	.LFB149:
+ 476:Service/Srv_Baro.c ****     return ((1 - pow((pa / STANDER_ATMOSPHERIC_PRESSURE), 0.1903))) * 44330;
+ 720              		.loc 1 476 1 is_stmt 1 view -0
+ 721              		.cfi_startproc
+ 722              		@ args = 0, pretend = 0, frame = 0
+ 723              		@ frame_needed = 0, uses_anonymous_args = 0
+ 476:Service/Srv_Baro.c ****     return ((1 - pow((pa / STANDER_ATMOSPHERIC_PRESSURE), 0.1903))) * 44330;
+ 724              		.loc 1 476 1 is_stmt 0 view .LVU165
+ 725 0000 08B5     		push	{r3, lr}
+ 726              	.LCFI17:
+ 727              		.cfi_def_cfa_offset 8
+ 728              		.cfi_offset 3, -8
+ 729              		.cfi_offset 14, -4
+ 477:Service/Srv_Baro.c **** }
+ 730              		.loc 1 477 5 is_stmt 1 view .LVU166
+ 477:Service/Srv_Baro.c **** }
+ 731              		.loc 1 477 18 is_stmt 0 view .LVU167
+ 732 0002 DFED137A 		vldr.32	s15, .L61+16
+ 733 0006 C0EE277A 		vdiv.f32	s15, s0, s15
+ 734 000a 17EE900A 		vmov	r0, s15
+ 735 000e FFF7FEFF 		bl	__aeabi_f2d
+ 736              	.LVL57:
+ 477:Service/Srv_Baro.c **** }
+ 737              		.loc 1 477 18 view .LVU168
+ 738 0012 9FED0B1B 		vldr.64	d1, .L61
+ 739 0016 41EC100B 		vmov	d0, r0, r1
+ 740 001a FFF7FEFF 		bl	pow
+ 741              	.LVL58:
+ 742 001e 53EC102B 		vmov	r2, r3, d0
+ 477:Service/Srv_Baro.c **** }
+ 743              		.loc 1 477 16 view .LVU169
+ 744 0022 0020     		movs	r0, #0
+ 745 0024 0B49     		ldr	r1, .L61+20
+ 746 0026 FFF7FEFF 		bl	__aeabi_dsub
+ 747              	.LVL59:
+ 477:Service/Srv_Baro.c **** }
+ 748              		.loc 1 477 69 view .LVU170
+ 749 002a 07A3     		adr	r3, .L61+8
+ 750 002c D3E90023 		ldrd	r2, [r3]
+ 751 0030 FFF7FEFF 		bl	__aeabi_dmul
+ 752              	.LVL60:
+ 753 0034 FFF7FEFF 		bl	__aeabi_d2f
+ 754              	.LVL61:
+ 478:Service/Srv_Baro.c **** 
+ 755              		.loc 1 478 1 view .LVU171
+ 756 0038 00EE100A 		vmov	s0, r0
+ 757 003c 08BD     		pop	{r3, pc}
+ 758              	.L62:
+ 759 003e 00BF     		.align	3
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 27
+
+
+ 760              	.L61:
+ 761 0040 EBE2361A 		.word	439804651
+ 762 0044 C05BC83F 		.word	1070095296
+ 763 0048 00000000 		.word	0
+ 764 004c 40A5E540 		.word	1088791872
+ 765 0050 80E6C547 		.word	1204151936
+ 766 0054 0000F03F 		.word	1072693248
+ 767              		.cfi_endproc
+ 768              	.LFE149:
+ 770              		.section	.text.SrvBaro_Get_Date,"ax",%progbits
+ 771              		.align	1
+ 772              		.syntax unified
+ 773              		.thumb
+ 774              		.thumb_func
+ 776              	SrvBaro_Get_Date:
+ 777              	.LVL62:
+ 778              	.LFB150:
+ 481:Service/Srv_Baro.c ****     SrvBaro_UnionData_TypeDef baro_data_tmp;
+ 779              		.loc 1 481 1 is_stmt 1 view -0
+ 780              		.cfi_startproc
+ 781              		@ args = 0, pretend = 0, frame = 48
+ 782              		@ frame_needed = 0, uses_anonymous_args = 0
+ 481:Service/Srv_Baro.c ****     SrvBaro_UnionData_TypeDef baro_data_tmp;
+ 783              		.loc 1 481 1 is_stmt 0 view .LVU173
+ 784 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 785              	.LCFI18:
+ 786              		.cfi_def_cfa_offset 28
+ 787              		.cfi_offset 4, -28
+ 788              		.cfi_offset 5, -24
+ 789              		.cfi_offset 6, -20
+ 790              		.cfi_offset 7, -16
+ 791              		.cfi_offset 8, -12
+ 792              		.cfi_offset 9, -8
+ 793              		.cfi_offset 14, -4
+ 794 0004 8DB0     		sub	sp, sp, #52
+ 795              	.LCFI19:
+ 796              		.cfi_def_cfa_offset 80
+ 482:Service/Srv_Baro.c ****     float alt = 0.0f;
+ 797              		.loc 1 482 5 is_stmt 1 view .LVU174
+ 483:Service/Srv_Baro.c ****     uint8_t check_sum = 0;
+ 798              		.loc 1 483 5 view .LVU175
+ 799              	.LVL63:
+ 484:Service/Srv_Baro.c **** 
+ 800              		.loc 1 484 5 view .LVU176
+ 486:Service/Srv_Baro.c **** 
+ 801              		.loc 1 486 5 view .LVU177
+ 802 0006 0023     		movs	r3, #0
+ 803 0008 0593     		str	r3, [sp, #20]
+ 804 000a 0693     		str	r3, [sp, #24]
+ 805 000c 0793     		str	r3, [sp, #28]
+ 806 000e 0893     		str	r3, [sp, #32]
+ 807 0010 0993     		str	r3, [sp, #36]
+ 808 0012 0A93     		str	r3, [sp, #40]
+ 809 0014 0B93     		str	r3, [sp, #44]
+ 488:Service/Srv_Baro.c ****     {
+ 810              		.loc 1 488 5 view .LVU178
+ 488:Service/Srv_Baro.c ****     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 28
+
+
+ 811              		.loc 1 488 20 is_stmt 0 view .LVU179
+ 812 0016 654B     		ldr	r3, .L76
+ 813 0018 1C7C     		ldrb	r4, [r3, #16]	@ zero_extendqisi2
+ 488:Service/Srv_Baro.c ****     {
+ 814              		.loc 1 488 8 view .LVU180
+ 815 001a 002C     		cmp	r4, #0
+ 816 001c 40F0BA80 		bne	.L71
+ 817 0020 0646     		mov	r6, r0
+ 488:Service/Srv_Baro.c ****     {
+ 818              		.loc 1 488 53 discriminator 1 view .LVU181
+ 819 0022 0028     		cmp	r0, #0
+ 820 0024 00F0BB80 		beq	.L72
+ 488:Service/Srv_Baro.c ****     {
+ 821              		.loc 1 488 74 discriminator 2 view .LVU182
+ 822 0028 5B69     		ldr	r3, [r3, #20]
+ 488:Service/Srv_Baro.c ****     {
+ 823              		.loc 1 488 61 discriminator 2 view .LVU183
+ 824 002a 002B     		cmp	r3, #0
+ 825 002c 00F0B980 		beq	.L73
+ 488:Service/Srv_Baro.c ****     {
+ 826              		.loc 1 488 100 discriminator 3 view .LVU184
+ 827 0030 5E4B     		ldr	r3, .L76
+ 828 0032 1B7E     		ldrb	r3, [r3, #24]	@ zero_extendqisi2
+ 488:Service/Srv_Baro.c ****     {
+ 829              		.loc 1 488 87 discriminator 3 view .LVU185
+ 830 0034 002B     		cmp	r3, #0
+ 831 0036 00F0B680 		beq	.L74
+ 490:Service/Srv_Baro.c ****         {
+ 832              		.loc 1 490 9 is_stmt 1 view .LVU186
+ 490:Service/Srv_Baro.c ****         {
+ 833              		.loc 1 490 37 is_stmt 0 view .LVU187
+ 834 003a 5C4B     		ldr	r3, .L76
+ 835 003c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 490:Service/Srv_Baro.c ****         {
+ 836              		.loc 1 490 9 view .LVU188
+ 837 003e 012B     		cmp	r3, #1
+ 838 0040 03D0     		beq	.L65
+ 839 0042 022B     		cmp	r3, #2
+ 840 0044 54D0     		beq	.L66
+ 841 0046 0025     		movs	r5, #0
+ 842 0048 A5E0     		b	.L64
+ 843              	.L65:
+ 493:Service/Srv_Baro.c ****                 {
+ 844              		.loc 1 493 17 is_stmt 1 view .LVU189
+ 493:Service/Srv_Baro.c ****                 {
+ 845              		.loc 1 493 21 is_stmt 0 view .LVU190
+ 846 004a 584B     		ldr	r3, .L76
+ 847 004c DA68     		ldr	r2, [r3, #12]
+ 493:Service/Srv_Baro.c ****                 {
+ 848              		.loc 1 493 56 view .LVU191
+ 849 004e 9268     		ldr	r2, [r2, #8]
+ 493:Service/Srv_Baro.c ****                 {
+ 850              		.loc 1 493 21 view .LVU192
+ 851 0050 9868     		ldr	r0, [r3, #8]
+ 852              	.LVL64:
+ 493:Service/Srv_Baro.c ****                 {
+ 853              		.loc 1 493 21 view .LVU193
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 29
+
+
+ 854 0052 9047     		blx	r2
+ 855              	.LVL65:
+ 493:Service/Srv_Baro.c ****                 {
+ 856              		.loc 1 493 20 view .LVU194
+ 857 0054 0546     		mov	r5, r0
+ 858 0056 0028     		cmp	r0, #0
+ 859 0058 00F09D80 		beq	.L64
+ 495:Service/Srv_Baro.c ****                     *ToDPS310_DataPtr(SrvBaroObj.sensor_data) = ToDPS310_API(SrvBaroObj.sensor_api)
+ 860              		.loc 1 495 21 is_stmt 1 view .LVU195
+ 495:Service/Srv_Baro.c ****                     *ToDPS310_DataPtr(SrvBaroObj.sensor_data) = ToDPS310_API(SrvBaroObj.sensor_api)
+ 861              		.loc 1 495 38 is_stmt 0 view .LVU196
+ 862 005c 534F     		ldr	r7, .L76
+ 863 005e 7B69     		ldr	r3, [r7, #20]
+ 495:Service/Srv_Baro.c ****                     *ToDPS310_DataPtr(SrvBaroObj.sensor_data) = ToDPS310_API(SrvBaroObj.sensor_api)
+ 864              		.loc 1 495 21 view .LVU197
+ 865 0060 0022     		movs	r2, #0
+ 866 0062 1A60     		str	r2, [r3]	@ unaligned
+ 867 0064 5A60     		str	r2, [r3, #4]	@ unaligned
+ 868 0066 9A60     		str	r2, [r3, #8]	@ unaligned
+ 869 0068 DA60     		str	r2, [r3, #12]	@ unaligned
+ 496:Service/Srv_Baro.c ****                     
+ 870              		.loc 1 496 21 is_stmt 1 view .LVU198
+ 496:Service/Srv_Baro.c ****                     
+ 871              		.loc 1 496 65 is_stmt 0 view .LVU199
+ 872 006a FB68     		ldr	r3, [r7, #12]
+ 496:Service/Srv_Baro.c ****                     
+ 873              		.loc 1 496 100 view .LVU200
+ 874 006c DB68     		ldr	r3, [r3, #12]
+ 496:Service/Srv_Baro.c ****                     
+ 875              		.loc 1 496 22 view .LVU201
+ 876 006e D7F81490 		ldr	r9, [r7, #20]
+ 496:Service/Srv_Baro.c ****                     
+ 877              		.loc 1 496 65 view .LVU202
+ 878 0072 E846     		mov	r8, sp
+ 879 0074 B968     		ldr	r1, [r7, #8]
+ 880 0076 4046     		mov	r0, r8
+ 881 0078 9847     		blx	r3
+ 882              	.LVL66:
+ 883 007a 98E80F00 		ldm	r8, {r0, r1, r2, r3}
+ 884 007e 89E80F00 		stm	r9, {r0, r1, r2, r3}
+ 499:Service/Srv_Baro.c **** 
+ 885              		.loc 1 499 21 is_stmt 1 view .LVU203
+ 499:Service/Srv_Baro.c **** 
+ 886              		.loc 1 499 53 is_stmt 0 view .LVU204
+ 887 0082 7B69     		ldr	r3, [r7, #20]
+ 499:Service/Srv_Baro.c **** 
+ 888              		.loc 1 499 27 view .LVU205
+ 889 0084 93ED020A 		vldr.32	s0, [r3, #8]
+ 890 0088 FFF7FEFF 		bl	SrvBaro_PessureCnvToMeter
+ 891              	.LVL67:
+ 501:Service/Srv_Baro.c ****                     baro_data_tmp.data.cyc = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->cyc;
+ 892              		.loc 1 501 21 is_stmt 1 view .LVU206
+ 501:Service/Srv_Baro.c ****                     baro_data_tmp.data.cyc = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->cyc;
+ 893              		.loc 1 501 53 is_stmt 0 view .LVU207
+ 894 008c 7B69     		ldr	r3, [r7, #20]
+ 501:Service/Srv_Baro.c ****                     baro_data_tmp.data.cyc = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->cyc;
+ 895              		.loc 1 501 93 view .LVU208
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 30
+
+
+ 896 008e 1A68     		ldr	r2, [r3]
+ 501:Service/Srv_Baro.c ****                     baro_data_tmp.data.cyc = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->cyc;
+ 897              		.loc 1 501 51 view .LVU209
+ 898 0090 0592     		str	r2, [sp, #20]
+ 502:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
+ 899              		.loc 1 502 21 is_stmt 1 view .LVU210
+ 502:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
+ 900              		.loc 1 502 86 is_stmt 0 view .LVU211
+ 901 0092 5A68     		ldr	r2, [r3, #4]
+ 502:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
+ 902              		.loc 1 502 44 view .LVU212
+ 903 0094 8DF81820 		strb	r2, [sp, #24]
+ 503:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
+ 904              		.loc 1 503 21 is_stmt 1 view .LVU213
+ 503:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
+ 905              		.loc 1 503 72 is_stmt 0 view .LVU214
+ 906 0098 D7ED127A 		vldr.32	s15, [r7, #72]
+ 503:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
+ 907              		.loc 1 503 60 view .LVU215
+ 908 009c CDED0A7A 		vstr.32	s15, [sp, #40]
+ 504:Service/Srv_Baro.c ****                     baro_data_tmp.data.tempra = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scaled_te
+ 909              		.loc 1 504 21 is_stmt 1 view .LVU216
+ 504:Service/Srv_Baro.c ****                     baro_data_tmp.data.tempra = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scaled_te
+ 910              		.loc 1 504 59 is_stmt 0 view .LVU217
+ 911 00a0 30EE670A 		vsub.f32	s0, s0, s15
+ 912              	.LVL68:
+ 504:Service/Srv_Baro.c ****                     baro_data_tmp.data.tempra = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scaled_te
+ 913              		.loc 1 504 53 view .LVU218
+ 914 00a4 8DED090A 		vstr.32	s0, [sp, #36]
+ 505:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scaled_
+ 915              		.loc 1 505 21 is_stmt 1 view .LVU219
+ 505:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scaled_
+ 916              		.loc 1 505 89 is_stmt 0 view .LVU220
+ 917 00a8 DA68     		ldr	r2, [r3, #12]	@ float
+ 505:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure = ToDPS310_DataPtr(SrvBaroObj.sensor_data)->scaled_
+ 918              		.loc 1 505 47 view .LVU221
+ 919 00aa 0792     		str	r2, [sp, #28]	@ float
+ 506:Service/Srv_Baro.c **** 
+ 920              		.loc 1 506 21 is_stmt 1 view .LVU222
+ 506:Service/Srv_Baro.c **** 
+ 921              		.loc 1 506 91 is_stmt 0 view .LVU223
+ 922 00ac 9B68     		ldr	r3, [r3, #8]	@ float
+ 506:Service/Srv_Baro.c **** 
+ 923              		.loc 1 506 49 view .LVU224
+ 924 00ae 0893     		str	r3, [sp, #32]	@ float
+ 509:Service/Srv_Baro.c ****                     for(uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.c
+ 925              		.loc 1 509 21 is_stmt 1 view .LVU225
+ 509:Service/Srv_Baro.c ****                     for(uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.c
+ 926              		.loc 1 509 67 is_stmt 0 view .LVU226
+ 927 00b0 3F4B     		ldr	r3, .L76+4
+ 928 00b2 5B68     		ldr	r3, [r3, #4]
+ 509:Service/Srv_Baro.c ****                     for(uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.c
+ 929              		.loc 1 509 55 view .LVU227
+ 930 00b4 F86C     		ldr	r0, [r7, #76]
+ 931 00b6 9847     		blx	r3
+ 932              	.LVL69:
+ 509:Service/Srv_Baro.c ****                     for(uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.c
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 31
+
+
+ 933              		.loc 1 509 53 view .LVU228
+ 934 00b8 8DED090A 		vstr.32	s0, [sp, #36]
+ 510:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 935              		.loc 1 510 21 is_stmt 1 view .LVU229
+ 936              	.LBB2:
+ 510:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 937              		.loc 1 510 25 view .LVU230
+ 938              	.LVL70:
+ 510:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 939              		.loc 1 510 33 is_stmt 0 view .LVU231
+ 940 00bc 2346     		mov	r3, r4
+ 510:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 941              		.loc 1 510 21 view .LVU232
+ 942 00be 08E0     		b	.L67
+ 943              	.LVL71:
+ 944              	.L68:
+ 511:Service/Srv_Baro.c ****                     baro_data_tmp.data.check_sum = check_sum;
+ 945              		.loc 1 511 25 is_stmt 1 discriminator 3 view .LVU233
+ 511:Service/Srv_Baro.c ****                     baro_data_tmp.data.check_sum = check_sum;
+ 946              		.loc 1 511 56 is_stmt 0 discriminator 3 view .LVU234
+ 947 00c0 03F13002 		add	r2, r3, #48
+ 948 00c4 6A44     		add	r2, sp, r2
+ 949 00c6 12F81C2C 		ldrb	r2, [r2, #-28]	@ zero_extendqisi2
+ 511:Service/Srv_Baro.c ****                     baro_data_tmp.data.check_sum = check_sum;
+ 950              		.loc 1 511 35 discriminator 3 view .LVU235
+ 951 00ca 1444     		add	r4, r4, r2
+ 952              	.LVL72:
+ 511:Service/Srv_Baro.c ****                     baro_data_tmp.data.check_sum = check_sum;
+ 953              		.loc 1 511 35 discriminator 3 view .LVU236
+ 954 00cc E4B2     		uxtb	r4, r4
+ 955              	.LVL73:
+ 510:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 956              		.loc 1 510 111 is_stmt 1 discriminator 3 view .LVU237
+ 510:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 957              		.loc 1 510 112 is_stmt 0 discriminator 3 view .LVU238
+ 958 00ce 0133     		adds	r3, r3, #1
+ 959              	.LVL74:
+ 510:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 960              		.loc 1 510 112 discriminator 3 view .LVU239
+ 961 00d0 DBB2     		uxtb	r3, r3
+ 962              	.LVL75:
+ 963              	.L67:
+ 510:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 964              		.loc 1 510 40 is_stmt 1 discriminator 1 view .LVU240
+ 510:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 965              		.loc 1 510 21 is_stmt 0 discriminator 1 view .LVU241
+ 966 00d2 1A2B     		cmp	r3, #26
+ 967 00d4 F4D9     		bls	.L68
+ 968              	.LBE2:
+ 512:Service/Srv_Baro.c ****                     memcpy(data, &baro_data_tmp, sizeof(SrvBaroData_TypeDef));
+ 969              		.loc 1 512 21 is_stmt 1 view .LVU242
+ 512:Service/Srv_Baro.c ****                     memcpy(data, &baro_data_tmp, sizeof(SrvBaroData_TypeDef));
+ 970              		.loc 1 512 50 is_stmt 0 view .LVU243
+ 971 00d6 8DF82D40 		strb	r4, [sp, #45]
+ 513:Service/Srv_Baro.c ****                     
+ 972              		.loc 1 513 21 is_stmt 1 view .LVU244
+ 973 00da 05AC     		add	r4, sp, #20
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 32
+
+
+ 974              	.LVL76:
+ 513:Service/Srv_Baro.c ****                     
+ 975              		.loc 1 513 21 is_stmt 0 view .LVU245
+ 976 00dc 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 977              	.LVL77:
+ 513:Service/Srv_Baro.c ****                     
+ 978              		.loc 1 513 21 view .LVU246
+ 979 00de 3060     		str	r0, [r6]	@ unaligned
+ 980              	.LVL78:
+ 513:Service/Srv_Baro.c ****                     
+ 981              		.loc 1 513 21 view .LVU247
+ 982 00e0 7160     		str	r1, [r6, #4]	@ unaligned
+ 983 00e2 B260     		str	r2, [r6, #8]	@ unaligned
+ 984 00e4 F360     		str	r3, [r6, #12]	@ unaligned
+ 985 00e6 07CC     		ldmia	r4!, {r0, r1, r2}
+ 986 00e8 3061     		str	r0, [r6, #16]	@ unaligned
+ 987 00ea 7161     		str	r1, [r6, #20]	@ unaligned
+ 988 00ec B261     		str	r2, [r6, #24]	@ unaligned
+ 515:Service/Srv_Baro.c ****                 }
+ 989              		.loc 1 515 21 is_stmt 1 view .LVU248
+ 515:Service/Srv_Baro.c ****                 }
+ 990              		.loc 1 515 28 is_stmt 0 view .LVU249
+ 991 00ee 52E0     		b	.L64
+ 992              	.LVL79:
+ 993              	.L66:
+ 520:Service/Srv_Baro.c ****                 {
+ 994              		.loc 1 520 17 is_stmt 1 view .LVU250
+ 520:Service/Srv_Baro.c ****                 {
+ 995              		.loc 1 520 21 is_stmt 0 view .LVU251
+ 996 00f0 2E4B     		ldr	r3, .L76
+ 997 00f2 DA68     		ldr	r2, [r3, #12]
+ 520:Service/Srv_Baro.c ****                 {
+ 998              		.loc 1 520 56 view .LVU252
+ 999 00f4 9268     		ldr	r2, [r2, #8]
+ 520:Service/Srv_Baro.c ****                 {
+ 1000              		.loc 1 520 21 view .LVU253
+ 1001 00f6 9868     		ldr	r0, [r3, #8]
+ 1002              	.LVL80:
+ 520:Service/Srv_Baro.c ****                 {
+ 1003              		.loc 1 520 21 view .LVU254
+ 1004 00f8 9047     		blx	r2
+ 1005              	.LVL81:
+ 520:Service/Srv_Baro.c ****                 {
+ 1006              		.loc 1 520 20 view .LVU255
+ 1007 00fa 0546     		mov	r5, r0
+ 1008 00fc 0028     		cmp	r0, #0
+ 1009 00fe 4AD0     		beq	.L64
+ 522:Service/Srv_Baro.c ****                     *ToBMP280_DataPtr(SrvBaroObj.sensor_data) = ToBMP280_API(SrvBaroObj.sensor_api)
+ 1010              		.loc 1 522 21 is_stmt 1 view .LVU256
+ 522:Service/Srv_Baro.c ****                     *ToBMP280_DataPtr(SrvBaroObj.sensor_data) = ToBMP280_API(SrvBaroObj.sensor_api)
+ 1011              		.loc 1 522 38 is_stmt 0 view .LVU257
+ 1012 0100 2A4F     		ldr	r7, .L76
+ 1013 0102 7B69     		ldr	r3, [r7, #20]
+ 522:Service/Srv_Baro.c ****                     *ToBMP280_DataPtr(SrvBaroObj.sensor_data) = ToBMP280_API(SrvBaroObj.sensor_api)
+ 1014              		.loc 1 522 21 view .LVU258
+ 1015 0104 0022     		movs	r2, #0
+ 1016 0106 1A60     		str	r2, [r3]	@ unaligned
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 33
+
+
+ 1017 0108 5A60     		str	r2, [r3, #4]	@ unaligned
+ 1018 010a 9A60     		str	r2, [r3, #8]	@ unaligned
+ 1019 010c DA60     		str	r2, [r3, #12]	@ unaligned
+ 523:Service/Srv_Baro.c ****                     
+ 1020              		.loc 1 523 21 is_stmt 1 view .LVU259
+ 523:Service/Srv_Baro.c ****                     
+ 1021              		.loc 1 523 65 is_stmt 0 view .LVU260
+ 1022 010e FB68     		ldr	r3, [r7, #12]
+ 523:Service/Srv_Baro.c ****                     
+ 1023              		.loc 1 523 100 view .LVU261
+ 1024 0110 DB68     		ldr	r3, [r3, #12]
+ 523:Service/Srv_Baro.c ****                     
+ 1025              		.loc 1 523 22 view .LVU262
+ 1026 0112 D7F81490 		ldr	r9, [r7, #20]
+ 523:Service/Srv_Baro.c ****                     
+ 1027              		.loc 1 523 65 view .LVU263
+ 1028 0116 E846     		mov	r8, sp
+ 1029 0118 B968     		ldr	r1, [r7, #8]
+ 1030 011a 4046     		mov	r0, r8
+ 1031 011c 9847     		blx	r3
+ 1032              	.LVL82:
+ 1033 011e 98E80F00 		ldm	r8, {r0, r1, r2, r3}
+ 1034 0122 89E80F00 		stm	r9, {r0, r1, r2, r3}
+ 526:Service/Srv_Baro.c **** 
+ 1035              		.loc 1 526 21 is_stmt 1 view .LVU264
+ 526:Service/Srv_Baro.c **** 
+ 1036              		.loc 1 526 53 is_stmt 0 view .LVU265
+ 1037 0126 7B69     		ldr	r3, [r7, #20]
+ 526:Service/Srv_Baro.c **** 
+ 1038              		.loc 1 526 27 view .LVU266
+ 1039 0128 93ED020A 		vldr.32	s0, [r3, #8]
+ 1040 012c FFF7FEFF 		bl	SrvBaro_PessureCnvToMeter
+ 1041              	.LVL83:
+ 528:Service/Srv_Baro.c ****                     baro_data_tmp.data.cyc = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->cyc;
+ 1042              		.loc 1 528 21 is_stmt 1 view .LVU267
+ 528:Service/Srv_Baro.c ****                     baro_data_tmp.data.cyc = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->cyc;
+ 1043              		.loc 1 528 53 is_stmt 0 view .LVU268
+ 1044 0130 7B69     		ldr	r3, [r7, #20]
+ 528:Service/Srv_Baro.c ****                     baro_data_tmp.data.cyc = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->cyc;
+ 1045              		.loc 1 528 93 view .LVU269
+ 1046 0132 1A68     		ldr	r2, [r3]
+ 528:Service/Srv_Baro.c ****                     baro_data_tmp.data.cyc = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->cyc;
+ 1047              		.loc 1 528 51 view .LVU270
+ 1048 0134 0592     		str	r2, [sp, #20]
+ 529:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
+ 1049              		.loc 1 529 21 is_stmt 1 view .LVU271
+ 529:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
+ 1050              		.loc 1 529 86 is_stmt 0 view .LVU272
+ 1051 0136 5A68     		ldr	r2, [r3, #4]
+ 529:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt_offset = SrvBaroObj.alt_offset;
+ 1052              		.loc 1 529 44 view .LVU273
+ 1053 0138 8DF81820 		strb	r2, [sp, #24]
+ 530:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
+ 1054              		.loc 1 530 21 is_stmt 1 view .LVU274
+ 530:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
+ 1055              		.loc 1 530 72 is_stmt 0 view .LVU275
+ 1056 013c D7ED127A 		vldr.32	s15, [r7, #72]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 34
+
+
+ 530:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure_alt = alt - SrvBaroObj.alt_offset;
+ 1057              		.loc 1 530 60 view .LVU276
+ 1058 0140 CDED0A7A 		vstr.32	s15, [sp, #40]
+ 531:Service/Srv_Baro.c ****                     baro_data_tmp.data.tempra = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scaled_te
+ 1059              		.loc 1 531 21 is_stmt 1 view .LVU277
+ 531:Service/Srv_Baro.c ****                     baro_data_tmp.data.tempra = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scaled_te
+ 1060              		.loc 1 531 59 is_stmt 0 view .LVU278
+ 1061 0144 30EE670A 		vsub.f32	s0, s0, s15
+ 1062              	.LVL84:
+ 531:Service/Srv_Baro.c ****                     baro_data_tmp.data.tempra = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scaled_te
+ 1063              		.loc 1 531 53 view .LVU279
+ 1064 0148 8DED090A 		vstr.32	s0, [sp, #36]
+ 532:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scaled_
+ 1065              		.loc 1 532 21 is_stmt 1 view .LVU280
+ 532:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scaled_
+ 1066              		.loc 1 532 89 is_stmt 0 view .LVU281
+ 1067 014c DA68     		ldr	r2, [r3, #12]	@ float
+ 532:Service/Srv_Baro.c ****                     baro_data_tmp.data.pressure = ToBMP280_DataPtr(SrvBaroObj.sensor_data)->scaled_
+ 1068              		.loc 1 532 47 view .LVU282
+ 1069 014e 0792     		str	r2, [sp, #28]	@ float
+ 533:Service/Srv_Baro.c **** 
+ 1070              		.loc 1 533 21 is_stmt 1 view .LVU283
+ 533:Service/Srv_Baro.c **** 
+ 1071              		.loc 1 533 91 is_stmt 0 view .LVU284
+ 1072 0150 9B68     		ldr	r3, [r3, #8]	@ float
+ 533:Service/Srv_Baro.c **** 
+ 1073              		.loc 1 533 49 view .LVU285
+ 1074 0152 0893     		str	r3, [sp, #32]	@ float
+ 536:Service/Srv_Baro.c ****                     for (uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.
+ 1075              		.loc 1 536 21 is_stmt 1 view .LVU286
+ 536:Service/Srv_Baro.c ****                     for (uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.
+ 1076              		.loc 1 536 67 is_stmt 0 view .LVU287
+ 1077 0154 164B     		ldr	r3, .L76+4
+ 1078 0156 5B68     		ldr	r3, [r3, #4]
+ 536:Service/Srv_Baro.c ****                     for (uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.
+ 1079              		.loc 1 536 55 view .LVU288
+ 1080 0158 F86C     		ldr	r0, [r7, #76]
+ 1081 015a 9847     		blx	r3
+ 1082              	.LVL85:
+ 536:Service/Srv_Baro.c ****                     for (uint8_t i = 0; i < sizeof(baro_data_tmp.buff) - sizeof(baro_data_tmp.data.
+ 1083              		.loc 1 536 53 view .LVU289
+ 1084 015c 8DED090A 		vstr.32	s0, [sp, #36]
+ 537:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 1085              		.loc 1 537 21 is_stmt 1 view .LVU290
+ 1086              	.LBB3:
+ 537:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 1087              		.loc 1 537 26 view .LVU291
+ 1088              	.LVL86:
+ 537:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 1089              		.loc 1 537 34 is_stmt 0 view .LVU292
+ 1090 0160 2346     		mov	r3, r4
+ 537:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 1091              		.loc 1 537 21 view .LVU293
+ 1092 0162 08E0     		b	.L69
+ 1093              	.LVL87:
+ 1094              	.L70:
+ 538:Service/Srv_Baro.c ****                     baro_data_tmp.data.check_sum = check_sum;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 35
+
+
+ 1095              		.loc 1 538 25 is_stmt 1 discriminator 3 view .LVU294
+ 538:Service/Srv_Baro.c ****                     baro_data_tmp.data.check_sum = check_sum;
+ 1096              		.loc 1 538 56 is_stmt 0 discriminator 3 view .LVU295
+ 1097 0164 03F13002 		add	r2, r3, #48
+ 1098 0168 6A44     		add	r2, sp, r2
+ 1099 016a 12F81C2C 		ldrb	r2, [r2, #-28]	@ zero_extendqisi2
+ 538:Service/Srv_Baro.c ****                     baro_data_tmp.data.check_sum = check_sum;
+ 1100              		.loc 1 538 35 discriminator 3 view .LVU296
+ 1101 016e 1444     		add	r4, r4, r2
+ 1102              	.LVL88:
+ 538:Service/Srv_Baro.c ****                     baro_data_tmp.data.check_sum = check_sum;
+ 1103              		.loc 1 538 35 discriminator 3 view .LVU297
+ 1104 0170 E4B2     		uxtb	r4, r4
+ 1105              	.LVL89:
+ 537:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 1106              		.loc 1 537 112 is_stmt 1 discriminator 3 view .LVU298
+ 537:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 1107              		.loc 1 537 113 is_stmt 0 discriminator 3 view .LVU299
+ 1108 0172 0133     		adds	r3, r3, #1
+ 1109              	.LVL90:
+ 537:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 1110              		.loc 1 537 113 discriminator 3 view .LVU300
+ 1111 0174 DBB2     		uxtb	r3, r3
+ 1112              	.LVL91:
+ 1113              	.L69:
+ 537:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 1114              		.loc 1 537 41 is_stmt 1 discriminator 1 view .LVU301
+ 537:Service/Srv_Baro.c ****                         check_sum += baro_data_tmp.buff[i];
+ 1115              		.loc 1 537 21 is_stmt 0 discriminator 1 view .LVU302
+ 1116 0176 1A2B     		cmp	r3, #26
+ 1117 0178 F4D9     		bls	.L70
+ 1118              	.LBE3:
+ 539:Service/Srv_Baro.c ****                     memcpy(data, &baro_data_tmp, sizeof(SrvBaroData_TypeDef));
+ 1119              		.loc 1 539 21 is_stmt 1 view .LVU303
+ 539:Service/Srv_Baro.c ****                     memcpy(data, &baro_data_tmp, sizeof(SrvBaroData_TypeDef));
+ 1120              		.loc 1 539 50 is_stmt 0 view .LVU304
+ 1121 017a 8DF82D40 		strb	r4, [sp, #45]
+ 540:Service/Srv_Baro.c ****                     
+ 1122              		.loc 1 540 21 is_stmt 1 view .LVU305
+ 1123 017e 05AC     		add	r4, sp, #20
+ 1124              	.LVL92:
+ 540:Service/Srv_Baro.c ****                     
+ 1125              		.loc 1 540 21 is_stmt 0 view .LVU306
+ 1126 0180 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 1127              	.LVL93:
+ 540:Service/Srv_Baro.c ****                     
+ 1128              		.loc 1 540 21 view .LVU307
+ 1129 0182 3060     		str	r0, [r6]	@ unaligned
+ 1130              	.LVL94:
+ 540:Service/Srv_Baro.c ****                     
+ 1131              		.loc 1 540 21 view .LVU308
+ 1132 0184 7160     		str	r1, [r6, #4]	@ unaligned
+ 1133 0186 B260     		str	r2, [r6, #8]	@ unaligned
+ 1134 0188 F360     		str	r3, [r6, #12]	@ unaligned
+ 1135 018a 07CC     		ldmia	r4!, {r0, r1, r2}
+ 1136 018c 3061     		str	r0, [r6, #16]	@ unaligned
+ 1137 018e 7161     		str	r1, [r6, #20]	@ unaligned
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 36
+
+
+ 1138 0190 B261     		str	r2, [r6, #24]	@ unaligned
+ 542:Service/Srv_Baro.c ****                 }
+ 1139              		.loc 1 542 21 is_stmt 1 view .LVU309
+ 542:Service/Srv_Baro.c ****                 }
+ 1140              		.loc 1 542 28 is_stmt 0 view .LVU310
+ 1141 0192 00E0     		b	.L64
+ 1142              	.LVL95:
+ 1143              	.L71:
+ 550:Service/Srv_Baro.c **** }
+ 1144              		.loc 1 550 12 view .LVU311
+ 1145 0194 0025     		movs	r5, #0
+ 1146              	.LVL96:
+ 1147              	.L64:
+ 551:Service/Srv_Baro.c **** 
+ 1148              		.loc 1 551 1 view .LVU312
+ 1149 0196 2846     		mov	r0, r5
+ 1150 0198 0DB0     		add	sp, sp, #52
+ 1151              	.LCFI20:
+ 1152              		.cfi_remember_state
+ 1153              		.cfi_def_cfa_offset 28
+ 1154              		@ sp needed
+ 1155 019a BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 1156              	.LVL97:
+ 1157              	.L72:
+ 1158              	.LCFI21:
+ 1159              		.cfi_restore_state
+ 550:Service/Srv_Baro.c **** }
+ 1160              		.loc 1 550 12 view .LVU313
+ 1161 019e 0025     		movs	r5, #0
+ 1162 01a0 F9E7     		b	.L64
+ 1163              	.L73:
+ 1164 01a2 0025     		movs	r5, #0
+ 1165 01a4 F7E7     		b	.L64
+ 1166              	.L74:
+ 1167 01a6 0025     		movs	r5, #0
+ 1168 01a8 F5E7     		b	.L64
+ 1169              	.L77:
+ 1170 01aa 00BF     		.align	2
+ 1171              	.L76:
+ 1172 01ac 00000000 		.word	.LANCHOR2
+ 1173 01b0 00000000 		.word	SmoothWindow
+ 1174              		.cfi_endproc
+ 1175              	.LFE150:
+ 1177              		.section	.text.SrvBaro_Sample,"ax",%progbits
+ 1178              		.align	1
+ 1179              		.syntax unified
+ 1180              		.thumb
+ 1181              		.thumb_func
+ 1183              	SrvBaro_Sample:
+ 1184              	.LFB146:
+ 380:Service/Srv_Baro.c ****     if (SrvBaroObj.init_err == SrvBaro_Error_None)
+ 1185              		.loc 1 380 1 is_stmt 1 view -0
+ 1186              		.cfi_startproc
+ 1187              		@ args = 0, pretend = 0, frame = 0
+ 1188              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1189 0000 38B5     		push	{r3, r4, r5, lr}
+ 1190              	.LCFI22:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 37
+
+
+ 1191              		.cfi_def_cfa_offset 16
+ 1192              		.cfi_offset 3, -16
+ 1193              		.cfi_offset 4, -12
+ 1194              		.cfi_offset 5, -8
+ 1195              		.cfi_offset 14, -4
+ 381:Service/Srv_Baro.c ****     {
+ 1196              		.loc 1 381 5 view .LVU315
+ 381:Service/Srv_Baro.c ****     {
+ 1197              		.loc 1 381 19 is_stmt 0 view .LVU316
+ 1198 0002 484B     		ldr	r3, .L92
+ 1199 0004 1B7C     		ldrb	r3, [r3, #16]	@ zero_extendqisi2
+ 381:Service/Srv_Baro.c ****     {
+ 1200              		.loc 1 381 8 view .LVU317
+ 1201 0006 002B     		cmp	r3, #0
+ 1202 0008 40F08880 		bne	.L88
+ 383:Service/Srv_Baro.c ****         {
+ 1203              		.loc 1 383 9 is_stmt 1 view .LVU318
+ 383:Service/Srv_Baro.c ****         {
+ 1204              		.loc 1 383 36 is_stmt 0 view .LVU319
+ 1205 000c 454B     		ldr	r3, .L92
+ 1206 000e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 383:Service/Srv_Baro.c ****         {
+ 1207              		.loc 1 383 9 view .LVU320
+ 1208 0010 012B     		cmp	r3, #1
+ 1209 0012 03D0     		beq	.L80
+ 1210 0014 022B     		cmp	r3, #2
+ 1211 0016 42D0     		beq	.L81
+ 1212 0018 0024     		movs	r4, #0
+ 1213 001a 80E0     		b	.L79
+ 1214              	.L80:
+ 386:Service/Srv_Baro.c ****                 {
+ 1215              		.loc 1 386 17 is_stmt 1 view .LVU321
+ 386:Service/Srv_Baro.c ****                 {
+ 1216              		.loc 1 386 21 is_stmt 0 view .LVU322
+ 1217 001c 414B     		ldr	r3, .L92
+ 1218 001e DA68     		ldr	r2, [r3, #12]
+ 386:Service/Srv_Baro.c ****                 {
+ 1219              		.loc 1 386 56 view .LVU323
+ 1220 0020 5268     		ldr	r2, [r2, #4]
+ 386:Service/Srv_Baro.c ****                 {
+ 1221              		.loc 1 386 21 view .LVU324
+ 1222 0022 9868     		ldr	r0, [r3, #8]
+ 1223 0024 9047     		blx	r2
+ 1224              	.LVL98:
+ 386:Service/Srv_Baro.c ****                 {
+ 1225              		.loc 1 386 20 view .LVU325
+ 1226 0026 0446     		mov	r4, r0
+ 1227 0028 0028     		cmp	r0, #0
+ 1228 002a 33D0     		beq	.L82
+ 388:Service/Srv_Baro.c **** 
+ 1229              		.loc 1 388 21 is_stmt 1 view .LVU326
+ 388:Service/Srv_Baro.c **** 
+ 1230              		.loc 1 388 31 is_stmt 0 view .LVU327
+ 1231 002c 3D4B     		ldr	r3, .L92
+ 1232 002e 9A6B     		ldr	r2, [r3, #56]
+ 388:Service/Srv_Baro.c **** 
+ 1233              		.loc 1 388 43 view .LVU328
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 38
+
+
+ 1234 0030 0132     		adds	r2, r2, #1
+ 1235 0032 9A63     		str	r2, [r3, #56]
+ 390:Service/Srv_Baro.c ****                         (SrvBaroObj.calib_state == Calib_InProcess)) &&
+ 1236              		.loc 1 390 21 is_stmt 1 view .LVU329
+ 390:Service/Srv_Baro.c ****                         (SrvBaroObj.calib_state == Calib_InProcess)) &&
+ 1237              		.loc 1 390 37 is_stmt 0 view .LVU330
+ 1238 0034 93F84230 		ldrb	r3, [r3, #66]	@ zero_extendqisi2
+ 390:Service/Srv_Baro.c ****                         (SrvBaroObj.calib_state == Calib_InProcess)) &&
+ 1239              		.loc 1 390 66 view .LVU331
+ 1240 0038 013B     		subs	r3, r3, #1
+ 1241 003a DBB2     		uxtb	r3, r3
+ 390:Service/Srv_Baro.c ****                         (SrvBaroObj.calib_state == Calib_InProcess)) &&
+ 1242              		.loc 1 390 24 view .LVU332
+ 1243 003c 012B     		cmp	r3, #1
+ 1244 003e 6ED8     		bhi	.L79
+ 392:Service/Srv_Baro.c ****                     {
+ 1245              		.loc 1 392 35 view .LVU333
+ 1246 0040 384B     		ldr	r3, .L92
+ 1247 0042 B3F84030 		ldrh	r3, [r3, #64]
+ 391:Service/Srv_Baro.c ****                         SrvBaroObj.calib_cycle)
+ 1248              		.loc 1 391 70 view .LVU334
+ 1249 0046 002B     		cmp	r3, #0
+ 1250 0048 69D0     		beq	.L79
+ 394:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum /= 2;
+ 1251              		.loc 1 394 25 is_stmt 1 view .LVU335
+ 394:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum /= 2;
+ 1252              		.loc 1 394 56 is_stmt 0 view .LVU336
+ 1253 004a 364A     		ldr	r2, .L92
+ 1254 004c 9168     		ldr	r1, [r2, #8]
+ 394:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum /= 2;
+ 1255              		.loc 1 394 91 view .LVU337
+ 1256 004e 91ED140A 		vldr.32	s0, [r1, #80]
+ 394:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum /= 2;
+ 1257              		.loc 1 394 53 view .LVU338
+ 1258 0052 D2ED117A 		vldr.32	s15, [r2, #68]
+ 1259 0056 30EE270A 		vadd.f32	s0, s0, s15
+ 1260 005a 82ED110A 		vstr.32	s0, [r2, #68]
+ 395:Service/Srv_Baro.c **** 
+ 1261              		.loc 1 395 25 is_stmt 1 view .LVU339
+ 395:Service/Srv_Baro.c **** 
+ 1262              		.loc 1 395 53 is_stmt 0 view .LVU340
+ 1263 005e F6EE007A 		vmov.f32	s15, #5.0e-1
+ 1264 0062 20EE270A 		vmul.f32	s0, s0, s15
+ 1265 0066 82ED110A 		vstr.32	s0, [r2, #68]
+ 397:Service/Srv_Baro.c **** 
+ 1266              		.loc 1 397 25 is_stmt 1 view .LVU341
+ 397:Service/Srv_Baro.c **** 
+ 1267              		.loc 1 397 48 is_stmt 0 view .LVU342
+ 1268 006a 013B     		subs	r3, r3, #1
+ 1269 006c 9BB2     		uxth	r3, r3
+ 1270 006e A2F84030 		strh	r3, [r2, #64]	@ movhi
+ 399:Service/Srv_Baro.c ****                         {
+ 1271              		.loc 1 399 25 is_stmt 1 view .LVU343
+ 399:Service/Srv_Baro.c ****                         {
+ 1272              		.loc 1 399 28 is_stmt 0 view .LVU344
+ 1273 0072 23B1     		cbz	r3, .L90
+ 406:Service/Srv_Baro.c ****                     }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 39
+
+
+ 1274              		.loc 1 406 29 is_stmt 1 view .LVU345
+ 406:Service/Srv_Baro.c ****                     }
+ 1275              		.loc 1 406 52 is_stmt 0 view .LVU346
+ 1276 0074 2B4B     		ldr	r3, .L92
+ 1277 0076 0222     		movs	r2, #2
+ 1278 0078 83F84220 		strb	r2, [r3, #66]
+ 409:Service/Srv_Baro.c ****                 }
+ 1279              		.loc 1 409 21 is_stmt 1 view .LVU347
+ 409:Service/Srv_Baro.c ****                 }
+ 1280              		.loc 1 409 28 is_stmt 0 view .LVU348
+ 1281 007c 4FE0     		b	.L79
+ 1282              	.L90:
+ 401:Service/Srv_Baro.c ****                             SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_a
+ 1283              		.loc 1 401 29 is_stmt 1 view .LVU349
+ 401:Service/Srv_Baro.c ****                             SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_a
+ 1284              		.loc 1 401 52 is_stmt 0 view .LVU350
+ 1285 007e 1546     		mov	r5, r2
+ 1286 0080 0323     		movs	r3, #3
+ 1287 0082 82F84230 		strb	r3, [r2, #66]
+ 402:Service/Srv_Baro.c ****                             SrvBaroObj.pressure_add_sum = 0.0f;
+ 1288              		.loc 1 402 29 is_stmt 1 view .LVU351
+ 402:Service/Srv_Baro.c ****                             SrvBaroObj.pressure_add_sum = 0.0f;
+ 1289              		.loc 1 402 53 is_stmt 0 view .LVU352
+ 1290 0086 FFF7FEFF 		bl	SrvBaro_PessureCnvToMeter
+ 1291              	.LVL99:
+ 402:Service/Srv_Baro.c ****                             SrvBaroObj.pressure_add_sum = 0.0f;
+ 1292              		.loc 1 402 51 view .LVU353
+ 1293 008a 85ED120A 		vstr.32	s0, [r5, #72]
+ 403:Service/Srv_Baro.c ****                         }
+ 1294              		.loc 1 403 29 is_stmt 1 view .LVU354
+ 403:Service/Srv_Baro.c ****                         }
+ 1295              		.loc 1 403 57 is_stmt 0 view .LVU355
+ 1296 008e 0023     		movs	r3, #0
+ 1297 0090 6B64     		str	r3, [r5, #68]	@ float
+ 1298 0092 44E0     		b	.L79
+ 1299              	.L82:
+ 413:Service/Srv_Baro.c ****                     return false;
+ 1300              		.loc 1 413 21 is_stmt 1 view .LVU356
+ 413:Service/Srv_Baro.c ****                     return false;
+ 1301              		.loc 1 413 31 is_stmt 0 view .LVU357
+ 1302 0094 234A     		ldr	r2, .L92
+ 1303 0096 D36B     		ldr	r3, [r2, #60]
+ 413:Service/Srv_Baro.c ****                     return false;
+ 1304              		.loc 1 413 47 view .LVU358
+ 1305 0098 0133     		adds	r3, r3, #1
+ 1306 009a D363     		str	r3, [r2, #60]
+ 414:Service/Srv_Baro.c ****                 }
+ 1307              		.loc 1 414 21 is_stmt 1 view .LVU359
+ 414:Service/Srv_Baro.c ****                 }
+ 1308              		.loc 1 414 28 is_stmt 0 view .LVU360
+ 1309 009c 3FE0     		b	.L79
+ 1310              	.L81:
+ 418:Service/Srv_Baro.c ****                 {
+ 1311              		.loc 1 418 17 is_stmt 1 view .LVU361
+ 418:Service/Srv_Baro.c ****                 {
+ 1312              		.loc 1 418 21 is_stmt 0 view .LVU362
+ 1313 009e 214B     		ldr	r3, .L92
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 40
+
+
+ 1314 00a0 DA68     		ldr	r2, [r3, #12]
+ 418:Service/Srv_Baro.c ****                 {
+ 1315              		.loc 1 418 56 view .LVU363
+ 1316 00a2 5268     		ldr	r2, [r2, #4]
+ 418:Service/Srv_Baro.c ****                 {
+ 1317              		.loc 1 418 21 view .LVU364
+ 1318 00a4 9868     		ldr	r0, [r3, #8]
+ 1319 00a6 9047     		blx	r2
+ 1320              	.LVL100:
+ 418:Service/Srv_Baro.c ****                 {
+ 1321              		.loc 1 418 20 view .LVU365
+ 1322 00a8 0446     		mov	r4, r0
+ 1323 00aa 90B3     		cbz	r0, .L85
+ 420:Service/Srv_Baro.c **** 
+ 1324              		.loc 1 420 21 is_stmt 1 view .LVU366
+ 420:Service/Srv_Baro.c **** 
+ 1325              		.loc 1 420 31 is_stmt 0 view .LVU367
+ 1326 00ac 1D4B     		ldr	r3, .L92
+ 1327 00ae 9A6B     		ldr	r2, [r3, #56]
+ 420:Service/Srv_Baro.c **** 
+ 1328              		.loc 1 420 43 view .LVU368
+ 1329 00b0 0132     		adds	r2, r2, #1
+ 1330 00b2 9A63     		str	r2, [r3, #56]
+ 422:Service/Srv_Baro.c ****                         (SrvBaroObj.calib_state == Calib_InProcess)) && \
+ 1331              		.loc 1 422 21 is_stmt 1 view .LVU369
+ 422:Service/Srv_Baro.c ****                         (SrvBaroObj.calib_state == Calib_InProcess)) && \
+ 1332              		.loc 1 422 37 is_stmt 0 view .LVU370
+ 1333 00b4 93F84230 		ldrb	r3, [r3, #66]	@ zero_extendqisi2
+ 422:Service/Srv_Baro.c ****                         (SrvBaroObj.calib_state == Calib_InProcess)) && \
+ 1334              		.loc 1 422 66 view .LVU371
+ 1335 00b8 013B     		subs	r3, r3, #1
+ 1336 00ba DBB2     		uxtb	r3, r3
+ 422:Service/Srv_Baro.c ****                         (SrvBaroObj.calib_state == Calib_InProcess)) && \
+ 1337              		.loc 1 422 24 view .LVU372
+ 1338 00bc 012B     		cmp	r3, #1
+ 1339 00be 2ED8     		bhi	.L79
+ 424:Service/Srv_Baro.c ****                     {
+ 1340              		.loc 1 424 35 view .LVU373
+ 1341 00c0 184B     		ldr	r3, .L92
+ 1342 00c2 B3F84030 		ldrh	r3, [r3, #64]
+ 423:Service/Srv_Baro.c ****                         SrvBaroObj.calib_cycle)
+ 1343              		.loc 1 423 70 view .LVU374
+ 1344 00c6 53B3     		cbz	r3, .L79
+ 426:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum /= 2;
+ 1345              		.loc 1 426 25 is_stmt 1 view .LVU375
+ 426:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum /= 2;
+ 1346              		.loc 1 426 56 is_stmt 0 view .LVU376
+ 1347 00c8 164A     		ldr	r2, .L92
+ 1348 00ca 9168     		ldr	r1, [r2, #8]
+ 426:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum /= 2;
+ 1349              		.loc 1 426 91 view .LVU377
+ 1350 00cc 91ED100A 		vldr.32	s0, [r1, #64]
+ 426:Service/Srv_Baro.c ****                         SrvBaroObj.pressure_add_sum /= 2;
+ 1351              		.loc 1 426 53 view .LVU378
+ 1352 00d0 D2ED117A 		vldr.32	s15, [r2, #68]
+ 1353 00d4 30EE270A 		vadd.f32	s0, s0, s15
+ 1354 00d8 82ED110A 		vstr.32	s0, [r2, #68]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 41
+
+
+ 427:Service/Srv_Baro.c **** 
+ 1355              		.loc 1 427 25 is_stmt 1 view .LVU379
+ 427:Service/Srv_Baro.c **** 
+ 1356              		.loc 1 427 53 is_stmt 0 view .LVU380
+ 1357 00dc F6EE007A 		vmov.f32	s15, #5.0e-1
+ 1358 00e0 20EE270A 		vmul.f32	s0, s0, s15
+ 1359 00e4 82ED110A 		vstr.32	s0, [r2, #68]
+ 429:Service/Srv_Baro.c **** 
+ 1360              		.loc 1 429 25 is_stmt 1 view .LVU381
+ 429:Service/Srv_Baro.c **** 
+ 1361              		.loc 1 429 48 is_stmt 0 view .LVU382
+ 1362 00e8 013B     		subs	r3, r3, #1
+ 1363 00ea 9BB2     		uxth	r3, r3
+ 1364 00ec A2F84030 		strh	r3, [r2, #64]	@ movhi
+ 431:Service/Srv_Baro.c ****                         {
+ 1365              		.loc 1 431 25 is_stmt 1 view .LVU383
+ 431:Service/Srv_Baro.c ****                         {
+ 1366              		.loc 1 431 28 is_stmt 0 view .LVU384
+ 1367 00f0 23B1     		cbz	r3, .L91
+ 438:Service/Srv_Baro.c ****                     }
+ 1368              		.loc 1 438 29 is_stmt 1 view .LVU385
+ 438:Service/Srv_Baro.c ****                     }
+ 1369              		.loc 1 438 52 is_stmt 0 view .LVU386
+ 1370 00f2 0C4B     		ldr	r3, .L92
+ 1371 00f4 0222     		movs	r2, #2
+ 1372 00f6 83F84220 		strb	r2, [r3, #66]
+ 441:Service/Srv_Baro.c ****                 }
+ 1373              		.loc 1 441 21 is_stmt 1 view .LVU387
+ 441:Service/Srv_Baro.c ****                 }
+ 1374              		.loc 1 441 28 is_stmt 0 view .LVU388
+ 1375 00fa 10E0     		b	.L79
+ 1376              	.L91:
+ 433:Service/Srv_Baro.c ****                             SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_a
+ 1377              		.loc 1 433 29 is_stmt 1 view .LVU389
+ 433:Service/Srv_Baro.c ****                             SrvBaroObj.alt_offset = SrvBaro_PessureCnvToMeter(SrvBaroObj.pressure_a
+ 1378              		.loc 1 433 52 is_stmt 0 view .LVU390
+ 1379 00fc 1546     		mov	r5, r2
+ 1380 00fe 0323     		movs	r3, #3
+ 1381 0100 82F84230 		strb	r3, [r2, #66]
+ 434:Service/Srv_Baro.c ****                             SrvBaroObj.pressure_add_sum = 0.0f;
+ 1382              		.loc 1 434 29 is_stmt 1 view .LVU391
+ 434:Service/Srv_Baro.c ****                             SrvBaroObj.pressure_add_sum = 0.0f;
+ 1383              		.loc 1 434 53 is_stmt 0 view .LVU392
+ 1384 0104 FFF7FEFF 		bl	SrvBaro_PessureCnvToMeter
+ 1385              	.LVL101:
+ 434:Service/Srv_Baro.c ****                             SrvBaroObj.pressure_add_sum = 0.0f;
+ 1386              		.loc 1 434 51 view .LVU393
+ 1387 0108 85ED120A 		vstr.32	s0, [r5, #72]
+ 435:Service/Srv_Baro.c ****                         }
+ 1388              		.loc 1 435 29 is_stmt 1 view .LVU394
+ 435:Service/Srv_Baro.c ****                         }
+ 1389              		.loc 1 435 57 is_stmt 0 view .LVU395
+ 1390 010c 0023     		movs	r3, #0
+ 1391 010e 6B64     		str	r3, [r5, #68]	@ float
+ 1392 0110 05E0     		b	.L79
+ 1393              	.L85:
+ 445:Service/Srv_Baro.c ****                     return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 42
+
+
+ 1394              		.loc 1 445 21 is_stmt 1 view .LVU396
+ 445:Service/Srv_Baro.c ****                     return false;
+ 1395              		.loc 1 445 31 is_stmt 0 view .LVU397
+ 1396 0112 044A     		ldr	r2, .L92
+ 1397 0114 D36B     		ldr	r3, [r2, #60]
+ 445:Service/Srv_Baro.c ****                     return false;
+ 1398              		.loc 1 445 47 view .LVU398
+ 1399 0116 0133     		adds	r3, r3, #1
+ 1400 0118 D363     		str	r3, [r2, #60]
+ 446:Service/Srv_Baro.c ****                 }
+ 1401              		.loc 1 446 21 is_stmt 1 view .LVU399
+ 446:Service/Srv_Baro.c ****                 }
+ 1402              		.loc 1 446 28 is_stmt 0 view .LVU400
+ 1403 011a 00E0     		b	.L79
+ 1404              	.L88:
+ 454:Service/Srv_Baro.c **** }
+ 1405              		.loc 1 454 12 view .LVU401
+ 1406 011c 0024     		movs	r4, #0
+ 1407              	.L79:
+ 455:Service/Srv_Baro.c **** 
+ 1408              		.loc 1 455 1 view .LVU402
+ 1409 011e 2046     		mov	r0, r4
+ 1410 0120 38BD     		pop	{r3, r4, r5, pc}
+ 1411              	.L93:
+ 1412 0122 00BF     		.align	2
+ 1413              	.L92:
+ 1414 0124 00000000 		.word	.LANCHOR2
+ 1415              		.cfi_endproc
+ 1416              	.LFE146:
+ 1418              		.section	.rodata.SrvBaro_Init.str1.4,"aMS",%progbits,1
+ 1419              		.align	2
+ 1420              	.LC1:
+ 1421 0000 53727642 		.ascii	"SrvBaro_Error\000"
+ 1421      61726F5F 
+ 1421      4572726F 
+ 1421      7200
+ 1422              		.global	__aeabi_ui2d
+ 1423              		.global	__aeabi_ddiv
+ 1424              		.global	__aeabi_d2uiz
+ 1425              		.section	.text.SrvBaro_Init,"ax",%progbits
+ 1426              		.align	1
+ 1427              		.syntax unified
+ 1428              		.thumb
+ 1429              		.thumb_func
+ 1431              	SrvBaro_Init:
+ 1432              	.LVL102:
+ 1433              	.LFB145:
+ 232:Service/Srv_Baro.c ****     /* create error log handle */
+ 1434              		.loc 1 232 1 is_stmt 1 view -0
+ 1435              		.cfi_startproc
+ 1436              		@ args = 0, pretend = 0, frame = 0
+ 1437              		@ frame_needed = 0, uses_anonymous_args = 0
+ 232:Service/Srv_Baro.c ****     /* create error log handle */
+ 1438              		.loc 1 232 1 is_stmt 0 view .LVU404
+ 1439 0000 70B5     		push	{r4, r5, r6, lr}
+ 1440              	.LCFI23:
+ 1441              		.cfi_def_cfa_offset 16
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 43
+
+
+ 1442              		.cfi_offset 4, -16
+ 1443              		.cfi_offset 5, -12
+ 1444              		.cfi_offset 6, -8
+ 1445              		.cfi_offset 14, -4
+ 1446 0002 0446     		mov	r4, r0
+ 1447 0004 0D46     		mov	r5, r1
+ 234:Service/Srv_Baro.c **** 
+ 1448              		.loc 1 234 5 is_stmt 1 view .LVU405
+ 234:Service/Srv_Baro.c **** 
+ 1449              		.loc 1 234 36 is_stmt 0 view .LVU406
+ 1450 0006 814E     		ldr	r6, .L119
+ 1451 0008 3368     		ldr	r3, [r6]
+ 234:Service/Srv_Baro.c **** 
+ 1452              		.loc 1 234 28 view .LVU407
+ 1453 000a 8148     		ldr	r0, .L119+4
+ 1454              	.LVL103:
+ 234:Service/Srv_Baro.c **** 
+ 1455              		.loc 1 234 28 view .LVU408
+ 1456 000c 9847     		blx	r3
+ 1457              	.LVL104:
+ 234:Service/Srv_Baro.c **** 
+ 1458              		.loc 1 234 26 view .LVU409
+ 1459 000e 814B     		ldr	r3, .L119+8
+ 1460 0010 1860     		str	r0, [r3]
+ 237:Service/Srv_Baro.c **** 
+ 1461              		.loc 1 237 5 is_stmt 1 view .LVU410
+ 237:Service/Srv_Baro.c **** 
+ 1462              		.loc 1 237 13 is_stmt 0 view .LVU411
+ 1463 0012 7368     		ldr	r3, [r6, #4]
+ 237:Service/Srv_Baro.c **** 
+ 1464              		.loc 1 237 5 view .LVU412
+ 1465 0014 0722     		movs	r2, #7
+ 1466 0016 8049     		ldr	r1, .L119+12
+ 1467 0018 9847     		blx	r3
+ 1468              	.LVL105:
+ 239:Service/Srv_Baro.c ****     {
+ 1469              		.loc 1 239 5 is_stmt 1 view .LVU413
+ 239:Service/Srv_Baro.c ****     {
+ 1470              		.loc 1 239 10 is_stmt 0 view .LVU414
+ 1471 001a 2846     		mov	r0, r5
+ 1472 001c FFF7FEFF 		bl	SrvBaro_BusInit
+ 1473              	.LVL106:
+ 239:Service/Srv_Baro.c ****     {
+ 1474              		.loc 1 239 8 view .LVU415
+ 1475 0020 90B1     		cbz	r0, .L114
+ 245:Service/Srv_Baro.c ****     {
+ 1476              		.loc 1 245 5 is_stmt 1 view .LVU416
+ 245:Service/Srv_Baro.c ****     {
+ 1477              		.loc 1 245 19 is_stmt 0 view .LVU417
+ 1478 0022 7E4B     		ldr	r3, .L119+16
+ 1479 0024 5B88     		ldrh	r3, [r3, #2]
+ 245:Service/Srv_Baro.c ****     {
+ 1480              		.loc 1 245 8 view .LVU418
+ 1481 0026 002B     		cmp	r3, #0
+ 1482 0028 00F0E180 		beq	.L97
+ 247:Service/Srv_Baro.c ****         {
+ 1483              		.loc 1 247 9 is_stmt 1 view .LVU419
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 44
+
+
+ 1484 002c 012C     		cmp	r4, #1
+ 1485 002e 14D0     		beq	.L98
+ 1486 0030 022C     		cmp	r4, #2
+ 1487 0032 54D0     		beq	.L99
+ 349:Service/Srv_Baro.c ****                 return SrvBaro_Error_BadType;
+ 1488              		.loc 1 349 17 view .LVU420
+ 349:Service/Srv_Baro.c ****                 return SrvBaro_Error_BadType;
+ 1489              		.loc 1 349 25 is_stmt 0 view .LVU421
+ 1490 0034 754B     		ldr	r3, .L119
+ 1491 0036 9C68     		ldr	r4, [r3, #8]
+ 349:Service/Srv_Baro.c ****                 return SrvBaro_Error_BadType;
+ 1492              		.loc 1 349 17 view .LVU422
+ 1493 0038 0023     		movs	r3, #0
+ 1494 003a 1A46     		mov	r2, r3
+ 1495 003c 0321     		movs	r1, #3
+ 1496 003e 7548     		ldr	r0, .L119+8
+ 1497 0040 0068     		ldr	r0, [r0]
+ 1498 0042 A047     		blx	r4
+ 1499              	.LVL107:
+ 350:Service/Srv_Baro.c ****         }
+ 1500              		.loc 1 350 17 is_stmt 1 view .LVU423
+ 350:Service/Srv_Baro.c ****         }
+ 1501              		.loc 1 350 24 is_stmt 0 view .LVU424
+ 1502 0044 0320     		movs	r0, #3
+ 1503 0046 DBE0     		b	.L96
+ 1504              	.L114:
+ 241:Service/Srv_Baro.c ****         return SrvBaro_Error_BusInit;
+ 1505              		.loc 1 241 9 is_stmt 1 view .LVU425
+ 241:Service/Srv_Baro.c ****         return SrvBaro_Error_BusInit;
+ 1506              		.loc 1 241 17 is_stmt 0 view .LVU426
+ 1507 0048 B468     		ldr	r4, [r6, #8]
+ 241:Service/Srv_Baro.c ****         return SrvBaro_Error_BusInit;
+ 1508              		.loc 1 241 9 view .LVU427
+ 1509 004a 0023     		movs	r3, #0
+ 1510 004c 1A46     		mov	r2, r3
+ 1511 004e 0821     		movs	r1, #8
+ 1512 0050 7048     		ldr	r0, .L119+8
+ 1513 0052 0068     		ldr	r0, [r0]
+ 1514 0054 A047     		blx	r4
+ 1515              	.LVL108:
+ 242:Service/Srv_Baro.c ****     }
+ 1516              		.loc 1 242 9 is_stmt 1 view .LVU428
+ 242:Service/Srv_Baro.c ****     }
+ 1517              		.loc 1 242 16 is_stmt 0 view .LVU429
+ 1518 0056 0820     		movs	r0, #8
+ 1519 0058 D2E0     		b	.L96
+ 1520              	.L98:
+ 250:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevDPS310Obj_TypeDef));
+ 1521              		.loc 1 250 17 is_stmt 1 view .LVU430
+ 250:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevDPS310Obj_TypeDef));
+ 1522              		.loc 1 250 33 is_stmt 0 view .LVU431
+ 1523 005a 704D     		ldr	r5, .L119+16
+ 1524 005c 2C70     		strb	r4, [r5]
+ 251:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_api = &DevDPS310;
+ 1525              		.loc 1 251 17 is_stmt 1 view .LVU432
+ 251:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_api = &DevDPS310;
+ 1526              		.loc 1 251 52 is_stmt 0 view .LVU433
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 45
+
+
+ 1527 005e 704B     		ldr	r3, .L119+20
+ 1528 0060 9B6A     		ldr	r3, [r3, #40]
+ 251:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_api = &DevDPS310;
+ 1529              		.loc 1 251 41 view .LVU434
+ 1530 0062 5420     		movs	r0, #84
+ 1531 0064 9847     		blx	r3
+ 1532              	.LVL109:
+ 251:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_api = &DevDPS310;
+ 1533              		.loc 1 251 39 view .LVU435
+ 1534 0066 A860     		str	r0, [r5, #8]
+ 252:Service/Srv_Baro.c **** 
+ 1535              		.loc 1 252 17 is_stmt 1 view .LVU436
+ 252:Service/Srv_Baro.c **** 
+ 1536              		.loc 1 252 39 is_stmt 0 view .LVU437
+ 1537 0068 6E4B     		ldr	r3, .L119+24
+ 1538 006a EB60     		str	r3, [r5, #12]
+ 254:Service/Srv_Baro.c ****                     (SrvBaroObj.sensor_api != NULL))
+ 1539              		.loc 1 254 17 is_stmt 1 view .LVU438
+ 254:Service/Srv_Baro.c ****                     (SrvBaroObj.sensor_api != NULL))
+ 1540              		.loc 1 254 20 is_stmt 0 view .LVU439
+ 1541 006c 0028     		cmp	r0, #0
+ 1542 006e 2CD0     		beq	.L101
+ 258:Service/Srv_Baro.c ****                     {
+ 1543              		.loc 1 258 21 is_stmt 1 view .LVU440
+ 258:Service/Srv_Baro.c ****                     {
+ 1544              		.loc 1 258 39 is_stmt 0 view .LVU441
+ 1545 0070 6D4B     		ldr	r3, .L119+28
+ 1546 0072 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1547 0074 012B     		cmp	r3, #1
+ 1548 0076 40F0C480 		bne	.L109
+ 261:Service/Srv_Baro.c ****                             ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_rx = (DevDPS310_BusRead)SrvBar
+ 1549              		.loc 1 261 29 is_stmt 1 view .LVU442
+ 261:Service/Srv_Baro.c ****                             ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_rx = (DevDPS310_BusRead)SrvBar
+ 1550              		.loc 1 261 74 is_stmt 0 view .LVU443
+ 1551 007a 7623     		movs	r3, #118
+ 1552 007c 0370     		strb	r3, [r0]
+ 262:Service/Srv_Baro.c ****                             ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_tx = (DevDPS310_BusWrite)SrvBa
+ 1553              		.loc 1 262 29 is_stmt 1 view .LVU444
+ 1554 007e A868     		ldr	r0, [r5, #8]
+ 262:Service/Srv_Baro.c ****                             ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_tx = (DevDPS310_BusWrite)SrvBa
+ 1555              		.loc 1 262 73 is_stmt 0 view .LVU445
+ 1556 0080 6A4A     		ldr	r2, .L119+32
+ 1557 0082 0262     		str	r2, [r0, #32]
+ 263:Service/Srv_Baro.c ****                             break;
+ 1558              		.loc 1 263 29 is_stmt 1 view .LVU446
+ 263:Service/Srv_Baro.c ****                             break;
+ 1559              		.loc 1 263 73 is_stmt 0 view .LVU447
+ 1560 0084 6A4A     		ldr	r2, .L119+36
+ 1561 0086 C261     		str	r2, [r0, #28]
+ 264:Service/Srv_Baro.c **** 
+ 1562              		.loc 1 264 29 is_stmt 1 view .LVU448
+ 270:Service/Srv_Baro.c ****                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
+ 1563              		.loc 1 270 21 view .LVU449
+ 270:Service/Srv_Baro.c ****                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
+ 1564              		.loc 1 270 80 is_stmt 0 view .LVU450
+ 1565 0088 654A     		ldr	r2, .L119+20
+ 1566 008a 1168     		ldr	r1, [r2]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 46
+
+
+ 270:Service/Srv_Baro.c ****                     ToDPS310_OBJ(SrvBaroObj.sensor_obj)->bus_delay = SrvOsCommon.delay_ms;
+ 1567              		.loc 1 270 67 view .LVU451
+ 1568 008c 8162     		str	r1, [r0, #40]
+ 271:Service/Srv_Baro.c **** 
+ 1569              		.loc 1 271 21 is_stmt 1 view .LVU452
+ 271:Service/Srv_Baro.c **** 
+ 1570              		.loc 1 271 81 is_stmt 0 view .LVU453
+ 1571 008e 5268     		ldr	r2, [r2, #4]
+ 271:Service/Srv_Baro.c **** 
+ 1572              		.loc 1 271 68 view .LVU454
+ 1573 0090 4262     		str	r2, [r0, #36]
+ 274:Service/Srv_Baro.c ****                     {
+ 1574              		.loc 1 274 21 is_stmt 1 view .LVU455
+ 274:Service/Srv_Baro.c ****                     {
+ 1575              		.loc 1 274 26 is_stmt 0 view .LVU456
+ 1576 0092 EB68     		ldr	r3, [r5, #12]
+ 274:Service/Srv_Baro.c ****                     {
+ 1577              		.loc 1 274 61 view .LVU457
+ 1578 0094 1B68     		ldr	r3, [r3]
+ 274:Service/Srv_Baro.c ****                     {
+ 1579              		.loc 1 274 26 view .LVU458
+ 1580 0096 9847     		blx	r3
+ 1581              	.LVL110:
+ 274:Service/Srv_Baro.c ****                     {
+ 1582              		.loc 1 274 24 view .LVU459
+ 1583 0098 68B1     		cbz	r0, .L115
+ 280:Service/Srv_Baro.c ****                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
+ 1584              		.loc 1 280 21 is_stmt 1 view .LVU460
+ 280:Service/Srv_Baro.c ****                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
+ 1585              		.loc 1 280 44 is_stmt 0 view .LVU461
+ 1586 009a 604C     		ldr	r4, .L119+16
+ 1587 009c 0123     		movs	r3, #1
+ 1588 009e 84F84230 		strb	r3, [r4, #66]
+ 281:Service/Srv_Baro.c **** 
+ 1589              		.loc 1 281 21 is_stmt 1 view .LVU462
+ 281:Service/Srv_Baro.c **** 
+ 1590              		.loc 1 281 44 is_stmt 0 view .LVU463
+ 1591 00a2 6423     		movs	r3, #100
+ 1592 00a4 A4F84030 		strh	r3, [r4, #64]	@ movhi
+ 283:Service/Srv_Baro.c ****                     SrvBaroObj.sensor_data = SrvOsCommon.malloc(SrvBaroObj.data_size);
+ 1593              		.loc 1 283 21 is_stmt 1 view .LVU464
+ 283:Service/Srv_Baro.c ****                     SrvBaroObj.sensor_data = SrvOsCommon.malloc(SrvBaroObj.data_size);
+ 1594              		.loc 1 283 42 is_stmt 0 view .LVU465
+ 1595 00a8 1020     		movs	r0, #16
+ 1596 00aa 2076     		strb	r0, [r4, #24]
+ 284:Service/Srv_Baro.c ****                 }
+ 1597              		.loc 1 284 21 is_stmt 1 view .LVU466
+ 284:Service/Srv_Baro.c ****                 }
+ 1598              		.loc 1 284 57 is_stmt 0 view .LVU467
+ 1599 00ac 5C4B     		ldr	r3, .L119+20
+ 1600 00ae 9B6A     		ldr	r3, [r3, #40]
+ 284:Service/Srv_Baro.c ****                 }
+ 1601              		.loc 1 284 46 view .LVU468
+ 1602 00b0 9847     		blx	r3
+ 1603              	.LVL111:
+ 284:Service/Srv_Baro.c ****                 }
+ 1604              		.loc 1 284 44 view .LVU469
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 47
+
+
+ 1605 00b2 6061     		str	r0, [r4, #20]
+ 291:Service/Srv_Baro.c **** 
+ 1606              		.loc 1 291 17 is_stmt 1 view .LVU470
+ 1607 00b4 4AE0     		b	.L103
+ 1608              	.L115:
+ 276:Service/Srv_Baro.c ****                         return SrvBaro_Error_DevInit;
+ 1609              		.loc 1 276 25 view .LVU471
+ 276:Service/Srv_Baro.c ****                         return SrvBaro_Error_DevInit;
+ 1610              		.loc 1 276 33 is_stmt 0 view .LVU472
+ 1611 00b6 554B     		ldr	r3, .L119
+ 1612 00b8 9C68     		ldr	r4, [r3, #8]
+ 276:Service/Srv_Baro.c ****                         return SrvBaro_Error_DevInit;
+ 1613              		.loc 1 276 25 view .LVU473
+ 1614 00ba 0023     		movs	r3, #0
+ 1615 00bc 1A46     		mov	r2, r3
+ 1616 00be 0421     		movs	r1, #4
+ 1617 00c0 5448     		ldr	r0, .L119+8
+ 1618 00c2 0068     		ldr	r0, [r0]
+ 1619 00c4 A047     		blx	r4
+ 1620              	.LVL112:
+ 277:Service/Srv_Baro.c ****                     }
+ 1621              		.loc 1 277 25 is_stmt 1 view .LVU474
+ 277:Service/Srv_Baro.c ****                     }
+ 1622              		.loc 1 277 32 is_stmt 0 view .LVU475
+ 1623 00c6 0420     		movs	r0, #4
+ 1624 00c8 9AE0     		b	.L96
+ 1625              	.L101:
+ 288:Service/Srv_Baro.c ****                     return SrvBaro_Error_BadSensorObj;
+ 1626              		.loc 1 288 21 is_stmt 1 view .LVU476
+ 288:Service/Srv_Baro.c ****                     return SrvBaro_Error_BadSensorObj;
+ 1627              		.loc 1 288 29 is_stmt 0 view .LVU477
+ 1628 00ca 504B     		ldr	r3, .L119
+ 1629 00cc 9C68     		ldr	r4, [r3, #8]
+ 288:Service/Srv_Baro.c ****                     return SrvBaro_Error_BadSensorObj;
+ 1630              		.loc 1 288 21 view .LVU478
+ 1631 00ce 0023     		movs	r3, #0
+ 1632 00d0 1A46     		mov	r2, r3
+ 1633 00d2 0521     		movs	r1, #5
+ 1634 00d4 4F48     		ldr	r0, .L119+8
+ 1635 00d6 0068     		ldr	r0, [r0]
+ 1636 00d8 A047     		blx	r4
+ 1637              	.LVL113:
+ 289:Service/Srv_Baro.c ****                 }
+ 1638              		.loc 1 289 21 is_stmt 1 view .LVU479
+ 289:Service/Srv_Baro.c ****                 }
+ 1639              		.loc 1 289 28 is_stmt 0 view .LVU480
+ 1640 00da 0520     		movs	r0, #5
+ 1641 00dc 90E0     		b	.L96
+ 1642              	.L99:
+ 294:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevBMP280Obj_TypeDef));
+ 1643              		.loc 1 294 17 is_stmt 1 view .LVU481
+ 294:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_obj = SrvOsCommon.malloc(sizeof(DevBMP280Obj_TypeDef));
+ 1644              		.loc 1 294 33 is_stmt 0 view .LVU482
+ 1645 00de 4F4D     		ldr	r5, .L119+16
+ 1646 00e0 2C70     		strb	r4, [r5]
+ 295:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_api = &DevBMP280;
+ 1647              		.loc 1 295 17 is_stmt 1 view .LVU483
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 48
+
+
+ 295:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_api = &DevBMP280;
+ 1648              		.loc 1 295 52 is_stmt 0 view .LVU484
+ 1649 00e2 4F4B     		ldr	r3, .L119+20
+ 1650 00e4 9B6A     		ldr	r3, [r3, #40]
+ 295:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_api = &DevBMP280;
+ 1651              		.loc 1 295 41 view .LVU485
+ 1652 00e6 5C20     		movs	r0, #92
+ 1653 00e8 9847     		blx	r3
+ 1654              	.LVL114:
+ 295:Service/Srv_Baro.c ****                 SrvBaroObj.sensor_api = &DevBMP280;
+ 1655              		.loc 1 295 39 view .LVU486
+ 1656 00ea A860     		str	r0, [r5, #8]
+ 296:Service/Srv_Baro.c **** 
+ 1657              		.loc 1 296 17 is_stmt 1 view .LVU487
+ 296:Service/Srv_Baro.c **** 
+ 1658              		.loc 1 296 39 is_stmt 0 view .LVU488
+ 1659 00ec 514B     		ldr	r3, .L119+40
+ 1660 00ee EB60     		str	r3, [r5, #12]
+ 298:Service/Srv_Baro.c ****                     (SrvBaroObj.sensor_api != NULL))
+ 1661              		.loc 1 298 17 is_stmt 1 view .LVU489
+ 298:Service/Srv_Baro.c ****                     (SrvBaroObj.sensor_api != NULL))
+ 1662              		.loc 1 298 20 is_stmt 0 view .LVU490
+ 1663 00f0 0028     		cmp	r0, #0
+ 1664 00f2 5ED0     		beq	.L104
+ 301:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->recv = NULL;
+ 1665              		.loc 1 301 21 is_stmt 1 view .LVU491
+ 301:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->recv = NULL;
+ 1666              		.loc 1 301 63 is_stmt 0 view .LVU492
+ 1667 00f4 0023     		movs	r3, #0
+ 1668 00f6 0365     		str	r3, [r0, #80]
+ 302:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->trans = NULL;
+ 1669              		.loc 1 302 21 is_stmt 1 view .LVU493
+ 302:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->trans = NULL;
+ 1670              		.loc 1 302 63 is_stmt 0 view .LVU494
+ 1671 00f8 4365     		str	r3, [r0, #84]
+ 303:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_tx = NULL;
+ 1672              		.loc 1 303 21 is_stmt 1 view .LVU495
+ 303:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_tx = NULL;
+ 1673              		.loc 1 303 64 is_stmt 0 view .LVU496
+ 1674 00fa 8365     		str	r3, [r0, #88]
+ 304:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_rx = NULL;
+ 1675              		.loc 1 304 21 is_stmt 1 view .LVU497
+ 304:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_rx = NULL;
+ 1676              		.loc 1 304 65 is_stmt 0 view .LVU498
+ 1677 00fc 8364     		str	r3, [r0, #72]
+ 305:Service/Srv_Baro.c **** 
+ 1678              		.loc 1 305 21 is_stmt 1 view .LVU499
+ 305:Service/Srv_Baro.c **** 
+ 1679              		.loc 1 305 65 is_stmt 0 view .LVU500
+ 1680 00fe C364     		str	r3, [r0, #76]
+ 308:Service/Srv_Baro.c ****                     {
+ 1681              		.loc 1 308 21 is_stmt 1 view .LVU501
+ 308:Service/Srv_Baro.c ****                     {
+ 1682              		.loc 1 308 39 is_stmt 0 view .LVU502
+ 1683 0100 494B     		ldr	r3, .L119+28
+ 1684 0102 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1685 0104 012B     		cmp	r3, #1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 49
+
+
+ 1686 0106 42D0     		beq	.L105
+ 1687 0108 022B     		cmp	r3, #2
+ 1688 010a 7CD1     		bne	.L110
+ 311:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->recv = SrvBaro_SPIBus_Rx;
+ 1689              		.loc 1 311 29 is_stmt 1 view .LVU503
+ 311:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->recv = SrvBaro_SPIBus_Rx;
+ 1690              		.loc 1 311 71 is_stmt 0 view .LVU504
+ 1691 010c 4A4B     		ldr	r3, .L119+44
+ 1692 010e 0365     		str	r3, [r0, #80]
+ 312:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->trans = SrvBaro_SPIBus_Trans;
+ 1693              		.loc 1 312 29 is_stmt 1 view .LVU505
+ 312:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->trans = SrvBaro_SPIBus_Trans;
+ 1694              		.loc 1 312 71 is_stmt 0 view .LVU506
+ 1695 0110 4A4B     		ldr	r3, .L119+48
+ 1696 0112 4365     		str	r3, [r0, #84]
+ 313:Service/Srv_Baro.c ****                             break;
+ 1697              		.loc 1 313 29 is_stmt 1 view .LVU507
+ 313:Service/Srv_Baro.c ****                             break;
+ 1698              		.loc 1 313 72 is_stmt 0 view .LVU508
+ 1699 0114 4A4B     		ldr	r3, .L119+52
+ 1700 0116 8365     		str	r3, [r0, #88]
+ 314:Service/Srv_Baro.c ****                         
+ 1701              		.loc 1 314 29 is_stmt 1 view .LVU509
+ 1702              	.L106:
+ 325:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->delay_ms = SrvOsCommon.delay_ms;
+ 1703              		.loc 1 325 21 view .LVU510
+ 325:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->delay_ms = SrvOsCommon.delay_ms;
+ 1704              		.loc 1 325 80 is_stmt 0 view .LVU511
+ 1705 0118 414A     		ldr	r2, .L119+20
+ 1706 011a 1368     		ldr	r3, [r2]
+ 325:Service/Srv_Baro.c ****                     ToBMP280_OBJ(SrvBaroObj.sensor_obj)->delay_ms = SrvOsCommon.delay_ms;
+ 1707              		.loc 1 325 67 view .LVU512
+ 1708 011c 4360     		str	r3, [r0, #4]
+ 326:Service/Srv_Baro.c **** 
+ 1709              		.loc 1 326 21 is_stmt 1 view .LVU513
+ 1710 011e 3F4B     		ldr	r3, .L119+16
+ 1711 0120 9968     		ldr	r1, [r3, #8]
+ 326:Service/Srv_Baro.c **** 
+ 1712              		.loc 1 326 80 is_stmt 0 view .LVU514
+ 1713 0122 5268     		ldr	r2, [r2, #4]
+ 326:Service/Srv_Baro.c **** 
+ 1714              		.loc 1 326 67 view .LVU515
+ 1715 0124 8A60     		str	r2, [r1, #8]
+ 329:Service/Srv_Baro.c ****                     {
+ 1716              		.loc 1 329 21 is_stmt 1 view .LVU516
+ 329:Service/Srv_Baro.c ****                     {
+ 1717              		.loc 1 329 26 is_stmt 0 view .LVU517
+ 1718 0126 DA68     		ldr	r2, [r3, #12]
+ 329:Service/Srv_Baro.c ****                     {
+ 1719              		.loc 1 329 61 view .LVU518
+ 1720 0128 1268     		ldr	r2, [r2]
+ 329:Service/Srv_Baro.c ****                     {
+ 1721              		.loc 1 329 26 view .LVU519
+ 1722 012a 9868     		ldr	r0, [r3, #8]
+ 1723 012c 9047     		blx	r2
+ 1724              	.LVL115:
+ 329:Service/Srv_Baro.c ****                     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 50
+
+
+ 1725              		.loc 1 329 24 view .LVU520
+ 1726 012e 0028     		cmp	r0, #0
+ 1727 0130 35D0     		beq	.L116
+ 335:Service/Srv_Baro.c ****                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
+ 1728              		.loc 1 335 21 is_stmt 1 view .LVU521
+ 335:Service/Srv_Baro.c ****                     SrvBaroObj.calib_cycle = SRVBARO_DEFAULT_CALI_CYCLE;
+ 1729              		.loc 1 335 44 is_stmt 0 view .LVU522
+ 1730 0132 3A4C     		ldr	r4, .L119+16
+ 1731 0134 0123     		movs	r3, #1
+ 1732 0136 84F84230 		strb	r3, [r4, #66]
+ 336:Service/Srv_Baro.c ****                     
+ 1733              		.loc 1 336 21 is_stmt 1 view .LVU523
+ 336:Service/Srv_Baro.c ****                     
+ 1734              		.loc 1 336 44 is_stmt 0 view .LVU524
+ 1735 013a 6423     		movs	r3, #100
+ 1736 013c A4F84030 		strh	r3, [r4, #64]	@ movhi
+ 338:Service/Srv_Baro.c ****                     SrvBaroObj.sensor_data = SrvOsCommon.malloc(SrvBaroObj.data_size);
+ 1737              		.loc 1 338 21 is_stmt 1 view .LVU525
+ 338:Service/Srv_Baro.c ****                     SrvBaroObj.sensor_data = SrvOsCommon.malloc(SrvBaroObj.data_size);
+ 1738              		.loc 1 338 42 is_stmt 0 view .LVU526
+ 1739 0140 1020     		movs	r0, #16
+ 1740 0142 2076     		strb	r0, [r4, #24]
+ 339:Service/Srv_Baro.c ****                 }
+ 1741              		.loc 1 339 21 is_stmt 1 view .LVU527
+ 339:Service/Srv_Baro.c ****                 }
+ 1742              		.loc 1 339 57 is_stmt 0 view .LVU528
+ 1743 0144 364B     		ldr	r3, .L119+20
+ 1744 0146 9B6A     		ldr	r3, [r3, #40]
+ 339:Service/Srv_Baro.c ****                 }
+ 1745              		.loc 1 339 46 view .LVU529
+ 1746 0148 9847     		blx	r3
+ 1747              	.LVL116:
+ 339:Service/Srv_Baro.c ****                 }
+ 1748              		.loc 1 339 44 view .LVU530
+ 1749 014a 6061     		str	r0, [r4, #20]
+ 346:Service/Srv_Baro.c ****             
+ 1750              		.loc 1 346 17 is_stmt 1 view .LVU531
+ 1751              	.L103:
+ 353:Service/Srv_Baro.c **** 
+ 1752              		.loc 1 353 9 view .LVU532
+ 353:Service/Srv_Baro.c **** 
+ 1753              		.loc 1 353 69 is_stmt 0 view .LVU533
+ 1754 014c 334C     		ldr	r4, .L119+16
+ 353:Service/Srv_Baro.c **** 
+ 1755              		.loc 1 353 51 view .LVU534
+ 1756 014e 6088     		ldrh	r0, [r4, #2]
+ 1757 0150 FFF7FEFF 		bl	__aeabi_ui2d
+ 1758              	.LVL117:
+ 1759 0154 0246     		mov	r2, r0
+ 1760 0156 0B46     		mov	r3, r1
+ 353:Service/Srv_Baro.c **** 
+ 1761              		.loc 1 353 36 view .LVU535
+ 1762 0158 0020     		movs	r0, #0
+ 1763 015a 3A49     		ldr	r1, .L119+56
+ 1764 015c FFF7FEFF 		bl	__aeabi_ddiv
+ 1765              	.LVL118:
+ 1766 0160 41EC100B 		vmov	d0, r0, r1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 51
+
+
+ 1767 0164 FFF7FEFF 		bl	round
+ 1768              	.LVL119:
+ 1769 0168 51EC100B 		vmov	r0, r1, d0
+ 353:Service/Srv_Baro.c **** 
+ 1770              		.loc 1 353 34 view .LVU536
+ 1771 016c FFF7FEFF 		bl	__aeabi_d2uiz
+ 1772              	.LVL120:
+ 1773 0170 A080     		strh	r0, [r4, #4]	@ movhi
+ 356:Service/Srv_Baro.c ****         if (SrvBaroObj.smoothwindow_filter_hdl == 0)
+ 1774              		.loc 1 356 9 is_stmt 1 view .LVU537
+ 356:Service/Srv_Baro.c ****         if (SrvBaroObj.smoothwindow_filter_hdl == 0)
+ 1775              		.loc 1 356 58 is_stmt 0 view .LVU538
+ 1776 0172 354B     		ldr	r3, .L119+60
+ 1777 0174 1B68     		ldr	r3, [r3]
+ 356:Service/Srv_Baro.c ****         if (SrvBaroObj.smoothwindow_filter_hdl == 0)
+ 1778              		.loc 1 356 46 view .LVU539
+ 1779 0176 0520     		movs	r0, #5
+ 1780 0178 9847     		blx	r3
+ 1781              	.LVL121:
+ 356:Service/Srv_Baro.c ****         if (SrvBaroObj.smoothwindow_filter_hdl == 0)
+ 1782              		.loc 1 356 44 view .LVU540
+ 1783 017a E064     		str	r0, [r4, #76]
+ 357:Service/Srv_Baro.c ****         {
+ 1784              		.loc 1 357 9 is_stmt 1 view .LVU541
+ 357:Service/Srv_Baro.c ****         {
+ 1785              		.loc 1 357 12 is_stmt 0 view .LVU542
+ 1786 017c 18B3     		cbz	r0, .L117
+ 363:Service/Srv_Baro.c ****             (SrvBaroObj.sample_period > SRVBARO_MIN_SAMPLE_PERIOD))
+ 1787              		.loc 1 363 9 is_stmt 1 view .LVU543
+ 363:Service/Srv_Baro.c ****             (SrvBaroObj.sample_period > SRVBARO_MIN_SAMPLE_PERIOD))
+ 1788              		.loc 1 363 24 is_stmt 0 view .LVU544
+ 1789 017e 274B     		ldr	r3, .L119+16
+ 1790 0180 9B88     		ldrh	r3, [r3, #4]
+ 363:Service/Srv_Baro.c ****             (SrvBaroObj.sample_period > SRVBARO_MIN_SAMPLE_PERIOD))
+ 1791              		.loc 1 363 68 view .LVU545
+ 1792 0182 0A3B     		subs	r3, r3, #10
+ 1793 0184 9BB2     		uxth	r3, r3
+ 363:Service/Srv_Baro.c ****             (SrvBaroObj.sample_period > SRVBARO_MIN_SAMPLE_PERIOD))
+ 1794              		.loc 1 363 12 view .LVU546
+ 1795 0186 5A2B     		cmp	r3, #90
+ 1796 0188 27D8     		bhi	.L118
+ 376:Service/Srv_Baro.c **** }
+ 1797              		.loc 1 376 12 view .LVU547
+ 1798 018a 0020     		movs	r0, #0
+ 1799 018c 38E0     		b	.L96
+ 1800              	.L105:
+ 317:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_tx = SrvBaro_IICBus_Tx;
+ 1801              		.loc 1 317 29 is_stmt 1 view .LVU548
+ 317:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_tx = SrvBaro_IICBus_Tx;
+ 1802              		.loc 1 317 74 is_stmt 0 view .LVU549
+ 1803 018e 7623     		movs	r3, #118
+ 1804 0190 80F84430 		strb	r3, [r0, #68]
+ 318:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_rx = SrvBaro_IICBus_Rx;
+ 1805              		.loc 1 318 29 is_stmt 1 view .LVU550
+ 318:Service/Srv_Baro.c ****                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_rx = SrvBaro_IICBus_Rx;
+ 1806              		.loc 1 318 73 is_stmt 0 view .LVU551
+ 1807 0194 264B     		ldr	r3, .L119+36
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 52
+
+
+ 1808 0196 8364     		str	r3, [r0, #72]
+ 319:Service/Srv_Baro.c ****                             break;
+ 1809              		.loc 1 319 29 is_stmt 1 view .LVU552
+ 319:Service/Srv_Baro.c ****                             break;
+ 1810              		.loc 1 319 73 is_stmt 0 view .LVU553
+ 1811 0198 244B     		ldr	r3, .L119+32
+ 1812 019a C364     		str	r3, [r0, #76]
+ 320:Service/Srv_Baro.c **** 
+ 1813              		.loc 1 320 29 is_stmt 1 view .LVU554
+ 1814 019c BCE7     		b	.L106
+ 1815              	.L116:
+ 331:Service/Srv_Baro.c ****                         return SrvBaro_Error_DevInit;
+ 1816              		.loc 1 331 25 view .LVU555
+ 331:Service/Srv_Baro.c ****                         return SrvBaro_Error_DevInit;
+ 1817              		.loc 1 331 33 is_stmt 0 view .LVU556
+ 1818 019e 1B4B     		ldr	r3, .L119
+ 1819 01a0 9C68     		ldr	r4, [r3, #8]
+ 331:Service/Srv_Baro.c ****                         return SrvBaro_Error_DevInit;
+ 1820              		.loc 1 331 25 view .LVU557
+ 1821 01a2 0023     		movs	r3, #0
+ 1822 01a4 1A46     		mov	r2, r3
+ 1823 01a6 0421     		movs	r1, #4
+ 1824 01a8 1A48     		ldr	r0, .L119+8
+ 1825 01aa 0068     		ldr	r0, [r0]
+ 1826 01ac A047     		blx	r4
+ 1827              	.LVL122:
+ 332:Service/Srv_Baro.c ****                     }
+ 1828              		.loc 1 332 25 is_stmt 1 view .LVU558
+ 332:Service/Srv_Baro.c ****                     }
+ 1829              		.loc 1 332 32 is_stmt 0 view .LVU559
+ 1830 01ae 0420     		movs	r0, #4
+ 1831 01b0 26E0     		b	.L96
+ 1832              	.L104:
+ 343:Service/Srv_Baro.c ****                     return SrvBaro_Error_BadSensorObj;
+ 1833              		.loc 1 343 21 is_stmt 1 view .LVU560
+ 343:Service/Srv_Baro.c ****                     return SrvBaro_Error_BadSensorObj;
+ 1834              		.loc 1 343 29 is_stmt 0 view .LVU561
+ 1835 01b2 164B     		ldr	r3, .L119
+ 1836 01b4 9C68     		ldr	r4, [r3, #8]
+ 343:Service/Srv_Baro.c ****                     return SrvBaro_Error_BadSensorObj;
+ 1837              		.loc 1 343 21 view .LVU562
+ 1838 01b6 0023     		movs	r3, #0
+ 1839 01b8 1A46     		mov	r2, r3
+ 1840 01ba 0521     		movs	r1, #5
+ 1841 01bc 1548     		ldr	r0, .L119+8
+ 1842 01be 0068     		ldr	r0, [r0]
+ 1843 01c0 A047     		blx	r4
+ 1844              	.LVL123:
+ 344:Service/Srv_Baro.c ****                 }
+ 1845              		.loc 1 344 21 is_stmt 1 view .LVU563
+ 344:Service/Srv_Baro.c ****                 }
+ 1846              		.loc 1 344 28 is_stmt 0 view .LVU564
+ 1847 01c2 0520     		movs	r0, #5
+ 1848 01c4 1CE0     		b	.L96
+ 1849              	.L117:
+ 359:Service/Srv_Baro.c ****             return SrvBaro_Error_FilterInit;
+ 1850              		.loc 1 359 13 is_stmt 1 view .LVU565
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 53
+
+
+ 359:Service/Srv_Baro.c ****             return SrvBaro_Error_FilterInit;
+ 1851              		.loc 1 359 21 is_stmt 0 view .LVU566
+ 1852 01c6 114B     		ldr	r3, .L119
+ 1853 01c8 9C68     		ldr	r4, [r3, #8]
+ 359:Service/Srv_Baro.c ****             return SrvBaro_Error_FilterInit;
+ 1854              		.loc 1 359 13 view .LVU567
+ 1855 01ca 0023     		movs	r3, #0
+ 1856 01cc 1A46     		mov	r2, r3
+ 1857 01ce 0621     		movs	r1, #6
+ 1858 01d0 1048     		ldr	r0, .L119+8
+ 1859 01d2 0068     		ldr	r0, [r0]
+ 1860 01d4 A047     		blx	r4
+ 1861              	.LVL124:
+ 360:Service/Srv_Baro.c ****         }
+ 1862              		.loc 1 360 13 is_stmt 1 view .LVU568
+ 360:Service/Srv_Baro.c ****         }
+ 1863              		.loc 1 360 20 is_stmt 0 view .LVU569
+ 1864 01d6 0620     		movs	r0, #6
+ 1865 01d8 12E0     		b	.L96
+ 1866              	.L118:
+ 366:Service/Srv_Baro.c ****             return SrvBaro_Error_BadSamplePeriod;
+ 1867              		.loc 1 366 13 is_stmt 1 view .LVU570
+ 366:Service/Srv_Baro.c ****             return SrvBaro_Error_BadSamplePeriod;
+ 1868              		.loc 1 366 21 is_stmt 0 view .LVU571
+ 1869 01da 0C4B     		ldr	r3, .L119
+ 1870 01dc 9C68     		ldr	r4, [r3, #8]
+ 366:Service/Srv_Baro.c ****             return SrvBaro_Error_BadSamplePeriod;
+ 1871              		.loc 1 366 13 view .LVU572
+ 1872 01de 0023     		movs	r3, #0
+ 1873 01e0 1A46     		mov	r2, r3
+ 1874 01e2 0721     		movs	r1, #7
+ 1875 01e4 0B48     		ldr	r0, .L119+8
+ 1876 01e6 0068     		ldr	r0, [r0]
+ 1877 01e8 A047     		blx	r4
+ 1878              	.LVL125:
+ 367:Service/Srv_Baro.c ****         }
+ 1879              		.loc 1 367 13 is_stmt 1 view .LVU573
+ 367:Service/Srv_Baro.c ****         }
+ 1880              		.loc 1 367 20 is_stmt 0 view .LVU574
+ 1881 01ea 0720     		movs	r0, #7
+ 1882 01ec 08E0     		b	.L96
+ 1883              	.L97:
+ 372:Service/Srv_Baro.c ****         return SrvBaro_Error_BadRate;
+ 1884              		.loc 1 372 9 is_stmt 1 view .LVU575
+ 372:Service/Srv_Baro.c ****         return SrvBaro_Error_BadRate;
+ 1885              		.loc 1 372 17 is_stmt 0 view .LVU576
+ 1886 01ee 074B     		ldr	r3, .L119
+ 1887 01f0 9C68     		ldr	r4, [r3, #8]
+ 372:Service/Srv_Baro.c ****         return SrvBaro_Error_BadRate;
+ 1888              		.loc 1 372 9 view .LVU577
+ 1889 01f2 0023     		movs	r3, #0
+ 1890 01f4 1A46     		mov	r2, r3
+ 1891 01f6 0121     		movs	r1, #1
+ 1892 01f8 0648     		ldr	r0, .L119+8
+ 1893 01fa 0068     		ldr	r0, [r0]
+ 1894 01fc A047     		blx	r4
+ 1895              	.LVL126:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 54
+
+
+ 373:Service/Srv_Baro.c ****     }
+ 1896              		.loc 1 373 9 is_stmt 1 view .LVU578
+ 373:Service/Srv_Baro.c ****     }
+ 1897              		.loc 1 373 16 is_stmt 0 view .LVU579
+ 1898 01fe 0120     		movs	r0, #1
+ 1899              	.L96:
+ 377:Service/Srv_Baro.c **** 
+ 1900              		.loc 1 377 1 view .LVU580
+ 1901 0200 70BD     		pop	{r4, r5, r6, pc}
+ 1902              	.L109:
+ 267:Service/Srv_Baro.c ****                     }
+ 1903              		.loc 1 267 41 view .LVU581
+ 1904 0202 0220     		movs	r0, #2
+ 1905 0204 FCE7     		b	.L96
+ 1906              	.L110:
+ 1907 0206 2046     		mov	r0, r4
+ 1908 0208 FAE7     		b	.L96
+ 1909              	.L120:
+ 1910 020a 00BF     		.align	2
+ 1911              	.L119:
+ 1912 020c 00000000 		.word	ErrorLog
+ 1913 0210 00000000 		.word	.LC1
+ 1914 0214 00000000 		.word	.LANCHOR3
+ 1915 0218 00000000 		.word	.LANCHOR4
+ 1916 021c 00000000 		.word	.LANCHOR2
+ 1917 0220 00000000 		.word	SrvOsCommon
+ 1918 0224 00000000 		.word	DevDPS310
+ 1919 0228 00000000 		.word	.LANCHOR0
+ 1920 022c 00000000 		.word	SrvBaro_IICBus_Rx
+ 1921 0230 00000000 		.word	SrvBaro_IICBus_Tx
+ 1922 0234 00000000 		.word	DevBMP280
+ 1923 0238 00000000 		.word	SrvBaro_SPIBus_Tx
+ 1924 023c 00000000 		.word	SrvBaro_SPIBus_Rx
+ 1925 0240 00000000 		.word	SrvBaro_SPIBus_Trans
+ 1926 0244 00408F40 		.word	1083129856
+ 1927 0248 00000000 		.word	SmoothWindow
+ 1928              		.cfi_endproc
+ 1929              	.LFE145:
+ 1931              		.global	SrvBaro
+ 1932              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 1933              		.align	2
+ 1934              	.LC2:
+ 1935 0000 53727642 		.ascii	"SrvBaro Bad Sample Rate\015\012\000"
+ 1935      61726F20 
+ 1935      42616420 
+ 1935      53616D70 
+ 1935      6C652052 
+ 1936 001a 0000     		.align	2
+ 1937              	.LC3:
+ 1938 001c 53727642 		.ascii	"SrvBaro Bad Sensor Type\015\012\000"
+ 1938      61726F20 
+ 1938      42616420 
+ 1938      53656E73 
+ 1938      6F722054 
+ 1939 0036 0000     		.align	2
+ 1940              	.LC4:
+ 1941 0038 53727642 		.ascii	"SrvBaro Bad Sensor Object\015\012\000"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 55
+
+
+ 1941      61726F20 
+ 1941      42616420 
+ 1941      53656E73 
+ 1941      6F72204F 
+ 1942              		.align	2
+ 1943              	.LC5:
+ 1944 0054 53727642 		.ascii	"SrvBaro Bad Sample Period\015\012\000"
+ 1944      61726F20 
+ 1944      42616420 
+ 1944      53616D70 
+ 1944      6C652050 
+ 1945              		.align	2
+ 1946              	.LC6:
+ 1947 0070 53727642 		.ascii	"SrvBaro Bus Init Failed\015\012\000"
+ 1947      61726F20 
+ 1947      42757320 
+ 1947      496E6974 
+ 1947      20466169 
+ 1948 008a 0000     		.align	2
+ 1949              	.LC7:
+ 1950 008c 53727642 		.ascii	"SrvBaro Sensor Filter Init Failed\015\012\000"
+ 1950      61726F20 
+ 1950      53656E73 
+ 1950      6F722046 
+ 1950      696C7465 
+ 1951              		.align	2
+ 1952              	.LC8:
+ 1953 00b0 53727642 		.ascii	"SrvBaro Sensor Device Init Failed\015\012\000"
+ 1953      61726F20 
+ 1953      53656E73 
+ 1953      6F722044 
+ 1953      65766963 
+ 1954              		.global	SrvBaroBus
+ 1955              		.global	SrvBaroObj
+ 1956              		.section	.bss.Baro_Bus_Instance,"aw",%nobits
+ 1957              		.align	2
+ 1958              		.set	.LANCHOR1,. + 0
+ 1961              	Baro_Bus_Instance:
+ 1962 0000 00000000 		.space	4
+ 1963              		.section	.bss.SrvBaroBus,"aw",%nobits
+ 1964              		.align	2
+ 1965              		.set	.LANCHOR0,. + 0
+ 1968              	SrvBaroBus:
+ 1969 0000 00000000 		.space	12
+ 1969      00000000 
+ 1969      00000000 
+ 1970              		.section	.bss.SrvBaro_Error_Handle,"aw",%nobits
+ 1971              		.align	2
+ 1972              		.set	.LANCHOR3,. + 0
+ 1975              	SrvBaro_Error_Handle:
+ 1976 0000 00000000 		.space	4
+ 1977              		.section	.data.SrvBaro,"aw"
+ 1978              		.align	2
+ 1981              	SrvBaro:
+ 1982 0000 00000000 		.word	SrvBaro_Init
+ 1983 0004 00000000 		.word	SrvBaro_Sample
+ 1984 0008 00000000 		.word	SrvBaro_Set_Calib
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 56
+
+
+ 1985 000c 00000000 		.word	SrvBaro_Get_Calib
+ 1986 0010 00000000 		.word	SrvBaro_Get_Date
+ 1987              		.section	.data.SrvBaroObj,"aw"
+ 1988              		.align	2
+ 1989              		.set	.LANCHOR2,. + 0
+ 1992              	SrvBaroObj:
+ 1993 0000 01       		.byte	1
+ 1994 0001 00       		.space	1
+ 1995 0002 1400     		.short	20
+ 1996 0004 00000000 		.space	12
+ 1996      00000000 
+ 1996      00000000 
+ 1997 0010 00       		.byte	0
+ 1998 0011 000000   		.space	3
+ 1999 0014 00000000 		.word	0
+ 2000 0018 00000000 		.space	56
+ 2000      00000000 
+ 2000      00000000 
+ 2000      00000000 
+ 2000      00000000 
+ 2001              		.section	.data.SrvBaro_ErrorList,"aw"
+ 2002              		.align	2
+ 2003              		.set	.LANCHOR4,. + 0
+ 2006              	SrvBaro_ErrorList:
+ 2007 0000 0100     		.short	1
+ 2008 0002 02       		.byte	2
+ 2009 0003 00       		.space	1
+ 2010 0004 00000000 		.word	.LC2
+ 2011 0008 01       		.byte	1
+ 2012 0009 00       		.byte	0
+ 2013 000a 00000000 		.4byte	SrvBaro_BusInitError
+ 2014 000e 00000000 		.4byte	0
+ 2015 0012 0000     		.short	0
+ 2016 0014 00000000 		.space	4
+ 2017 0018 0300     		.short	3
+ 2018 001a 02       		.byte	2
+ 2019 001b 00       		.space	1
+ 2020 001c 1C000000 		.word	.LC3
+ 2021 0020 01       		.byte	1
+ 2022 0021 00       		.byte	0
+ 2023 0022 00000000 		.4byte	SrvBaro_BusInitError
+ 2024 0026 00000000 		.4byte	0
+ 2025 002a 0000     		.short	0
+ 2026 002c 00000000 		.space	4
+ 2027 0030 0500     		.short	5
+ 2028 0032 02       		.byte	2
+ 2029 0033 00       		.space	1
+ 2030 0034 38000000 		.word	.LC4
+ 2031 0038 01       		.byte	1
+ 2032 0039 00       		.byte	0
+ 2033 003a 00000000 		.4byte	SrvBaro_BusInitError
+ 2034 003e 00000000 		.4byte	0
+ 2035 0042 0000     		.short	0
+ 2036 0044 00000000 		.space	4
+ 2037 0048 0700     		.short	7
+ 2038 004a 02       		.byte	2
+ 2039 004b 00       		.space	1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 57
+
+
+ 2040 004c 54000000 		.word	.LC5
+ 2041 0050 01       		.byte	1
+ 2042 0051 00       		.byte	0
+ 2043 0052 00000000 		.4byte	SrvBaro_BusInitError
+ 2044 0056 00000000 		.4byte	0
+ 2045 005a 0000     		.short	0
+ 2046 005c 00000000 		.space	4
+ 2047 0060 0800     		.short	8
+ 2048 0062 02       		.byte	2
+ 2049 0063 00       		.space	1
+ 2050 0064 70000000 		.word	.LC6
+ 2051 0068 01       		.byte	1
+ 2052 0069 00       		.byte	0
+ 2053 006a 00000000 		.4byte	SrvBaro_BusInitError
+ 2054 006e 00000000 		.4byte	0
+ 2055 0072 0000     		.short	0
+ 2056 0074 00000000 		.space	4
+ 2057 0078 0600     		.short	6
+ 2058 007a 00       		.byte	0
+ 2059 007b 00       		.space	1
+ 2060 007c 8C000000 		.word	.LC7
+ 2061 0080 01       		.byte	1
+ 2062 0081 00       		.byte	0
+ 2063 0082 00000000 		.4byte	SrvBaro_BusInitError
+ 2064 0086 00000000 		.4byte	0
+ 2065 008a 0000     		.short	0
+ 2066 008c 00000000 		.space	4
+ 2067 0090 0400     		.short	4
+ 2068 0092 00       		.byte	0
+ 2069 0093 00       		.space	1
+ 2070 0094 B0000000 		.word	.LC8
+ 2071 0098 01       		.byte	1
+ 2072 0099 00       		.byte	0
+ 2073 009a 00000000 		.4byte	SrvBaro_BusInitError
+ 2074 009e 00000000 		.4byte	0
+ 2075 00a2 0000     		.short	0
+ 2076 00a4 00000000 		.space	4
+ 2077              		.text
+ 2078              	.Letext0:
+ 2079              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 2080              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 2081              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi\
+ 2082              		.file 5 "Device/Dev_DPS310.h"
+ 2083              		.file 6 "Device/Dev_BMP280.h"
+ 2084              		.file 7 "DataStructure/linked_list.h"
+ 2085              		.file 8 "System/FreeRTOS/include/portable.h"
+ 2086              		.file 9 "Service/Srv_OsCommon.h"
+ 2087              		.file 10 "Service/../algorithm/Filter_Dep/filter.h"
+ 2088              		.file 11 "common/gen_physic_def/gen_calib.h"
+ 2089              		.file 12 "Service/Srv_Baro.h"
+ 2090              		.file 13 "common/Error_Log/error_log.h"
+ 2091              		.file 14 "HW_Lib/Port_Def/Bsp_IIC_Port_Def.h"
+ 2092              		.file 15 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 2093              		.file 16 "HW_Lib/AT32F435/bsp/bsp_iic.h"
+ 2094              		.file 17 "HW_Lib/Port_Def/Bsp_GPIO_Port_Def.h"
+ 2095              		.file 18 "HW_Lib/AT32F435/bsp/bsp_gpio.h"
+ 2096              		.file 19 "HW_Lib/Port_Def/Bsp_SPI_Port_Def.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 58
+
+
+ 2097              		.file 20 "HW_Lib/AT32F435/bsp/Bsp_SPI.h"
+ 2098              		.file 21 "common/Error_Log/../../common/gen_physic_def/imu_data.h"
+ 2099              		.file 22 "HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.h"
+ 2100              		.file 23 "System/FreeRTOS/FreeRTOSConfig.h"
+ 2101              		.file 24 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 59
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Srv_Baro.c
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:20     .text.SrvBaro_BusInit:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:25     .text.SrvBaro_BusInit:00000000 SrvBaro_BusInit
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:201    .text.SrvBaro_BusInit:000000b4 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:212    .text.SrvBaro_Set_Calib:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:217    .text.SrvBaro_Set_Calib:00000000 SrvBaro_Set_Calib
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:257    .text.SrvBaro_Set_Calib:00000020 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:262    .text.SrvBaro_Get_Calib:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:267    .text.SrvBaro_Get_Calib:00000000 SrvBaro_Get_Calib
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:282    .text.SrvBaro_Get_Calib:00000008 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:287    .text.SrvBaro_IICBus_Tx:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:292    .text.SrvBaro_IICBus_Tx:00000000 SrvBaro_IICBus_Tx
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:367    .text.SrvBaro_IICBus_Tx:00000034 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:372    .text.SrvBaro_IICBus_Rx:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:377    .text.SrvBaro_IICBus_Rx:00000000 SrvBaro_IICBus_Rx
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:452    .text.SrvBaro_IICBus_Rx:00000034 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:457    .text.SrvBaro_SPIBus_Trans:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:462    .text.SrvBaro_SPIBus_Trans:00000000 SrvBaro_SPIBus_Trans
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:482    .text.SrvBaro_SPIBus_Tx:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:487    .text.SrvBaro_SPIBus_Tx:00000000 SrvBaro_SPIBus_Tx
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:507    .text.SrvBaro_SPIBus_Rx:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:512    .text.SrvBaro_SPIBus_Rx:00000000 SrvBaro_SPIBus_Rx
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:635    .text.SrvBaro_SPIBus_Rx:00000058 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:642    .rodata.SrvBaro_BusInitError.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:646    .text.SrvBaro_BusInitError:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:651    .text.SrvBaro_BusInitError:00000000 SrvBaro_BusInitError
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:702    .text.SrvBaro_BusInitError:00000020 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:712    .text.SrvBaro_PessureCnvToMeter:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:717    .text.SrvBaro_PessureCnvToMeter:00000000 SrvBaro_PessureCnvToMeter
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:761    .text.SrvBaro_PessureCnvToMeter:00000040 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:771    .text.SrvBaro_Get_Date:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:776    .text.SrvBaro_Get_Date:00000000 SrvBaro_Get_Date
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1172   .text.SrvBaro_Get_Date:000001ac $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1178   .text.SrvBaro_Sample:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1183   .text.SrvBaro_Sample:00000000 SrvBaro_Sample
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1414   .text.SrvBaro_Sample:00000124 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1419   .rodata.SrvBaro_Init.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1426   .text.SrvBaro_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1431   .text.SrvBaro_Init:00000000 SrvBaro_Init
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1912   .text.SrvBaro_Init:0000020c $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1981   .data.SrvBaro:00000000 SrvBaro
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1933   .rodata.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1968   .bss.SrvBaroBus:00000000 SrvBaroBus
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1992   .data.SrvBaroObj:00000000 SrvBaroObj
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1957   .bss.Baro_Bus_Instance:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1961   .bss.Baro_Bus_Instance:00000000 Baro_Bus_Instance
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1964   .bss.SrvBaroBus:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1971   .bss.SrvBaro_Error_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1975   .bss.SrvBaro_Error_Handle:00000000 SrvBaro_Error_Handle
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1978   .data.SrvBaro:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:1988   .data.SrvBaroObj:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:2002   .data.SrvBaro_ErrorList:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s:2006   .data.SrvBaro_ErrorList:00000000 SrvBaro_ErrorList
+
+UNDEFINED SYMBOLS
+Baro_BusCfg
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccOaqkpu.s 			page 60
+
+
+BspIIC
+SrvOsCommon
+BspSPI
+BspGPIO
+ErrorLog
+__aeabi_f2d
+__aeabi_dsub
+__aeabi_dmul
+__aeabi_d2f
+pow
+SmoothWindow
+__aeabi_ui2d
+__aeabi_ddiv
+__aeabi_d2uiz
+round
+DevDPS310
+DevBMP280

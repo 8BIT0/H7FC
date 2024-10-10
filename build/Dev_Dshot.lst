@@ -1,0 +1,1002 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Dev_Dshot.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.DevDshot_GetType_Clock,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	DevDshot_GetType_Clock:
+  26              	.LVL0:
+  27              	.LFB6:
+  28              		.file 1 "Device/Dev_Dshot.c"
+   1:Device/Dev_Dshot.c **** #include "Dev_Dshot.h"
+   2:Device/Dev_Dshot.c **** #include <math.h>
+   3:Device/Dev_Dshot.c **** 
+   4:Device/Dev_Dshot.c **** __attribute__((weak)) void *DShot_Malloc(uint32_t size){return NULL;}
+   5:Device/Dev_Dshot.c **** __attribute__((weak)) void DShot_Free(void *ptr){return;}
+   6:Device/Dev_Dshot.c **** __attribute__((weak)) bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t 
+   7:Device/Dev_Dshot.c **** __attribute__((weak)) bool DShot_Port_DeInit(void *obj){return false;}
+   8:Device/Dev_Dshot.c **** __attribute__((weak)) void DShot_Port_Trans(void *obj){return;}
+   9:Device/Dev_Dshot.c **** __attribute__((weak)) uint32_t DShot_Get_Timer_CLKFreq(void *obj){return 0;}
+  10:Device/Dev_Dshot.c **** 
+  11:Device/Dev_Dshot.c **** /* external function */
+  12:Device/Dev_Dshot.c **** static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, uint8_
+  13:Device/Dev_Dshot.c **** static bool DevDshot_DeInit(DevDshotObj_TypeDef *obj);
+  14:Device/Dev_Dshot.c **** static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value);
+  15:Device/Dev_Dshot.c **** static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint16_t cmd);
+  16:Device/Dev_Dshot.c **** 
+  17:Device/Dev_Dshot.c **** DevDshot_TypeDef DevDshot = {
+  18:Device/Dev_Dshot.c ****     .init = DevDshot_Init,
+  19:Device/Dev_Dshot.c ****     .de_init = DevDshot_DeInit,
+  20:Device/Dev_Dshot.c ****     .command = DevDshot_Command,
+  21:Device/Dev_Dshot.c ****     .control = DevDshot_Control,
+  22:Device/Dev_Dshot.c **** };
+  23:Device/Dev_Dshot.c **** 
+  24:Device/Dev_Dshot.c **** static uint32_t DevDshot_GetType_Clock(DevDshotType_List type)
+  25:Device/Dev_Dshot.c **** {
+  29              		.loc 1 25 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 2
+
+
+  26:Device/Dev_Dshot.c ****     switch (type)
+  34              		.loc 1 26 5 view .LVU1
+  35 0000 0228     		cmp	r0, #2
+  36 0002 07D0     		beq	.L3
+  37 0004 0328     		cmp	r0, #3
+  38 0006 07D0     		beq	.L4
+  39 0008 0128     		cmp	r0, #1
+  40 000a 01D0     		beq	.L6
+  27:Device/Dev_Dshot.c ****     {
+  28:Device/Dev_Dshot.c ****     case DevDshot_150:
+  29:Device/Dev_Dshot.c ****         return DSHOT150_CLK_HZ;
+  30:Device/Dev_Dshot.c **** 
+  31:Device/Dev_Dshot.c ****     case DevDshot_300:
+  32:Device/Dev_Dshot.c ****         return DSHOT300_CLK_HZ;
+  33:Device/Dev_Dshot.c **** 
+  34:Device/Dev_Dshot.c ****     case DevDshot_600:
+  35:Device/Dev_Dshot.c ****         return DSHOT600_CLK_HZ;
+  36:Device/Dev_Dshot.c **** 
+  37:Device/Dev_Dshot.c ****     default:
+  38:Device/Dev_Dshot.c ****         return DSHOT300_CLK_HZ;
+  41              		.loc 1 38 16 is_stmt 0 view .LVU2
+  42 000c 0348     		ldr	r0, .L7
+  43              	.LVL1:
+  39:Device/Dev_Dshot.c ****     }
+  40:Device/Dev_Dshot.c **** }
+  44              		.loc 1 40 1 view .LVU3
+  45 000e 7047     		bx	lr
+  46              	.LVL2:
+  47              	.L6:
+  26:Device/Dev_Dshot.c ****     {
+  48              		.loc 1 26 5 view .LVU4
+  49 0010 0348     		ldr	r0, .L7+4
+  50              	.LVL3:
+  26:Device/Dev_Dshot.c ****     {
+  51              		.loc 1 26 5 view .LVU5
+  52 0012 7047     		bx	lr
+  53              	.LVL4:
+  54              	.L3:
+  32:Device/Dev_Dshot.c **** 
+  55              		.loc 1 32 16 view .LVU6
+  56 0014 0148     		ldr	r0, .L7
+  57              	.LVL5:
+  32:Device/Dev_Dshot.c **** 
+  58              		.loc 1 32 16 view .LVU7
+  59 0016 7047     		bx	lr
+  60              	.LVL6:
+  61              	.L4:
+  35:Device/Dev_Dshot.c **** 
+  62              		.loc 1 35 16 view .LVU8
+  63 0018 0248     		ldr	r0, .L7+8
+  64              	.LVL7:
+  35:Device/Dev_Dshot.c **** 
+  65              		.loc 1 35 16 view .LVU9
+  66 001a 7047     		bx	lr
+  67              	.L8:
+  68              		.align	2
+  69              	.L7:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 3
+
+
+  70 001c 808D5B00 		.word	6000000
+  71 0020 C0C62D00 		.word	3000000
+  72 0024 001BB700 		.word	12000000
+  73              		.cfi_endproc
+  74              	.LFE6:
+  76              		.section	.text.DevDshot_Prepare_Packet,"ax",%progbits
+  77              		.align	1
+  78              		.syntax unified
+  79              		.thumb
+  80              		.thumb_func
+  82              	DevDshot_Prepare_Packet:
+  83              	.LVL8:
+  84              	.LFB9:
+  41:Device/Dev_Dshot.c **** 
+  42:Device/Dev_Dshot.c **** static bool DevDshot_DeInit(DevDshotObj_TypeDef *obj)
+  43:Device/Dev_Dshot.c **** {
+  44:Device/Dev_Dshot.c ****     if (obj)
+  45:Device/Dev_Dshot.c ****         return DShot_Port_DeInit(obj);
+  46:Device/Dev_Dshot.c **** 
+  47:Device/Dev_Dshot.c ****     return false;
+  48:Device/Dev_Dshot.c **** }
+  49:Device/Dev_Dshot.c **** 
+  50:Device/Dev_Dshot.c **** static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
+  51:Device/Dev_Dshot.c ****                           void *timer_ins,
+  52:Device/Dev_Dshot.c ****                           uint32_t ch,
+  53:Device/Dev_Dshot.c ****                           void *pin,
+  54:Device/Dev_Dshot.c ****                           uint8_t dma,
+  55:Device/Dev_Dshot.c ****                           uint8_t stream)
+  56:Device/Dev_Dshot.c **** {
+  57:Device/Dev_Dshot.c ****     float DShot_Timer_ClkFreq = (float)DShot_Get_Timer_CLKFreq(obj) - 1;
+  58:Device/Dev_Dshot.c ****     uint32_t prescaler = 0;
+  59:Device/Dev_Dshot.c **** 
+  60:Device/Dev_Dshot.c ****     if (!obj || (DShot_Timer_ClkFreq == 0))
+  61:Device/Dev_Dshot.c ****         return false;
+  62:Device/Dev_Dshot.c **** 
+  63:Device/Dev_Dshot.c ****     prescaler = lrintf(DShot_Timer_ClkFreq / (DevDshot_GetType_Clock(obj->type) - 1) + 0.01f) - 1;
+  64:Device/Dev_Dshot.c **** 
+  65:Device/Dev_Dshot.c ****     if ((obj->type < DevDshot_150) || (obj->type > DevDshot_600))
+  66:Device/Dev_Dshot.c ****     {
+  67:Device/Dev_Dshot.c ****         obj->type = DevDshot_300;
+  68:Device/Dev_Dshot.c ****     }
+  69:Device/Dev_Dshot.c **** 
+  70:Device/Dev_Dshot.c ****     if (!DShot_Port_Init(obj, prescaler, timer_ins, ch, pin, dma, stream))
+  71:Device/Dev_Dshot.c ****         return false;
+  72:Device/Dev_Dshot.c **** 
+  73:Device/Dev_Dshot.c ****     return true;
+  74:Device/Dev_Dshot.c **** }
+  75:Device/Dev_Dshot.c **** 
+  76:Device/Dev_Dshot.c **** static uint16_t DevDshot_Prepare_Packet(const uint16_t value, int8_t requestTelemetry)
+  77:Device/Dev_Dshot.c **** {
+  85              		.loc 1 77 1 is_stmt 1 view -0
+  86              		.cfi_startproc
+  87              		@ args = 0, pretend = 0, frame = 0
+  88              		@ frame_needed = 0, uses_anonymous_args = 0
+  89              		@ link register save eliminated.
+  78:Device/Dev_Dshot.c ****     uint16_t packet = (value << 1) | (requestTelemetry ? 1 : 0);
+  90              		.loc 1 78 5 view .LVU11
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 4
+
+
+  91              		.loc 1 78 60 is_stmt 0 view .LVU12
+  92 0000 0039     		subs	r1, r1, #0
+  93              	.LVL9:
+  94              		.loc 1 78 60 view .LVU13
+  95 0002 18BF     		it	ne
+  96 0004 0121     		movne	r1, #1
+  97              		.loc 1 78 36 view .LVU14
+  98 0006 41EA4001 		orr	r1, r1, r0, lsl #1
+  99              		.loc 1 78 14 view .LVU15
+ 100 000a 89B2     		uxth	r1, r1
+  79:Device/Dev_Dshot.c **** 
+  80:Device/Dev_Dshot.c ****     // compute checksum
+  81:Device/Dev_Dshot.c ****     int csum = 0;
+ 101              		.loc 1 81 5 is_stmt 1 view .LVU16
+ 102              	.LVL10:
+  82:Device/Dev_Dshot.c ****     int csum_data = packet;
+ 103              		.loc 1 82 5 view .LVU17
+  83:Device/Dev_Dshot.c ****     for (int i = 0; i < 3; i++)
+ 104              		.loc 1 83 5 view .LVU18
+ 105              	.LBB2:
+ 106              		.loc 1 83 10 view .LVU19
+ 107              		.loc 1 83 10 is_stmt 0 view .LVU20
+ 108              	.LBE2:
+  82:Device/Dev_Dshot.c ****     int csum_data = packet;
+ 109              		.loc 1 82 9 view .LVU21
+ 110 000c 0A46     		mov	r2, r1
+ 111              	.LBB3:
+ 112              		.loc 1 83 14 view .LVU22
+ 113 000e 0023     		movs	r3, #0
+ 114              	.LBE3:
+  81:Device/Dev_Dshot.c ****     int csum_data = packet;
+ 115              		.loc 1 81 9 view .LVU23
+ 116 0010 1846     		mov	r0, r3
+ 117              	.LVL11:
+ 118              	.LBB4:
+ 119              		.loc 1 83 5 view .LVU24
+ 120 0012 02E0     		b	.L10
+ 121              	.LVL12:
+ 122              	.L11:
+  84:Device/Dev_Dshot.c ****     {
+  85:Device/Dev_Dshot.c ****         csum ^= csum_data; // xor data by nibbles
+ 123              		.loc 1 85 9 is_stmt 1 discriminator 3 view .LVU25
+ 124              		.loc 1 85 14 is_stmt 0 discriminator 3 view .LVU26
+ 125 0014 5040     		eors	r0, r0, r2
+ 126              	.LVL13:
+  86:Device/Dev_Dshot.c ****         csum_data >>= 4;
+ 127              		.loc 1 86 9 is_stmt 1 discriminator 3 view .LVU27
+ 128              		.loc 1 86 19 is_stmt 0 discriminator 3 view .LVU28
+ 129 0016 1211     		asrs	r2, r2, #4
+ 130              	.LVL14:
+  83:Device/Dev_Dshot.c ****     {
+ 131              		.loc 1 83 28 is_stmt 1 discriminator 3 view .LVU29
+  83:Device/Dev_Dshot.c ****     {
+ 132              		.loc 1 83 29 is_stmt 0 discriminator 3 view .LVU30
+ 133 0018 0133     		adds	r3, r3, #1
+ 134              	.LVL15:
+ 135              	.L10:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 5
+
+
+  83:Device/Dev_Dshot.c ****     {
+ 136              		.loc 1 83 21 is_stmt 1 discriminator 1 view .LVU31
+  83:Device/Dev_Dshot.c ****     {
+ 137              		.loc 1 83 5 is_stmt 0 discriminator 1 view .LVU32
+ 138 001a 022B     		cmp	r3, #2
+ 139 001c FADD     		ble	.L11
+  83:Device/Dev_Dshot.c ****     {
+ 140              		.loc 1 83 5 discriminator 1 view .LVU33
+ 141              	.LBE4:
+  87:Device/Dev_Dshot.c ****     }
+  88:Device/Dev_Dshot.c **** 
+  89:Device/Dev_Dshot.c ****     csum &= 0xf;
+ 142              		.loc 1 89 5 is_stmt 1 view .LVU34
+ 143              		.loc 1 89 10 is_stmt 0 view .LVU35
+ 144 001e 00F00F00 		and	r0, r0, #15
+ 145              	.LVL16:
+  90:Device/Dev_Dshot.c ****     // append checksum
+  91:Device/Dev_Dshot.c ****     packet = (packet << 4) | csum;
+ 146              		.loc 1 91 5 is_stmt 1 view .LVU36
+ 147              		.loc 1 91 28 is_stmt 0 view .LVU37
+ 148 0022 40EA0110 		orr	r0, r0, r1, lsl #4
+ 149              	.LVL17:
+  92:Device/Dev_Dshot.c ****     return packet;
+ 150              		.loc 1 92 5 is_stmt 1 view .LVU38
+  93:Device/Dev_Dshot.c **** }
+ 151              		.loc 1 93 1 is_stmt 0 view .LVU39
+ 152 0026 80B2     		uxth	r0, r0
+ 153              		.loc 1 93 1 view .LVU40
+ 154 0028 7047     		bx	lr
+ 155              		.cfi_endproc
+ 156              	.LFE9:
+ 158              		.section	.text.DShot_Malloc,"ax",%progbits
+ 159              		.align	1
+ 160              		.weak	DShot_Malloc
+ 161              		.syntax unified
+ 162              		.thumb
+ 163              		.thumb_func
+ 165              	DShot_Malloc:
+ 166              	.LVL18:
+ 167              	.LFB0:
+   4:Device/Dev_Dshot.c **** __attribute__((weak)) void DShot_Free(void *ptr){return;}
+ 168              		.loc 1 4 56 is_stmt 1 view -0
+ 169              		.cfi_startproc
+ 170              		@ args = 0, pretend = 0, frame = 0
+ 171              		@ frame_needed = 0, uses_anonymous_args = 0
+ 172              		@ link register save eliminated.
+   4:Device/Dev_Dshot.c **** __attribute__((weak)) void DShot_Free(void *ptr){return;}
+ 173              		.loc 1 4 57 view .LVU42
+   4:Device/Dev_Dshot.c **** __attribute__((weak)) void DShot_Free(void *ptr){return;}
+ 174              		.loc 1 4 69 is_stmt 0 view .LVU43
+ 175 0000 0020     		movs	r0, #0
+ 176              	.LVL19:
+   4:Device/Dev_Dshot.c **** __attribute__((weak)) void DShot_Free(void *ptr){return;}
+ 177              		.loc 1 4 69 view .LVU44
+ 178 0002 7047     		bx	lr
+ 179              		.cfi_endproc
+ 180              	.LFE0:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 6
+
+
+ 182              		.section	.text.DShot_Free,"ax",%progbits
+ 183              		.align	1
+ 184              		.weak	DShot_Free
+ 185              		.syntax unified
+ 186              		.thumb
+ 187              		.thumb_func
+ 189              	DShot_Free:
+ 190              	.LVL20:
+ 191              	.LFB1:
+   5:Device/Dev_Dshot.c **** __attribute__((weak)) bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t 
+ 192              		.loc 1 5 49 is_stmt 1 view -0
+ 193              		.cfi_startproc
+ 194              		@ args = 0, pretend = 0, frame = 0
+ 195              		@ frame_needed = 0, uses_anonymous_args = 0
+ 196              		@ link register save eliminated.
+   5:Device/Dev_Dshot.c **** __attribute__((weak)) bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t 
+ 197              		.loc 1 5 50 view .LVU46
+   5:Device/Dev_Dshot.c **** __attribute__((weak)) bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t 
+ 198              		.loc 1 5 57 is_stmt 0 view .LVU47
+ 199 0000 7047     		bx	lr
+ 200              		.cfi_endproc
+ 201              	.LFE1:
+ 203              		.section	.text.DShot_Port_Init,"ax",%progbits
+ 204              		.align	1
+ 205              		.weak	DShot_Port_Init
+ 206              		.syntax unified
+ 207              		.thumb
+ 208              		.thumb_func
+ 210              	DShot_Port_Init:
+ 211              	.LVL21:
+ 212              	.LFB2:
+   6:Device/Dev_Dshot.c **** __attribute__((weak)) bool DShot_Port_DeInit(void *obj){return false;}
+ 213              		.loc 1 6 148 is_stmt 1 view -0
+ 214              		.cfi_startproc
+ 215              		@ args = 12, pretend = 0, frame = 0
+ 216              		@ frame_needed = 0, uses_anonymous_args = 0
+ 217              		@ link register save eliminated.
+   6:Device/Dev_Dshot.c **** __attribute__((weak)) bool DShot_Port_DeInit(void *obj){return false;}
+ 218              		.loc 1 6 149 view .LVU49
+   6:Device/Dev_Dshot.c **** __attribute__((weak)) bool DShot_Port_DeInit(void *obj){return false;}
+ 219              		.loc 1 6 162 is_stmt 0 view .LVU50
+ 220 0000 0020     		movs	r0, #0
+ 221              	.LVL22:
+   6:Device/Dev_Dshot.c **** __attribute__((weak)) bool DShot_Port_DeInit(void *obj){return false;}
+ 222              		.loc 1 6 162 view .LVU51
+ 223 0002 7047     		bx	lr
+ 224              		.cfi_endproc
+ 225              	.LFE2:
+ 227              		.section	.text.DShot_Port_DeInit,"ax",%progbits
+ 228              		.align	1
+ 229              		.weak	DShot_Port_DeInit
+ 230              		.syntax unified
+ 231              		.thumb
+ 232              		.thumb_func
+ 234              	DShot_Port_DeInit:
+ 235              	.LVL23:
+ 236              	.LFB3:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 7
+
+
+   7:Device/Dev_Dshot.c **** __attribute__((weak)) void DShot_Port_Trans(void *obj){return;}
+ 237              		.loc 1 7 56 is_stmt 1 view -0
+ 238              		.cfi_startproc
+ 239              		@ args = 0, pretend = 0, frame = 0
+ 240              		@ frame_needed = 0, uses_anonymous_args = 0
+ 241              		@ link register save eliminated.
+   7:Device/Dev_Dshot.c **** __attribute__((weak)) void DShot_Port_Trans(void *obj){return;}
+ 242              		.loc 1 7 57 view .LVU53
+   7:Device/Dev_Dshot.c **** __attribute__((weak)) void DShot_Port_Trans(void *obj){return;}
+ 243              		.loc 1 7 70 is_stmt 0 view .LVU54
+ 244 0000 0020     		movs	r0, #0
+ 245              	.LVL24:
+   7:Device/Dev_Dshot.c **** __attribute__((weak)) void DShot_Port_Trans(void *obj){return;}
+ 246              		.loc 1 7 70 view .LVU55
+ 247 0002 7047     		bx	lr
+ 248              		.cfi_endproc
+ 249              	.LFE3:
+ 251              		.section	.text.DevDshot_DeInit,"ax",%progbits
+ 252              		.align	1
+ 253              		.syntax unified
+ 254              		.thumb
+ 255              		.thumb_func
+ 257              	DevDshot_DeInit:
+ 258              	.LVL25:
+ 259              	.LFB7:
+  43:Device/Dev_Dshot.c ****     if (obj)
+ 260              		.loc 1 43 1 is_stmt 1 view -0
+ 261              		.cfi_startproc
+ 262              		@ args = 0, pretend = 0, frame = 0
+ 263              		@ frame_needed = 0, uses_anonymous_args = 0
+  44:Device/Dev_Dshot.c ****         return DShot_Port_DeInit(obj);
+ 264              		.loc 1 44 5 view .LVU57
+  44:Device/Dev_Dshot.c ****         return DShot_Port_DeInit(obj);
+ 265              		.loc 1 44 8 is_stmt 0 view .LVU58
+ 266 0000 08B9     		cbnz	r0, .L23
+  47:Device/Dev_Dshot.c **** }
+ 267              		.loc 1 47 12 view .LVU59
+ 268 0002 0020     		movs	r0, #0
+ 269              	.LVL26:
+  48:Device/Dev_Dshot.c **** 
+ 270              		.loc 1 48 1 view .LVU60
+ 271 0004 7047     		bx	lr
+ 272              	.LVL27:
+ 273              	.L23:
+  43:Device/Dev_Dshot.c ****     if (obj)
+ 274              		.loc 1 43 1 view .LVU61
+ 275 0006 08B5     		push	{r3, lr}
+ 276              	.LCFI0:
+ 277              		.cfi_def_cfa_offset 8
+ 278              		.cfi_offset 3, -8
+ 279              		.cfi_offset 14, -4
+  45:Device/Dev_Dshot.c **** 
+ 280              		.loc 1 45 9 is_stmt 1 view .LVU62
+  45:Device/Dev_Dshot.c **** 
+ 281              		.loc 1 45 16 is_stmt 0 view .LVU63
+ 282 0008 FFF7FEFF 		bl	DShot_Port_DeInit
+ 283              	.LVL28:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 8
+
+
+  48:Device/Dev_Dshot.c **** 
+ 284              		.loc 1 48 1 view .LVU64
+ 285 000c 08BD     		pop	{r3, pc}
+ 286              		.cfi_endproc
+ 287              	.LFE7:
+ 289              		.section	.text.DShot_Port_Trans,"ax",%progbits
+ 290              		.align	1
+ 291              		.weak	DShot_Port_Trans
+ 292              		.syntax unified
+ 293              		.thumb
+ 294              		.thumb_func
+ 296              	DShot_Port_Trans:
+ 297              	.LVL29:
+ 298              	.LFB4:
+   8:Device/Dev_Dshot.c **** __attribute__((weak)) uint32_t DShot_Get_Timer_CLKFreq(void *obj){return 0;}
+ 299              		.loc 1 8 55 is_stmt 1 view -0
+ 300              		.cfi_startproc
+ 301              		@ args = 0, pretend = 0, frame = 0
+ 302              		@ frame_needed = 0, uses_anonymous_args = 0
+ 303              		@ link register save eliminated.
+   8:Device/Dev_Dshot.c **** __attribute__((weak)) uint32_t DShot_Get_Timer_CLKFreq(void *obj){return 0;}
+ 304              		.loc 1 8 56 view .LVU66
+   8:Device/Dev_Dshot.c **** __attribute__((weak)) uint32_t DShot_Get_Timer_CLKFreq(void *obj){return 0;}
+ 305              		.loc 1 8 63 is_stmt 0 view .LVU67
+ 306 0000 7047     		bx	lr
+ 307              		.cfi_endproc
+ 308              	.LFE4:
+ 310              		.section	.text.DevDshot_Control,"ax",%progbits
+ 311              		.align	1
+ 312              		.syntax unified
+ 313              		.thumb
+ 314              		.thumb_func
+ 316              	DevDshot_Control:
+ 317              	.LVL30:
+ 318              	.LFB10:
+  94:Device/Dev_Dshot.c **** 
+  95:Device/Dev_Dshot.c **** static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value)
+  96:Device/Dev_Dshot.c **** {
+ 319              		.loc 1 96 1 is_stmt 1 view -0
+ 320              		.cfi_startproc
+ 321              		@ args = 0, pretend = 0, frame = 0
+ 322              		@ frame_needed = 0, uses_anonymous_args = 0
+  97:Device/Dev_Dshot.c ****     uint16_t packet;
+ 323              		.loc 1 97 5 view .LVU69
+  98:Device/Dev_Dshot.c ****     bool dshot_telemetry = false;
+ 324              		.loc 1 98 5 view .LVU70
+  99:Device/Dev_Dshot.c **** 
+ 100:Device/Dev_Dshot.c ****     if (!obj)
+ 325              		.loc 1 100 5 view .LVU71
+ 326              		.loc 1 100 8 is_stmt 0 view .LVU72
+ 327 0000 38B3     		cbz	r0, .L35
+  96:Device/Dev_Dshot.c ****     uint16_t packet;
+ 328              		.loc 1 96 1 view .LVU73
+ 329 0002 10B5     		push	{r4, lr}
+ 330              	.LCFI1:
+ 331              		.cfi_def_cfa_offset 8
+ 332              		.cfi_offset 4, -8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 9
+
+
+ 333              		.cfi_offset 14, -4
+ 334 0004 0B46     		mov	r3, r1
+ 335 0006 0446     		mov	r4, r0
+ 101:Device/Dev_Dshot.c ****         return;
+ 102:Device/Dev_Dshot.c **** 
+ 103:Device/Dev_Dshot.c ****     if (value > DSHOT_MAX_THROTTLE)
+ 336              		.loc 1 103 5 is_stmt 1 view .LVU74
+ 337              		.loc 1 103 8 is_stmt 0 view .LVU75
+ 338 0008 40F26C72 		movw	r2, #1900
+ 339 000c 9142     		cmp	r1, r2
+ 340 000e 03D8     		bhi	.L31
+ 104:Device/Dev_Dshot.c ****         value = DSHOT_MAX_THROTTLE;
+ 105:Device/Dev_Dshot.c **** 
+ 106:Device/Dev_Dshot.c ****     if (value < DSHOT_MIN_THROTTLE)
+ 341              		.loc 1 106 5 is_stmt 1 view .LVU76
+ 342              		.loc 1 106 8 is_stmt 0 view .LVU77
+ 343 0010 2F29     		cmp	r1, #47
+ 344 0012 03D8     		bhi	.L27
+ 107:Device/Dev_Dshot.c ****         value = DSHOT_LOCK_THROTTLE;
+ 345              		.loc 1 107 15 view .LVU78
+ 346 0014 0023     		movs	r3, #0
+ 347 0016 01E0     		b	.L27
+ 348              	.L31:
+ 104:Device/Dev_Dshot.c ****         value = DSHOT_MAX_THROTTLE;
+ 349              		.loc 1 104 15 view .LVU79
+ 350 0018 40F26C73 		movw	r3, #1900
+ 351              	.L27:
+ 352              	.LVL31:
+ 108:Device/Dev_Dshot.c **** 
+ 109:Device/Dev_Dshot.c ****     packet = DevDshot_Prepare_Packet(value, dshot_telemetry);
+ 353              		.loc 1 109 5 is_stmt 1 view .LVU80
+ 354              		.loc 1 109 14 is_stmt 0 view .LVU81
+ 355 001c 0021     		movs	r1, #0
+ 356 001e 1846     		mov	r0, r3
+ 357              	.LVL32:
+ 358              		.loc 1 109 14 view .LVU82
+ 359 0020 FFF7FEFF 		bl	DevDshot_Prepare_Packet
+ 360              	.LVL33:
+ 110:Device/Dev_Dshot.c **** 
+ 111:Device/Dev_Dshot.c ****     for (int i = 0; i < 16; i++)
+ 361              		.loc 1 111 5 is_stmt 1 view .LVU83
+ 362              	.LBB5:
+ 363              		.loc 1 111 10 view .LVU84
+ 364              		.loc 1 111 14 is_stmt 0 view .LVU85
+ 365 0024 0023     		movs	r3, #0
+ 366              		.loc 1 111 5 view .LVU86
+ 367 0026 06E0     		b	.L28
+ 368              	.LVL34:
+ 369              	.L39:
+ 112:Device/Dev_Dshot.c ****     {
+ 113:Device/Dev_Dshot.c ****         obj->ctl_buf[i] = (packet & 0x8000) ? MOTOR_BIT_1 : MOTOR_BIT_0;
+ 370              		.loc 1 113 59 view .LVU87
+ 371 0028 0E21     		movs	r1, #14
+ 372              	.L29:
+ 373              		.loc 1 113 25 discriminator 4 view .LVU88
+ 374 002a 9A1C     		adds	r2, r3, #2
+ 375 002c 44F82210 		str	r1, [r4, r2, lsl #2]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 10
+
+
+ 114:Device/Dev_Dshot.c ****         packet <<= 1;
+ 376              		.loc 1 114 9 is_stmt 1 discriminator 4 view .LVU89
+ 377              		.loc 1 114 16 is_stmt 0 discriminator 4 view .LVU90
+ 378 0030 4000     		lsls	r0, r0, #1
+ 379              	.LVL35:
+ 380              		.loc 1 114 16 discriminator 4 view .LVU91
+ 381 0032 80B2     		uxth	r0, r0
+ 382              	.LVL36:
+ 111:Device/Dev_Dshot.c ****     {
+ 383              		.loc 1 111 29 is_stmt 1 discriminator 4 view .LVU92
+ 111:Device/Dev_Dshot.c ****     {
+ 384              		.loc 1 111 30 is_stmt 0 discriminator 4 view .LVU93
+ 385 0034 0133     		adds	r3, r3, #1
+ 386              	.LVL37:
+ 387              	.L28:
+ 111:Device/Dev_Dshot.c ****     {
+ 388              		.loc 1 111 21 is_stmt 1 discriminator 2 view .LVU94
+ 111:Device/Dev_Dshot.c ****     {
+ 389              		.loc 1 111 5 is_stmt 0 discriminator 2 view .LVU95
+ 390 0036 0F2B     		cmp	r3, #15
+ 391 0038 04DC     		bgt	.L38
+ 113:Device/Dev_Dshot.c ****         packet <<= 1;
+ 392              		.loc 1 113 9 is_stmt 1 view .LVU96
+ 113:Device/Dev_Dshot.c ****         packet <<= 1;
+ 393              		.loc 1 113 59 is_stmt 0 view .LVU97
+ 394 003a 10F4004F 		tst	r0, #32768
+ 395 003e F3D1     		bne	.L39
+ 396 0040 0721     		movs	r1, #7
+ 397 0042 F2E7     		b	.L29
+ 398              	.L38:
+ 399              	.LBE5:
+ 115:Device/Dev_Dshot.c ****     }
+ 116:Device/Dev_Dshot.c **** 
+ 117:Device/Dev_Dshot.c ****     obj->ctl_buf[16] = 0;
+ 400              		.loc 1 117 5 is_stmt 1 view .LVU98
+ 401              		.loc 1 117 22 is_stmt 0 view .LVU99
+ 402 0044 0023     		movs	r3, #0
+ 403              	.LVL38:
+ 404              		.loc 1 117 22 view .LVU100
+ 405 0046 A364     		str	r3, [r4, #72]
+ 118:Device/Dev_Dshot.c ****     obj->ctl_buf[17] = 0;
+ 406              		.loc 1 118 5 is_stmt 1 view .LVU101
+ 407              		.loc 1 118 22 is_stmt 0 view .LVU102
+ 408 0048 E364     		str	r3, [r4, #76]
+ 119:Device/Dev_Dshot.c **** 
+ 120:Device/Dev_Dshot.c ****     DShot_Port_Trans(obj);
+ 409              		.loc 1 120 5 is_stmt 1 view .LVU103
+ 410 004a 2046     		mov	r0, r4
+ 411              	.LVL39:
+ 412              		.loc 1 120 5 is_stmt 0 view .LVU104
+ 413 004c FFF7FEFF 		bl	DShot_Port_Trans
+ 414              	.LVL40:
+ 121:Device/Dev_Dshot.c **** }
+ 415              		.loc 1 121 1 view .LVU105
+ 416 0050 10BD     		pop	{r4, pc}
+ 417              	.LVL41:
+ 418              	.L35:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 11
+
+
+ 419              	.LCFI2:
+ 420              		.cfi_def_cfa_offset 0
+ 421              		.cfi_restore 4
+ 422              		.cfi_restore 14
+ 423              		.loc 1 121 1 view .LVU106
+ 424 0052 7047     		bx	lr
+ 425              		.cfi_endproc
+ 426              	.LFE10:
+ 428              		.section	.text.DevDshot_Command,"ax",%progbits
+ 429              		.align	1
+ 430              		.syntax unified
+ 431              		.thumb
+ 432              		.thumb_func
+ 434              	DevDshot_Command:
+ 435              	.LVL42:
+ 436              	.LFB11:
+ 122:Device/Dev_Dshot.c **** 
+ 123:Device/Dev_Dshot.c **** static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint16_t cmd)
+ 124:Device/Dev_Dshot.c **** {
+ 437              		.loc 1 124 1 is_stmt 1 view -0
+ 438              		.cfi_startproc
+ 439              		@ args = 0, pretend = 0, frame = 0
+ 440              		@ frame_needed = 0, uses_anonymous_args = 0
+ 125:Device/Dev_Dshot.c ****     uint16_t packet;
+ 441              		.loc 1 125 5 view .LVU108
+ 126:Device/Dev_Dshot.c ****     bool dshot_telemetry = true;
+ 442              		.loc 1 126 5 view .LVU109
+ 127:Device/Dev_Dshot.c **** 
+ 128:Device/Dev_Dshot.c ****     if (!obj || cmd >= DSHOT_MIN_THROTTLE)
+ 443              		.loc 1 128 5 view .LVU110
+ 444              		.loc 1 128 8 is_stmt 0 view .LVU111
+ 445 0000 F8B1     		cbz	r0, .L47
+ 124:Device/Dev_Dshot.c ****     uint16_t packet;
+ 446              		.loc 1 124 1 discriminator 1 view .LVU112
+ 447 0002 10B5     		push	{r4, lr}
+ 448              	.LCFI3:
+ 449              		.cfi_def_cfa_offset 8
+ 450              		.cfi_offset 4, -8
+ 451              		.cfi_offset 14, -4
+ 452 0004 0B46     		mov	r3, r1
+ 453 0006 0446     		mov	r4, r0
+ 454              		.loc 1 128 14 discriminator 1 view .LVU113
+ 455 0008 2F29     		cmp	r1, #47
+ 456 000a 19D8     		bhi	.L40
+ 129:Device/Dev_Dshot.c ****         return;
+ 130:Device/Dev_Dshot.c **** 
+ 131:Device/Dev_Dshot.c ****     packet = DevDshot_Prepare_Packet(cmd, dshot_telemetry);
+ 457              		.loc 1 131 5 is_stmt 1 view .LVU114
+ 458              		.loc 1 131 14 is_stmt 0 view .LVU115
+ 459 000c 0121     		movs	r1, #1
+ 460              	.LVL43:
+ 461              		.loc 1 131 14 view .LVU116
+ 462 000e 1846     		mov	r0, r3
+ 463              	.LVL44:
+ 464              		.loc 1 131 14 view .LVU117
+ 465 0010 FFF7FEFF 		bl	DevDshot_Prepare_Packet
+ 466              	.LVL45:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 12
+
+
+ 132:Device/Dev_Dshot.c **** 
+ 133:Device/Dev_Dshot.c ****     for (int i = 0; i < 16; i++)
+ 467              		.loc 1 133 5 is_stmt 1 view .LVU118
+ 468              	.LBB6:
+ 469              		.loc 1 133 10 view .LVU119
+ 470              		.loc 1 133 14 is_stmt 0 view .LVU120
+ 471 0014 0023     		movs	r3, #0
+ 472              		.loc 1 133 5 view .LVU121
+ 473 0016 06E0     		b	.L42
+ 474              	.LVL46:
+ 475              	.L51:
+ 134:Device/Dev_Dshot.c ****     {
+ 135:Device/Dev_Dshot.c ****         obj->ctl_buf[i] = (packet & 0x8000) ? MOTOR_BIT_1 : MOTOR_BIT_0;
+ 476              		.loc 1 135 59 view .LVU122
+ 477 0018 0E21     		movs	r1, #14
+ 478              	.L43:
+ 479              		.loc 1 135 25 discriminator 4 view .LVU123
+ 480 001a 9A1C     		adds	r2, r3, #2
+ 481 001c 44F82210 		str	r1, [r4, r2, lsl #2]
+ 136:Device/Dev_Dshot.c ****         packet <<= 1;
+ 482              		.loc 1 136 9 is_stmt 1 discriminator 4 view .LVU124
+ 483              		.loc 1 136 16 is_stmt 0 discriminator 4 view .LVU125
+ 484 0020 4000     		lsls	r0, r0, #1
+ 485              	.LVL47:
+ 486              		.loc 1 136 16 discriminator 4 view .LVU126
+ 487 0022 80B2     		uxth	r0, r0
+ 488              	.LVL48:
+ 133:Device/Dev_Dshot.c ****     {
+ 489              		.loc 1 133 29 is_stmt 1 discriminator 4 view .LVU127
+ 133:Device/Dev_Dshot.c ****     {
+ 490              		.loc 1 133 30 is_stmt 0 discriminator 4 view .LVU128
+ 491 0024 0133     		adds	r3, r3, #1
+ 492              	.LVL49:
+ 493              	.L42:
+ 133:Device/Dev_Dshot.c ****     {
+ 494              		.loc 1 133 21 is_stmt 1 discriminator 2 view .LVU129
+ 133:Device/Dev_Dshot.c ****     {
+ 495              		.loc 1 133 5 is_stmt 0 discriminator 2 view .LVU130
+ 496 0026 0F2B     		cmp	r3, #15
+ 497 0028 04DC     		bgt	.L50
+ 135:Device/Dev_Dshot.c ****         packet <<= 1;
+ 498              		.loc 1 135 9 is_stmt 1 view .LVU131
+ 135:Device/Dev_Dshot.c ****         packet <<= 1;
+ 499              		.loc 1 135 59 is_stmt 0 view .LVU132
+ 500 002a 10F4004F 		tst	r0, #32768
+ 501 002e F3D1     		bne	.L51
+ 502 0030 0721     		movs	r1, #7
+ 503 0032 F2E7     		b	.L43
+ 504              	.L50:
+ 505              	.LBE6:
+ 137:Device/Dev_Dshot.c ****     }
+ 138:Device/Dev_Dshot.c **** 
+ 139:Device/Dev_Dshot.c ****     obj->ctl_buf[16] = 0;
+ 506              		.loc 1 139 5 is_stmt 1 view .LVU133
+ 507              		.loc 1 139 22 is_stmt 0 view .LVU134
+ 508 0034 0023     		movs	r3, #0
+ 509              	.LVL50:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 13
+
+
+ 510              		.loc 1 139 22 view .LVU135
+ 511 0036 A364     		str	r3, [r4, #72]
+ 140:Device/Dev_Dshot.c ****     obj->ctl_buf[17] = 0;
+ 512              		.loc 1 140 5 is_stmt 1 view .LVU136
+ 513              		.loc 1 140 22 is_stmt 0 view .LVU137
+ 514 0038 E364     		str	r3, [r4, #76]
+ 141:Device/Dev_Dshot.c **** 
+ 142:Device/Dev_Dshot.c ****     DShot_Port_Trans(obj);
+ 515              		.loc 1 142 5 is_stmt 1 view .LVU138
+ 516 003a 2046     		mov	r0, r4
+ 517              	.LVL51:
+ 518              		.loc 1 142 5 is_stmt 0 view .LVU139
+ 519 003c FFF7FEFF 		bl	DShot_Port_Trans
+ 520              	.LVL52:
+ 521              	.L40:
+ 143:Device/Dev_Dshot.c **** }
+ 522              		.loc 1 143 1 view .LVU140
+ 523 0040 10BD     		pop	{r4, pc}
+ 524              	.LVL53:
+ 525              	.L47:
+ 526              	.LCFI4:
+ 527              		.cfi_def_cfa_offset 0
+ 528              		.cfi_restore 4
+ 529              		.cfi_restore 14
+ 530              		.loc 1 143 1 view .LVU141
+ 531 0042 7047     		bx	lr
+ 532              		.cfi_endproc
+ 533              	.LFE11:
+ 535              		.section	.text.DShot_Get_Timer_CLKFreq,"ax",%progbits
+ 536              		.align	1
+ 537              		.weak	DShot_Get_Timer_CLKFreq
+ 538              		.syntax unified
+ 539              		.thumb
+ 540              		.thumb_func
+ 542              	DShot_Get_Timer_CLKFreq:
+ 543              	.LVL54:
+ 544              	.LFB5:
+   9:Device/Dev_Dshot.c **** 
+ 545              		.loc 1 9 66 is_stmt 1 view -0
+ 546              		.cfi_startproc
+ 547              		@ args = 0, pretend = 0, frame = 0
+ 548              		@ frame_needed = 0, uses_anonymous_args = 0
+ 549              		@ link register save eliminated.
+   9:Device/Dev_Dshot.c **** 
+ 550              		.loc 1 9 67 view .LVU143
+   9:Device/Dev_Dshot.c **** 
+ 551              		.loc 1 9 76 is_stmt 0 view .LVU144
+ 552 0000 0020     		movs	r0, #0
+ 553              	.LVL55:
+   9:Device/Dev_Dshot.c **** 
+ 554              		.loc 1 9 76 view .LVU145
+ 555 0002 7047     		bx	lr
+ 556              		.cfi_endproc
+ 557              	.LFE5:
+ 559              		.section	.text.DevDshot_Init,"ax",%progbits
+ 560              		.align	1
+ 561              		.syntax unified
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 14
+
+
+ 562              		.thumb
+ 563              		.thumb_func
+ 565              	DevDshot_Init:
+ 566              	.LVL56:
+ 567              	.LFB8:
+  56:Device/Dev_Dshot.c ****     float DShot_Timer_ClkFreq = (float)DShot_Get_Timer_CLKFreq(obj) - 1;
+ 568              		.loc 1 56 1 is_stmt 1 view -0
+ 569              		.cfi_startproc
+ 570              		@ args = 8, pretend = 0, frame = 0
+ 571              		@ frame_needed = 0, uses_anonymous_args = 0
+  56:Device/Dev_Dshot.c ****     float DShot_Timer_ClkFreq = (float)DShot_Get_Timer_CLKFreq(obj) - 1;
+ 572              		.loc 1 56 1 is_stmt 0 view .LVU147
+ 573 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 574              	.LCFI5:
+ 575              		.cfi_def_cfa_offset 20
+ 576              		.cfi_offset 4, -20
+ 577              		.cfi_offset 5, -16
+ 578              		.cfi_offset 6, -12
+ 579              		.cfi_offset 7, -8
+ 580              		.cfi_offset 14, -4
+ 581 0002 2DED028B 		vpush.64	{d8}
+ 582              	.LCFI6:
+ 583              		.cfi_def_cfa_offset 28
+ 584              		.cfi_offset 80, -28
+ 585              		.cfi_offset 81, -24
+ 586 0006 85B0     		sub	sp, sp, #20
+ 587              	.LCFI7:
+ 588              		.cfi_def_cfa_offset 48
+ 589 0008 0446     		mov	r4, r0
+ 590 000a 0D46     		mov	r5, r1
+ 591 000c 1646     		mov	r6, r2
+ 592 000e 1F46     		mov	r7, r3
+  57:Device/Dev_Dshot.c ****     uint32_t prescaler = 0;
+ 593              		.loc 1 57 5 is_stmt 1 view .LVU148
+  57:Device/Dev_Dshot.c ****     uint32_t prescaler = 0;
+ 594              		.loc 1 57 40 is_stmt 0 view .LVU149
+ 595 0010 FFF7FEFF 		bl	DShot_Get_Timer_CLKFreq
+ 596              	.LVL57:
+  57:Device/Dev_Dshot.c ****     uint32_t prescaler = 0;
+ 597              		.loc 1 57 40 view .LVU150
+ 598 0014 08EE100A 		vmov	s16, r0	@ int
+  57:Device/Dev_Dshot.c ****     uint32_t prescaler = 0;
+ 599              		.loc 1 57 33 view .LVU151
+ 600 0018 B8EE488A 		vcvt.f32.u32	s16, s16
+  57:Device/Dev_Dshot.c ****     uint32_t prescaler = 0;
+ 601              		.loc 1 57 11 view .LVU152
+ 602 001c F7EE007A 		vmov.f32	s15, #1.0e+0
+ 603 0020 38EE678A 		vsub.f32	s16, s16, s15
+ 604              	.LVL58:
+  58:Device/Dev_Dshot.c **** 
+ 605              		.loc 1 58 5 is_stmt 1 view .LVU153
+  60:Device/Dev_Dshot.c ****         return false;
+ 606              		.loc 1 60 5 view .LVU154
+  60:Device/Dev_Dshot.c ****         return false;
+ 607              		.loc 1 60 8 is_stmt 0 view .LVU155
+ 608 0024 74B3     		cbz	r4, .L56
+  60:Device/Dev_Dshot.c ****         return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 15
+
+
+ 609              		.loc 1 60 14 discriminator 1 view .LVU156
+ 610 0026 B5EE408A 		vcmp.f32	s16, #0
+ 611 002a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 612 002e 04D1     		bne	.L59
+  61:Device/Dev_Dshot.c **** 
+ 613              		.loc 1 61 16 view .LVU157
+ 614 0030 0020     		movs	r0, #0
+ 615              	.LVL59:
+ 616              	.L54:
+  74:Device/Dev_Dshot.c **** 
+ 617              		.loc 1 74 1 view .LVU158
+ 618 0032 05B0     		add	sp, sp, #20
+ 619              	.LCFI8:
+ 620              		.cfi_remember_state
+ 621              		.cfi_def_cfa_offset 28
+ 622              		@ sp needed
+ 623 0034 BDEC028B 		vldm	sp!, {d8}
+ 624              	.LCFI9:
+ 625              		.cfi_restore 80
+ 626              		.cfi_restore 81
+ 627              		.cfi_def_cfa_offset 20
+ 628              	.LVL60:
+  74:Device/Dev_Dshot.c **** 
+ 629              		.loc 1 74 1 view .LVU159
+ 630 0038 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 631              	.LVL61:
+ 632              	.L59:
+ 633              	.LCFI10:
+ 634              		.cfi_restore_state
+  63:Device/Dev_Dshot.c **** 
+ 635              		.loc 1 63 5 is_stmt 1 view .LVU160
+  63:Device/Dev_Dshot.c **** 
+ 636              		.loc 1 63 47 is_stmt 0 view .LVU161
+ 637 003a 2078     		ldrb	r0, [r4]	@ zero_extendqisi2
+ 638 003c FFF7FEFF 		bl	DevDshot_GetType_Clock
+ 639              	.LVL62:
+  63:Device/Dev_Dshot.c **** 
+ 640              		.loc 1 63 81 view .LVU162
+ 641 0040 0138     		subs	r0, r0, #1
+  63:Device/Dev_Dshot.c **** 
+ 642              		.loc 1 63 44 view .LVU163
+ 643 0042 07EE900A 		vmov	s15, r0	@ int
+ 644 0046 F8EE677A 		vcvt.f32.u32	s15, s15
+ 645 004a 88EE270A 		vdiv.f32	s0, s16, s15
+  63:Device/Dev_Dshot.c **** 
+ 646              		.loc 1 63 17 view .LVU164
+ 647 004e DFED0E7A 		vldr.32	s15, .L60
+ 648 0052 30EE270A 		vadd.f32	s0, s0, s15
+ 649 0056 FFF7FEFF 		bl	lrintf
+ 650              	.LVL63:
+  63:Device/Dev_Dshot.c **** 
+ 651              		.loc 1 63 95 view .LVU165
+ 652 005a 411E     		subs	r1, r0, #1
+ 653              	.LVL64:
+  65:Device/Dev_Dshot.c ****     {
+ 654              		.loc 1 65 5 is_stmt 1 view .LVU166
+  65:Device/Dev_Dshot.c ****     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 16
+
+
+ 655              		.loc 1 65 13 is_stmt 0 view .LVU167
+ 656 005c 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+  65:Device/Dev_Dshot.c ****     {
+ 657              		.loc 1 65 36 view .LVU168
+ 658 005e 013B     		subs	r3, r3, #1
+ 659 0060 DBB2     		uxtb	r3, r3
+  65:Device/Dev_Dshot.c ****     {
+ 660              		.loc 1 65 8 view .LVU169
+ 661 0062 022B     		cmp	r3, #2
+ 662 0064 01D9     		bls	.L55
+  67:Device/Dev_Dshot.c ****     }
+ 663              		.loc 1 67 9 is_stmt 1 view .LVU170
+  67:Device/Dev_Dshot.c ****     }
+ 664              		.loc 1 67 19 is_stmt 0 view .LVU171
+ 665 0066 0223     		movs	r3, #2
+ 666 0068 2370     		strb	r3, [r4]
+ 667              	.L55:
+  70:Device/Dev_Dshot.c ****         return false;
+ 668              		.loc 1 70 5 is_stmt 1 view .LVU172
+  70:Device/Dev_Dshot.c ****         return false;
+ 669              		.loc 1 70 10 is_stmt 0 view .LVU173
+ 670 006a 9DF83430 		ldrb	r3, [sp, #52]	@ zero_extendqisi2
+ 671 006e 0293     		str	r3, [sp, #8]
+ 672 0070 9DF83030 		ldrb	r3, [sp, #48]	@ zero_extendqisi2
+ 673 0074 0193     		str	r3, [sp, #4]
+ 674 0076 0097     		str	r7, [sp]
+ 675 0078 3346     		mov	r3, r6
+ 676 007a 2A46     		mov	r2, r5
+ 677 007c 2046     		mov	r0, r4
+ 678 007e FFF7FEFF 		bl	DShot_Port_Init
+ 679              	.LVL65:
+  70:Device/Dev_Dshot.c ****         return false;
+ 680              		.loc 1 70 10 view .LVU174
+ 681 0082 D6E7     		b	.L54
+ 682              	.LVL66:
+ 683              	.L56:
+  61:Device/Dev_Dshot.c **** 
+ 684              		.loc 1 61 16 view .LVU175
+ 685 0084 0020     		movs	r0, #0
+ 686 0086 D4E7     		b	.L54
+ 687              	.L61:
+ 688              		.align	2
+ 689              	.L60:
+ 690 0088 0AD7233C 		.word	1008981770
+ 691              		.cfi_endproc
+ 692              	.LFE8:
+ 694              		.global	DevDshot
+ 695              		.section	.data.DevDshot,"aw"
+ 696              		.align	2
+ 699              	DevDshot:
+ 700 0000 00000000 		.word	DevDshot_Init
+ 701 0004 00000000 		.word	DevDshot_DeInit
+ 702 0008 00000000 		.word	DevDshot_Command
+ 703 000c 00000000 		.word	DevDshot_Control
+ 704              		.text
+ 705              	.Letext0:
+ 706              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 17
+
+
+ 707              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 708              		.file 4 "Device/Dev_Dshot.h"
+ 709              		.file 5 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s 			page 18
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Dev_Dshot.c
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:20     .text.DevDshot_GetType_Clock:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:25     .text.DevDshot_GetType_Clock:00000000 DevDshot_GetType_Clock
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:70     .text.DevDshot_GetType_Clock:0000001c $d
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:77     .text.DevDshot_Prepare_Packet:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:82     .text.DevDshot_Prepare_Packet:00000000 DevDshot_Prepare_Packet
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:159    .text.DShot_Malloc:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:165    .text.DShot_Malloc:00000000 DShot_Malloc
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:183    .text.DShot_Free:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:189    .text.DShot_Free:00000000 DShot_Free
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:204    .text.DShot_Port_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:210    .text.DShot_Port_Init:00000000 DShot_Port_Init
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:228    .text.DShot_Port_DeInit:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:234    .text.DShot_Port_DeInit:00000000 DShot_Port_DeInit
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:252    .text.DevDshot_DeInit:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:257    .text.DevDshot_DeInit:00000000 DevDshot_DeInit
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:290    .text.DShot_Port_Trans:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:296    .text.DShot_Port_Trans:00000000 DShot_Port_Trans
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:311    .text.DevDshot_Control:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:316    .text.DevDshot_Control:00000000 DevDshot_Control
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:429    .text.DevDshot_Command:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:434    .text.DevDshot_Command:00000000 DevDshot_Command
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:536    .text.DShot_Get_Timer_CLKFreq:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:542    .text.DShot_Get_Timer_CLKFreq:00000000 DShot_Get_Timer_CLKFreq
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:560    .text.DevDshot_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:565    .text.DevDshot_Init:00000000 DevDshot_Init
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:690    .text.DevDshot_Init:00000088 $d
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:699    .data.DevDshot:00000000 DevDshot
+C:\Users\8bit\AppData\Local\Temp\ccNK9eXw.s:696    .data.DevDshot:00000000 $d
+
+UNDEFINED SYMBOLS
+lrintf

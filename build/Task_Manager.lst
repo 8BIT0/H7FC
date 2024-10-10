@@ -1,0 +1,934 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Task_Manager.cpp"
+  16              		.section	.rodata.str1.4,"aMS",%progbits,1
+  17              		.align	2
+  18              	.LC0:
+  19 0000 4D616E61 		.ascii	"ManagerTask\000"
+  19      67657254 
+  19      61736B00 
+  20              		.align	2
+  21              	.LC2:
+  22 000c 53616D70 		.ascii	"SampleTask\000"
+  22      6C655461 
+  22      736B00
+  23 0017 00       		.align	2
+  24              	.LC4:
+  25 0018 54656C65 		.ascii	"TelemtryTask\000"
+  25      6D747279 
+  25      5461736B 
+  25      00
+  26 0025 000000   		.align	2
+  27              	.LC6:
+  28 0028 436F6E74 		.ascii	"ControlTask\000"
+  28      726F6C54 
+  28      61736B00 
+  29              		.align	2
+  30              	.LC8:
+  31 0034 4E617654 		.ascii	"NavTask\000"
+  31      61736B00 
+  32              		.align	2
+  33              	.LC10:
+  34 003c 426C6163 		.ascii	"BlackBoxTask\000"
+  34      6B426F78 
+  34      5461736B 
+  34      00
+  35 0049 000000   		.align	2
+  36              	.LC12:
+  37 004c 4672616D 		.ascii	"FrameCTLTask\000"
+  37      6543544C 
+  37      5461736B 
+  37      00
+  38              		.text
+  39              	.Ltext0:
+  40              		.cfi_sections	.debug_frame
+  41              		.section	.rodata.Task_Manager_CreateTask.str1.4,"aMS",%progbits,1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 2
+
+
+  42              		.align	2
+  43              	.LC14:
+  44 0000 48617264 		.ascii	"Hardware CCRC_AT32\000"
+  44      77617265 
+  44      20434352 
+  44      435F4154 
+  44      333200
+  45 0013 00       		.align	2
+  46              	.LC15:
+  47 0014 25730D0A 		.ascii	"%s\015\012\000"
+  47      00
+  48 0019 000000   		.align	2
+  49              	.LC16:
+  50 001c 5B204841 		.ascii	"[ HARDWARE INFO ] \000"
+  50      52445741 
+  50      52452049 
+  50      4E464F20 
+  50      5D2000
+  51 002f 00       		.align	2
+  52              	.LC17:
+  53 0030 53797320 		.ascii	"Sys Start\015\012\000"
+  53      53746172 
+  53      740D0A00 
+  54              		.align	2
+  55              	.LC18:
+  56 003c 5B204445 		.ascii	"[ DEBUG INFO ] \000"
+  56      42554720 
+  56      494E464F 
+  56      205D2000 
+  57              		.align	2
+  58              	.LC19:
+  59 004c 53797320 		.ascii	"Sys Time: %d\015\012\000"
+  59      54696D65 
+  59      3A202564 
+  59      0D0A00
+  60              		.section	.text.Task_Manager_CreateTask,"ax",%progbits
+  61              		.align	1
+  62              		.global	Task_Manager_CreateTask
+  63              		.syntax unified
+  64              		.thumb
+  65              		.thumb_func
+  67              	Task_Manager_CreateTask:
+  68              		.fnstart
+  69              	.LVL0:
+  70              	.LFB2300:
+  71              		.file 1 "Task/Task_Manager.cpp"
+   1:Task/Task_Manager.cpp **** #include "Task_Manager.h"
+   2:Task/Task_Manager.cpp **** #include "Task_Log.h"
+   3:Task/Task_Manager.cpp **** #include "Task_Control.h"
+   4:Task/Task_Manager.cpp **** #include "Task_Sample.h"
+   5:Task/Task_Manager.cpp **** #include "Task_Telemetry.h"
+   6:Task/Task_Manager.cpp **** #include "Task_Navi.h"
+   7:Task/Task_Manager.cpp **** #include "Task_Protocol.h"
+   8:Task/Task_Manager.cpp **** #include "Task_BlackBox.h"
+   9:Task/Task_Manager.cpp **** #include "debug_util.h"
+  10:Task/Task_Manager.cpp **** #include "HW_Def.h"
+  11:Task/Task_Manager.cpp **** #include "Dev_Led.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 3
+
+
+  12:Task/Task_Manager.cpp **** #include "DiskIO.h"
+  13:Task/Task_Manager.cpp **** #include "Srv_ComProto.h"
+  14:Task/Task_Manager.cpp **** #include "Srv_OsCommon.h"
+  15:Task/Task_Manager.cpp **** #include "../DataPipe/DataPipe.h"
+  16:Task/Task_Manager.cpp **** #include "shell_port.h"
+  17:Task/Task_Manager.cpp **** #include "Storage.h"
+  18:Task/Task_Manager.cpp **** #include "cmsis_os.h"
+  19:Task/Task_Manager.cpp **** 
+  20:Task/Task_Manager.cpp **** #define TaskSample_Period_Def    1  /* unit: ms period 1ms  1000Hz */
+  21:Task/Task_Manager.cpp **** #define TaskControl_Period_Def   5  /* unit: ms period 5ms  200Hz  */
+  22:Task/Task_Manager.cpp **** #define TaskTelemetry_Period_def 2  /* unit: ms period 2ms  500Hz  */
+  23:Task/Task_Manager.cpp **** #define TaslLog_Period_Def       5  /* unit: ms period 5ms  200Hz  */
+  24:Task/Task_Manager.cpp **** #define TaslNavi_Period_Def      10 /* unit: ms period 10ms 100Hz  */
+  25:Task/Task_Manager.cpp **** #define TaskFrameCTL_Period_Def  5  /* unit: ms period 5ms  200Hz  */
+  26:Task/Task_Manager.cpp **** 
+  27:Task/Task_Manager.cpp **** osThreadId TaskInertial_Handle = NULL;
+  28:Task/Task_Manager.cpp **** osThreadId TaskControl_Handle = NULL;
+  29:Task/Task_Manager.cpp **** osThreadId TaskNavi_Handle = NULL;
+  30:Task/Task_Manager.cpp **** osThreadId TaskLog_Handle = NULL;
+  31:Task/Task_Manager.cpp **** osThreadId TaskTelemetry_Handle = NULL;
+  32:Task/Task_Manager.cpp **** osThreadId TaskFrameCTL_Handle = NULL;
+  33:Task/Task_Manager.cpp **** osThreadId TaskManager_Handle = NULL;
+  34:Task/Task_Manager.cpp **** 
+  35:Task/Task_Manager.cpp **** #if defined MATEKH743_V1_5
+  36:Task/Task_Manager.cpp **** #define Select_Hardware "Hardware MATEKH743"
+  37:Task/Task_Manager.cpp **** #elif defined BATEAT32F435_AIO
+  38:Task/Task_Manager.cpp **** #define Select_Hardware "Hardware BATE_AT32_AIO"
+  39:Task/Task_Manager.cpp **** #elif defined CCRC_AT32_20
+  40:Task/Task_Manager.cpp **** #define Select_Hardware "Hardware CCRC_AT32"
+  41:Task/Task_Manager.cpp **** #elif defined CAIFPV_AIO
+  42:Task/Task_Manager.cpp **** #define Select_Hardware "Hardware CaiFPV_AIO"
+  43:Task/Task_Manager.cpp **** #endif
+  44:Task/Task_Manager.cpp **** 
+  45:Task/Task_Manager.cpp **** #define SYS_TAG "[ HARDWARE INFO ] "
+  46:Task/Task_Manager.cpp **** #define SYS_INFO(fmt, ...) Debug_Print(&DebugPort, SYS_TAG, fmt, ##__VA_ARGS__)
+  47:Task/Task_Manager.cpp **** 
+  48:Task/Task_Manager.cpp **** void Task_Manager_Init(void)
+  49:Task/Task_Manager.cpp **** {
+  50:Task/Task_Manager.cpp ****     DevLED.init(Led1);
+  51:Task/Task_Manager.cpp **** #if defined MATEKH743_V1_5
+  52:Task/Task_Manager.cpp ****     DevLED.init(Led2);
+  53:Task/Task_Manager.cpp ****     DevLED.init(Led3);
+  54:Task/Task_Manager.cpp **** 
+  55:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC0);
+  56:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC1);
+  57:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC2);
+  58:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC3);
+  59:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PB3);
+  60:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PB4);
+  61:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PB5);
+  62:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PB6);
+  63:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PB10);
+  64:Task/Task_Manager.cpp **** #elif defined BATEAT32F435_AIO
+  65:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC8);
+  66:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC0);
+  67:Task/Task_Manager.cpp **** #endif
+  68:Task/Task_Manager.cpp ****     /* vol ADC init */
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 4
+
+
+  69:Task/Task_Manager.cpp **** 
+  70:Task/Task_Manager.cpp ****     /* cur ADC init */
+  71:Task/Task_Manager.cpp **** 
+  72:Task/Task_Manager.cpp ****     DebugPort.free = SrvOsCommon.free;
+  73:Task/Task_Manager.cpp ****     DebugPort.malloc = SrvOsCommon.malloc;
+  74:Task/Task_Manager.cpp ****     Debug_Port_Init(&DebugPort);
+  75:Task/Task_Manager.cpp **** 
+  76:Task/Task_Manager.cpp ****     osThreadDef(ManagerTask, Task_Manager_CreateTask, osPriorityLow, 0, 1024);
+  77:Task/Task_Manager.cpp ****     TaskManager_Handle = osThreadCreate(osThread(ManagerTask), NULL);
+  78:Task/Task_Manager.cpp **** 
+  79:Task/Task_Manager.cpp ****     osKernelStart();
+  80:Task/Task_Manager.cpp **** }
+  81:Task/Task_Manager.cpp **** 
+  82:Task/Task_Manager.cpp **** void Task_Manager_CreateTask(void const *arg)
+  83:Task/Task_Manager.cpp **** {
+  72              		.loc 1 83 1 view -0
+  73              		.cfi_startproc
+  74              		@ args = 0, pretend = 0, frame = 168
+  75              		@ frame_needed = 0, uses_anonymous_args = 0
+  76              		.loc 1 83 1 is_stmt 0 view .LVU1
+  77 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  78              		.save {r4, r5, r6, r7, lr}
+  79              		.cfi_def_cfa_offset 20
+  80              		.cfi_offset 4, -20
+  81              		.cfi_offset 5, -16
+  82              		.cfi_offset 6, -12
+  83              		.cfi_offset 7, -8
+  84              		.cfi_offset 14, -4
+  85              		.pad #172
+  86 0002 ABB0     		sub	sp, sp, #172
+  87              		.cfi_def_cfa_offset 192
+  84:Task/Task_Manager.cpp ****     bool init = false;
+  88              		.loc 1 84 5 is_stmt 1 view .LVU2
+  89              	.LVL1:
+  85:Task/Task_Manager.cpp ****     StorageDevObj_TypeDef *storage_ExtFlashObj = NULL;
+  90              		.loc 1 85 5 view .LVU3
+  86:Task/Task_Manager.cpp **** 
+  87:Task/Task_Manager.cpp ****     SYS_INFO("%s\r\n", Select_Hardware);
+  91              		.loc 1 87 5 view .LVU4
+  92 0004 5D4B     		ldr	r3, .L8
+  93 0006 5E4A     		ldr	r2, .L8+4
+  94 0008 5E49     		ldr	r1, .L8+8
+  95 000a 5F48     		ldr	r0, .L8+12
+  96              	.LVL2:
+  97              		.loc 1 87 5 is_stmt 0 view .LVU5
+  98 000c FFF7FEFF 		bl	Debug_Print
+  99              	.LVL3:
+  88:Task/Task_Manager.cpp **** 
+  89:Task/Task_Manager.cpp **** #if (FLASH_CHIP_STATE == ON)
+  90:Task/Task_Manager.cpp ****     storage_ExtFlashObj = (StorageDevObj_TypeDef *)SrvOsCommon.malloc(sizeof(StorageDevObj_TypeDef)
+ 100              		.loc 1 90 5 is_stmt 1 view .LVU6
+ 101              		.loc 1 90 64 is_stmt 0 view .LVU7
+ 102 0010 5E4B     		ldr	r3, .L8+16
+ 103 0012 9B6A     		ldr	r3, [r3, #40]
+ 104              		.loc 1 90 70 view .LVU8
+ 105 0014 3420     		movs	r0, #52
+ 106 0016 9847     		blx	r3
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 5
+
+
+ 107              	.LVL4:
+  91:Task/Task_Manager.cpp **** 
+  92:Task/Task_Manager.cpp ****     if (storage_ExtFlashObj)
+ 108              		.loc 1 92 5 is_stmt 1 view .LVU9
+ 109 0018 0546     		mov	r5, r0
+ 110 001a 40B1     		cbz	r0, .L2
+  93:Task/Task_Manager.cpp ****     {
+  94:Task/Task_Manager.cpp ****         storage_ExtFlashObj->bus_type = ExtFlash_Bus_Type;
+ 111              		.loc 1 94 9 view .LVU10
+ 112              		.loc 1 94 39 is_stmt 0 view .LVU11
+ 113 001c 0123     		movs	r3, #1
+ 114 001e 0370     		strb	r3, [r0]
+  95:Task/Task_Manager.cpp ****         storage_ExtFlashObj->chip_type = ExtFlash_Chip_Type;
+ 115              		.loc 1 95 9 is_stmt 1 view .LVU12
+ 116              		.loc 1 95 40 is_stmt 0 view .LVU13
+ 117 0020 4370     		strb	r3, [r0, #1]
+  96:Task/Task_Manager.cpp ****         storage_ExtFlashObj->api = ExtFlash_Dev_Api;
+ 118              		.loc 1 96 9 is_stmt 1 view .LVU14
+ 119              		.loc 1 96 34 is_stmt 0 view .LVU15
+ 120 0022 5B4B     		ldr	r3, .L8+20
+ 121 0024 0363     		str	r3, [r0, #48]
+  97:Task/Task_Manager.cpp ****         storage_ExtFlashObj->obj = NULL;
+ 122              		.loc 1 97 9 is_stmt 1 view .LVU16
+ 123              		.loc 1 97 34 is_stmt 0 view .LVU17
+ 124 0026 0023     		movs	r3, #0
+ 125 0028 C362     		str	r3, [r0, #44]
+ 126              	.LVL5:
+ 127              	.L3:
+  83:Task/Task_Manager.cpp ****     bool init = false;
+ 128              		.loc 1 83 1 view .LVU18
+ 129 002a 0024     		movs	r4, #0
+ 130 002c A2E0     		b	.L5
+ 131              	.LVL6:
+ 132              	.L2:
+  98:Task/Task_Manager.cpp ****     }
+  99:Task/Task_Manager.cpp ****     else
+ 100:Task/Task_Manager.cpp ****     {
+ 101:Task/Task_Manager.cpp ****         SrvOsCommon.free(storage_ExtFlashObj);
+ 133              		.loc 1 101 9 is_stmt 1 view .LVU19
+ 134              		.loc 1 101 21 is_stmt 0 view .LVU20
+ 135 002e 574B     		ldr	r3, .L8+16
+ 136 0030 DB6A     		ldr	r3, [r3, #44]
+ 137              		.loc 1 101 25 view .LVU21
+ 138 0032 9847     		blx	r3
+ 139              	.LVL7:
+ 102:Task/Task_Manager.cpp ****         storage_ExtFlashObj = NULL;
+ 140              		.loc 1 102 9 is_stmt 1 view .LVU22
+ 141              		.loc 1 102 9 is_stmt 0 view .LVU23
+ 142 0034 F9E7     		b	.L3
+ 143              	.LVL8:
+ 144              	.L7:
+ 145              	.LBB2:
+ 146              	.LBB3:
+ 147              	.LBB4:
+ 103:Task/Task_Manager.cpp ****     }
+ 104:Task/Task_Manager.cpp **** #endif
+ 105:Task/Task_Manager.cpp **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 6
+
+
+ 106:Task/Task_Manager.cpp ****     while(1)
+ 107:Task/Task_Manager.cpp ****     {
+ 108:Task/Task_Manager.cpp ****         if (!init)
+ 109:Task/Task_Manager.cpp ****         {
+ 110:Task/Task_Manager.cpp ****             uint32_t sys_time = SrvOsCommon.get_os_ms();
+ 148              		.loc 1 110 13 is_stmt 1 view .LVU24
+ 149              		.loc 1 110 45 is_stmt 0 view .LVU25
+ 150 0036 554B     		ldr	r3, .L8+16
+ 151 0038 1B68     		ldr	r3, [r3]
+ 152              		.loc 1 110 54 view .LVU26
+ 153 003a 9847     		blx	r3
+ 154              	.LVL9:
+ 155 003c 0446     		mov	r4, r0
+ 156              	.LVL10:
+ 111:Task/Task_Manager.cpp ****             DEBUG_INFO("Sys Start\r\n");
+ 157              		.loc 1 111 13 is_stmt 1 view .LVU27
+ 158 003e 554F     		ldr	r7, .L8+24
+ 159 0040 514E     		ldr	r6, .L8+12
+ 160 0042 554A     		ldr	r2, .L8+28
+ 161 0044 3946     		mov	r1, r7
+ 162 0046 3046     		mov	r0, r6
+ 163              	.LVL11:
+ 164              		.loc 1 111 13 is_stmt 0 view .LVU28
+ 165 0048 FFF7FEFF 		bl	Debug_Print
+ 166              	.LVL12:
+ 112:Task/Task_Manager.cpp ****             DEBUG_INFO("Sys Time: %d\r\n", sys_time);
+ 167              		.loc 1 112 13 is_stmt 1 view .LVU29
+ 168 004c 2346     		mov	r3, r4
+ 169 004e 534A     		ldr	r2, .L8+32
+ 170 0050 3946     		mov	r1, r7
+ 171 0052 3046     		mov	r0, r6
+ 172 0054 FFF7FEFF 		bl	Debug_Print
+ 173              	.LVL13:
+ 113:Task/Task_Manager.cpp **** 
+ 114:Task/Task_Manager.cpp ****             DataPipe_Init();
+ 174              		.loc 1 114 13 view .LVU30
+ 175              		.loc 1 114 26 is_stmt 0 view .LVU31
+ 176 0058 FFF7FEFF 		bl	DataPipe_Init
+ 177              	.LVL14:
+ 115:Task/Task_Manager.cpp **** 
+ 116:Task/Task_Manager.cpp ****             Storage.init(storage_ExtFlashObj);
+ 178              		.loc 1 116 13 is_stmt 1 view .LVU32
+ 179              		.loc 1 116 21 is_stmt 0 view .LVU33
+ 180 005c 504B     		ldr	r3, .L8+36
+ 181 005e 1B68     		ldr	r3, [r3]
+ 182              		.loc 1 116 25 view .LVU34
+ 183 0060 2846     		mov	r0, r5
+ 184 0062 9847     		blx	r3
+ 185              	.LVL15:
+ 117:Task/Task_Manager.cpp ****             SrvUpgrade.init();
+ 186              		.loc 1 117 13 is_stmt 1 view .LVU35
+ 187              		.loc 1 117 24 is_stmt 0 view .LVU36
+ 188 0064 4F4B     		ldr	r3, .L8+40
+ 189 0066 1B68     		ldr	r3, [r3]
+ 190              		.loc 1 117 28 view .LVU37
+ 191 0068 9847     		blx	r3
+ 192              	.LVL16:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 7
+
+
+ 118:Task/Task_Manager.cpp ****             SrvComProto.init(SrvComProto_Type_MAV, NULL);
+ 193              		.loc 1 118 13 is_stmt 1 view .LVU38
+ 194              		.loc 1 118 25 is_stmt 0 view .LVU39
+ 195 006a 4F4B     		ldr	r3, .L8+44
+ 196 006c 1B68     		ldr	r3, [r3]
+ 197              		.loc 1 118 29 view .LVU40
+ 198 006e 0021     		movs	r1, #0
+ 199 0070 0220     		movs	r0, #2
+ 200 0072 9847     		blx	r3
+ 201              	.LVL17:
+ 119:Task/Task_Manager.cpp ****             
+ 120:Task/Task_Manager.cpp ****             TaskSample_Init(TaskSample_Period_Def);
+ 202              		.loc 1 120 13 is_stmt 1 view .LVU41
+ 203              		.loc 1 120 28 is_stmt 0 view .LVU42
+ 204 0074 0120     		movs	r0, #1
+ 205 0076 FFF7FEFF 		bl	TaskSample_Init
+ 206              	.LVL18:
+ 121:Task/Task_Manager.cpp ****             TaskTelemetry_Init(TaskTelemetry_Period_def);
+ 207              		.loc 1 121 13 is_stmt 1 view .LVU43
+ 208              		.loc 1 121 31 is_stmt 0 view .LVU44
+ 209 007a 0220     		movs	r0, #2
+ 210 007c FFF7FEFF 		bl	TaskTelemetry_Init
+ 211              	.LVL19:
+ 122:Task/Task_Manager.cpp ****             TaskControl_Init(TaskControl_Period_Def);
+ 212              		.loc 1 122 13 is_stmt 1 view .LVU45
+ 213              		.loc 1 122 29 is_stmt 0 view .LVU46
+ 214 0080 0520     		movs	r0, #5
+ 215 0082 FFF7FEFF 		bl	TaskControl_Init
+ 216              	.LVL20:
+ 123:Task/Task_Manager.cpp **** #if (SD_CARD_ENABLE_STATE == ON)
+ 124:Task/Task_Manager.cpp ****             TaskLog_Init(TaslLog_Period_Def);
+ 125:Task/Task_Manager.cpp **** #else
+ 126:Task/Task_Manager.cpp ****             TaskBlackBox_Init();
+ 217              		.loc 1 126 13 is_stmt 1 view .LVU47
+ 218              		.loc 1 126 30 is_stmt 0 view .LVU48
+ 219 0086 FFF7FEFF 		bl	TaskBlackBox_Init
+ 220              	.LVL21:
+ 127:Task/Task_Manager.cpp **** #endif
+ 128:Task/Task_Manager.cpp ****             TaskNavi_Init(TaslNavi_Period_Def);
+ 221              		.loc 1 128 13 is_stmt 1 view .LVU49
+ 222              		.loc 1 128 26 is_stmt 0 view .LVU50
+ 223 008a 0A20     		movs	r0, #10
+ 224 008c FFF7FEFF 		bl	TaskNavi_Init
+ 225              	.LVL22:
+ 129:Task/Task_Manager.cpp ****             TaskFrameCTL_Init(TaskFrameCTL_Period_Def);
+ 226              		.loc 1 129 13 is_stmt 1 view .LVU51
+ 227              		.loc 1 129 30 is_stmt 0 view .LVU52
+ 228 0090 0520     		movs	r0, #5
+ 229 0092 FFF7FEFF 		bl	TaskFrameCTL_Init
+ 230              	.LVL23:
+ 130:Task/Task_Manager.cpp **** 
+ 131:Task/Task_Manager.cpp ****             osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
+ 231              		.loc 1 131 13 is_stmt 1 view .LVU53
+ 232 0096 454C     		ldr	r4, .L8+48
+ 233              	.LVL24:
+ 234              		.loc 1 131 13 is_stmt 0 view .LVU54
+ 235 0098 EC46     		mov	ip, sp
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 8
+
+
+ 236 009a A646     		mov	lr, r4
+ 237 009c BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 238 00a0 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 239 00a4 9EE80700 		ldm	lr, {r0, r1, r2}
+ 240 00a8 8CE80700 		stm	ip, {r0, r1, r2}
+ 132:Task/Task_Manager.cpp ****             TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
+ 241              		.loc 1 132 13 is_stmt 1 view .LVU55
+ 242              		.loc 1 132 49 is_stmt 0 view .LVU56
+ 243 00ac 0021     		movs	r1, #0
+ 244 00ae 6846     		mov	r0, sp
+ 245 00b0 FFF7FEFF 		bl	osThreadCreate
+ 246              	.LVL25:
+ 247              		.loc 1 132 33 view .LVU57
+ 248 00b4 3E4B     		ldr	r3, .L8+52
+ 249 00b6 1860     		str	r0, [r3]
+ 133:Task/Task_Manager.cpp **** 
+ 134:Task/Task_Manager.cpp ****             osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityHigh, 0, 1024);
+ 250              		.loc 1 134 13 is_stmt 1 view .LVU58
+ 251 00b8 0DF11C0C 		add	ip, sp, #28
+ 252 00bc 04F11C0E 		add	lr, r4, #28
+ 253 00c0 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 254 00c4 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 255 00c8 9EE80700 		ldm	lr, {r0, r1, r2}
+ 256 00cc 8CE80700 		stm	ip, {r0, r1, r2}
+ 135:Task/Task_Manager.cpp ****             TaskTelemetry_Handle = osThreadCreate(osThread(TelemtryTask), NULL);
+ 257              		.loc 1 135 13 view .LVU59
+ 258              		.loc 1 135 50 is_stmt 0 view .LVU60
+ 259 00d0 0021     		movs	r1, #0
+ 260 00d2 07A8     		add	r0, sp, #28
+ 261 00d4 FFF7FEFF 		bl	osThreadCreate
+ 262              	.LVL26:
+ 263              		.loc 1 135 34 view .LVU61
+ 264 00d8 364B     		ldr	r3, .L8+56
+ 265 00da 1860     		str	r0, [r3]
+ 136:Task/Task_Manager.cpp **** 
+ 137:Task/Task_Manager.cpp ****             osThreadDef(ControlTask, TaskControl_Core, osPriorityHigh, 0, 1024);
+ 266              		.loc 1 137 13 is_stmt 1 view .LVU62
+ 267 00dc 0DF1380C 		add	ip, sp, #56
+ 268 00e0 04F1380E 		add	lr, r4, #56
+ 269 00e4 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 270 00e8 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 271 00ec 9EE80700 		ldm	lr, {r0, r1, r2}
+ 272 00f0 8CE80700 		stm	ip, {r0, r1, r2}
+ 138:Task/Task_Manager.cpp ****             TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
+ 273              		.loc 1 138 13 view .LVU63
+ 274              		.loc 1 138 48 is_stmt 0 view .LVU64
+ 275 00f4 0021     		movs	r1, #0
+ 276 00f6 0EA8     		add	r0, sp, #56
+ 277 00f8 FFF7FEFF 		bl	osThreadCreate
+ 278              	.LVL27:
+ 279              		.loc 1 138 32 view .LVU65
+ 280 00fc 2E4B     		ldr	r3, .L8+60
+ 281 00fe 1860     		str	r0, [r3]
+ 139:Task/Task_Manager.cpp **** 
+ 140:Task/Task_Manager.cpp ****             osThreadDef(NavTask, TaskNavi_Core, osPriorityAboveNormal, 0, 1024);
+ 282              		.loc 1 140 13 is_stmt 1 view .LVU66
+ 283 0100 0DF1540C 		add	ip, sp, #84
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 9
+
+
+ 284 0104 04F1540E 		add	lr, r4, #84
+ 285 0108 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 286 010c ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 287 0110 9EE80700 		ldm	lr, {r0, r1, r2}
+ 288 0114 8CE80700 		stm	ip, {r0, r1, r2}
+ 141:Task/Task_Manager.cpp ****             TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
+ 289              		.loc 1 141 13 view .LVU67
+ 290              		.loc 1 141 45 is_stmt 0 view .LVU68
+ 291 0118 0021     		movs	r1, #0
+ 292 011a 15A8     		add	r0, sp, #84
+ 293 011c FFF7FEFF 		bl	osThreadCreate
+ 294              	.LVL28:
+ 295              		.loc 1 141 29 view .LVU69
+ 296 0120 264B     		ldr	r3, .L8+64
+ 297 0122 1860     		str	r0, [r3]
+ 142:Task/Task_Manager.cpp **** 
+ 143:Task/Task_Manager.cpp **** #if (SD_CARD_ENABLE_STATE  == ON)
+ 144:Task/Task_Manager.cpp ****             osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
+ 145:Task/Task_Manager.cpp ****             TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
+ 146:Task/Task_Manager.cpp **** #else
+ 147:Task/Task_Manager.cpp ****             osThreadDef(BlackBoxTask, TaskBlackBox_Core, osPriorityNormal, 0, 4096);
+ 298              		.loc 1 147 13 is_stmt 1 view .LVU70
+ 299 0124 0DF1700C 		add	ip, sp, #112
+ 300 0128 04F1700E 		add	lr, r4, #112
+ 301 012c BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 302 0130 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 303 0134 9EE80700 		ldm	lr, {r0, r1, r2}
+ 304 0138 8CE80700 		stm	ip, {r0, r1, r2}
+ 148:Task/Task_Manager.cpp ****             TaskLog_Handle = osThreadCreate(osThread(BlackBoxTask), NULL);
+ 305              		.loc 1 148 13 view .LVU71
+ 306              		.loc 1 148 44 is_stmt 0 view .LVU72
+ 307 013c 0021     		movs	r1, #0
+ 308 013e 1CA8     		add	r0, sp, #112
+ 309 0140 FFF7FEFF 		bl	osThreadCreate
+ 310              	.LVL29:
+ 311              		.loc 1 148 28 view .LVU73
+ 312 0144 1E4B     		ldr	r3, .L8+68
+ 313 0146 1860     		str	r0, [r3]
+ 149:Task/Task_Manager.cpp **** #endif
+ 150:Task/Task_Manager.cpp **** 
+ 151:Task/Task_Manager.cpp ****             osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 1024);
+ 314              		.loc 1 151 13 is_stmt 1 view .LVU74
+ 315 0148 0DF18C0E 		add	lr, sp, #140
+ 316 014c 04F18C0C 		add	ip, r4, #140
+ 317 0150 BCE80F00 		ldmia	ip!, {r0, r1, r2, r3}
+ 318 0154 AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 319 0158 9CE80700 		ldm	ip, {r0, r1, r2}
+ 320 015c 8EE80700 		stm	lr, {r0, r1, r2}
+ 152:Task/Task_Manager.cpp ****             TaskFrameCTL_Handle = osThreadCreate(osThread(FrameCTLTask), NULL);
+ 321              		.loc 1 152 13 view .LVU75
+ 322              		.loc 1 152 49 is_stmt 0 view .LVU76
+ 323 0160 0021     		movs	r1, #0
+ 324 0162 23A8     		add	r0, sp, #140
+ 325 0164 FFF7FEFF 		bl	osThreadCreate
+ 326              	.LVL30:
+ 327              		.loc 1 152 33 view .LVU77
+ 328 0168 164B     		ldr	r3, .L8+72
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 10
+
+
+ 329 016a 1860     		str	r0, [r3]
+ 153:Task/Task_Manager.cpp **** 
+ 154:Task/Task_Manager.cpp ****             init = true;
+ 330              		.loc 1 154 13 is_stmt 1 view .LVU78
+ 331              	.LVL31:
+ 332              		.loc 1 154 18 is_stmt 0 view .LVU79
+ 333 016c 0124     		movs	r4, #1
+ 334              	.LVL32:
+ 335              	.L4:
+ 336              		.loc 1 154 18 view .LVU80
+ 337              	.LBE4:
+ 338              	.LBE3:
+ 155:Task/Task_Manager.cpp ****         }
+ 156:Task/Task_Manager.cpp **** 
+ 157:Task/Task_Manager.cpp ****         /* run system statistic in this task */
+ 158:Task/Task_Manager.cpp ****         osDelay(10);
+ 339              		.loc 1 158 9 is_stmt 1 view .LVU81
+ 340              		.loc 1 158 16 is_stmt 0 view .LVU82
+ 341 016e 0A20     		movs	r0, #10
+ 342 0170 FFF7FEFF 		bl	osDelay
+ 343              	.LVL33:
+ 344              	.LBE2:
+ 106:Task/Task_Manager.cpp ****     {
+ 345              		.loc 1 106 5 is_stmt 1 view .LVU83
+ 346              	.L5:
+ 106:Task/Task_Manager.cpp ****     {
+ 347              		.loc 1 106 5 view .LVU84
+ 348              	.LBB6:
+ 108:Task/Task_Manager.cpp ****         {
+ 349              		.loc 1 108 9 view .LVU85
+ 350              	.LBB5:
+ 351 0174 002C     		cmp	r4, #0
+ 352 0176 3FF45EAF 		beq	.L7
+ 353 017a F8E7     		b	.L4
+ 354              	.L9:
+ 355              		.align	2
+ 356              	.L8:
+ 357 017c 00000000 		.word	.LC14
+ 358 0180 14000000 		.word	.LC15
+ 359 0184 1C000000 		.word	.LC16
+ 360 0188 00000000 		.word	DebugPort
+ 361 018c 00000000 		.word	SrvOsCommon
+ 362 0190 00000000 		.word	DevW25Qxx
+ 363 0194 3C000000 		.word	.LC18
+ 364 0198 30000000 		.word	.LC17
+ 365 019c 4C000000 		.word	.LC19
+ 366 01a0 00000000 		.word	Storage
+ 367 01a4 00000000 		.word	SrvUpgrade
+ 368 01a8 00000000 		.word	SrvComProto
+ 369 01ac 00000000 		.word	.LANCHOR0
+ 370 01b0 00000000 		.word	.LANCHOR1
+ 371 01b4 00000000 		.word	.LANCHOR2
+ 372 01b8 00000000 		.word	.LANCHOR3
+ 373 01bc 00000000 		.word	.LANCHOR4
+ 374 01c0 00000000 		.word	.LANCHOR5
+ 375 01c4 00000000 		.word	.LANCHOR6
+ 376              	.LBE5:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 11
+
+
+ 377              	.LBE6:
+ 378              		.cfi_endproc
+ 379              	.LFE2300:
+ 380              		.fnend
+ 382              		.section	.text.Task_Manager_Init,"ax",%progbits
+ 383              		.align	1
+ 384              		.global	Task_Manager_Init
+ 385              		.syntax unified
+ 386              		.thumb
+ 387              		.thumb_func
+ 389              	Task_Manager_Init:
+ 390              		.fnstart
+ 391              	.LFB2299:
+  49:Task/Task_Manager.cpp ****     DevLED.init(Led1);
+ 392              		.loc 1 49 1 view -0
+ 393              		.cfi_startproc
+ 394              		@ args = 0, pretend = 0, frame = 32
+ 395              		@ frame_needed = 0, uses_anonymous_args = 0
+ 396 0000 10B5     		push	{r4, lr}
+ 397              		.save {r4, lr}
+ 398              		.cfi_def_cfa_offset 8
+ 399              		.cfi_offset 4, -8
+ 400              		.cfi_offset 14, -4
+ 401              		.pad #32
+ 402 0002 88B0     		sub	sp, sp, #32
+ 403              		.cfi_def_cfa_offset 40
+  50:Task/Task_Manager.cpp **** #if defined MATEKH743_V1_5
+ 404              		.loc 1 50 5 view .LVU87
+  50:Task/Task_Manager.cpp **** #if defined MATEKH743_V1_5
+ 405              		.loc 1 50 12 is_stmt 0 view .LVU88
+ 406 0004 104B     		ldr	r3, .L12
+ 407 0006 1C68     		ldr	r4, [r3]
+  50:Task/Task_Manager.cpp **** #if defined MATEKH743_V1_5
+ 408              		.loc 1 50 16 view .LVU89
+ 409 0008 104B     		ldr	r3, .L12+4
+ 410 000a 93E80700 		ldm	r3, {r0, r1, r2}
+ 411 000e A047     		blx	r4
+ 412              	.LVL34:
+  72:Task/Task_Manager.cpp ****     DebugPort.malloc = SrvOsCommon.malloc;
+ 413              		.loc 1 72 5 is_stmt 1 view .LVU90
+  72:Task/Task_Manager.cpp ****     DebugPort.malloc = SrvOsCommon.malloc;
+ 414              		.loc 1 72 34 is_stmt 0 view .LVU91
+ 415 0010 0F4B     		ldr	r3, .L12+8
+ 416 0012 DA6A     		ldr	r2, [r3, #44]
+  72:Task/Task_Manager.cpp ****     DebugPort.malloc = SrvOsCommon.malloc;
+ 417              		.loc 1 72 20 view .LVU92
+ 418 0014 0F48     		ldr	r0, .L12+12
+ 419 0016 0261     		str	r2, [r0, #16]
+  73:Task/Task_Manager.cpp ****     Debug_Port_Init(&DebugPort);
+ 420              		.loc 1 73 5 is_stmt 1 view .LVU93
+  73:Task/Task_Manager.cpp ****     Debug_Port_Init(&DebugPort);
+ 421              		.loc 1 73 36 is_stmt 0 view .LVU94
+ 422 0018 9B6A     		ldr	r3, [r3, #40]
+  73:Task/Task_Manager.cpp ****     Debug_Port_Init(&DebugPort);
+ 423              		.loc 1 73 22 view .LVU95
+ 424 001a C360     		str	r3, [r0, #12]
+  74:Task/Task_Manager.cpp **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 12
+
+
+ 425              		.loc 1 74 5 is_stmt 1 view .LVU96
+  74:Task/Task_Manager.cpp **** 
+ 426              		.loc 1 74 20 is_stmt 0 view .LVU97
+ 427 001c FFF7FEFF 		bl	Debug_Port_Init
+ 428              	.LVL35:
+  76:Task/Task_Manager.cpp ****     TaskManager_Handle = osThreadCreate(osThread(ManagerTask), NULL);
+ 429              		.loc 1 76 5 is_stmt 1 view .LVU98
+ 430 0020 0DF1040C 		add	ip, sp, #4
+ 431 0024 0C4C     		ldr	r4, .L12+16
+ 432 0026 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 433 0028 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 434 002c 94E80700 		ldm	r4, {r0, r1, r2}
+ 435 0030 8CE80700 		stm	ip, {r0, r1, r2}
+  77:Task/Task_Manager.cpp **** 
+ 436              		.loc 1 77 5 view .LVU99
+  77:Task/Task_Manager.cpp **** 
+ 437              		.loc 1 77 40 is_stmt 0 view .LVU100
+ 438 0034 0021     		movs	r1, #0
+ 439 0036 01A8     		add	r0, sp, #4
+ 440 0038 FFF7FEFF 		bl	osThreadCreate
+ 441              	.LVL36:
+  77:Task/Task_Manager.cpp **** 
+ 442              		.loc 1 77 24 view .LVU101
+ 443 003c 074B     		ldr	r3, .L12+20
+ 444 003e 1860     		str	r0, [r3]
+  79:Task/Task_Manager.cpp **** }
+ 445              		.loc 1 79 5 is_stmt 1 view .LVU102
+  79:Task/Task_Manager.cpp **** }
+ 446              		.loc 1 79 18 is_stmt 0 view .LVU103
+ 447 0040 FFF7FEFF 		bl	osKernelStart
+ 448              	.LVL37:
+  80:Task/Task_Manager.cpp **** 
+ 449              		.loc 1 80 1 view .LVU104
+ 450 0044 08B0     		add	sp, sp, #32
+ 451              		.cfi_def_cfa_offset 8
+ 452              		@ sp needed
+ 453 0046 10BD     		pop	{r4, pc}
+ 454              	.L13:
+ 455              		.align	2
+ 456              	.L12:
+ 457 0048 00000000 		.word	DevLED
+ 458 004c 00000000 		.word	Led1
+ 459 0050 00000000 		.word	SrvOsCommon
+ 460 0054 00000000 		.word	DebugPort
+ 461 0058 A8000000 		.word	.LANCHOR0+168
+ 462 005c 00000000 		.word	.LANCHOR7
+ 463              		.cfi_endproc
+ 464              	.LFE2299:
+ 465              		.fnend
+ 467              		.global	TaskManager_Handle
+ 468              		.global	TaskFrameCTL_Handle
+ 469              		.global	TaskTelemetry_Handle
+ 470              		.global	TaskLog_Handle
+ 471              		.global	TaskNavi_Handle
+ 472              		.global	TaskControl_Handle
+ 473              		.global	TaskInertial_Handle
+ 474              		.section	.rodata
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 13
+
+
+ 475              		.align	2
+ 476              		.set	.LANCHOR0,. + 0
+ 477              	.LC20:
+ 478 0000 0C000000 		.word	.LC2
+ 479 0004 00000000 		.word	TaskSample_Core
+ 480 0008 0300     		.short	3
+ 481 000a 0000     		.space	2
+ 482 000c 00000000 		.word	0
+ 483 0010 00040000 		.word	1024
+ 484 0014 00000000 		.word	0
+ 485 0018 00000000 		.word	0
+ 486              	.LC21:
+ 487 001c 18000000 		.word	.LC4
+ 488 0020 00000000 		.word	TaskTelemetry_Core
+ 489 0024 0200     		.short	2
+ 490 0026 0000     		.space	2
+ 491 0028 00000000 		.word	0
+ 492 002c 00040000 		.word	1024
+ 493 0030 00000000 		.word	0
+ 494 0034 00000000 		.word	0
+ 495              	.LC22:
+ 496 0038 28000000 		.word	.LC6
+ 497 003c 00000000 		.word	TaskControl_Core
+ 498 0040 0200     		.short	2
+ 499 0042 0000     		.space	2
+ 500 0044 00000000 		.word	0
+ 501 0048 00040000 		.word	1024
+ 502 004c 00000000 		.word	0
+ 503 0050 00000000 		.word	0
+ 504              	.LC23:
+ 505 0054 34000000 		.word	.LC8
+ 506 0058 00000000 		.word	TaskNavi_Core
+ 507 005c 0100     		.short	1
+ 508 005e 0000     		.space	2
+ 509 0060 00000000 		.word	0
+ 510 0064 00040000 		.word	1024
+ 511 0068 00000000 		.word	0
+ 512 006c 00000000 		.word	0
+ 513              	.LC24:
+ 514 0070 3C000000 		.word	.LC10
+ 515 0074 00000000 		.word	TaskBlackBox_Core
+ 516 0078 0000     		.short	0
+ 517 007a 0000     		.space	2
+ 518 007c 00000000 		.word	0
+ 519 0080 00100000 		.word	4096
+ 520 0084 00000000 		.word	0
+ 521 0088 00000000 		.word	0
+ 522              	.LC25:
+ 523 008c 4C000000 		.word	.LC12
+ 524 0090 00000000 		.word	TaskFrameCTL_Core
+ 525 0094 0000     		.short	0
+ 526 0096 0000     		.space	2
+ 527 0098 00000000 		.word	0
+ 528 009c 00040000 		.word	1024
+ 529 00a0 00000000 		.word	0
+ 530 00a4 00000000 		.word	0
+ 531              	.LC26:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 14
+
+
+ 532 00a8 00000000 		.word	.LC0
+ 533 00ac 00000000 		.word	Task_Manager_CreateTask
+ 534 00b0 FEFF     		.short	-2
+ 535 00b2 0000     		.space	2
+ 536 00b4 00000000 		.word	0
+ 537 00b8 00040000 		.word	1024
+ 538 00bc 00000000 		.word	0
+ 539 00c0 00000000 		.word	0
+ 540              		.section	.bss.TaskControl_Handle,"aw",%nobits
+ 541              		.align	2
+ 542              		.set	.LANCHOR3,. + 0
+ 545              	TaskControl_Handle:
+ 546 0000 00000000 		.space	4
+ 547              		.section	.bss.TaskFrameCTL_Handle,"aw",%nobits
+ 548              		.align	2
+ 549              		.set	.LANCHOR6,. + 0
+ 552              	TaskFrameCTL_Handle:
+ 553 0000 00000000 		.space	4
+ 554              		.section	.bss.TaskInertial_Handle,"aw",%nobits
+ 555              		.align	2
+ 556              		.set	.LANCHOR1,. + 0
+ 559              	TaskInertial_Handle:
+ 560 0000 00000000 		.space	4
+ 561              		.section	.bss.TaskLog_Handle,"aw",%nobits
+ 562              		.align	2
+ 563              		.set	.LANCHOR5,. + 0
+ 566              	TaskLog_Handle:
+ 567 0000 00000000 		.space	4
+ 568              		.section	.bss.TaskManager_Handle,"aw",%nobits
+ 569              		.align	2
+ 570              		.set	.LANCHOR7,. + 0
+ 573              	TaskManager_Handle:
+ 574 0000 00000000 		.space	4
+ 575              		.section	.bss.TaskNavi_Handle,"aw",%nobits
+ 576              		.align	2
+ 577              		.set	.LANCHOR4,. + 0
+ 580              	TaskNavi_Handle:
+ 581 0000 00000000 		.space	4
+ 582              		.section	.bss.TaskTelemetry_Handle,"aw",%nobits
+ 583              		.align	2
+ 584              		.set	.LANCHOR2,. + 0
+ 587              	TaskTelemetry_Handle:
+ 588 0000 00000000 		.space	4
+ 589              		.text
+ 590              	.Letext0:
+ 591              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi\
+ 592              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 593              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 594              		.file 5 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 595              		.file 6 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 596              		.file 7 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 597              		.file 8 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 598              		.file 9 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 599              		.file 10 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 600              		.file 11 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 601              		.file 12 "System/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h"
+ 602              		.file 13 "System/FreeRTOS/include/portable.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 15
+
+
+ 603              		.file 14 "System/FreeRTOS/include/FreeRTOS.h"
+ 604              		.file 15 "System/FreeRTOS/include/task.h"
+ 605              		.file 16 "System/FreeRTOS/CMSIS_RTOS/cmsis_os.h"
+ 606              		.file 17 "Service/Srv_OsCommon.h"
+ 607              		.file 18 "common/gen_physic_def/imu_data.h"
+ 608              		.file 19 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 609              		.file 20 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ 610              		.file 21 "HW_Lib/AT32F435/device_support/at32f435_437.h"
+ 611              		.file 22 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 612              		.file 23 "HW_Lib/Port_Def/Bsp_GPIO_Port_Def.h"
+ 613              		.file 24 "Device/Dev_Dshot.h"
+ 614              		.file 25 "Device/Dev_Led.h"
+ 615              		.file 26 "debug/debug_util.h"
+ 616              		.file 27 "Device/Dev_W25Qxx.h"
+ 617              		.file 28 "HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.h"
+ 618              		.file 29 "Service/Srv_IMUSample.h"
+ 619              		.file 30 "Service/control_data.h"
+ 620              		.file 31 "Task/../System/storage/Storage_Bus_Port.h"
+ 621              		.file 32 "Task/../System/storage/Storage.h"
+ 622              		.file 33 "Service/../MAVLink/common/../mavlink_types.h"
+ 623              		.file 34 "Service/Srv_ComProto.h"
+ 624              		.file 35 "Task/Task_Telemetry.h"
+ 625              		.file 36 "Service/Srv_FileAdapter.h"
+ 626              		.file 37 "Service/Srv_Upgrade.h"
+ 627              		.file 38 "System/FreeRTOS/FreeRTOSConfig.h"
+ 628              		.file 39 "System/DataPipe/DataPipe.h"
+ 629              		.file 40 "Task/Task_Sample.h"
+ 630              		.file 41 "Task/Task_Control.h"
+ 631              		.file 42 "Task/Task_BlackBox.h"
+ 632              		.file 43 "Task/Task_Navi.h"
+ 633              		.file 44 "Task/Task_Protocol.h"
+ 634              		.file 45 "<built-in>"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s 			page 16
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Task_Manager.cpp
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:17     .rodata.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:42     .rodata.Task_Manager_CreateTask.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:61     .text.Task_Manager_CreateTask:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:67     .text.Task_Manager_CreateTask:00000000 Task_Manager_CreateTask
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:357    .text.Task_Manager_CreateTask:0000017c $d
+.ARM.exidx.text.Task_Manager_CreateTask:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:383    .text.Task_Manager_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:389    .text.Task_Manager_Init:00000000 Task_Manager_Init
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:457    .text.Task_Manager_Init:00000048 $d
+.ARM.exidx.text.Task_Manager_Init:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:573    .bss.TaskManager_Handle:00000000 TaskManager_Handle
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:552    .bss.TaskFrameCTL_Handle:00000000 TaskFrameCTL_Handle
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:587    .bss.TaskTelemetry_Handle:00000000 TaskTelemetry_Handle
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:566    .bss.TaskLog_Handle:00000000 TaskLog_Handle
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:580    .bss.TaskNavi_Handle:00000000 TaskNavi_Handle
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:545    .bss.TaskControl_Handle:00000000 TaskControl_Handle
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:559    .bss.TaskInertial_Handle:00000000 TaskInertial_Handle
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:475    .rodata:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:541    .bss.TaskControl_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:548    .bss.TaskFrameCTL_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:555    .bss.TaskInertial_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:562    .bss.TaskLog_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:569    .bss.TaskManager_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:576    .bss.TaskNavi_Handle:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc0rk3pq.s:583    .bss.TaskTelemetry_Handle:00000000 $d
+
+UNDEFINED SYMBOLS
+Debug_Print
+DataPipe_Init
+TaskSample_Init
+TaskTelemetry_Init
+TaskControl_Init
+TaskBlackBox_Init
+TaskNavi_Init
+TaskFrameCTL_Init
+osThreadCreate
+osDelay
+DebugPort
+SrvOsCommon
+DevW25Qxx
+Storage
+SrvUpgrade
+SrvComProto
+__aeabi_unwind_cpp_pr0
+Debug_Port_Init
+osKernelStart
+DevLED
+Led1
+TaskSample_Core
+TaskTelemetry_Core
+TaskControl_Core
+TaskNavi_Core
+TaskBlackBox_Core
+TaskFrameCTL_Core

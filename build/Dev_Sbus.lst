@@ -1,0 +1,598 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Dev_Sbus.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.DevSBUS_Frame_Decode,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	DevSBUS_Frame_Decode:
+  26              	.LVL0:
+  27              	.LFB1:
+  28              		.file 1 "Device/Dev_Sbus.c"
+   1:Device/Dev_Sbus.c **** #include "Dev_Sbus.h"
+   2:Device/Dev_Sbus.c **** 
+   3:Device/Dev_Sbus.c **** /* external function */
+   4:Device/Dev_Sbus.c **** static DevSBUS_ErrorCode_List DevSBUS_Frame_Decode(DevSBUSObj_TypeDef *data, uint8_t *ptr, uint16_t
+   5:Device/Dev_Sbus.c **** static bool DevSBUS_Init(DevSBUSObj_TypeDef *obj);
+   6:Device/Dev_Sbus.c **** 
+   7:Device/Dev_Sbus.c **** DevSBUS_TypeDef DevSBUS = {
+   8:Device/Dev_Sbus.c ****     .init = DevSBUS_Init,
+   9:Device/Dev_Sbus.c ****     .decode = DevSBUS_Frame_Decode,
+  10:Device/Dev_Sbus.c **** };
+  11:Device/Dev_Sbus.c **** 
+  12:Device/Dev_Sbus.c **** static bool DevSBUS_Init(DevSBUSObj_TypeDef *obj)
+  13:Device/Dev_Sbus.c **** {
+  14:Device/Dev_Sbus.c ****     if(obj == NULL)
+  15:Device/Dev_Sbus.c ****         return false;
+  16:Device/Dev_Sbus.c **** 
+  17:Device/Dev_Sbus.c ****     memset(obj, 0, sizeof(DevSBUSObj_TypeDef));
+  18:Device/Dev_Sbus.c **** 
+  19:Device/Dev_Sbus.c ****     return true;
+  20:Device/Dev_Sbus.c **** }
+  21:Device/Dev_Sbus.c **** 
+  22:Device/Dev_Sbus.c **** static DevSBUS_ErrorCode_List DevSBUS_Frame_Decode(DevSBUSObj_TypeDef *obj, uint8_t *ptr, uint16_t 
+  23:Device/Dev_Sbus.c **** {
+  29              		.loc 1 23 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  24:Device/Dev_Sbus.c ****     if((ptr == NULL) || (size < SBUS_FRAME_BYTE_SIZE) || (obj == NULL))
+  33              		.loc 1 24 5 view .LVU1
+  34              		.loc 1 24 7 is_stmt 0 view .LVU2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s 			page 2
+
+
+  35 0000 0029     		cmp	r1, #0
+  36 0002 00F09F80 		beq	.L3
+  23:Device/Dev_Sbus.c ****     if((ptr == NULL) || (size < SBUS_FRAME_BYTE_SIZE) || (obj == NULL))
+  37              		.loc 1 23 1 discriminator 1 view .LVU3
+  38 0006 70B5     		push	{r4, r5, r6, lr}
+  39              	.LCFI0:
+  40              		.cfi_def_cfa_offset 16
+  41              		.cfi_offset 4, -16
+  42              		.cfi_offset 5, -12
+  43              		.cfi_offset 6, -8
+  44              		.cfi_offset 14, -4
+  45 0008 0446     		mov	r4, r0
+  46 000a 1546     		mov	r5, r2
+  47 000c 0E46     		mov	r6, r1
+  48              		.loc 1 24 22 discriminator 1 view .LVU4
+  49 000e 182A     		cmp	r2, #24
+  50 0010 40F29A80 		bls	.L4
+  51              		.loc 1 24 55 discriminator 2 view .LVU5
+  52 0014 0028     		cmp	r0, #0
+  53 0016 00F09980 		beq	.L5
+  25:Device/Dev_Sbus.c ****         return DevSBUS_Error_Obj;
+  26:Device/Dev_Sbus.c **** 
+  27:Device/Dev_Sbus.c ****     memset(obj, 0, sizeof(DevSBUSObj_TypeDef));
+  54              		.loc 1 27 5 is_stmt 1 view .LVU6
+  55 001a 2122     		movs	r2, #33
+  56              	.LVL1:
+  57              		.loc 1 27 5 is_stmt 0 view .LVU7
+  58 001c 0021     		movs	r1, #0
+  59              	.LVL2:
+  60              		.loc 1 27 5 view .LVU8
+  61 001e FFF7FEFF 		bl	memset
+  62              	.LVL3:
+  28:Device/Dev_Sbus.c **** 
+  29:Device/Dev_Sbus.c ****     if ((ptr[0] == SBUS_FRAME_HEADER) && (SBUS_FRAME_BYTE_SIZE == size))
+  63              		.loc 1 29 5 is_stmt 1 view .LVU9
+  64              		.loc 1 29 13 is_stmt 0 view .LVU10
+  65 0022 3378     		ldrb	r3, [r6]	@ zero_extendqisi2
+  66              		.loc 1 29 8 view .LVU11
+  67 0024 F02B     		cmp	r3, #240
+  68 0026 01D0     		beq	.L12
+  30:Device/Dev_Sbus.c ****     {
+  31:Device/Dev_Sbus.c ****         obj->val[0] = ((ptr[1] | ptr[2] << 8) & SBUS_DECODE_MASK);
+  32:Device/Dev_Sbus.c ****         obj->val[1] = ((ptr[2] >> 3 | ptr[3] << 5) & SBUS_DECODE_MASK);
+  33:Device/Dev_Sbus.c ****         obj->val[2] = ((ptr[3] >> 6 | ptr[4] << 2 | ptr[5] << 10) & SBUS_DECODE_MASK);
+  34:Device/Dev_Sbus.c ****         obj->val[3] = ((ptr[5] >> 1 | ptr[6] << 7) & SBUS_DECODE_MASK);
+  35:Device/Dev_Sbus.c ****         obj->val[4] = ((ptr[6] >> 4 | ptr[7] << 4) & SBUS_DECODE_MASK);
+  36:Device/Dev_Sbus.c ****         obj->val[5] = ((ptr[7] >> 7 | ptr[8] << 1 | ptr[9] << 9) & SBUS_DECODE_MASK);
+  37:Device/Dev_Sbus.c ****         obj->val[6] = ((ptr[9] >> 2 | ptr[10] << 6) & SBUS_DECODE_MASK);
+  38:Device/Dev_Sbus.c ****         obj->val[7] = ((ptr[10] >> 5 | ptr[11] << 3) & SBUS_DECODE_MASK);
+  39:Device/Dev_Sbus.c ****         obj->val[8] = ((ptr[12] | ptr[13] << 8) & SBUS_DECODE_MASK);
+  40:Device/Dev_Sbus.c ****         obj->val[9] = ((ptr[13] >> 3 | ptr[14] << 5) & SBUS_DECODE_MASK);
+  41:Device/Dev_Sbus.c ****         obj->val[10] = ((ptr[14] >> 6 | ptr[15] << 2 | ptr[16] << 10) & SBUS_DECODE_MASK);
+  42:Device/Dev_Sbus.c ****         obj->val[11] = ((ptr[16] >> 1 | ptr[17] << 7) & SBUS_DECODE_MASK);
+  43:Device/Dev_Sbus.c ****         obj->val[12] = ((ptr[17] >> 4 | ptr[18] << 4) & SBUS_DECODE_MASK);
+  44:Device/Dev_Sbus.c ****         obj->val[13] = ((ptr[18] >> 7 | ptr[19] << 1 | ptr[20] << 9) & SBUS_DECODE_MASK);
+  45:Device/Dev_Sbus.c ****         obj->val[14] = ((ptr[20] >> 2 | ptr[21] << 6) & SBUS_DECODE_MASK);
+  46:Device/Dev_Sbus.c ****         obj->val[15] = ((ptr[21] >> 5 | ptr[22] << 3) & SBUS_DECODE_MASK);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s 			page 3
+
+
+  47:Device/Dev_Sbus.c **** 
+  48:Device/Dev_Sbus.c ****         /* decode functional byte data */
+  49:Device/Dev_Sbus.c **** 
+  50:Device/Dev_Sbus.c ****         return DevSBUS_NoError;
+  51:Device/Dev_Sbus.c ****     }
+  52:Device/Dev_Sbus.c **** 
+  53:Device/Dev_Sbus.c ****     return DevSBUS_Error_Frame;
+  69              		.loc 1 53 12 view .LVU12
+  70 0028 0220     		movs	r0, #2
+  71 002a 8EE0     		b	.L2
+  72              	.L12:
+  29:Device/Dev_Sbus.c ****     {
+  73              		.loc 1 29 39 discriminator 1 view .LVU13
+  74 002c 192D     		cmp	r5, #25
+  75 002e 01D0     		beq	.L13
+  76              		.loc 1 53 12 view .LVU14
+  77 0030 0220     		movs	r0, #2
+  78 0032 8AE0     		b	.L2
+  79              	.L13:
+  31:Device/Dev_Sbus.c ****         obj->val[1] = ((ptr[2] >> 3 | ptr[3] << 5) & SBUS_DECODE_MASK);
+  80              		.loc 1 31 9 is_stmt 1 view .LVU15
+  31:Device/Dev_Sbus.c ****         obj->val[1] = ((ptr[2] >> 3 | ptr[3] << 5) & SBUS_DECODE_MASK);
+  81              		.loc 1 31 28 is_stmt 0 view .LVU16
+  82 0034 7378     		ldrb	r3, [r6, #1]	@ zero_extendqisi2
+  31:Device/Dev_Sbus.c ****         obj->val[1] = ((ptr[2] >> 3 | ptr[3] << 5) & SBUS_DECODE_MASK);
+  83              		.loc 1 31 37 view .LVU17
+  84 0036 B278     		ldrb	r2, [r6, #2]	@ zero_extendqisi2
+  31:Device/Dev_Sbus.c ****         obj->val[1] = ((ptr[2] >> 3 | ptr[3] << 5) & SBUS_DECODE_MASK);
+  85              		.loc 1 31 32 view .LVU18
+  86 0038 43EA0223 		orr	r3, r3, r2, lsl #8
+  31:Device/Dev_Sbus.c ****         obj->val[1] = ((ptr[2] >> 3 | ptr[3] << 5) & SBUS_DECODE_MASK);
+  87              		.loc 1 31 47 view .LVU19
+  88 003c C3F30A03 		ubfx	r3, r3, #0, #11
+  31:Device/Dev_Sbus.c ****         obj->val[1] = ((ptr[2] >> 3 | ptr[3] << 5) & SBUS_DECODE_MASK);
+  89              		.loc 1 31 21 view .LVU20
+  90 0040 2380     		strh	r3, [r4]	@ unaligned
+  32:Device/Dev_Sbus.c ****         obj->val[2] = ((ptr[3] >> 6 | ptr[4] << 2 | ptr[5] << 10) & SBUS_DECODE_MASK);
+  91              		.loc 1 32 9 is_stmt 1 view .LVU21
+  32:Device/Dev_Sbus.c ****         obj->val[2] = ((ptr[3] >> 6 | ptr[4] << 2 | ptr[5] << 10) & SBUS_DECODE_MASK);
+  92              		.loc 1 32 28 is_stmt 0 view .LVU22
+  93 0042 B378     		ldrb	r3, [r6, #2]	@ zero_extendqisi2
+  32:Device/Dev_Sbus.c ****         obj->val[2] = ((ptr[3] >> 6 | ptr[4] << 2 | ptr[5] << 10) & SBUS_DECODE_MASK);
+  94              		.loc 1 32 42 view .LVU23
+  95 0044 F278     		ldrb	r2, [r6, #3]	@ zero_extendqisi2
+  32:Device/Dev_Sbus.c ****         obj->val[2] = ((ptr[3] >> 6 | ptr[4] << 2 | ptr[5] << 10) & SBUS_DECODE_MASK);
+  96              		.loc 1 32 37 view .LVU24
+  97 0046 DB08     		lsrs	r3, r3, #3
+  98 0048 43EA4213 		orr	r3, r3, r2, lsl #5
+  32:Device/Dev_Sbus.c ****         obj->val[2] = ((ptr[3] >> 6 | ptr[4] << 2 | ptr[5] << 10) & SBUS_DECODE_MASK);
+  99              		.loc 1 32 52 view .LVU25
+ 100 004c C3F30A03 		ubfx	r3, r3, #0, #11
+  32:Device/Dev_Sbus.c ****         obj->val[2] = ((ptr[3] >> 6 | ptr[4] << 2 | ptr[5] << 10) & SBUS_DECODE_MASK);
+ 101              		.loc 1 32 21 view .LVU26
+ 102 0050 6380     		strh	r3, [r4, #2]	@ unaligned
+  33:Device/Dev_Sbus.c ****         obj->val[3] = ((ptr[5] >> 1 | ptr[6] << 7) & SBUS_DECODE_MASK);
+ 103              		.loc 1 33 9 is_stmt 1 view .LVU27
+  33:Device/Dev_Sbus.c ****         obj->val[3] = ((ptr[5] >> 1 | ptr[6] << 7) & SBUS_DECODE_MASK);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s 			page 4
+
+
+ 104              		.loc 1 33 28 is_stmt 0 view .LVU28
+ 105 0052 F378     		ldrb	r3, [r6, #3]	@ zero_extendqisi2
+  33:Device/Dev_Sbus.c ****         obj->val[3] = ((ptr[5] >> 1 | ptr[6] << 7) & SBUS_DECODE_MASK);
+ 106              		.loc 1 33 42 view .LVU29
+ 107 0054 3279     		ldrb	r2, [r6, #4]	@ zero_extendqisi2
+  33:Device/Dev_Sbus.c ****         obj->val[3] = ((ptr[5] >> 1 | ptr[6] << 7) & SBUS_DECODE_MASK);
+ 108              		.loc 1 33 37 view .LVU30
+ 109 0056 9B09     		lsrs	r3, r3, #6
+ 110 0058 43EA8203 		orr	r3, r3, r2, lsl #2
+  33:Device/Dev_Sbus.c ****         obj->val[3] = ((ptr[5] >> 1 | ptr[6] << 7) & SBUS_DECODE_MASK);
+ 111              		.loc 1 33 56 view .LVU31
+ 112 005c 7279     		ldrb	r2, [r6, #5]	@ zero_extendqisi2
+  33:Device/Dev_Sbus.c ****         obj->val[3] = ((ptr[5] >> 1 | ptr[6] << 7) & SBUS_DECODE_MASK);
+ 113              		.loc 1 33 51 view .LVU32
+ 114 005e 43EA8223 		orr	r3, r3, r2, lsl #10
+  33:Device/Dev_Sbus.c ****         obj->val[3] = ((ptr[5] >> 1 | ptr[6] << 7) & SBUS_DECODE_MASK);
+ 115              		.loc 1 33 67 view .LVU33
+ 116 0062 C3F30A03 		ubfx	r3, r3, #0, #11
+  33:Device/Dev_Sbus.c ****         obj->val[3] = ((ptr[5] >> 1 | ptr[6] << 7) & SBUS_DECODE_MASK);
+ 117              		.loc 1 33 21 view .LVU34
+ 118 0066 A380     		strh	r3, [r4, #4]	@ unaligned
+  34:Device/Dev_Sbus.c ****         obj->val[4] = ((ptr[6] >> 4 | ptr[7] << 4) & SBUS_DECODE_MASK);
+ 119              		.loc 1 34 9 is_stmt 1 view .LVU35
+  34:Device/Dev_Sbus.c ****         obj->val[4] = ((ptr[6] >> 4 | ptr[7] << 4) & SBUS_DECODE_MASK);
+ 120              		.loc 1 34 28 is_stmt 0 view .LVU36
+ 121 0068 7379     		ldrb	r3, [r6, #5]	@ zero_extendqisi2
+  34:Device/Dev_Sbus.c ****         obj->val[4] = ((ptr[6] >> 4 | ptr[7] << 4) & SBUS_DECODE_MASK);
+ 122              		.loc 1 34 42 view .LVU37
+ 123 006a B279     		ldrb	r2, [r6, #6]	@ zero_extendqisi2
+  34:Device/Dev_Sbus.c ****         obj->val[4] = ((ptr[6] >> 4 | ptr[7] << 4) & SBUS_DECODE_MASK);
+ 124              		.loc 1 34 37 view .LVU38
+ 125 006c 5B08     		lsrs	r3, r3, #1
+ 126 006e 43EAC213 		orr	r3, r3, r2, lsl #7
+  34:Device/Dev_Sbus.c ****         obj->val[4] = ((ptr[6] >> 4 | ptr[7] << 4) & SBUS_DECODE_MASK);
+ 127              		.loc 1 34 52 view .LVU39
+ 128 0072 C3F30A03 		ubfx	r3, r3, #0, #11
+  34:Device/Dev_Sbus.c ****         obj->val[4] = ((ptr[6] >> 4 | ptr[7] << 4) & SBUS_DECODE_MASK);
+ 129              		.loc 1 34 21 view .LVU40
+ 130 0076 E380     		strh	r3, [r4, #6]	@ unaligned
+  35:Device/Dev_Sbus.c ****         obj->val[5] = ((ptr[7] >> 7 | ptr[8] << 1 | ptr[9] << 9) & SBUS_DECODE_MASK);
+ 131              		.loc 1 35 9 is_stmt 1 view .LVU41
+  35:Device/Dev_Sbus.c ****         obj->val[5] = ((ptr[7] >> 7 | ptr[8] << 1 | ptr[9] << 9) & SBUS_DECODE_MASK);
+ 132              		.loc 1 35 28 is_stmt 0 view .LVU42
+ 133 0078 B379     		ldrb	r3, [r6, #6]	@ zero_extendqisi2
+  35:Device/Dev_Sbus.c ****         obj->val[5] = ((ptr[7] >> 7 | ptr[8] << 1 | ptr[9] << 9) & SBUS_DECODE_MASK);
+ 134              		.loc 1 35 42 view .LVU43
+ 135 007a F279     		ldrb	r2, [r6, #7]	@ zero_extendqisi2
+  35:Device/Dev_Sbus.c ****         obj->val[5] = ((ptr[7] >> 7 | ptr[8] << 1 | ptr[9] << 9) & SBUS_DECODE_MASK);
+ 136              		.loc 1 35 37 view .LVU44
+ 137 007c 1B09     		lsrs	r3, r3, #4
+ 138 007e 43EA0213 		orr	r3, r3, r2, lsl #4
+  35:Device/Dev_Sbus.c ****         obj->val[5] = ((ptr[7] >> 7 | ptr[8] << 1 | ptr[9] << 9) & SBUS_DECODE_MASK);
+ 139              		.loc 1 35 52 view .LVU45
+ 140 0082 C3F30A03 		ubfx	r3, r3, #0, #11
+  35:Device/Dev_Sbus.c ****         obj->val[5] = ((ptr[7] >> 7 | ptr[8] << 1 | ptr[9] << 9) & SBUS_DECODE_MASK);
+ 141              		.loc 1 35 21 view .LVU46
+ 142 0086 2381     		strh	r3, [r4, #8]	@ unaligned
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s 			page 5
+
+
+  36:Device/Dev_Sbus.c ****         obj->val[6] = ((ptr[9] >> 2 | ptr[10] << 6) & SBUS_DECODE_MASK);
+ 143              		.loc 1 36 9 is_stmt 1 view .LVU47
+  36:Device/Dev_Sbus.c ****         obj->val[6] = ((ptr[9] >> 2 | ptr[10] << 6) & SBUS_DECODE_MASK);
+ 144              		.loc 1 36 28 is_stmt 0 view .LVU48
+ 145 0088 F379     		ldrb	r3, [r6, #7]	@ zero_extendqisi2
+  36:Device/Dev_Sbus.c ****         obj->val[6] = ((ptr[9] >> 2 | ptr[10] << 6) & SBUS_DECODE_MASK);
+ 146              		.loc 1 36 42 view .LVU49
+ 147 008a 327A     		ldrb	r2, [r6, #8]	@ zero_extendqisi2
+  36:Device/Dev_Sbus.c ****         obj->val[6] = ((ptr[9] >> 2 | ptr[10] << 6) & SBUS_DECODE_MASK);
+ 148              		.loc 1 36 37 view .LVU50
+ 149 008c DB09     		lsrs	r3, r3, #7
+ 150 008e 43EA4203 		orr	r3, r3, r2, lsl #1
+  36:Device/Dev_Sbus.c ****         obj->val[6] = ((ptr[9] >> 2 | ptr[10] << 6) & SBUS_DECODE_MASK);
+ 151              		.loc 1 36 56 view .LVU51
+ 152 0092 727A     		ldrb	r2, [r6, #9]	@ zero_extendqisi2
+  36:Device/Dev_Sbus.c ****         obj->val[6] = ((ptr[9] >> 2 | ptr[10] << 6) & SBUS_DECODE_MASK);
+ 153              		.loc 1 36 51 view .LVU52
+ 154 0094 43EA4223 		orr	r3, r3, r2, lsl #9
+  36:Device/Dev_Sbus.c ****         obj->val[6] = ((ptr[9] >> 2 | ptr[10] << 6) & SBUS_DECODE_MASK);
+ 155              		.loc 1 36 66 view .LVU53
+ 156 0098 C3F30A03 		ubfx	r3, r3, #0, #11
+  36:Device/Dev_Sbus.c ****         obj->val[6] = ((ptr[9] >> 2 | ptr[10] << 6) & SBUS_DECODE_MASK);
+ 157              		.loc 1 36 21 view .LVU54
+ 158 009c 6381     		strh	r3, [r4, #10]	@ unaligned
+  37:Device/Dev_Sbus.c ****         obj->val[7] = ((ptr[10] >> 5 | ptr[11] << 3) & SBUS_DECODE_MASK);
+ 159              		.loc 1 37 9 is_stmt 1 view .LVU55
+  37:Device/Dev_Sbus.c ****         obj->val[7] = ((ptr[10] >> 5 | ptr[11] << 3) & SBUS_DECODE_MASK);
+ 160              		.loc 1 37 28 is_stmt 0 view .LVU56
+ 161 009e 737A     		ldrb	r3, [r6, #9]	@ zero_extendqisi2
+  37:Device/Dev_Sbus.c ****         obj->val[7] = ((ptr[10] >> 5 | ptr[11] << 3) & SBUS_DECODE_MASK);
+ 162              		.loc 1 37 42 view .LVU57
+ 163 00a0 B27A     		ldrb	r2, [r6, #10]	@ zero_extendqisi2
+  37:Device/Dev_Sbus.c ****         obj->val[7] = ((ptr[10] >> 5 | ptr[11] << 3) & SBUS_DECODE_MASK);
+ 164              		.loc 1 37 37 view .LVU58
+ 165 00a2 9B08     		lsrs	r3, r3, #2
+ 166 00a4 43EA8213 		orr	r3, r3, r2, lsl #6
+  37:Device/Dev_Sbus.c ****         obj->val[7] = ((ptr[10] >> 5 | ptr[11] << 3) & SBUS_DECODE_MASK);
+ 167              		.loc 1 37 53 view .LVU59
+ 168 00a8 C3F30A03 		ubfx	r3, r3, #0, #11
+  37:Device/Dev_Sbus.c ****         obj->val[7] = ((ptr[10] >> 5 | ptr[11] << 3) & SBUS_DECODE_MASK);
+ 169              		.loc 1 37 21 view .LVU60
+ 170 00ac A381     		strh	r3, [r4, #12]	@ unaligned
+  38:Device/Dev_Sbus.c ****         obj->val[8] = ((ptr[12] | ptr[13] << 8) & SBUS_DECODE_MASK);
+ 171              		.loc 1 38 9 is_stmt 1 view .LVU61
+  38:Device/Dev_Sbus.c ****         obj->val[8] = ((ptr[12] | ptr[13] << 8) & SBUS_DECODE_MASK);
+ 172              		.loc 1 38 28 is_stmt 0 view .LVU62
+ 173 00ae B37A     		ldrb	r3, [r6, #10]	@ zero_extendqisi2
+  38:Device/Dev_Sbus.c ****         obj->val[8] = ((ptr[12] | ptr[13] << 8) & SBUS_DECODE_MASK);
+ 174              		.loc 1 38 43 view .LVU63
+ 175 00b0 F27A     		ldrb	r2, [r6, #11]	@ zero_extendqisi2
+  38:Device/Dev_Sbus.c ****         obj->val[8] = ((ptr[12] | ptr[13] << 8) & SBUS_DECODE_MASK);
+ 176              		.loc 1 38 38 view .LVU64
+ 177 00b2 5B09     		lsrs	r3, r3, #5
+  38:Device/Dev_Sbus.c ****         obj->val[8] = ((ptr[12] | ptr[13] << 8) & SBUS_DECODE_MASK);
+ 178              		.loc 1 38 54 view .LVU65
+ 179 00b4 43EAC203 		orr	r3, r3, r2, lsl #3
+  38:Device/Dev_Sbus.c ****         obj->val[8] = ((ptr[12] | ptr[13] << 8) & SBUS_DECODE_MASK);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s 			page 6
+
+
+ 180              		.loc 1 38 21 view .LVU66
+ 181 00b8 E381     		strh	r3, [r4, #14]	@ unaligned
+  39:Device/Dev_Sbus.c ****         obj->val[9] = ((ptr[13] >> 3 | ptr[14] << 5) & SBUS_DECODE_MASK);
+ 182              		.loc 1 39 9 is_stmt 1 view .LVU67
+  39:Device/Dev_Sbus.c ****         obj->val[9] = ((ptr[13] >> 3 | ptr[14] << 5) & SBUS_DECODE_MASK);
+ 183              		.loc 1 39 28 is_stmt 0 view .LVU68
+ 184 00ba 337B     		ldrb	r3, [r6, #12]	@ zero_extendqisi2
+  39:Device/Dev_Sbus.c ****         obj->val[9] = ((ptr[13] >> 3 | ptr[14] << 5) & SBUS_DECODE_MASK);
+ 185              		.loc 1 39 38 view .LVU69
+ 186 00bc 727B     		ldrb	r2, [r6, #13]	@ zero_extendqisi2
+  39:Device/Dev_Sbus.c ****         obj->val[9] = ((ptr[13] >> 3 | ptr[14] << 5) & SBUS_DECODE_MASK);
+ 187              		.loc 1 39 33 view .LVU70
+ 188 00be 43EA0223 		orr	r3, r3, r2, lsl #8
+  39:Device/Dev_Sbus.c ****         obj->val[9] = ((ptr[13] >> 3 | ptr[14] << 5) & SBUS_DECODE_MASK);
+ 189              		.loc 1 39 49 view .LVU71
+ 190 00c2 C3F30A03 		ubfx	r3, r3, #0, #11
+  39:Device/Dev_Sbus.c ****         obj->val[9] = ((ptr[13] >> 3 | ptr[14] << 5) & SBUS_DECODE_MASK);
+ 191              		.loc 1 39 21 view .LVU72
+ 192 00c6 2382     		strh	r3, [r4, #16]	@ unaligned
+  40:Device/Dev_Sbus.c ****         obj->val[10] = ((ptr[14] >> 6 | ptr[15] << 2 | ptr[16] << 10) & SBUS_DECODE_MASK);
+ 193              		.loc 1 40 9 is_stmt 1 view .LVU73
+  40:Device/Dev_Sbus.c ****         obj->val[10] = ((ptr[14] >> 6 | ptr[15] << 2 | ptr[16] << 10) & SBUS_DECODE_MASK);
+ 194              		.loc 1 40 28 is_stmt 0 view .LVU74
+ 195 00c8 737B     		ldrb	r3, [r6, #13]	@ zero_extendqisi2
+  40:Device/Dev_Sbus.c ****         obj->val[10] = ((ptr[14] >> 6 | ptr[15] << 2 | ptr[16] << 10) & SBUS_DECODE_MASK);
+ 196              		.loc 1 40 43 view .LVU75
+ 197 00ca B27B     		ldrb	r2, [r6, #14]	@ zero_extendqisi2
+  40:Device/Dev_Sbus.c ****         obj->val[10] = ((ptr[14] >> 6 | ptr[15] << 2 | ptr[16] << 10) & SBUS_DECODE_MASK);
+ 198              		.loc 1 40 38 view .LVU76
+ 199 00cc DB08     		lsrs	r3, r3, #3
+ 200 00ce 43EA4213 		orr	r3, r3, r2, lsl #5
+  40:Device/Dev_Sbus.c ****         obj->val[10] = ((ptr[14] >> 6 | ptr[15] << 2 | ptr[16] << 10) & SBUS_DECODE_MASK);
+ 201              		.loc 1 40 54 view .LVU77
+ 202 00d2 C3F30A03 		ubfx	r3, r3, #0, #11
+  40:Device/Dev_Sbus.c ****         obj->val[10] = ((ptr[14] >> 6 | ptr[15] << 2 | ptr[16] << 10) & SBUS_DECODE_MASK);
+ 203              		.loc 1 40 21 view .LVU78
+ 204 00d6 6382     		strh	r3, [r4, #18]	@ unaligned
+  41:Device/Dev_Sbus.c ****         obj->val[11] = ((ptr[16] >> 1 | ptr[17] << 7) & SBUS_DECODE_MASK);
+ 205              		.loc 1 41 9 is_stmt 1 view .LVU79
+  41:Device/Dev_Sbus.c ****         obj->val[11] = ((ptr[16] >> 1 | ptr[17] << 7) & SBUS_DECODE_MASK);
+ 206              		.loc 1 41 29 is_stmt 0 view .LVU80
+ 207 00d8 B37B     		ldrb	r3, [r6, #14]	@ zero_extendqisi2
+  41:Device/Dev_Sbus.c ****         obj->val[11] = ((ptr[16] >> 1 | ptr[17] << 7) & SBUS_DECODE_MASK);
+ 208              		.loc 1 41 44 view .LVU81
+ 209 00da F27B     		ldrb	r2, [r6, #15]	@ zero_extendqisi2
+  41:Device/Dev_Sbus.c ****         obj->val[11] = ((ptr[16] >> 1 | ptr[17] << 7) & SBUS_DECODE_MASK);
+ 210              		.loc 1 41 39 view .LVU82
+ 211 00dc 9B09     		lsrs	r3, r3, #6
+ 212 00de 43EA8203 		orr	r3, r3, r2, lsl #2
+  41:Device/Dev_Sbus.c ****         obj->val[11] = ((ptr[16] >> 1 | ptr[17] << 7) & SBUS_DECODE_MASK);
+ 213              		.loc 1 41 59 view .LVU83
+ 214 00e2 327C     		ldrb	r2, [r6, #16]	@ zero_extendqisi2
+  41:Device/Dev_Sbus.c ****         obj->val[11] = ((ptr[16] >> 1 | ptr[17] << 7) & SBUS_DECODE_MASK);
+ 215              		.loc 1 41 54 view .LVU84
+ 216 00e4 43EA8223 		orr	r3, r3, r2, lsl #10
+  41:Device/Dev_Sbus.c ****         obj->val[11] = ((ptr[16] >> 1 | ptr[17] << 7) & SBUS_DECODE_MASK);
+ 217              		.loc 1 41 71 view .LVU85
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s 			page 7
+
+
+ 218 00e8 C3F30A03 		ubfx	r3, r3, #0, #11
+  41:Device/Dev_Sbus.c ****         obj->val[11] = ((ptr[16] >> 1 | ptr[17] << 7) & SBUS_DECODE_MASK);
+ 219              		.loc 1 41 22 view .LVU86
+ 220 00ec A382     		strh	r3, [r4, #20]	@ unaligned
+  42:Device/Dev_Sbus.c ****         obj->val[12] = ((ptr[17] >> 4 | ptr[18] << 4) & SBUS_DECODE_MASK);
+ 221              		.loc 1 42 9 is_stmt 1 view .LVU87
+  42:Device/Dev_Sbus.c ****         obj->val[12] = ((ptr[17] >> 4 | ptr[18] << 4) & SBUS_DECODE_MASK);
+ 222              		.loc 1 42 29 is_stmt 0 view .LVU88
+ 223 00ee 337C     		ldrb	r3, [r6, #16]	@ zero_extendqisi2
+  42:Device/Dev_Sbus.c ****         obj->val[12] = ((ptr[17] >> 4 | ptr[18] << 4) & SBUS_DECODE_MASK);
+ 224              		.loc 1 42 44 view .LVU89
+ 225 00f0 727C     		ldrb	r2, [r6, #17]	@ zero_extendqisi2
+  42:Device/Dev_Sbus.c ****         obj->val[12] = ((ptr[17] >> 4 | ptr[18] << 4) & SBUS_DECODE_MASK);
+ 226              		.loc 1 42 39 view .LVU90
+ 227 00f2 5B08     		lsrs	r3, r3, #1
+ 228 00f4 43EAC213 		orr	r3, r3, r2, lsl #7
+  42:Device/Dev_Sbus.c ****         obj->val[12] = ((ptr[17] >> 4 | ptr[18] << 4) & SBUS_DECODE_MASK);
+ 229              		.loc 1 42 55 view .LVU91
+ 230 00f8 C3F30A03 		ubfx	r3, r3, #0, #11
+  42:Device/Dev_Sbus.c ****         obj->val[12] = ((ptr[17] >> 4 | ptr[18] << 4) & SBUS_DECODE_MASK);
+ 231              		.loc 1 42 22 view .LVU92
+ 232 00fc E382     		strh	r3, [r4, #22]	@ unaligned
+  43:Device/Dev_Sbus.c ****         obj->val[13] = ((ptr[18] >> 7 | ptr[19] << 1 | ptr[20] << 9) & SBUS_DECODE_MASK);
+ 233              		.loc 1 43 9 is_stmt 1 view .LVU93
+  43:Device/Dev_Sbus.c ****         obj->val[13] = ((ptr[18] >> 7 | ptr[19] << 1 | ptr[20] << 9) & SBUS_DECODE_MASK);
+ 234              		.loc 1 43 29 is_stmt 0 view .LVU94
+ 235 00fe 737C     		ldrb	r3, [r6, #17]	@ zero_extendqisi2
+  43:Device/Dev_Sbus.c ****         obj->val[13] = ((ptr[18] >> 7 | ptr[19] << 1 | ptr[20] << 9) & SBUS_DECODE_MASK);
+ 236              		.loc 1 43 44 view .LVU95
+ 237 0100 B27C     		ldrb	r2, [r6, #18]	@ zero_extendqisi2
+  43:Device/Dev_Sbus.c ****         obj->val[13] = ((ptr[18] >> 7 | ptr[19] << 1 | ptr[20] << 9) & SBUS_DECODE_MASK);
+ 238              		.loc 1 43 39 view .LVU96
+ 239 0102 1B09     		lsrs	r3, r3, #4
+ 240 0104 43EA0213 		orr	r3, r3, r2, lsl #4
+  43:Device/Dev_Sbus.c ****         obj->val[13] = ((ptr[18] >> 7 | ptr[19] << 1 | ptr[20] << 9) & SBUS_DECODE_MASK);
+ 241              		.loc 1 43 55 view .LVU97
+ 242 0108 C3F30A03 		ubfx	r3, r3, #0, #11
+  43:Device/Dev_Sbus.c ****         obj->val[13] = ((ptr[18] >> 7 | ptr[19] << 1 | ptr[20] << 9) & SBUS_DECODE_MASK);
+ 243              		.loc 1 43 22 view .LVU98
+ 244 010c 2383     		strh	r3, [r4, #24]	@ unaligned
+  44:Device/Dev_Sbus.c ****         obj->val[14] = ((ptr[20] >> 2 | ptr[21] << 6) & SBUS_DECODE_MASK);
+ 245              		.loc 1 44 9 is_stmt 1 view .LVU99
+  44:Device/Dev_Sbus.c ****         obj->val[14] = ((ptr[20] >> 2 | ptr[21] << 6) & SBUS_DECODE_MASK);
+ 246              		.loc 1 44 29 is_stmt 0 view .LVU100
+ 247 010e B37C     		ldrb	r3, [r6, #18]	@ zero_extendqisi2
+  44:Device/Dev_Sbus.c ****         obj->val[14] = ((ptr[20] >> 2 | ptr[21] << 6) & SBUS_DECODE_MASK);
+ 248              		.loc 1 44 44 view .LVU101
+ 249 0110 F27C     		ldrb	r2, [r6, #19]	@ zero_extendqisi2
+  44:Device/Dev_Sbus.c ****         obj->val[14] = ((ptr[20] >> 2 | ptr[21] << 6) & SBUS_DECODE_MASK);
+ 250              		.loc 1 44 39 view .LVU102
+ 251 0112 DB09     		lsrs	r3, r3, #7
+ 252 0114 43EA4203 		orr	r3, r3, r2, lsl #1
+  44:Device/Dev_Sbus.c ****         obj->val[14] = ((ptr[20] >> 2 | ptr[21] << 6) & SBUS_DECODE_MASK);
+ 253              		.loc 1 44 59 view .LVU103
+ 254 0118 327D     		ldrb	r2, [r6, #20]	@ zero_extendqisi2
+  44:Device/Dev_Sbus.c ****         obj->val[14] = ((ptr[20] >> 2 | ptr[21] << 6) & SBUS_DECODE_MASK);
+ 255              		.loc 1 44 54 view .LVU104
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s 			page 8
+
+
+ 256 011a 43EA4223 		orr	r3, r3, r2, lsl #9
+  44:Device/Dev_Sbus.c ****         obj->val[14] = ((ptr[20] >> 2 | ptr[21] << 6) & SBUS_DECODE_MASK);
+ 257              		.loc 1 44 70 view .LVU105
+ 258 011e C3F30A03 		ubfx	r3, r3, #0, #11
+  44:Device/Dev_Sbus.c ****         obj->val[14] = ((ptr[20] >> 2 | ptr[21] << 6) & SBUS_DECODE_MASK);
+ 259              		.loc 1 44 22 view .LVU106
+ 260 0122 6383     		strh	r3, [r4, #26]	@ unaligned
+  45:Device/Dev_Sbus.c ****         obj->val[15] = ((ptr[21] >> 5 | ptr[22] << 3) & SBUS_DECODE_MASK);
+ 261              		.loc 1 45 9 is_stmt 1 view .LVU107
+  45:Device/Dev_Sbus.c ****         obj->val[15] = ((ptr[21] >> 5 | ptr[22] << 3) & SBUS_DECODE_MASK);
+ 262              		.loc 1 45 29 is_stmt 0 view .LVU108
+ 263 0124 337D     		ldrb	r3, [r6, #20]	@ zero_extendqisi2
+  45:Device/Dev_Sbus.c ****         obj->val[15] = ((ptr[21] >> 5 | ptr[22] << 3) & SBUS_DECODE_MASK);
+ 264              		.loc 1 45 44 view .LVU109
+ 265 0126 727D     		ldrb	r2, [r6, #21]	@ zero_extendqisi2
+  45:Device/Dev_Sbus.c ****         obj->val[15] = ((ptr[21] >> 5 | ptr[22] << 3) & SBUS_DECODE_MASK);
+ 266              		.loc 1 45 39 view .LVU110
+ 267 0128 9B08     		lsrs	r3, r3, #2
+ 268 012a 43EA8213 		orr	r3, r3, r2, lsl #6
+  45:Device/Dev_Sbus.c ****         obj->val[15] = ((ptr[21] >> 5 | ptr[22] << 3) & SBUS_DECODE_MASK);
+ 269              		.loc 1 45 55 view .LVU111
+ 270 012e C3F30A03 		ubfx	r3, r3, #0, #11
+  45:Device/Dev_Sbus.c ****         obj->val[15] = ((ptr[21] >> 5 | ptr[22] << 3) & SBUS_DECODE_MASK);
+ 271              		.loc 1 45 22 view .LVU112
+ 272 0132 A383     		strh	r3, [r4, #28]	@ unaligned
+  46:Device/Dev_Sbus.c **** 
+ 273              		.loc 1 46 9 is_stmt 1 view .LVU113
+  46:Device/Dev_Sbus.c **** 
+ 274              		.loc 1 46 29 is_stmt 0 view .LVU114
+ 275 0134 737D     		ldrb	r3, [r6, #21]	@ zero_extendqisi2
+  46:Device/Dev_Sbus.c **** 
+ 276              		.loc 1 46 44 view .LVU115
+ 277 0136 B27D     		ldrb	r2, [r6, #22]	@ zero_extendqisi2
+  46:Device/Dev_Sbus.c **** 
+ 278              		.loc 1 46 39 view .LVU116
+ 279 0138 5B09     		lsrs	r3, r3, #5
+  46:Device/Dev_Sbus.c **** 
+ 280              		.loc 1 46 55 view .LVU117
+ 281 013a 43EAC203 		orr	r3, r3, r2, lsl #3
+  46:Device/Dev_Sbus.c **** 
+ 282              		.loc 1 46 22 view .LVU118
+ 283 013e E383     		strh	r3, [r4, #30]	@ unaligned
+  50:Device/Dev_Sbus.c ****     }
+ 284              		.loc 1 50 9 is_stmt 1 view .LVU119
+  50:Device/Dev_Sbus.c ****     }
+ 285              		.loc 1 50 16 is_stmt 0 view .LVU120
+ 286 0140 0020     		movs	r0, #0
+ 287 0142 02E0     		b	.L2
+ 288              	.LVL4:
+ 289              	.L3:
+ 290              	.LCFI1:
+ 291              		.cfi_def_cfa_offset 0
+ 292              		.cfi_restore 4
+ 293              		.cfi_restore 5
+ 294              		.cfi_restore 6
+ 295              		.cfi_restore 14
+  25:Device/Dev_Sbus.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s 			page 9
+
+
+ 296              		.loc 1 25 16 view .LVU121
+ 297 0144 0120     		movs	r0, #1
+ 298              	.LVL5:
+  54:Device/Dev_Sbus.c **** }
+ 299              		.loc 1 54 1 view .LVU122
+ 300 0146 7047     		bx	lr
+ 301              	.LVL6:
+ 302              	.L4:
+ 303              	.LCFI2:
+ 304              		.cfi_def_cfa_offset 16
+ 305              		.cfi_offset 4, -16
+ 306              		.cfi_offset 5, -12
+ 307              		.cfi_offset 6, -8
+ 308              		.cfi_offset 14, -4
+  25:Device/Dev_Sbus.c **** 
+ 309              		.loc 1 25 16 view .LVU123
+ 310 0148 0120     		movs	r0, #1
+ 311              	.LVL7:
+ 312              	.L2:
+ 313              		.loc 1 54 1 view .LVU124
+ 314 014a 70BD     		pop	{r4, r5, r6, pc}
+ 315              	.LVL8:
+ 316              	.L5:
+  25:Device/Dev_Sbus.c **** 
+ 317              		.loc 1 25 16 view .LVU125
+ 318 014c 0120     		movs	r0, #1
+ 319              	.LVL9:
+  25:Device/Dev_Sbus.c **** 
+ 320              		.loc 1 25 16 view .LVU126
+ 321 014e FCE7     		b	.L2
+ 322              		.cfi_endproc
+ 323              	.LFE1:
+ 325              		.section	.text.DevSBUS_Init,"ax",%progbits
+ 326              		.align	1
+ 327              		.syntax unified
+ 328              		.thumb
+ 329              		.thumb_func
+ 331              	DevSBUS_Init:
+ 332              	.LVL10:
+ 333              	.LFB0:
+  13:Device/Dev_Sbus.c ****     if(obj == NULL)
+ 334              		.loc 1 13 1 is_stmt 1 view -0
+ 335              		.cfi_startproc
+ 336              		@ args = 0, pretend = 0, frame = 0
+ 337              		@ frame_needed = 0, uses_anonymous_args = 0
+  14:Device/Dev_Sbus.c ****         return false;
+ 338              		.loc 1 14 5 view .LVU128
+  14:Device/Dev_Sbus.c ****         return false;
+ 339              		.loc 1 14 7 is_stmt 0 view .LVU129
+ 340 0000 30B1     		cbz	r0, .L16
+  13:Device/Dev_Sbus.c ****     if(obj == NULL)
+ 341              		.loc 1 13 1 view .LVU130
+ 342 0002 08B5     		push	{r3, lr}
+ 343              	.LCFI3:
+ 344              		.cfi_def_cfa_offset 8
+ 345              		.cfi_offset 3, -8
+ 346              		.cfi_offset 14, -4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s 			page 10
+
+
+  17:Device/Dev_Sbus.c **** 
+ 347              		.loc 1 17 5 is_stmt 1 view .LVU131
+ 348 0004 2122     		movs	r2, #33
+ 349 0006 0021     		movs	r1, #0
+ 350 0008 FFF7FEFF 		bl	memset
+ 351              	.LVL11:
+  19:Device/Dev_Sbus.c **** }
+ 352              		.loc 1 19 5 view .LVU132
+  19:Device/Dev_Sbus.c **** }
+ 353              		.loc 1 19 12 is_stmt 0 view .LVU133
+ 354 000c 0120     		movs	r0, #1
+  20:Device/Dev_Sbus.c **** 
+ 355              		.loc 1 20 1 view .LVU134
+ 356 000e 08BD     		pop	{r3, pc}
+ 357              	.LVL12:
+ 358              	.L16:
+ 359              	.LCFI4:
+ 360              		.cfi_def_cfa_offset 0
+ 361              		.cfi_restore 3
+ 362              		.cfi_restore 14
+  15:Device/Dev_Sbus.c **** 
+ 363              		.loc 1 15 16 view .LVU135
+ 364 0010 0020     		movs	r0, #0
+ 365              	.LVL13:
+  20:Device/Dev_Sbus.c **** 
+ 366              		.loc 1 20 1 view .LVU136
+ 367 0012 7047     		bx	lr
+ 368              		.cfi_endproc
+ 369              	.LFE0:
+ 371              		.global	DevSBUS
+ 372              		.section	.data.DevSBUS,"aw"
+ 373              		.align	2
+ 376              	DevSBUS:
+ 377 0000 00000000 		.word	DevSBUS_Init
+ 378 0004 00000000 		.word	DevSBUS_Frame_Decode
+ 379              		.text
+ 380              	.Letext0:
+ 381              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 382              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 383              		.file 4 "Device/Dev_Sbus.h"
+ 384              		.file 5 "<built-in>"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s 			page 11
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Dev_Sbus.c
+C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s:20     .text.DevSBUS_Frame_Decode:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s:25     .text.DevSBUS_Frame_Decode:00000000 DevSBUS_Frame_Decode
+C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s:326    .text.DevSBUS_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s:331    .text.DevSBUS_Init:00000000 DevSBUS_Init
+C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s:376    .data.DevSBUS:00000000 DevSBUS
+C:\Users\8bit\AppData\Local\Temp\ccUyJAz5.s:373    .data.DevSBUS:00000000 $d
+
+UNDEFINED SYMBOLS
+memset

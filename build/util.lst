@@ -1,0 +1,633 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"util.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.Common_CRC16,"ax",%progbits
+  20              		.align	1
+  21              		.global	Common_CRC16
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	Common_CRC16:
+  27              	.LVL0:
+  28              	.LFB0:
+  29              		.file 1 "common/util.c"
+   1:common/util.c **** #include "util.h"
+   2:common/util.c **** 
+   3:common/util.c **** /* Table of CRC constants - implements x^16+x^12+x^5+1 */
+   4:common/util.c **** static const uint16_t crc16_tab[] = 
+   5:common/util.c **** {
+   6:common/util.c ****     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
+   7:common/util.c ****     0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef,
+   8:common/util.c ****     0x1231, 0x0210, 0x3273, 0x2252, 0x52b5, 0x4294, 0x72f7, 0x62d6,
+   9:common/util.c ****     0x9339, 0x8318, 0xb37b, 0xa35a, 0xd3bd, 0xc39c, 0xf3ff, 0xe3de,
+  10:common/util.c ****     0x2462, 0x3443, 0x0420, 0x1401, 0x64e6, 0x74c7, 0x44a4, 0x5485,
+  11:common/util.c ****     0xa56a, 0xb54b, 0x8528, 0x9509, 0xe5ee, 0xf5cf, 0xc5ac, 0xd58d,
+  12:common/util.c ****     0x3653, 0x2672, 0x1611, 0x0630, 0x76d7, 0x66f6, 0x5695, 0x46b4,
+  13:common/util.c ****     0xb75b, 0xa77a, 0x9719, 0x8738, 0xf7df, 0xe7fe, 0xd79d, 0xc7bc,
+  14:common/util.c ****     0x48c4, 0x58e5, 0x6886, 0x78a7, 0x0840, 0x1861, 0x2802, 0x3823,
+  15:common/util.c ****     0xc9cc, 0xd9ed, 0xe98e, 0xf9af, 0x8948, 0x9969, 0xa90a, 0xb92b,
+  16:common/util.c ****     0x5af5, 0x4ad4, 0x7ab7, 0x6a96, 0x1a71, 0x0a50, 0x3a33, 0x2a12,
+  17:common/util.c ****     0xdbfd, 0xcbdc, 0xfbbf, 0xeb9e, 0x9b79, 0x8b58, 0xbb3b, 0xab1a,
+  18:common/util.c ****     0x6ca6, 0x7c87, 0x4ce4, 0x5cc5, 0x2c22, 0x3c03, 0x0c60, 0x1c41,
+  19:common/util.c ****     0xedae, 0xfd8f, 0xcdec, 0xddcd, 0xad2a, 0xbd0b, 0x8d68, 0x9d49,
+  20:common/util.c ****     0x7e97, 0x6eb6, 0x5ed5, 0x4ef4, 0x3e13, 0x2e32, 0x1e51, 0x0e70,
+  21:common/util.c ****     0xff9f, 0xefbe, 0xdfdd, 0xcffc, 0xbf1b, 0xaf3a, 0x9f59, 0x8f78,
+  22:common/util.c ****     0x9188, 0x81a9, 0xb1ca, 0xa1eb, 0xd10c, 0xc12d, 0xf14e, 0xe16f,
+  23:common/util.c ****     0x1080, 0x00a1, 0x30c2, 0x20e3, 0x5004, 0x4025, 0x7046, 0x6067,
+  24:common/util.c ****     0x83b9, 0x9398, 0xa3fb, 0xb3da, 0xc33d, 0xd31c, 0xe37f, 0xf35e,
+  25:common/util.c ****     0x02b1, 0x1290, 0x22f3, 0x32d2, 0x4235, 0x5214, 0x6277, 0x7256,
+  26:common/util.c ****     0xb5ea, 0xa5cb, 0x95a8, 0x8589, 0xf56e, 0xe54f, 0xd52c, 0xc50d,
+  27:common/util.c ****     0x34e2, 0x24c3, 0x14a0, 0x0481, 0x7466, 0x6447, 0x5424, 0x4405,
+  28:common/util.c ****     0xa7db, 0xb7fa, 0x8799, 0x97b8, 0xe75f, 0xf77e, 0xc71d, 0xd73c,
+  29:common/util.c ****     0x26d3, 0x36f2, 0x0691, 0x16b0, 0x6657, 0x7676, 0x4615, 0x5634,
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 2
+
+
+  30:common/util.c ****     0xd94c, 0xc96d, 0xf90e, 0xe92f, 0x99c8, 0x89e9, 0xb98a, 0xa9ab,
+  31:common/util.c ****     0x5844, 0x4865, 0x7806, 0x6827, 0x18c0, 0x08e1, 0x3882, 0x28a3,
+  32:common/util.c ****     0xcb7d, 0xdb5c, 0xeb3f, 0xfb1e, 0x8bf9, 0x9bd8, 0xabbb, 0xbb9a,
+  33:common/util.c ****     0x4a75, 0x5a54, 0x6a37, 0x7a16, 0x0af1, 0x1ad0, 0x2ab3, 0x3a92,
+  34:common/util.c ****     0xfd2e, 0xed0f, 0xdd6c, 0xcd4d, 0xbdaa, 0xad8b, 0x9de8, 0x8dc9,
+  35:common/util.c ****     0x7c26, 0x6c07, 0x5c64, 0x4c45, 0x3ca2, 0x2c83, 0x1ce0, 0x0cc1,
+  36:common/util.c ****     0xef1f, 0xff3e, 0xcf5d, 0xdf7c, 0xaf9b, 0xbfba, 0x8fd9, 0x9ff8,
+  37:common/util.c ****     0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0,
+  38:common/util.c **** };
+  39:common/util.c **** 
+  40:common/util.c **** int16_t Common_CRC16(const uint8_t *pBuf, const uint32_t len)
+  41:common/util.c **** {
+  30              		.loc 1 41 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		@ link register save eliminated.
+  42:common/util.c ****     uint16_t CheckSum = 0;
+  35              		.loc 1 42 5 view .LVU1
+  43:common/util.c ****     uint8_t j = 0;
+  36              		.loc 1 43 5 view .LVU2
+  44:common/util.c **** 
+  45:common/util.c ****     if(NULL == pBuf)
+  37              		.loc 1 45 5 view .LVU3
+  38              		.loc 1 45 7 is_stmt 0 view .LVU4
+  39 0000 B0B1     		cbz	r0, .L5
+  40 0002 8446     		mov	ip, r0
+  41              	.LBB2:
+  46:common/util.c ****         return -1;
+  47:common/util.c ****         
+  48:common/util.c ****     for (uint32_t i = 0; i < len; i++)
+  42              		.loc 1 48 19 view .LVU5
+  43 0004 0023     		movs	r3, #0
+  44              	.LBE2:
+  42:common/util.c ****     uint8_t j = 0;
+  45              		.loc 1 42 14 view .LVU6
+  46 0006 1846     		mov	r0, r3
+  47              	.LVL1:
+  48              	.LBB3:
+  49              		.loc 1 48 26 is_stmt 1 view .LVU7
+  50              		.loc 1 48 5 is_stmt 0 view .LVU8
+  51 0008 8B42     		cmp	r3, r1
+  52 000a 14D2     		bcs	.L12
+  53              	.LBE3:
+  41:common/util.c ****     uint16_t CheckSum = 0;
+  54              		.loc 1 41 1 view .LVU9
+  55 000c 10B4     		push	{r4}
+  56              	.LCFI0:
+  57              		.cfi_def_cfa_offset 4
+  58              		.cfi_offset 4, -4
+  59              	.LVL2:
+  60              	.L4:
+  61              	.LBB4:
+  49:common/util.c ****     {
+  50:common/util.c ****         j = (uint8_t)(((CheckSum >> 8) ^ pBuf[i]) & 0xFF);
+  62              		.loc 1 50 9 is_stmt 1 discriminator 3 view .LVU10
+  63              		.loc 1 50 46 is_stmt 0 discriminator 3 view .LVU11
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 3
+
+
+  64 000e 1CF80320 		ldrb	r2, [ip, r3]	@ zero_extendqisi2
+  65              		.loc 1 50 11 discriminator 3 view .LVU12
+  66 0012 82EA1022 		eor	r2, r2, r0, lsr #8
+  67              	.LVL3:
+  51:common/util.c ****         CheckSum = crc16_tab[j] ^ (CheckSum << 8);
+  68              		.loc 1 51 9 is_stmt 1 discriminator 3 view .LVU13
+  69              		.loc 1 51 29 is_stmt 0 discriminator 3 view .LVU14
+  70 0016 094C     		ldr	r4, .L13
+  71 0018 34F91220 		ldrsh	r2, [r4, r2, lsl #1]
+  72              	.LVL4:
+  73              		.loc 1 51 33 discriminator 3 view .LVU15
+  74 001c 82EA0020 		eor	r0, r2, r0, lsl #8
+  75              	.LVL5:
+  76              		.loc 1 51 18 discriminator 3 view .LVU16
+  77 0020 80B2     		uxth	r0, r0
+  78              	.LVL6:
+  48:common/util.c ****     {
+  79              		.loc 1 48 35 is_stmt 1 discriminator 3 view .LVU17
+  48:common/util.c ****     {
+  80              		.loc 1 48 36 is_stmt 0 discriminator 3 view .LVU18
+  81 0022 0133     		adds	r3, r3, #1
+  82              	.LVL7:
+  48:common/util.c ****     {
+  83              		.loc 1 48 26 is_stmt 1 discriminator 3 view .LVU19
+  48:common/util.c ****     {
+  84              		.loc 1 48 5 is_stmt 0 discriminator 3 view .LVU20
+  85 0024 8B42     		cmp	r3, r1
+  86 0026 F2D3     		bcc	.L4
+  87              	.LBE4:
+  52:common/util.c ****     }
+  53:common/util.c ****     
+  54:common/util.c ****     return CheckSum;
+  88              		.loc 1 54 5 is_stmt 1 view .LVU21
+  89              		.loc 1 54 12 is_stmt 0 view .LVU22
+  90 0028 00B2     		sxth	r0, r0
+  55:common/util.c **** }
+  91              		.loc 1 55 1 view .LVU23
+  92 002a 5DF8044B 		ldr	r4, [sp], #4
+  93              	.LCFI1:
+  94              		.cfi_restore 4
+  95              		.cfi_def_cfa_offset 0
+  96 002e 7047     		bx	lr
+  97              	.LVL8:
+  98              	.L5:
+  46:common/util.c ****         
+  99              		.loc 1 46 16 view .LVU24
+ 100 0030 4FF0FF30 		mov	r0, #-1
+ 101              	.LVL9:
+  46:common/util.c ****         
+ 102              		.loc 1 46 16 view .LVU25
+ 103 0034 7047     		bx	lr
+ 104              	.LVL10:
+ 105              	.L12:
+  54:common/util.c **** }
+ 106              		.loc 1 54 5 is_stmt 1 view .LVU26
+  54:common/util.c **** }
+ 107              		.loc 1 54 12 is_stmt 0 view .LVU27
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 4
+
+
+ 108 0036 18B2     		sxth	r0, r3
+ 109              	.LVL11:
+ 110              		.loc 1 55 1 view .LVU28
+ 111 0038 7047     		bx	lr
+ 112              	.L14:
+ 113 003a 00BF     		.align	2
+ 114              	.L13:
+ 115 003c 00000000 		.word	.LANCHOR0
+ 116              		.cfi_endproc
+ 117              	.LFE0:
+ 119              		.section	.text.Get_Bit_Index,"ax",%progbits
+ 120              		.align	1
+ 121              		.global	Get_Bit_Index
+ 122              		.syntax unified
+ 123              		.thumb
+ 124              		.thumb_func
+ 126              	Get_Bit_Index:
+ 127              	.LVL12:
+ 128              	.LFB1:
+  56:common/util.c **** 
+  57:common/util.c **** uint8_t Get_Bit_Index(uint16_t val)
+  58:common/util.c **** {
+ 129              		.loc 1 58 1 is_stmt 1 view -0
+ 130              		.cfi_startproc
+ 131              		@ args = 0, pretend = 0, frame = 0
+ 132              		@ frame_needed = 0, uses_anonymous_args = 0
+ 133              		@ link register save eliminated.
+ 134              		.loc 1 58 1 is_stmt 0 view .LVU30
+ 135 0000 07EE900A 		vmov	s15, r0	@ int
+  59:common/util.c **** 	float f_val = (float)val;
+ 136              		.loc 1 59 2 is_stmt 1 view .LVU31
+ 137              	.LVL13:
+  60:common/util.c **** 	uint32_t u32_val = 0;
+ 138              		.loc 1 60 2 view .LVU32
+  61:common/util.c **** 	uint8_t bit = 0;
+ 139              		.loc 1 61 2 view .LVU33
+  62:common/util.c **** 	
+  63:common/util.c **** 	u32_val = *((unsigned long*)(&f_val));
+ 140              		.loc 1 63 2 view .LVU34
+ 141              		.loc 1 63 10 is_stmt 0 view .LVU35
+ 142 0004 F8EE677A 		vcvt.f32.u32	s15, s15
+ 143              	.LVL14:
+ 144              		.loc 1 63 10 view .LVU36
+ 145 0008 17EE900A 		vmov	r0, s15
+ 146              	.LVL15:
+  64:common/util.c **** 	
+  65:common/util.c **** 	bit = (u32_val >> 23) & 0xFF;
+ 147              		.loc 1 65 2 is_stmt 1 view .LVU37
+ 148              		.loc 1 65 6 is_stmt 0 view .LVU38
+ 149 000c C0F3C750 		ubfx	r0, r0, #23, #8
+ 150              	.LVL16:
+  66:common/util.c **** 	bit -= 127;
+ 151              		.loc 1 66 2 is_stmt 1 view .LVU39
+ 152              		.loc 1 66 6 is_stmt 0 view .LVU40
+ 153 0010 7F38     		subs	r0, r0, #127
+ 154              	.LVL17:
+  67:common/util.c **** 	
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 5
+
+
+  68:common/util.c **** 	return bit;
+ 155              		.loc 1 68 2 is_stmt 1 view .LVU41
+  69:common/util.c **** }
+ 156              		.loc 1 69 1 is_stmt 0 view .LVU42
+ 157 0012 C0B2     		uxtb	r0, r0
+ 158              		.loc 1 69 1 view .LVU43
+ 159 0014 7047     		bx	lr
+ 160              		.cfi_endproc
+ 161              	.LFE1:
+ 163              		.section	.text.Get_OnSet_Bit_Num,"ax",%progbits
+ 164              		.align	1
+ 165              		.global	Get_OnSet_Bit_Num
+ 166              		.syntax unified
+ 167              		.thumb
+ 168              		.thumb_func
+ 170              	Get_OnSet_Bit_Num:
+ 171              	.LVL18:
+ 172              	.LFB2:
+  70:common/util.c **** 
+  71:common/util.c **** uint8_t Get_OnSet_Bit_Num(uint32_t value)
+  72:common/util.c **** {
+ 173              		.loc 1 72 1 is_stmt 1 view -0
+ 174              		.cfi_startproc
+ 175              		@ args = 0, pretend = 0, frame = 0
+ 176              		@ frame_needed = 0, uses_anonymous_args = 0
+ 177              		@ link register save eliminated.
+  73:common/util.c ****     value = ( value & 0x55555555 ) + ( (value >>1)  & 0x55555555 ) ; 
+ 178              		.loc 1 73 5 view .LVU45
+ 179              		.loc 1 73 21 is_stmt 0 view .LVU46
+ 180 0000 00F05533 		and	r3, r0, #1431655765
+ 181              		.loc 1 73 47 view .LVU47
+ 182 0004 4008     		lsrs	r0, r0, #1
+ 183              	.LVL19:
+ 184              		.loc 1 73 53 view .LVU48
+ 185 0006 00F05530 		and	r0, r0, #1431655765
+ 186              		.loc 1 73 11 view .LVU49
+ 187 000a 0344     		add	r3, r3, r0
+ 188              	.LVL20:
+  74:common/util.c ****     value = ( value & 0x33333333 ) + ( (value >>2)  & 0x33333333 ) ; 
+ 189              		.loc 1 74 5 is_stmt 1 view .LVU50
+ 190              		.loc 1 74 21 is_stmt 0 view .LVU51
+ 191 000c 03F03332 		and	r2, r3, #858993459
+ 192              		.loc 1 74 47 view .LVU52
+ 193 0010 9B08     		lsrs	r3, r3, #2
+ 194              	.LVL21:
+ 195              		.loc 1 74 53 view .LVU53
+ 196 0012 03F03333 		and	r3, r3, #858993459
+ 197              		.loc 1 74 11 view .LVU54
+ 198 0016 1A44     		add	r2, r2, r3
+ 199              	.LVL22:
+  75:common/util.c ****     value = ( value & 0x0f0f0f0f ) + ( (value >>4)  & 0x0f0f0f0f ) ; 
+ 200              		.loc 1 75 5 is_stmt 1 view .LVU55
+ 201              		.loc 1 75 21 is_stmt 0 view .LVU56
+ 202 0018 02F00F33 		and	r3, r2, #252645135
+ 203              		.loc 1 75 47 view .LVU57
+ 204 001c 1209     		lsrs	r2, r2, #4
+ 205              	.LVL23:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 6
+
+
+ 206              		.loc 1 75 53 view .LVU58
+ 207 001e 02F00F32 		and	r2, r2, #252645135
+ 208              		.loc 1 75 11 view .LVU59
+ 209 0022 1344     		add	r3, r3, r2
+ 210              	.LVL24:
+  76:common/util.c ****     value = ( value & 0x00ff00ff ) + ( (value >>8)  & 0x00ff00ff ) ; 
+ 211              		.loc 1 76 5 is_stmt 1 view .LVU60
+ 212              		.loc 1 76 21 is_stmt 0 view .LVU61
+ 213 0024 03F0FF10 		and	r0, r3, #16711935
+ 214              		.loc 1 76 47 view .LVU62
+ 215 0028 1B0A     		lsrs	r3, r3, #8
+ 216              	.LVL25:
+ 217              		.loc 1 76 53 view .LVU63
+ 218 002a 03F0FF13 		and	r3, r3, #16711935
+ 219              		.loc 1 76 11 view .LVU64
+ 220 002e 0344     		add	r3, r3, r0
+ 221              	.LVL26:
+  77:common/util.c ****     value = ( value & 0x0000ffff ) + ( (value >>16) & 0x0000ffff ) ; 
+ 222              		.loc 1 77 5 is_stmt 1 view .LVU65
+ 223              		.loc 1 77 47 is_stmt 0 view .LVU66
+ 224 0030 180C     		lsrs	r0, r3, #16
+ 225              		.loc 1 77 11 view .LVU67
+ 226 0032 10FA83F0 		uxtah	r0, r0, r3
+ 227              	.LVL27:
+  78:common/util.c ****  
+  79:common/util.c ****     return value  ; 
+ 228              		.loc 1 79 5 is_stmt 1 view .LVU68
+  80:common/util.c **** }
+ 229              		.loc 1 80 1 is_stmt 0 view .LVU69
+ 230 0036 C0B2     		uxtb	r0, r0
+ 231              	.LVL28:
+ 232              		.loc 1 80 1 view .LVU70
+ 233 0038 7047     		bx	lr
+ 234              		.cfi_endproc
+ 235              	.LFE2:
+ 237              		.section	.rodata.crc16_tab,"a"
+ 238              		.align	2
+ 239              		.set	.LANCHOR0,. + 0
+ 242              	crc16_tab:
+ 243 0000 0000     		.short	0
+ 244 0002 2110     		.short	4129
+ 245 0004 4220     		.short	8258
+ 246 0006 6330     		.short	12387
+ 247 0008 8440     		.short	16516
+ 248 000a A550     		.short	20645
+ 249 000c C660     		.short	24774
+ 250 000e E770     		.short	28903
+ 251 0010 0881     		.short	-32504
+ 252 0012 2991     		.short	-28375
+ 253 0014 4AA1     		.short	-24246
+ 254 0016 6BB1     		.short	-20117
+ 255 0018 8CC1     		.short	-15988
+ 256 001a ADD1     		.short	-11859
+ 257 001c CEE1     		.short	-7730
+ 258 001e EFF1     		.short	-3601
+ 259 0020 3112     		.short	4657
+ 260 0022 1002     		.short	528
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 7
+
+
+ 261 0024 7332     		.short	12915
+ 262 0026 5222     		.short	8786
+ 263 0028 B552     		.short	21173
+ 264 002a 9442     		.short	17044
+ 265 002c F772     		.short	29431
+ 266 002e D662     		.short	25302
+ 267 0030 3993     		.short	-27847
+ 268 0032 1883     		.short	-31976
+ 269 0034 7BB3     		.short	-19589
+ 270 0036 5AA3     		.short	-23718
+ 271 0038 BDD3     		.short	-11331
+ 272 003a 9CC3     		.short	-15460
+ 273 003c FFF3     		.short	-3073
+ 274 003e DEE3     		.short	-7202
+ 275 0040 6224     		.short	9314
+ 276 0042 4334     		.short	13379
+ 277 0044 2004     		.short	1056
+ 278 0046 0114     		.short	5121
+ 279 0048 E664     		.short	25830
+ 280 004a C774     		.short	29895
+ 281 004c A444     		.short	17572
+ 282 004e 8554     		.short	21637
+ 283 0050 6AA5     		.short	-23190
+ 284 0052 4BB5     		.short	-19125
+ 285 0054 2885     		.short	-31448
+ 286 0056 0995     		.short	-27383
+ 287 0058 EEE5     		.short	-6674
+ 288 005a CFF5     		.short	-2609
+ 289 005c ACC5     		.short	-14932
+ 290 005e 8DD5     		.short	-10867
+ 291 0060 5336     		.short	13907
+ 292 0062 7226     		.short	9842
+ 293 0064 1116     		.short	5649
+ 294 0066 3006     		.short	1584
+ 295 0068 D776     		.short	30423
+ 296 006a F666     		.short	26358
+ 297 006c 9556     		.short	22165
+ 298 006e B446     		.short	18100
+ 299 0070 5BB7     		.short	-18597
+ 300 0072 7AA7     		.short	-22662
+ 301 0074 1997     		.short	-26855
+ 302 0076 3887     		.short	-30920
+ 303 0078 DFF7     		.short	-2081
+ 304 007a FEE7     		.short	-6146
+ 305 007c 9DD7     		.short	-10339
+ 306 007e BCC7     		.short	-14404
+ 307 0080 C448     		.short	18628
+ 308 0082 E558     		.short	22757
+ 309 0084 8668     		.short	26758
+ 310 0086 A778     		.short	30887
+ 311 0088 4008     		.short	2112
+ 312 008a 6118     		.short	6241
+ 313 008c 0228     		.short	10242
+ 314 008e 2338     		.short	14371
+ 315 0090 CCC9     		.short	-13876
+ 316 0092 EDD9     		.short	-9747
+ 317 0094 8EE9     		.short	-5746
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 8
+
+
+ 318 0096 AFF9     		.short	-1617
+ 319 0098 4889     		.short	-30392
+ 320 009a 6999     		.short	-26263
+ 321 009c 0AA9     		.short	-22262
+ 322 009e 2BB9     		.short	-18133
+ 323 00a0 F55A     		.short	23285
+ 324 00a2 D44A     		.short	19156
+ 325 00a4 B77A     		.short	31415
+ 326 00a6 966A     		.short	27286
+ 327 00a8 711A     		.short	6769
+ 328 00aa 500A     		.short	2640
+ 329 00ac 333A     		.short	14899
+ 330 00ae 122A     		.short	10770
+ 331 00b0 FDDB     		.short	-9219
+ 332 00b2 DCCB     		.short	-13348
+ 333 00b4 BFFB     		.short	-1089
+ 334 00b6 9EEB     		.short	-5218
+ 335 00b8 799B     		.short	-25735
+ 336 00ba 588B     		.short	-29864
+ 337 00bc 3BBB     		.short	-17605
+ 338 00be 1AAB     		.short	-21734
+ 339 00c0 A66C     		.short	27814
+ 340 00c2 877C     		.short	31879
+ 341 00c4 E44C     		.short	19684
+ 342 00c6 C55C     		.short	23749
+ 343 00c8 222C     		.short	11298
+ 344 00ca 033C     		.short	15363
+ 345 00cc 600C     		.short	3168
+ 346 00ce 411C     		.short	7233
+ 347 00d0 AEED     		.short	-4690
+ 348 00d2 8FFD     		.short	-625
+ 349 00d4 ECCD     		.short	-12820
+ 350 00d6 CDDD     		.short	-8755
+ 351 00d8 2AAD     		.short	-21206
+ 352 00da 0BBD     		.short	-17141
+ 353 00dc 688D     		.short	-29336
+ 354 00de 499D     		.short	-25271
+ 355 00e0 977E     		.short	32407
+ 356 00e2 B66E     		.short	28342
+ 357 00e4 D55E     		.short	24277
+ 358 00e6 F44E     		.short	20212
+ 359 00e8 133E     		.short	15891
+ 360 00ea 322E     		.short	11826
+ 361 00ec 511E     		.short	7761
+ 362 00ee 700E     		.short	3696
+ 363 00f0 9FFF     		.short	-97
+ 364 00f2 BEEF     		.short	-4162
+ 365 00f4 DDDF     		.short	-8227
+ 366 00f6 FCCF     		.short	-12292
+ 367 00f8 1BBF     		.short	-16613
+ 368 00fa 3AAF     		.short	-20678
+ 369 00fc 599F     		.short	-24743
+ 370 00fe 788F     		.short	-28808
+ 371 0100 8891     		.short	-28280
+ 372 0102 A981     		.short	-32343
+ 373 0104 CAB1     		.short	-20022
+ 374 0106 EBA1     		.short	-24085
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 9
+
+
+ 375 0108 0CD1     		.short	-12020
+ 376 010a 2DC1     		.short	-16083
+ 377 010c 4EF1     		.short	-3762
+ 378 010e 6FE1     		.short	-7825
+ 379 0110 8010     		.short	4224
+ 380 0112 A100     		.short	161
+ 381 0114 C230     		.short	12482
+ 382 0116 E320     		.short	8419
+ 383 0118 0450     		.short	20484
+ 384 011a 2540     		.short	16421
+ 385 011c 4670     		.short	28742
+ 386 011e 6760     		.short	24679
+ 387 0120 B983     		.short	-31815
+ 388 0122 9893     		.short	-27752
+ 389 0124 FBA3     		.short	-23557
+ 390 0126 DAB3     		.short	-19494
+ 391 0128 3DC3     		.short	-15555
+ 392 012a 1CD3     		.short	-11492
+ 393 012c 7FE3     		.short	-7297
+ 394 012e 5EF3     		.short	-3234
+ 395 0130 B102     		.short	689
+ 396 0132 9012     		.short	4752
+ 397 0134 F322     		.short	8947
+ 398 0136 D232     		.short	13010
+ 399 0138 3542     		.short	16949
+ 400 013a 1452     		.short	21012
+ 401 013c 7762     		.short	25207
+ 402 013e 5672     		.short	29270
+ 403 0140 EAB5     		.short	-18966
+ 404 0142 CBA5     		.short	-23093
+ 405 0144 A895     		.short	-27224
+ 406 0146 8985     		.short	-31351
+ 407 0148 6EF5     		.short	-2706
+ 408 014a 4FE5     		.short	-6833
+ 409 014c 2CD5     		.short	-10964
+ 410 014e 0DC5     		.short	-15091
+ 411 0150 E234     		.short	13538
+ 412 0152 C324     		.short	9411
+ 413 0154 A014     		.short	5280
+ 414 0156 8104     		.short	1153
+ 415 0158 6674     		.short	29798
+ 416 015a 4764     		.short	25671
+ 417 015c 2454     		.short	21540
+ 418 015e 0544     		.short	17413
+ 419 0160 DBA7     		.short	-22565
+ 420 0162 FAB7     		.short	-18438
+ 421 0164 9987     		.short	-30823
+ 422 0166 B897     		.short	-26696
+ 423 0168 5FE7     		.short	-6305
+ 424 016a 7EF7     		.short	-2178
+ 425 016c 1DC7     		.short	-14563
+ 426 016e 3CD7     		.short	-10436
+ 427 0170 D326     		.short	9939
+ 428 0172 F236     		.short	14066
+ 429 0174 9106     		.short	1681
+ 430 0176 B016     		.short	5808
+ 431 0178 5766     		.short	26199
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 10
+
+
+ 432 017a 7676     		.short	30326
+ 433 017c 1546     		.short	17941
+ 434 017e 3456     		.short	22068
+ 435 0180 4CD9     		.short	-9908
+ 436 0182 6DC9     		.short	-13971
+ 437 0184 0EF9     		.short	-1778
+ 438 0186 2FE9     		.short	-5841
+ 439 0188 C899     		.short	-26168
+ 440 018a E989     		.short	-30231
+ 441 018c 8AB9     		.short	-18038
+ 442 018e ABA9     		.short	-22101
+ 443 0190 4458     		.short	22596
+ 444 0192 6548     		.short	18533
+ 445 0194 0678     		.short	30726
+ 446 0196 2768     		.short	26663
+ 447 0198 C018     		.short	6336
+ 448 019a E108     		.short	2273
+ 449 019c 8238     		.short	14466
+ 450 019e A328     		.short	10403
+ 451 01a0 7DCB     		.short	-13443
+ 452 01a2 5CDB     		.short	-9380
+ 453 01a4 3FEB     		.short	-5313
+ 454 01a6 1EFB     		.short	-1250
+ 455 01a8 F98B     		.short	-29703
+ 456 01aa D89B     		.short	-25640
+ 457 01ac BBAB     		.short	-21573
+ 458 01ae 9ABB     		.short	-17510
+ 459 01b0 754A     		.short	19061
+ 460 01b2 545A     		.short	23124
+ 461 01b4 376A     		.short	27191
+ 462 01b6 167A     		.short	31254
+ 463 01b8 F10A     		.short	2801
+ 464 01ba D01A     		.short	6864
+ 465 01bc B32A     		.short	10931
+ 466 01be 923A     		.short	14994
+ 467 01c0 2EFD     		.short	-722
+ 468 01c2 0FED     		.short	-4849
+ 469 01c4 6CDD     		.short	-8852
+ 470 01c6 4DCD     		.short	-12979
+ 471 01c8 AABD     		.short	-16982
+ 472 01ca 8BAD     		.short	-21109
+ 473 01cc E89D     		.short	-25112
+ 474 01ce C98D     		.short	-29239
+ 475 01d0 267C     		.short	31782
+ 476 01d2 076C     		.short	27655
+ 477 01d4 645C     		.short	23652
+ 478 01d6 454C     		.short	19525
+ 479 01d8 A23C     		.short	15522
+ 480 01da 832C     		.short	11395
+ 481 01dc E01C     		.short	7392
+ 482 01de C10C     		.short	3265
+ 483 01e0 1FEF     		.short	-4321
+ 484 01e2 3EFF     		.short	-194
+ 485 01e4 5DCF     		.short	-12451
+ 486 01e6 7CDF     		.short	-8324
+ 487 01e8 9BAF     		.short	-20581
+ 488 01ea BABF     		.short	-16454
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 11
+
+
+ 489 01ec D98F     		.short	-28711
+ 490 01ee F89F     		.short	-24584
+ 491 01f0 176E     		.short	28183
+ 492 01f2 367E     		.short	32310
+ 493 01f4 554E     		.short	20053
+ 494 01f6 745E     		.short	24180
+ 495 01f8 932E     		.short	11923
+ 496 01fa B23E     		.short	16050
+ 497 01fc D10E     		.short	3793
+ 498 01fe F01E     		.short	7920
+ 499              		.text
+ 500              	.Letext0:
+ 501              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 502              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s 			page 12
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 util.c
+C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s:20     .text.Common_CRC16:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s:26     .text.Common_CRC16:00000000 Common_CRC16
+C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s:115    .text.Common_CRC16:0000003c $d
+C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s:120    .text.Get_Bit_Index:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s:126    .text.Get_Bit_Index:00000000 Get_Bit_Index
+C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s:164    .text.Get_OnSet_Bit_Num:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s:170    .text.Get_OnSet_Bit_Num:00000000 Get_OnSet_Bit_Num
+C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s:238    .rodata.crc16_tab:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cce8qtcK.s:242    .rodata.crc16_tab:00000000 crc16_tab
+
+NO UNDEFINED SYMBOLS

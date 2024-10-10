@@ -1,0 +1,996 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Srv_OsCommon.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.__enable_irq,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	__enable_irq:
+  26              	.LFB6:
+  27              		.file 1 "HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h"
+   1:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** /******************************************************************************
+   2:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * @file     cmsis_gcc.h
+   3:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * @brief    CMSIS compiler GCC header file
+   4:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * @version  V5.3.0
+   5:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * @date     26. March 2020
+   6:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  ******************************************************************************/
+   7:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** /*
+   8:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * Copyright (c) 2009-2020 Arm Limited. All rights reserved.
+   9:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  *
+  10:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * SPDX-License-Identifier: Apache-2.0
+  11:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  *
+  12:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * Licensed under the Apache License, Version 2.0 (the License); you may
+  13:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * not use this file except in compliance with the License.
+  14:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * You may obtain a copy of the License at
+  15:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  *
+  16:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * www.apache.org/licenses/LICENSE-2.0
+  17:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  *
+  18:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * Unless required by applicable law or agreed to in writing, software
+  19:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * distributed under the License is distributed on an AS IS BASIS, WITHOUT
+  20:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  21:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * See the License for the specific language governing permissions and
+  22:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  * limitations under the License.
+  23:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  */
+  24:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+  25:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef __CMSIS_GCC_H
+  26:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #define __CMSIS_GCC_H
+  27:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+  28:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** /* ignore some GCC warnings */
+  29:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #pragma GCC diagnostic push
+  30:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wsign-conversion"
+  31:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wconversion"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 2
+
+
+  32:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #pragma GCC diagnostic ignored "-Wunused-parameter"
+  33:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+  34:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** /* Fallback for __has_builtin */
+  35:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef __has_builtin
+  36:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __has_builtin(x) (0)
+  37:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  38:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+  39:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** /* CMSIS compiler specific defines */
+  40:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __ASM
+  41:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __ASM                                  __asm
+  42:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  43:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __INLINE
+  44:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __INLINE                               inline
+  45:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  46:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __STATIC_INLINE
+  47:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __STATIC_INLINE                        static inline
+  48:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  49:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __STATIC_FORCEINLINE
+  50:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __STATIC_FORCEINLINE                   __attribute__((always_inline)) static inline
+  51:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  52:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __NO_RETURN
+  53:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __NO_RETURN                            __attribute__((__noreturn__))
+  54:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  55:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __USED
+  56:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __USED                                 __attribute__((used))
+  57:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  58:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __WEAK
+  59:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __WEAK                                 __attribute__((weak))
+  60:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  61:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __PACKED
+  62:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __PACKED                               __attribute__((packed, aligned(1)))
+  63:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  64:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __PACKED_STRUCT
+  65:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __PACKED_STRUCT                        struct __attribute__((packed, aligned(1)))
+  66:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  67:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __PACKED_UNION
+  68:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __PACKED_UNION                         union __attribute__((packed, aligned(1)))
+  69:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  70:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32        /* deprecated */
+  71:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  72:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  73:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  74:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   struct __attribute__((packed)) T_UINT32 { uint32_t v; };
+  75:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  76:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __UNALIGNED_UINT32(x)                  (((struct T_UINT32 *)(x))->v)
+  77:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  78:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_WRITE
+  79:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  80:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  81:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  82:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_WRITE { uint16_t v; };
+  83:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  84:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_WRITE(addr, val)    (void)((((struct T_UINT16_WRITE *)(void *)(addr))-
+  85:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  86:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT16_READ
+  87:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  88:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 3
+
+
+  89:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  90:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT16_READ { uint16_t v; };
+  91:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+  92:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __UNALIGNED_UINT16_READ(addr)          (((const struct T_UINT16_READ *)(const void *)(add
+  93:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+  94:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_WRITE
+  95:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic push
+  96:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+  97:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+  98:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_WRITE { uint32_t v; };
+  99:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 100:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_WRITE(addr, val)    (void)((((struct T_UINT32_WRITE *)(void *)(addr))-
+ 101:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+ 102:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __UNALIGNED_UINT32_READ
+ 103:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic push
+ 104:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wpacked"
+ 105:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic ignored "-Wattributes"
+ 106:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   __PACKED_STRUCT T_UINT32_READ { uint32_t v; };
+ 107:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #pragma GCC diagnostic pop
+ 108:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __UNALIGNED_UINT32_READ(addr)          (((const struct T_UINT32_READ *)(const void *)(add
+ 109:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+ 110:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __ALIGNED
+ 111:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __ALIGNED(x)                           __attribute__((aligned(x)))
+ 112:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+ 113:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __RESTRICT
+ 114:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __RESTRICT                             __restrict
+ 115:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+ 116:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef   __COMPILER_BARRIER
+ 117:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   #define __COMPILER_BARRIER()                   __ASM volatile("":::"memory")
+ 118:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+ 119:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 120:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** /* #########################  Startup and Lowlevel Init  ######################## */
+ 121:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 122:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef __PROGRAM_START
+ 123:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 124:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** /**
+ 125:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   \brief   Initializes data and bss sections
+ 126:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   \details This default implementations initialized all data and additional bss
+ 127:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****            sections relying on .copy.table and .zero.table specified properly
+ 128:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****            in the used linker script.
+ 129:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 130:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  */
+ 131:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** __STATIC_FORCEINLINE __NO_RETURN void __cmsis_start(void)
+ 132:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** {
+ 133:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   extern void _start(void) __NO_RETURN;
+ 134:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 135:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   typedef struct {
+ 136:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****     uint32_t const* src;
+ 137:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****     uint32_t* dest;
+ 138:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****     uint32_t  wlen;
+ 139:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   } __copy_table_t;
+ 140:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 141:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   typedef struct {
+ 142:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****     uint32_t* dest;
+ 143:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****     uint32_t  wlen;
+ 144:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   } __zero_table_t;
+ 145:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 4
+
+
+ 146:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   extern const __copy_table_t __copy_table_start__;
+ 147:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   extern const __copy_table_t __copy_table_end__;
+ 148:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   extern const __zero_table_t __zero_table_start__;
+ 149:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   extern const __zero_table_t __zero_table_end__;
+ 150:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 151:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   for (__copy_table_t const* pTable = &__copy_table_start__; pTable < &__copy_table_end__; ++pTable
+ 152:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****     for(uint32_t i=0u; i<pTable->wlen; ++i) {
+ 153:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****       pTable->dest[i] = pTable->src[i];
+ 154:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****     }
+ 155:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   }
+ 156:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 157:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   for (__zero_table_t const* pTable = &__zero_table_start__; pTable < &__zero_table_end__; ++pTable
+ 158:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****     for(uint32_t i=0u; i<pTable->wlen; ++i) {
+ 159:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****       pTable->dest[i] = 0u;
+ 160:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****     }
+ 161:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   }
+ 162:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 163:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   _start();
+ 164:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** }
+ 165:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 166:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #define __PROGRAM_START           __cmsis_start
+ 167:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+ 168:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 169:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef __INITIAL_SP
+ 170:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #define __INITIAL_SP              __StackTop
+ 171:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+ 172:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 173:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef __STACK_LIMIT
+ 174:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #define __STACK_LIMIT             __StackLimit
+ 175:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+ 176:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 177:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef __VECTOR_TABLE
+ 178:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #define __VECTOR_TABLE            __Vectors
+ 179:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+ 180:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 181:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #ifndef __VECTOR_TABLE_ATTRIBUTE
+ 182:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #define __VECTOR_TABLE_ATTRIBUTE  __attribute__((used, section(".vectors")))
+ 183:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** #endif
+ 184:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 185:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** /* ###########################  Core Function Access  ########################### */
+ 186:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** /** \ingroup  CMSIS_Core_FunctionInterface
+ 187:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****     \defgroup CMSIS_Core_RegAccFunctions CMSIS Core Register Access Functions
+ 188:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   @{
+ 189:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  */
+ 190:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 191:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** /**
+ 192:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   \brief   Enable IRQ Interrupts
+ 193:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   \details Enables IRQ interrupts by clearing the I-bit in the CPSR.
+ 194:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 195:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  */
+ 196:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** __STATIC_FORCEINLINE void __enable_irq(void)
+ 197:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** {
+  28              		.loc 1 197 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 5
+
+
+ 198:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   __ASM volatile ("cpsie i" : : : "memory");
+  33              		.loc 1 198 3 view .LVU1
+  34              		.syntax unified
+  35              	@ 198 "HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h" 1
+  36 0000 62B6     		cpsie i
+  37              	@ 0 "" 2
+ 199:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** }
+  38              		.loc 1 199 1 is_stmt 0 view .LVU2
+  39              		.thumb
+  40              		.syntax unified
+  41 0002 7047     		bx	lr
+  42              		.cfi_endproc
+  43              	.LFE6:
+  45              		.section	.text.__disable_irq,"ax",%progbits
+  46              		.align	1
+  47              		.syntax unified
+  48              		.thumb
+  49              		.thumb_func
+  51              	__disable_irq:
+  52              	.LFB7:
+ 200:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 201:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** 
+ 202:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** /**
+ 203:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   \brief   Disable IRQ Interrupts
+ 204:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   \details Disables IRQ interrupts by setting the I-bit in the CPSR.
+ 205:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****            Can only be executed in Privileged modes.
+ 206:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****  */
+ 207:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** __STATIC_FORCEINLINE void __disable_irq(void)
+ 208:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** {
+  53              		.loc 1 208 1 is_stmt 1 view -0
+  54              		.cfi_startproc
+  55              		@ args = 0, pretend = 0, frame = 0
+  56              		@ frame_needed = 0, uses_anonymous_args = 0
+  57              		@ link register save eliminated.
+ 209:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h ****   __ASM volatile ("cpsid i" : : : "memory");
+  58              		.loc 1 209 3 view .LVU4
+  59              		.syntax unified
+  60              	@ 209 "HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h" 1
+  61 0000 72B6     		cpsid i
+  62              	@ 0 "" 2
+ 210:HW_Lib/AT32F435/cmsis/cm4/core_support/cmsis_gcc.h **** }
+  63              		.loc 1 210 1 is_stmt 0 view .LVU5
+  64              		.thumb
+  65              		.syntax unified
+  66 0002 7047     		bx	lr
+  67              		.cfi_endproc
+  68              	.LFE7:
+  70              		.section	.text.SrvOsCommon_Free,"ax",%progbits
+  71              		.align	1
+  72              		.syntax unified
+  73              		.thumb
+  74              		.thumb_func
+  76              	SrvOsCommon_Free:
+  77              	.LVL0:
+  78              	.LFB111:
+  79              		.file 2 "Service/Srv_OsCommon.c"
+   1:Service/Srv_OsCommon.c **** #include "Srv_OsCommon.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 6
+
+
+   2:Service/Srv_OsCommon.c **** #include "kernel.h"
+   3:Service/Srv_OsCommon.c **** #include "cmsis_gcc.h"
+   4:Service/Srv_OsCommon.c **** #include "shell_port.h"
+   5:Service/Srv_OsCommon.c **** 
+   6:Service/Srv_OsCommon.c **** typedef struct
+   7:Service/Srv_OsCommon.c **** {
+   8:Service/Srv_OsCommon.c ****     uint32_t available_size;
+   9:Service/Srv_OsCommon.c ****     uint32_t heap_remain;
+  10:Service/Srv_OsCommon.c ****     uint32_t block_num;
+  11:Service/Srv_OsCommon.c **** 
+  12:Service/Srv_OsCommon.c ****     uint32_t malloc_cnt;
+  13:Service/Srv_OsCommon.c ****     uint32_t malloc_failed_cnt;
+  14:Service/Srv_OsCommon.c ****     uint32_t free_cnt;
+  15:Service/Srv_OsCommon.c ****     uint32_t free_faile_cnt;
+  16:Service/Srv_OsCommon.c **** }SrvOsCommon_HeapMonitor_TypeDef;
+  17:Service/Srv_OsCommon.c **** 
+  18:Service/Srv_OsCommon.c **** /* internal vriable */
+  19:Service/Srv_OsCommon.c **** static bool first_call = true;
+  20:Service/Srv_OsCommon.c **** static SrvOsCommon_HeapMonitor_TypeDef OsHeap_Monitor = {0};
+  21:Service/Srv_OsCommon.c **** 
+  22:Service/Srv_OsCommon.c **** /* external vriable */
+  23:Service/Srv_OsCommon.c **** uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__((section(".OsHeap_Section")));
+  24:Service/Srv_OsCommon.c **** 
+  25:Service/Srv_OsCommon.c **** /* external function */
+  26:Service/Srv_OsCommon.c **** static void* SrvOsCommon_Malloc(uint32_t size);
+  27:Service/Srv_OsCommon.c **** static void SrvOsCommon_Free(void *ptr);
+  28:Service/Srv_OsCommon.c **** static int32_t SrvOsCommon_Delay(uint32_t ms);
+  29:Service/Srv_OsCommon.c **** static void SrvOsCommon_DelayUntil(uint32_t *prev_time, uint32_t ms);
+  30:Service/Srv_OsCommon.c **** 
+  31:Service/Srv_OsCommon.c **** SrvOsCommon_TypeDef SrvOsCommon = {
+  32:Service/Srv_OsCommon.c ****     .get_os_ms = osKernelSysTick,
+  33:Service/Srv_OsCommon.c ****     .delay_ms = SrvOsCommon_Delay,
+  34:Service/Srv_OsCommon.c ****     .precise_delay = SrvOsCommon_DelayUntil,
+  35:Service/Srv_OsCommon.c ****     .malloc = SrvOsCommon_Malloc,
+  36:Service/Srv_OsCommon.c ****     .free = SrvOsCommon_Free,
+  37:Service/Srv_OsCommon.c ****     .enter_critical = vPortEnterCritical,
+  38:Service/Srv_OsCommon.c ****     .exit_critical = vPortExitCritical,
+  39:Service/Srv_OsCommon.c ****     .get_heap_status = vPortGetHeapStats,
+  40:Service/Srv_OsCommon.c ****     .get_systimer_current_tick = Kernel_Get_SysTimer_TickUnit,
+  41:Service/Srv_OsCommon.c ****     .get_systimer_period = Kernel_Get_PeriodValue,
+  42:Service/Srv_OsCommon.c ****     .set_systimer_tick_value = Kernel_Set_SysTimer_TickUnit,
+  43:Service/Srv_OsCommon.c ****     .set_systimer_period = Kernel_Set_PeriodValue,
+  44:Service/Srv_OsCommon.c ****     .systimer_tick_to_us = Kernel_TickVal_To_Us,
+  45:Service/Srv_OsCommon.c ****     .systimer_disable = Kernel_DisableTimer_IRQ,
+  46:Service/Srv_OsCommon.c ****     .systimer_enable = Kernel_EnableTimer_IRQ,
+  47:Service/Srv_OsCommon.c ****     .disable_all_irq = __disable_irq,
+  48:Service/Srv_OsCommon.c ****     .enable_all_irq = __enable_irq,
+  49:Service/Srv_OsCommon.c ****     .reboot = Kernel_reboot,
+  50:Service/Srv_OsCommon.c **** };
+  51:Service/Srv_OsCommon.c **** 
+  52:Service/Srv_OsCommon.c **** static void* SrvOsCommon_Malloc(uint32_t size)
+  53:Service/Srv_OsCommon.c **** {
+  54:Service/Srv_OsCommon.c ****     void *req_tmp = NULL;
+  55:Service/Srv_OsCommon.c ****     SrvOs_HeapStatus_TypeDef status; 
+  56:Service/Srv_OsCommon.c ****     uint32_t malloc_num = 0;
+  57:Service/Srv_OsCommon.c ****     memset(&status, 0, sizeof(SrvOs_HeapStatus_TypeDef));
+  58:Service/Srv_OsCommon.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 7
+
+
+  59:Service/Srv_OsCommon.c ****     /* check heap status first */
+  60:Service/Srv_OsCommon.c ****     vPortGetHeapStats(&status);
+  61:Service/Srv_OsCommon.c ****     malloc_num = status.xNumberOfSuccessfulAllocations;
+  62:Service/Srv_OsCommon.c ****     
+  63:Service/Srv_OsCommon.c ****     if(first_call)
+  64:Service/Srv_OsCommon.c ****     {
+  65:Service/Srv_OsCommon.c ****         memset(&OsHeap_Monitor, 0, sizeof(SrvOsCommon_HeapMonitor_TypeDef));
+  66:Service/Srv_OsCommon.c ****         first_call = false;
+  67:Service/Srv_OsCommon.c ****     }
+  68:Service/Srv_OsCommon.c **** 
+  69:Service/Srv_OsCommon.c ****     if(status.xAvailableHeapSpaceInBytes)
+  70:Service/Srv_OsCommon.c ****     {
+  71:Service/Srv_OsCommon.c ****         req_tmp = pvPortMalloc(size);
+  72:Service/Srv_OsCommon.c ****         
+  73:Service/Srv_OsCommon.c ****         /* recheck heap status after os heap malloc */
+  74:Service/Srv_OsCommon.c ****         vPortGetHeapStats(&status);
+  75:Service/Srv_OsCommon.c **** 
+  76:Service/Srv_OsCommon.c ****         OsHeap_Monitor.available_size = status.xAvailableHeapSpaceInBytes;
+  77:Service/Srv_OsCommon.c ****         OsHeap_Monitor.block_num = status.xNumberOfFreeBlocks;
+  78:Service/Srv_OsCommon.c ****     
+  79:Service/Srv_OsCommon.c ****         if(!req_tmp && (status.xNumberOfSuccessfulAllocations - malloc_num != 1))
+  80:Service/Srv_OsCommon.c ****         {
+  81:Service/Srv_OsCommon.c ****             req_tmp = NULL;
+  82:Service/Srv_OsCommon.c ****             OsHeap_Monitor.malloc_failed_cnt ++;
+  83:Service/Srv_OsCommon.c ****         }
+  84:Service/Srv_OsCommon.c ****         else
+  85:Service/Srv_OsCommon.c ****         {
+  86:Service/Srv_OsCommon.c ****             memset(req_tmp, 0, size);
+  87:Service/Srv_OsCommon.c ****             OsHeap_Monitor.malloc_cnt ++;
+  88:Service/Srv_OsCommon.c ****         }
+  89:Service/Srv_OsCommon.c ****     }
+  90:Service/Srv_OsCommon.c **** 
+  91:Service/Srv_OsCommon.c ****     return req_tmp;
+  92:Service/Srv_OsCommon.c **** }
+  93:Service/Srv_OsCommon.c **** 
+  94:Service/Srv_OsCommon.c **** static void SrvOsCommon_Free(void *ptr)
+  95:Service/Srv_OsCommon.c **** {
+  80              		.loc 2 95 1 is_stmt 1 view -0
+  81              		.cfi_startproc
+  82              		@ args = 0, pretend = 0, frame = 32
+  83              		@ frame_needed = 0, uses_anonymous_args = 0
+  84              		.loc 2 95 1 is_stmt 0 view .LVU7
+  85 0000 30B5     		push	{r4, r5, lr}
+  86              	.LCFI0:
+  87              		.cfi_def_cfa_offset 12
+  88              		.cfi_offset 4, -12
+  89              		.cfi_offset 5, -8
+  90              		.cfi_offset 14, -4
+  91 0002 89B0     		sub	sp, sp, #36
+  92              	.LCFI1:
+  93              		.cfi_def_cfa_offset 48
+  96:Service/Srv_OsCommon.c ****     uint32_t free_cnt = 0;
+  94              		.loc 2 96 5 is_stmt 1 view .LVU8
+  95              	.LVL1:
+  97:Service/Srv_OsCommon.c ****     SrvOs_HeapStatus_TypeDef status;
+  96              		.loc 2 97 5 view .LVU9
+  98:Service/Srv_OsCommon.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 8
+
+
+  99:Service/Srv_OsCommon.c ****     memset(&status, 0, sizeof(SrvOs_HeapStatus_TypeDef));
+  97              		.loc 2 99 5 view .LVU10
+  98 0004 0023     		movs	r3, #0
+  99 0006 0193     		str	r3, [sp, #4]
+ 100 0008 0293     		str	r3, [sp, #8]
+ 101 000a 0393     		str	r3, [sp, #12]
+ 102 000c 0493     		str	r3, [sp, #16]
+ 103 000e 0593     		str	r3, [sp, #20]
+ 104 0010 0693     		str	r3, [sp, #24]
+ 105 0012 0793     		str	r3, [sp, #28]
+ 100:Service/Srv_OsCommon.c **** 
+ 101:Service/Srv_OsCommon.c ****     if(ptr)
+ 106              		.loc 2 101 5 view .LVU11
+ 107              		.loc 2 101 7 is_stmt 0 view .LVU12
+ 108 0014 B8B1     		cbz	r0, .L3
+ 109 0016 0446     		mov	r4, r0
+ 102:Service/Srv_OsCommon.c ****     {
+ 103:Service/Srv_OsCommon.c ****         vPortGetHeapStats(&status);
+ 110              		.loc 2 103 9 is_stmt 1 view .LVU13
+ 111 0018 01A8     		add	r0, sp, #4
+ 112              	.LVL2:
+ 113              		.loc 2 103 9 is_stmt 0 view .LVU14
+ 114 001a FFF7FEFF 		bl	vPortGetHeapStats
+ 115              	.LVL3:
+ 104:Service/Srv_OsCommon.c ****         free_cnt = status.xNumberOfSuccessfulFrees;
+ 116              		.loc 2 104 9 is_stmt 1 view .LVU15
+ 117              		.loc 2 104 18 is_stmt 0 view .LVU16
+ 118 001e 079D     		ldr	r5, [sp, #28]
+ 119              	.LVL4:
+ 105:Service/Srv_OsCommon.c ****         
+ 106:Service/Srv_OsCommon.c ****         vPortFree(ptr);
+ 120              		.loc 2 106 9 is_stmt 1 view .LVU17
+ 121 0020 2046     		mov	r0, r4
+ 122 0022 FFF7FEFF 		bl	vPortFree
+ 123              	.LVL5:
+ 107:Service/Srv_OsCommon.c ****         
+ 108:Service/Srv_OsCommon.c ****         /* check heap status after os heap free */
+ 109:Service/Srv_OsCommon.c ****         vPortGetHeapStats(&status);
+ 124              		.loc 2 109 9 view .LVU18
+ 125 0026 01A8     		add	r0, sp, #4
+ 126 0028 FFF7FEFF 		bl	vPortGetHeapStats
+ 127              	.LVL6:
+ 110:Service/Srv_OsCommon.c ****         OsHeap_Monitor.available_size = status.xAvailableHeapSpaceInBytes;
+ 128              		.loc 2 110 9 view .LVU19
+ 129              		.loc 2 110 39 is_stmt 0 view .LVU20
+ 130 002c 094B     		ldr	r3, .L8
+ 131 002e 019A     		ldr	r2, [sp, #4]
+ 132 0030 1A60     		str	r2, [r3]
+ 111:Service/Srv_OsCommon.c ****         OsHeap_Monitor.block_num = status.xNumberOfFreeBlocks;
+ 133              		.loc 2 111 9 is_stmt 1 view .LVU21
+ 134              		.loc 2 111 42 is_stmt 0 view .LVU22
+ 135 0032 049A     		ldr	r2, [sp, #16]
+ 136              		.loc 2 111 34 view .LVU23
+ 137 0034 9A60     		str	r2, [r3, #8]
+ 112:Service/Srv_OsCommon.c **** 
+ 113:Service/Srv_OsCommon.c ****         if(status.xNumberOfSuccessfulFrees - free_cnt == 1)
+ 138              		.loc 2 113 9 is_stmt 1 view .LVU24
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 9
+
+
+ 139              		.loc 2 113 18 is_stmt 0 view .LVU25
+ 140 0036 079B     		ldr	r3, [sp, #28]
+ 141              		.loc 2 113 44 view .LVU26
+ 142 0038 5B1B     		subs	r3, r3, r5
+ 143              		.loc 2 113 11 view .LVU27
+ 144 003a 012B     		cmp	r3, #1
+ 145 003c 05D0     		beq	.L7
+ 114:Service/Srv_OsCommon.c ****         {
+ 115:Service/Srv_OsCommon.c ****             OsHeap_Monitor.free_cnt++;
+ 116:Service/Srv_OsCommon.c ****             ptr = NULL;
+ 117:Service/Srv_OsCommon.c ****         }
+ 118:Service/Srv_OsCommon.c ****         else
+ 119:Service/Srv_OsCommon.c ****             OsHeap_Monitor.free_faile_cnt ++;
+ 146              		.loc 2 119 13 is_stmt 1 view .LVU28
+ 147              		.loc 2 119 27 is_stmt 0 view .LVU29
+ 148 003e 054A     		ldr	r2, .L8
+ 149 0040 9369     		ldr	r3, [r2, #24]
+ 150              		.loc 2 119 43 view .LVU30
+ 151 0042 0133     		adds	r3, r3, #1
+ 152 0044 9361     		str	r3, [r2, #24]
+ 153              	.LVL7:
+ 154              	.L3:
+ 120:Service/Srv_OsCommon.c ****     }
+ 121:Service/Srv_OsCommon.c **** }
+ 155              		.loc 2 121 1 view .LVU31
+ 156 0046 09B0     		add	sp, sp, #36
+ 157              	.LCFI2:
+ 158              		.cfi_remember_state
+ 159              		.cfi_def_cfa_offset 12
+ 160              		@ sp needed
+ 161 0048 30BD     		pop	{r4, r5, pc}
+ 162              	.LVL8:
+ 163              	.L7:
+ 164              	.LCFI3:
+ 165              		.cfi_restore_state
+ 115:Service/Srv_OsCommon.c ****             ptr = NULL;
+ 166              		.loc 2 115 13 is_stmt 1 view .LVU32
+ 115:Service/Srv_OsCommon.c ****             ptr = NULL;
+ 167              		.loc 2 115 27 is_stmt 0 view .LVU33
+ 168 004a 024A     		ldr	r2, .L8
+ 169 004c 5369     		ldr	r3, [r2, #20]
+ 115:Service/Srv_OsCommon.c ****             ptr = NULL;
+ 170              		.loc 2 115 36 view .LVU34
+ 171 004e 0133     		adds	r3, r3, #1
+ 172 0050 5361     		str	r3, [r2, #20]
+ 116:Service/Srv_OsCommon.c ****         }
+ 173              		.loc 2 116 13 is_stmt 1 view .LVU35
+ 174              	.LVL9:
+ 116:Service/Srv_OsCommon.c ****         }
+ 175              		.loc 2 116 13 is_stmt 0 view .LVU36
+ 176 0052 F8E7     		b	.L3
+ 177              	.L9:
+ 178              		.align	2
+ 179              	.L8:
+ 180 0054 00000000 		.word	.LANCHOR0
+ 181              		.cfi_endproc
+ 182              	.LFE111:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 10
+
+
+ 184              		.section	.text.SrvOsCommon_Malloc,"ax",%progbits
+ 185              		.align	1
+ 186              		.syntax unified
+ 187              		.thumb
+ 188              		.thumb_func
+ 190              	SrvOsCommon_Malloc:
+ 191              	.LVL10:
+ 192              	.LFB110:
+  53:Service/Srv_OsCommon.c ****     void *req_tmp = NULL;
+ 193              		.loc 2 53 1 is_stmt 1 view -0
+ 194              		.cfi_startproc
+ 195              		@ args = 0, pretend = 0, frame = 32
+ 196              		@ frame_needed = 0, uses_anonymous_args = 0
+  53:Service/Srv_OsCommon.c ****     void *req_tmp = NULL;
+ 197              		.loc 2 53 1 is_stmt 0 view .LVU38
+ 198 0000 70B5     		push	{r4, r5, r6, lr}
+ 199              	.LCFI4:
+ 200              		.cfi_def_cfa_offset 16
+ 201              		.cfi_offset 4, -16
+ 202              		.cfi_offset 5, -12
+ 203              		.cfi_offset 6, -8
+ 204              		.cfi_offset 14, -4
+ 205 0002 88B0     		sub	sp, sp, #32
+ 206              	.LCFI5:
+ 207              		.cfi_def_cfa_offset 48
+ 208 0004 0546     		mov	r5, r0
+  54:Service/Srv_OsCommon.c ****     SrvOs_HeapStatus_TypeDef status; 
+ 209              		.loc 2 54 5 is_stmt 1 view .LVU39
+ 210              	.LVL11:
+  55:Service/Srv_OsCommon.c ****     uint32_t malloc_num = 0;
+ 211              		.loc 2 55 5 view .LVU40
+  56:Service/Srv_OsCommon.c ****     memset(&status, 0, sizeof(SrvOs_HeapStatus_TypeDef));
+ 212              		.loc 2 56 5 view .LVU41
+  57:Service/Srv_OsCommon.c **** 
+ 213              		.loc 2 57 5 view .LVU42
+ 214 0006 0023     		movs	r3, #0
+ 215 0008 0193     		str	r3, [sp, #4]
+ 216 000a 0293     		str	r3, [sp, #8]
+ 217 000c 0393     		str	r3, [sp, #12]
+ 218 000e 0493     		str	r3, [sp, #16]
+ 219 0010 0593     		str	r3, [sp, #20]
+ 220 0012 0693     		str	r3, [sp, #24]
+ 221 0014 0793     		str	r3, [sp, #28]
+  60:Service/Srv_OsCommon.c ****     malloc_num = status.xNumberOfSuccessfulAllocations;
+ 222              		.loc 2 60 5 view .LVU43
+ 223 0016 01A8     		add	r0, sp, #4
+ 224              	.LVL12:
+  60:Service/Srv_OsCommon.c ****     malloc_num = status.xNumberOfSuccessfulAllocations;
+ 225              		.loc 2 60 5 is_stmt 0 view .LVU44
+ 226 0018 FFF7FEFF 		bl	vPortGetHeapStats
+ 227              	.LVL13:
+  61:Service/Srv_OsCommon.c ****     
+ 228              		.loc 2 61 5 is_stmt 1 view .LVU45
+  61:Service/Srv_OsCommon.c ****     
+ 229              		.loc 2 61 16 is_stmt 0 view .LVU46
+ 230 001c 069E     		ldr	r6, [sp, #24]
+ 231              	.LVL14:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 11
+
+
+  63:Service/Srv_OsCommon.c ****     {
+ 232              		.loc 2 63 5 is_stmt 1 view .LVU47
+  63:Service/Srv_OsCommon.c ****     {
+ 233              		.loc 2 63 8 is_stmt 0 view .LVU48
+ 234 001e 1B4B     		ldr	r3, .L18
+ 235 0020 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  63:Service/Srv_OsCommon.c ****     {
+ 236              		.loc 2 63 7 view .LVU49
+ 237 0022 CBB9     		cbnz	r3, .L16
+ 238              	.L11:
+  69:Service/Srv_OsCommon.c ****     {
+ 239              		.loc 2 69 5 is_stmt 1 view .LVU50
+  69:Service/Srv_OsCommon.c ****     {
+ 240              		.loc 2 69 14 is_stmt 0 view .LVU51
+ 241 0024 019B     		ldr	r3, [sp, #4]
+  69:Service/Srv_OsCommon.c ****     {
+ 242              		.loc 2 69 7 view .LVU52
+ 243 0026 002B     		cmp	r3, #0
+ 244 0028 2BD0     		beq	.L14
+  71:Service/Srv_OsCommon.c ****         
+ 245              		.loc 2 71 9 is_stmt 1 view .LVU53
+  71:Service/Srv_OsCommon.c ****         
+ 246              		.loc 2 71 19 is_stmt 0 view .LVU54
+ 247 002a 2846     		mov	r0, r5
+ 248 002c FFF7FEFF 		bl	pvPortMalloc
+ 249              	.LVL15:
+ 250 0030 0446     		mov	r4, r0
+ 251              	.LVL16:
+  74:Service/Srv_OsCommon.c **** 
+ 252              		.loc 2 74 9 is_stmt 1 view .LVU55
+ 253 0032 01A8     		add	r0, sp, #4
+ 254              	.LVL17:
+  74:Service/Srv_OsCommon.c **** 
+ 255              		.loc 2 74 9 is_stmt 0 view .LVU56
+ 256 0034 FFF7FEFF 		bl	vPortGetHeapStats
+ 257              	.LVL18:
+  76:Service/Srv_OsCommon.c ****         OsHeap_Monitor.block_num = status.xNumberOfFreeBlocks;
+ 258              		.loc 2 76 9 is_stmt 1 view .LVU57
+  76:Service/Srv_OsCommon.c ****         OsHeap_Monitor.block_num = status.xNumberOfFreeBlocks;
+ 259              		.loc 2 76 39 is_stmt 0 view .LVU58
+ 260 0038 154B     		ldr	r3, .L18+4
+ 261 003a 019A     		ldr	r2, [sp, #4]
+ 262 003c 1A60     		str	r2, [r3]
+  77:Service/Srv_OsCommon.c ****     
+ 263              		.loc 2 77 9 is_stmt 1 view .LVU59
+  77:Service/Srv_OsCommon.c ****     
+ 264              		.loc 2 77 42 is_stmt 0 view .LVU60
+ 265 003e 049A     		ldr	r2, [sp, #16]
+  77:Service/Srv_OsCommon.c ****     
+ 266              		.loc 2 77 34 view .LVU61
+ 267 0040 9A60     		str	r2, [r3, #8]
+  79:Service/Srv_OsCommon.c ****         {
+ 268              		.loc 2 79 9 is_stmt 1 view .LVU62
+  79:Service/Srv_OsCommon.c ****         {
+ 269              		.loc 2 79 11 is_stmt 0 view .LVU63
+ 270 0042 ACB1     		cbz	r4, .L17
+ 271              	.L13:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 12
+
+
+  86:Service/Srv_OsCommon.c ****             OsHeap_Monitor.malloc_cnt ++;
+ 272              		.loc 2 86 13 is_stmt 1 view .LVU64
+ 273 0044 2A46     		mov	r2, r5
+ 274 0046 0021     		movs	r1, #0
+ 275 0048 2046     		mov	r0, r4
+ 276 004a FFF7FEFF 		bl	memset
+ 277              	.LVL19:
+  87:Service/Srv_OsCommon.c ****         }
+ 278              		.loc 2 87 13 view .LVU65
+  87:Service/Srv_OsCommon.c ****         }
+ 279              		.loc 2 87 27 is_stmt 0 view .LVU66
+ 280 004e 104A     		ldr	r2, .L18+4
+ 281 0050 D368     		ldr	r3, [r2, #12]
+  87:Service/Srv_OsCommon.c ****         }
+ 282              		.loc 2 87 39 view .LVU67
+ 283 0052 0133     		adds	r3, r3, #1
+ 284 0054 D360     		str	r3, [r2, #12]
+ 285 0056 15E0     		b	.L10
+ 286              	.LVL20:
+ 287              	.L16:
+  65:Service/Srv_OsCommon.c ****         first_call = false;
+ 288              		.loc 2 65 9 is_stmt 1 view .LVU68
+ 289 0058 0D49     		ldr	r1, .L18+4
+ 290 005a 0023     		movs	r3, #0
+ 291 005c 0B60     		str	r3, [r1]
+ 292 005e 4B60     		str	r3, [r1, #4]
+ 293 0060 8B60     		str	r3, [r1, #8]
+ 294 0062 CB60     		str	r3, [r1, #12]
+ 295 0064 0B61     		str	r3, [r1, #16]
+ 296 0066 4B61     		str	r3, [r1, #20]
+ 297 0068 8B61     		str	r3, [r1, #24]
+  66:Service/Srv_OsCommon.c ****     }
+ 298              		.loc 2 66 9 view .LVU69
+  66:Service/Srv_OsCommon.c ****     }
+ 299              		.loc 2 66 20 is_stmt 0 view .LVU70
+ 300 006a 084A     		ldr	r2, .L18
+ 301 006c 1370     		strb	r3, [r2]
+ 302 006e D9E7     		b	.L11
+ 303              	.LVL21:
+ 304              	.L17:
+  79:Service/Srv_OsCommon.c ****         {
+ 305              		.loc 2 79 31 discriminator 1 view .LVU71
+ 306 0070 069B     		ldr	r3, [sp, #24]
+  79:Service/Srv_OsCommon.c ****         {
+ 307              		.loc 2 79 63 discriminator 1 view .LVU72
+ 308 0072 9B1B     		subs	r3, r3, r6
+  79:Service/Srv_OsCommon.c ****         {
+ 309              		.loc 2 79 21 discriminator 1 view .LVU73
+ 310 0074 012B     		cmp	r3, #1
+ 311 0076 E5D0     		beq	.L13
+  81:Service/Srv_OsCommon.c ****             OsHeap_Monitor.malloc_failed_cnt ++;
+ 312              		.loc 2 81 13 is_stmt 1 view .LVU74
+ 313              	.LVL22:
+  82:Service/Srv_OsCommon.c ****         }
+ 314              		.loc 2 82 13 view .LVU75
+  82:Service/Srv_OsCommon.c ****         }
+ 315              		.loc 2 82 27 is_stmt 0 view .LVU76
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 13
+
+
+ 316 0078 054A     		ldr	r2, .L18+4
+ 317 007a 1369     		ldr	r3, [r2, #16]
+  82:Service/Srv_OsCommon.c ****         }
+ 318              		.loc 2 82 46 view .LVU77
+ 319 007c 0133     		adds	r3, r3, #1
+ 320 007e 1361     		str	r3, [r2, #16]
+ 321 0080 00E0     		b	.L10
+ 322              	.L14:
+  54:Service/Srv_OsCommon.c ****     SrvOs_HeapStatus_TypeDef status; 
+ 323              		.loc 2 54 11 view .LVU78
+ 324 0082 0024     		movs	r4, #0
+  91:Service/Srv_OsCommon.c **** }
+ 325              		.loc 2 91 5 is_stmt 1 view .LVU79
+ 326              	.LVL23:
+ 327              	.L10:
+  92:Service/Srv_OsCommon.c **** 
+ 328              		.loc 2 92 1 is_stmt 0 view .LVU80
+ 329 0084 2046     		mov	r0, r4
+ 330 0086 08B0     		add	sp, sp, #32
+ 331              	.LCFI6:
+ 332              		.cfi_def_cfa_offset 16
+ 333              		@ sp needed
+ 334 0088 70BD     		pop	{r4, r5, r6, pc}
+ 335              	.LVL24:
+ 336              	.L19:
+  92:Service/Srv_OsCommon.c **** 
+ 337              		.loc 2 92 1 view .LVU81
+ 338 008a 00BF     		.align	2
+ 339              	.L18:
+ 340 008c 00000000 		.word	.LANCHOR1
+ 341 0090 00000000 		.word	.LANCHOR0
+ 342              		.cfi_endproc
+ 343              	.LFE110:
+ 345              		.section	.text.SrvOsCommon_DelayUntil,"ax",%progbits
+ 346              		.align	1
+ 347              		.syntax unified
+ 348              		.thumb
+ 349              		.thumb_func
+ 351              	SrvOsCommon_DelayUntil:
+ 352              	.LVL25:
+ 353              	.LFB113:
+ 122:Service/Srv_OsCommon.c **** 
+ 123:Service/Srv_OsCommon.c **** static int32_t SrvOsCommon_Delay(uint32_t ms)
+ 124:Service/Srv_OsCommon.c **** {
+ 125:Service/Srv_OsCommon.c ****     if (osDelay(ms) == osOK)
+ 126:Service/Srv_OsCommon.c ****         return 1;
+ 127:Service/Srv_OsCommon.c **** 
+ 128:Service/Srv_OsCommon.c ****     return 0;
+ 129:Service/Srv_OsCommon.c **** }
+ 130:Service/Srv_OsCommon.c **** 
+ 131:Service/Srv_OsCommon.c **** static void SrvOsCommon_DelayUntil(uint32_t *prev_time, uint32_t ms)
+ 132:Service/Srv_OsCommon.c **** {
+ 354              		.loc 2 132 1 is_stmt 1 view -0
+ 355              		.cfi_startproc
+ 356              		@ args = 0, pretend = 0, frame = 0
+ 357              		@ frame_needed = 0, uses_anonymous_args = 0
+ 133:Service/Srv_OsCommon.c ****     if (prev_time && ms)
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 14
+
+
+ 358              		.loc 2 133 5 view .LVU83
+ 359              		.loc 2 133 8 is_stmt 0 view .LVU84
+ 360 0000 28B1     		cbz	r0, .L23
+ 132:Service/Srv_OsCommon.c ****     if (prev_time && ms)
+ 361              		.loc 2 132 1 discriminator 1 view .LVU85
+ 362 0002 08B5     		push	{r3, lr}
+ 363              	.LCFI7:
+ 364              		.cfi_def_cfa_offset 8
+ 365              		.cfi_offset 3, -8
+ 366              		.cfi_offset 14, -4
+ 367              		.loc 2 133 19 discriminator 1 view .LVU86
+ 368 0004 01B9     		cbnz	r1, .L26
+ 369              	.LVL26:
+ 370              	.L20:
+ 134:Service/Srv_OsCommon.c ****         osDelayUntil(prev_time, ms);
+ 135:Service/Srv_OsCommon.c **** }
+ 371              		.loc 2 135 1 view .LVU87
+ 372 0006 08BD     		pop	{r3, pc}
+ 373              	.LVL27:
+ 374              	.L26:
+ 134:Service/Srv_OsCommon.c ****         osDelayUntil(prev_time, ms);
+ 375              		.loc 2 134 9 is_stmt 1 view .LVU88
+ 376 0008 FFF7FEFF 		bl	osDelayUntil
+ 377              	.LVL28:
+ 378              		.loc 2 135 1 is_stmt 0 view .LVU89
+ 379 000c FBE7     		b	.L20
+ 380              	.LVL29:
+ 381              	.L23:
+ 382              	.LCFI8:
+ 383              		.cfi_def_cfa_offset 0
+ 384              		.cfi_restore 3
+ 385              		.cfi_restore 14
+ 386              		.loc 2 135 1 view .LVU90
+ 387 000e 7047     		bx	lr
+ 388              		.cfi_endproc
+ 389              	.LFE113:
+ 391              		.section	.text.SrvOsCommon_Delay,"ax",%progbits
+ 392              		.align	1
+ 393              		.syntax unified
+ 394              		.thumb
+ 395              		.thumb_func
+ 397              	SrvOsCommon_Delay:
+ 398              	.LVL30:
+ 399              	.LFB112:
+ 124:Service/Srv_OsCommon.c ****     if (osDelay(ms) == osOK)
+ 400              		.loc 2 124 1 is_stmt 1 view -0
+ 401              		.cfi_startproc
+ 402              		@ args = 0, pretend = 0, frame = 0
+ 403              		@ frame_needed = 0, uses_anonymous_args = 0
+ 124:Service/Srv_OsCommon.c ****     if (osDelay(ms) == osOK)
+ 404              		.loc 2 124 1 is_stmt 0 view .LVU92
+ 405 0000 08B5     		push	{r3, lr}
+ 406              	.LCFI9:
+ 407              		.cfi_def_cfa_offset 8
+ 408              		.cfi_offset 3, -8
+ 409              		.cfi_offset 14, -4
+ 125:Service/Srv_OsCommon.c ****         return 1;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 15
+
+
+ 410              		.loc 2 125 5 is_stmt 1 view .LVU93
+ 125:Service/Srv_OsCommon.c ****         return 1;
+ 411              		.loc 2 125 9 is_stmt 0 view .LVU94
+ 412 0002 FFF7FEFF 		bl	osDelay
+ 413              	.LVL31:
+ 125:Service/Srv_OsCommon.c ****         return 1;
+ 414              		.loc 2 125 8 view .LVU95
+ 415 0006 08B1     		cbz	r0, .L29
+ 128:Service/Srv_OsCommon.c **** }
+ 416              		.loc 2 128 12 view .LVU96
+ 417 0008 0020     		movs	r0, #0
+ 418              	.L27:
+ 129:Service/Srv_OsCommon.c **** 
+ 419              		.loc 2 129 1 view .LVU97
+ 420 000a 08BD     		pop	{r3, pc}
+ 421              	.L29:
+ 126:Service/Srv_OsCommon.c **** 
+ 422              		.loc 2 126 16 view .LVU98
+ 423 000c 0120     		movs	r0, #1
+ 424 000e FCE7     		b	.L27
+ 425              		.cfi_endproc
+ 426              	.LFE112:
+ 428              		.global	shellCommandreboot
+ 429              		.global	shellDescreboot
+ 430              		.global	shellCmdreboot
+ 431              		.global	SrvOsCommon
+ 432              		.global	ucHeap
+ 433              		.section	.OsHeap_Section,"aw"
+ 434              		.align	2
+ 437              	ucHeap:
+ 438 0000 00000000 		.space	131072
+ 438      00000000 
+ 438      00000000 
+ 438      00000000 
+ 438      00000000 
+ 439              		.section	.bss.OsHeap_Monitor,"aw",%nobits
+ 440              		.align	2
+ 441              		.set	.LANCHOR0,. + 0
+ 444              	OsHeap_Monitor:
+ 445 0000 00000000 		.space	28
+ 445      00000000 
+ 445      00000000 
+ 445      00000000 
+ 445      00000000 
+ 446              		.section	.data.SrvOsCommon,"aw"
+ 447              		.align	2
+ 450              	SrvOsCommon:
+ 451 0000 00000000 		.word	osKernelSysTick
+ 452 0004 00000000 		.word	SrvOsCommon_Delay
+ 453 0008 00000000 		.word	SrvOsCommon_DelayUntil
+ 454 000c 00000000 		.word	Kernel_Get_SysTimer_TickUnit
+ 455 0010 00000000 		.word	Kernel_Get_PeriodValue
+ 456 0014 00000000 		.word	Kernel_TickVal_To_Us
+ 457 0018 00000000 		.word	Kernel_Set_SysTimer_TickUnit
+ 458 001c 00000000 		.word	Kernel_Set_PeriodValue
+ 459 0020 00000000 		.word	Kernel_DisableTimer_IRQ
+ 460 0024 00000000 		.word	Kernel_EnableTimer_IRQ
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 16
+
+
+ 461 0028 00000000 		.word	SrvOsCommon_Malloc
+ 462 002c 00000000 		.word	SrvOsCommon_Free
+ 463 0030 00000000 		.word	vPortEnterCritical
+ 464 0034 00000000 		.word	vPortExitCritical
+ 465 0038 00000000 		.word	vPortGetHeapStats
+ 466 003c 00000000 		.word	__disable_irq
+ 467 0040 00000000 		.word	__enable_irq
+ 468 0044 00000000 		.word	Kernel_reboot
+ 469              		.section	.data.first_call,"aw"
+ 470              		.set	.LANCHOR1,. + 0
+ 473              	first_call:
+ 474 0000 01       		.byte	1
+ 475              		.section	.rodata.shellCmdreboot,"a"
+ 476              		.align	2
+ 479              	shellCmdreboot:
+ 480 0000 7265626F 		.ascii	"reboot\000"
+ 480      6F7400
+ 481              		.section	.rodata.shellDescreboot,"a"
+ 482              		.align	2
+ 485              	shellDescreboot:
+ 486 0000 53797374 		.ascii	"System ReBoot\000"
+ 486      656D2052 
+ 486      65426F6F 
+ 486      7400
+ 487              		.section	shellCommand,"a"
+ 488              		.align	2
+ 491              	shellCommandreboot:
+ 492 0000 00210000 		.word	8448
+ 493 0004 00000000 		.word	shellCmdreboot
+ 494 0008 00000000 		.word	Kernel_reboot
+ 495 000c 00000000 		.word	shellDescreboot
+ 496              		.text
+ 497              	.Letext0:
+ 498              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi\
+ 499              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 500              		.file 5 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 501              		.file 6 "System/FreeRTOS/include/portable.h"
+ 502              		.file 7 "Service/Srv_OsCommon.h"
+ 503              		.file 8 "System/FreeRTOS/CMSIS_RTOS/cmsis_os.h"
+ 504              		.file 9 "System/shell/shell.h"
+ 505              		.file 10 "System/FreeRTOS/FreeRTOSConfig.h"
+ 506              		.file 11 "<built-in>"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s 			page 17
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Srv_OsCommon.c
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:20     .text.__enable_irq:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:25     .text.__enable_irq:00000000 __enable_irq
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:46     .text.__disable_irq:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:51     .text.__disable_irq:00000000 __disable_irq
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:71     .text.SrvOsCommon_Free:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:76     .text.SrvOsCommon_Free:00000000 SrvOsCommon_Free
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:180    .text.SrvOsCommon_Free:00000054 $d
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:185    .text.SrvOsCommon_Malloc:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:190    .text.SrvOsCommon_Malloc:00000000 SrvOsCommon_Malloc
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:340    .text.SrvOsCommon_Malloc:0000008c $d
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:346    .text.SrvOsCommon_DelayUntil:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:351    .text.SrvOsCommon_DelayUntil:00000000 SrvOsCommon_DelayUntil
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:392    .text.SrvOsCommon_Delay:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:397    .text.SrvOsCommon_Delay:00000000 SrvOsCommon_Delay
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:491    shellCommand:00000000 shellCommandreboot
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:485    .rodata.shellDescreboot:00000000 shellDescreboot
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:479    .rodata.shellCmdreboot:00000000 shellCmdreboot
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:450    .data.SrvOsCommon:00000000 SrvOsCommon
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:437    .OsHeap_Section:00000000 ucHeap
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:434    .OsHeap_Section:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:440    .bss.OsHeap_Monitor:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:444    .bss.OsHeap_Monitor:00000000 OsHeap_Monitor
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:447    .data.SrvOsCommon:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:473    .data.first_call:00000000 first_call
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:476    .rodata.shellCmdreboot:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:482    .rodata.shellDescreboot:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\cc5jgum2.s:488    shellCommand:00000000 $d
+
+UNDEFINED SYMBOLS
+vPortGetHeapStats
+vPortFree
+pvPortMalloc
+memset
+osDelayUntil
+osDelay
+osKernelSysTick
+Kernel_Get_SysTimer_TickUnit
+Kernel_Get_PeriodValue
+Kernel_TickVal_To_Us
+Kernel_Set_SysTimer_TickUnit
+Kernel_Set_PeriodValue
+Kernel_DisableTimer_IRQ
+Kernel_EnableTimer_IRQ
+vPortEnterCritical
+vPortExitCritical
+Kernel_reboot

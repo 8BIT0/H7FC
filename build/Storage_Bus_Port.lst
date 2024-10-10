@@ -1,0 +1,784 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Storage_Bus_Port.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.Storage_BusType_Check,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	Storage_BusType_Check:
+  26              	.LVL0:
+  27              	.LFB134:
+  28              		.file 1 "System/storage/Storage_Bus_Port.c"
+   1:System/storage/Storage_Bus_Port.c **** #include "Storage_Bus_Port.h"
+   2:System/storage/Storage_Bus_Port.c **** #include "HW_Def.h"
+   3:System/storage/Storage_Bus_Port.c **** 
+   4:System/storage/Storage_Bus_Port.c **** #if defined STM32H743xx
+   5:System/storage/Storage_Bus_Port.c **** static SPI_HandleTypeDef ExtFlash_Bus_InstObj;
+   6:System/storage/Storage_Bus_Port.c **** #elif defined AT32F435_437
+   7:System/storage/Storage_Bus_Port.c **** void *ExtFlash_Bus_InstObj = NULL;
+   8:System/storage/Storage_Bus_Port.c **** #endif
+   9:System/storage/Storage_Bus_Port.c **** 
+  10:System/storage/Storage_Bus_Port.c **** /* external function */
+  11:System/storage/Storage_Bus_Port.c **** static void *Storage_External_Chip_Bus_Init(Storage_ExtFlash_BusType_List bus_type, StorageBus_Mall
+  12:System/storage/Storage_Bus_Port.c **** static bool Storage_BusType_Check(Storage_ExtFlash_BusType_List bus_type);
+  13:System/storage/Storage_Bus_Port.c **** static bool Storage_External_Chip_SelectPin_Ctl(bool state);
+  14:System/storage/Storage_Bus_Port.c **** static uint16_t Storage_External_Chip_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out);
+  15:System/storage/Storage_Bus_Port.c **** static uint16_t Storage_External_Chip_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out);
+  16:System/storage/Storage_Bus_Port.c **** static uint16_t Storage_External_Chip_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t tim
+  17:System/storage/Storage_Bus_Port.c **** 
+  18:System/storage/Storage_Bus_Port.c **** StorageBusApi_TypeDef StoragePort_Api = {
+  19:System/storage/Storage_Bus_Port.c ****     .bus_type_check = Storage_BusType_Check,
+  20:System/storage/Storage_Bus_Port.c ****     .init = Storage_External_Chip_Bus_Init,
+  21:System/storage/Storage_Bus_Port.c ****     .cs_ctl = Storage_External_Chip_SelectPin_Ctl,
+  22:System/storage/Storage_Bus_Port.c ****     .bus_tx = Storage_External_Chip_BusTx,
+  23:System/storage/Storage_Bus_Port.c ****     .bus_rx = Storage_External_Chip_BusRx,
+  24:System/storage/Storage_Bus_Port.c ****     .bus_trans = Storage_External_Chip_BusTrans,
+  25:System/storage/Storage_Bus_Port.c **** };
+  26:System/storage/Storage_Bus_Port.c **** 
+  27:System/storage/Storage_Bus_Port.c **** /************************************************** External Flash IO API Section *****************
+  28:System/storage/Storage_Bus_Port.c **** static bool Storage_BusType_Check(Storage_ExtFlash_BusType_List bus_type)
+  29:System/storage/Storage_Bus_Port.c **** {
+  29              		.loc 1 29 1 view -0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 2
+
+
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  30:System/storage/Storage_Bus_Port.c ****     switch ((uint8_t) bus_type)
+  34              		.loc 1 30 5 view .LVU1
+  35 0000 0128     		cmp	r0, #1
+  36 0002 00D0     		beq	.L2
+  31:System/storage/Storage_Bus_Port.c ****     {
+  32:System/storage/Storage_Bus_Port.c ****         case Storage_ChipBus_Spi: return true;
+  33:System/storage/Storage_Bus_Port.c ****         default: return false;
+  37              		.loc 1 33 25 is_stmt 0 view .LVU2
+  38 0004 0020     		movs	r0, #0
+  39              	.LVL1:
+  40              	.L2:
+  34:System/storage/Storage_Bus_Port.c ****     }
+  35:System/storage/Storage_Bus_Port.c **** }
+  41              		.loc 1 35 1 view .LVU3
+  42 0006 7047     		bx	lr
+  43              		.cfi_endproc
+  44              	.LFE134:
+  46              		.section	.text.Storage_External_Chip_SelectPin_Ctl,"ax",%progbits
+  47              		.align	1
+  48              		.syntax unified
+  49              		.thumb
+  50              		.thumb_func
+  52              	Storage_External_Chip_SelectPin_Ctl:
+  53              	.LVL2:
+  54              	.LFB136:
+  36:System/storage/Storage_Bus_Port.c **** 
+  37:System/storage/Storage_Bus_Port.c **** static void* Storage_External_Chip_Bus_Init(Storage_ExtFlash_BusType_List bus_type, StorageBus_Mall
+  38:System/storage/Storage_Bus_Port.c **** {
+  39:System/storage/Storage_Bus_Port.c ****     void *obj = NULL;
+  40:System/storage/Storage_Bus_Port.c **** 
+  41:System/storage/Storage_Bus_Port.c ****     if ((p_malloc == NULL) || \
+  42:System/storage/Storage_Bus_Port.c ****         (p_free == NULL))
+  43:System/storage/Storage_Bus_Port.c ****         return NULL;
+  44:System/storage/Storage_Bus_Port.c **** 
+  45:System/storage/Storage_Bus_Port.c ****     if (bus_type == Storage_ChipBus_Spi)
+  46:System/storage/Storage_Bus_Port.c ****     {
+  47:System/storage/Storage_Bus_Port.c ****         /* malloc bus object */
+  48:System/storage/Storage_Bus_Port.c ****         obj = p_malloc(sizeof(BspSPI_NorModeConfig_TypeDef));
+  49:System/storage/Storage_Bus_Port.c ****         if (obj == NULL)
+  50:System/storage/Storage_Bus_Port.c ****             return NULL;
+  51:System/storage/Storage_Bus_Port.c **** 
+  52:System/storage/Storage_Bus_Port.c ****         memset(obj, 0, sizeof(BspSPI_NorModeConfig_TypeDef));
+  53:System/storage/Storage_Bus_Port.c **** 
+  54:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->BaudRatePrescaler = ExtFlash_Bus_Clock_Div;
+  55:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->CLKPhase = ExtFlash_Bus_CLKPhase;
+  56:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->CLKPolarity = ExtFlash_Bus_CLKPolarity;
+  57:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->Instance = ExtFLash_Bus_Instance;
+  58:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->Pin = ExtFlash_Bus_Pin;
+  59:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->work_mode = BspSPI_Mode_Master;
+  60:System/storage/Storage_Bus_Port.c **** 
+  61:System/storage/Storage_Bus_Port.c ****         if (!ExtFlash_Bus_Api.init(To_NormalSPI_Obj(obj), &ExtFlash_Bus_InstObj) || \
+  62:System/storage/Storage_Bus_Port.c ****             !BspGPIO.out_init(ExtFlash_CS_Pin))
+  63:System/storage/Storage_Bus_Port.c ****             return NULL;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 3
+
+
+  64:System/storage/Storage_Bus_Port.c **** 
+  65:System/storage/Storage_Bus_Port.c ****         return obj;
+  66:System/storage/Storage_Bus_Port.c ****     }
+  67:System/storage/Storage_Bus_Port.c **** 
+  68:System/storage/Storage_Bus_Port.c ****     return NULL;
+  69:System/storage/Storage_Bus_Port.c **** }
+  70:System/storage/Storage_Bus_Port.c **** 
+  71:System/storage/Storage_Bus_Port.c **** static bool Storage_External_Chip_SelectPin_Ctl(bool state)
+  72:System/storage/Storage_Bus_Port.c **** {
+  55              		.loc 1 72 1 is_stmt 1 view -0
+  56              		.cfi_startproc
+  57              		@ args = 0, pretend = 0, frame = 0
+  58              		@ frame_needed = 0, uses_anonymous_args = 0
+  59              		.loc 1 72 1 is_stmt 0 view .LVU5
+  60 0000 10B5     		push	{r4, lr}
+  61              	.LCFI0:
+  62              		.cfi_def_cfa_offset 8
+  63              		.cfi_offset 4, -8
+  64              		.cfi_offset 14, -4
+  65 0002 0346     		mov	r3, r0
+  73:System/storage/Storage_Bus_Port.c ****     BspGPIO.write(ExtFlash_CS_Pin, state);
+  66              		.loc 1 73 5 is_stmt 1 view .LVU6
+  67              		.loc 1 73 12 is_stmt 0 view .LVU7
+  68 0004 034A     		ldr	r2, .L6
+  69 0006 D469     		ldr	r4, [r2, #28]
+  70              		.loc 1 73 5 view .LVU8
+  71 0008 034A     		ldr	r2, .L6+4
+  72 000a 07CA     		ldm	r2, {r0, r1, r2}
+  73              	.LVL3:
+  74              		.loc 1 73 5 view .LVU9
+  75 000c A047     		blx	r4
+  76              	.LVL4:
+  74:System/storage/Storage_Bus_Port.c ****     return true;
+  77              		.loc 1 74 5 is_stmt 1 view .LVU10
+  75:System/storage/Storage_Bus_Port.c **** }
+  78              		.loc 1 75 1 is_stmt 0 view .LVU11
+  79 000e 0120     		movs	r0, #1
+  80 0010 10BD     		pop	{r4, pc}
+  81              	.L7:
+  82 0012 00BF     		.align	2
+  83              	.L6:
+  84 0014 00000000 		.word	BspGPIO
+  85 0018 00000000 		.word	ExtFlash_CSPin
+  86              		.cfi_endproc
+  87              	.LFE136:
+  89              		.section	.text.Storage_External_Chip_BusTx,"ax",%progbits
+  90              		.align	1
+  91              		.syntax unified
+  92              		.thumb
+  93              		.thumb_func
+  95              	Storage_External_Chip_BusTx:
+  96              	.LVL5:
+  97              	.LFB137:
+  76:System/storage/Storage_Bus_Port.c **** 
+  77:System/storage/Storage_Bus_Port.c **** static uint16_t Storage_External_Chip_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out)
+  78:System/storage/Storage_Bus_Port.c **** {
+  98              		.loc 1 78 1 is_stmt 1 view -0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 4
+
+
+  99              		.cfi_startproc
+ 100              		@ args = 0, pretend = 0, frame = 0
+ 101              		@ frame_needed = 0, uses_anonymous_args = 0
+  79:System/storage/Storage_Bus_Port.c ****     if (p_data && len && ExtFlash_Bus_InstObj)
+ 102              		.loc 1 79 5 view .LVU13
+ 103              		.loc 1 79 8 is_stmt 0 view .LVU14
+ 104 0000 78B1     		cbz	r0, .L10
+  78:System/storage/Storage_Bus_Port.c ****     if (p_data && len && ExtFlash_Bus_InstObj)
+ 105              		.loc 1 78 1 discriminator 1 view .LVU15
+ 106 0002 38B5     		push	{r3, r4, r5, lr}
+ 107              	.LCFI1:
+ 108              		.cfi_def_cfa_offset 16
+ 109              		.cfi_offset 3, -16
+ 110              		.cfi_offset 4, -12
+ 111              		.cfi_offset 5, -8
+ 112              		.cfi_offset 14, -4
+ 113 0004 0C46     		mov	r4, r1
+ 114 0006 0146     		mov	r1, r0
+ 115              	.LVL6:
+ 116              		.loc 1 79 16 discriminator 1 view .LVU16
+ 117 0008 6CB1     		cbz	r4, .L11
+ 118              		.loc 1 79 23 discriminator 2 view .LVU17
+ 119 000a 094B     		ldr	r3, .L18
+ 120 000c 1B68     		ldr	r3, [r3]
+ 121 000e 63B1     		cbz	r3, .L12
+  80:System/storage/Storage_Bus_Port.c ****     {
+  81:System/storage/Storage_Bus_Port.c ****         if (ExtFlash_Bus_Api.trans(&ExtFlash_Bus_InstObj, p_data, len, time_out))
+ 122              		.loc 1 81 9 is_stmt 1 view .LVU18
+ 123              		.loc 1 81 29 is_stmt 0 view .LVU19
+ 124 0010 084B     		ldr	r3, .L18+4
+ 125 0012 9D68     		ldr	r5, [r3, #8]
+ 126              		.loc 1 81 13 view .LVU20
+ 127 0014 93B2     		uxth	r3, r2
+ 128 0016 2246     		mov	r2, r4
+ 129              	.LVL7:
+ 130              		.loc 1 81 13 view .LVU21
+ 131 0018 0548     		ldr	r0, .L18
+ 132              	.LVL8:
+ 133              		.loc 1 81 13 view .LVU22
+ 134 001a A847     		blx	r5
+ 135              	.LVL9:
+ 136              		.loc 1 81 12 view .LVU23
+ 137 001c 20B1     		cbz	r0, .L9
+  82:System/storage/Storage_Bus_Port.c ****             return len;
+ 138              		.loc 1 82 20 view .LVU24
+ 139 001e 2046     		mov	r0, r4
+ 140 0020 02E0     		b	.L9
+ 141              	.LVL10:
+ 142              	.L10:
+ 143              	.LCFI2:
+ 144              		.cfi_def_cfa_offset 0
+ 145              		.cfi_restore 3
+ 146              		.cfi_restore 4
+ 147              		.cfi_restore 5
+ 148              		.cfi_restore 14
+  83:System/storage/Storage_Bus_Port.c ****     }
+  84:System/storage/Storage_Bus_Port.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 5
+
+
+  85:System/storage/Storage_Bus_Port.c ****     return 0;
+ 149              		.loc 1 85 12 view .LVU25
+ 150 0022 0020     		movs	r0, #0
+ 151              	.LVL11:
+  86:System/storage/Storage_Bus_Port.c **** }
+ 152              		.loc 1 86 1 view .LVU26
+ 153 0024 7047     		bx	lr
+ 154              	.LVL12:
+ 155              	.L11:
+ 156              	.LCFI3:
+ 157              		.cfi_def_cfa_offset 16
+ 158              		.cfi_offset 3, -16
+ 159              		.cfi_offset 4, -12
+ 160              		.cfi_offset 5, -8
+ 161              		.cfi_offset 14, -4
+  85:System/storage/Storage_Bus_Port.c **** }
+ 162              		.loc 1 85 12 view .LVU27
+ 163 0026 2046     		mov	r0, r4
+ 164              	.LVL13:
+ 165              	.L9:
+ 166              		.loc 1 86 1 view .LVU28
+ 167 0028 38BD     		pop	{r3, r4, r5, pc}
+ 168              	.LVL14:
+ 169              	.L12:
+  85:System/storage/Storage_Bus_Port.c **** }
+ 170              		.loc 1 85 12 view .LVU29
+ 171 002a 0020     		movs	r0, #0
+ 172              	.LVL15:
+  85:System/storage/Storage_Bus_Port.c **** }
+ 173              		.loc 1 85 12 view .LVU30
+ 174 002c FCE7     		b	.L9
+ 175              	.L19:
+ 176 002e 00BF     		.align	2
+ 177              	.L18:
+ 178 0030 00000000 		.word	.LANCHOR0
+ 179 0034 00000000 		.word	BspSPI
+ 180              		.cfi_endproc
+ 181              	.LFE137:
+ 183              		.section	.text.Storage_External_Chip_BusRx,"ax",%progbits
+ 184              		.align	1
+ 185              		.syntax unified
+ 186              		.thumb
+ 187              		.thumb_func
+ 189              	Storage_External_Chip_BusRx:
+ 190              	.LVL16:
+ 191              	.LFB138:
+  87:System/storage/Storage_Bus_Port.c **** 
+  88:System/storage/Storage_Bus_Port.c **** static uint16_t Storage_External_Chip_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out)
+  89:System/storage/Storage_Bus_Port.c **** {
+ 192              		.loc 1 89 1 is_stmt 1 view -0
+ 193              		.cfi_startproc
+ 194              		@ args = 0, pretend = 0, frame = 0
+ 195              		@ frame_needed = 0, uses_anonymous_args = 0
+  90:System/storage/Storage_Bus_Port.c ****     if (p_data && len && ExtFlash_Bus_InstObj)
+ 196              		.loc 1 90 5 view .LVU32
+ 197              		.loc 1 90 8 is_stmt 0 view .LVU33
+ 198 0000 78B1     		cbz	r0, .L22
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 6
+
+
+  89:System/storage/Storage_Bus_Port.c ****     if (p_data && len && ExtFlash_Bus_InstObj)
+ 199              		.loc 1 89 1 discriminator 1 view .LVU34
+ 200 0002 38B5     		push	{r3, r4, r5, lr}
+ 201              	.LCFI4:
+ 202              		.cfi_def_cfa_offset 16
+ 203              		.cfi_offset 3, -16
+ 204              		.cfi_offset 4, -12
+ 205              		.cfi_offset 5, -8
+ 206              		.cfi_offset 14, -4
+ 207 0004 0C46     		mov	r4, r1
+ 208 0006 0146     		mov	r1, r0
+ 209              	.LVL17:
+ 210              		.loc 1 90 16 discriminator 1 view .LVU35
+ 211 0008 6CB1     		cbz	r4, .L23
+ 212              		.loc 1 90 23 discriminator 2 view .LVU36
+ 213 000a 094B     		ldr	r3, .L30
+ 214 000c 1B68     		ldr	r3, [r3]
+ 215 000e 63B1     		cbz	r3, .L24
+  91:System/storage/Storage_Bus_Port.c ****     {
+  92:System/storage/Storage_Bus_Port.c ****         if (ExtFlash_Bus_Api.receive(&ExtFlash_Bus_InstObj, p_data, len, time_out))
+ 216              		.loc 1 92 9 is_stmt 1 view .LVU37
+ 217              		.loc 1 92 29 is_stmt 0 view .LVU38
+ 218 0010 084B     		ldr	r3, .L30+4
+ 219 0012 DD68     		ldr	r5, [r3, #12]
+ 220              		.loc 1 92 13 view .LVU39
+ 221 0014 93B2     		uxth	r3, r2
+ 222 0016 2246     		mov	r2, r4
+ 223              	.LVL18:
+ 224              		.loc 1 92 13 view .LVU40
+ 225 0018 0548     		ldr	r0, .L30
+ 226              	.LVL19:
+ 227              		.loc 1 92 13 view .LVU41
+ 228 001a A847     		blx	r5
+ 229              	.LVL20:
+ 230              		.loc 1 92 12 view .LVU42
+ 231 001c 20B1     		cbz	r0, .L21
+  93:System/storage/Storage_Bus_Port.c ****             return len;
+ 232              		.loc 1 93 20 view .LVU43
+ 233 001e 2046     		mov	r0, r4
+ 234 0020 02E0     		b	.L21
+ 235              	.LVL21:
+ 236              	.L22:
+ 237              	.LCFI5:
+ 238              		.cfi_def_cfa_offset 0
+ 239              		.cfi_restore 3
+ 240              		.cfi_restore 4
+ 241              		.cfi_restore 5
+ 242              		.cfi_restore 14
+  94:System/storage/Storage_Bus_Port.c ****     }
+  95:System/storage/Storage_Bus_Port.c **** 
+  96:System/storage/Storage_Bus_Port.c ****     return 0;
+ 243              		.loc 1 96 12 view .LVU44
+ 244 0022 0020     		movs	r0, #0
+ 245              	.LVL22:
+  97:System/storage/Storage_Bus_Port.c **** }
+ 246              		.loc 1 97 1 view .LVU45
+ 247 0024 7047     		bx	lr
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 7
+
+
+ 248              	.LVL23:
+ 249              	.L23:
+ 250              	.LCFI6:
+ 251              		.cfi_def_cfa_offset 16
+ 252              		.cfi_offset 3, -16
+ 253              		.cfi_offset 4, -12
+ 254              		.cfi_offset 5, -8
+ 255              		.cfi_offset 14, -4
+  96:System/storage/Storage_Bus_Port.c **** }
+ 256              		.loc 1 96 12 view .LVU46
+ 257 0026 2046     		mov	r0, r4
+ 258              	.LVL24:
+ 259              	.L21:
+ 260              		.loc 1 97 1 view .LVU47
+ 261 0028 38BD     		pop	{r3, r4, r5, pc}
+ 262              	.LVL25:
+ 263              	.L24:
+  96:System/storage/Storage_Bus_Port.c **** }
+ 264              		.loc 1 96 12 view .LVU48
+ 265 002a 0020     		movs	r0, #0
+ 266              	.LVL26:
+  96:System/storage/Storage_Bus_Port.c **** }
+ 267              		.loc 1 96 12 view .LVU49
+ 268 002c FCE7     		b	.L21
+ 269              	.L31:
+ 270 002e 00BF     		.align	2
+ 271              	.L30:
+ 272 0030 00000000 		.word	.LANCHOR0
+ 273 0034 00000000 		.word	BspSPI
+ 274              		.cfi_endproc
+ 275              	.LFE138:
+ 277              		.section	.text.Storage_External_Chip_BusTrans,"ax",%progbits
+ 278              		.align	1
+ 279              		.syntax unified
+ 280              		.thumb
+ 281              		.thumb_func
+ 283              	Storage_External_Chip_BusTrans:
+ 284              	.LVL27:
+ 285              	.LFB139:
+  98:System/storage/Storage_Bus_Port.c **** 
+  99:System/storage/Storage_Bus_Port.c **** static uint16_t Storage_External_Chip_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t tim
+ 100:System/storage/Storage_Bus_Port.c **** {
+ 286              		.loc 1 100 1 is_stmt 1 view -0
+ 287              		.cfi_startproc
+ 288              		@ args = 0, pretend = 0, frame = 0
+ 289              		@ frame_needed = 0, uses_anonymous_args = 0
+ 101:System/storage/Storage_Bus_Port.c ****     if (tx && rx && len && ExtFlash_Bus_InstObj)
+ 290              		.loc 1 101 5 view .LVU51
+ 291              		.loc 1 101 8 is_stmt 0 view .LVU52
+ 292 0000 98B1     		cbz	r0, .L34
+ 100:System/storage/Storage_Bus_Port.c ****     if (tx && rx && len && ExtFlash_Bus_InstObj)
+ 293              		.loc 1 100 1 discriminator 1 view .LVU53
+ 294 0002 30B5     		push	{r4, r5, lr}
+ 295              	.LCFI7:
+ 296              		.cfi_def_cfa_offset 12
+ 297              		.cfi_offset 4, -12
+ 298              		.cfi_offset 5, -8
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 8
+
+
+ 299              		.cfi_offset 14, -4
+ 300 0004 83B0     		sub	sp, sp, #12
+ 301              	.LCFI8:
+ 302              		.cfi_def_cfa_offset 24
+ 303 0006 1446     		mov	r4, r2
+ 304              		.loc 1 101 12 discriminator 1 view .LVU54
+ 305 0008 89B1     		cbz	r1, .L35
+ 306              		.loc 1 101 18 discriminator 2 view .LVU55
+ 307 000a 92B1     		cbz	r2, .L36
+ 308              		.loc 1 101 25 discriminator 3 view .LVU56
+ 309 000c 0B4A     		ldr	r2, .L43
+ 310              	.LVL28:
+ 311              		.loc 1 101 25 discriminator 3 view .LVU57
+ 312 000e 1268     		ldr	r2, [r2]
+ 313 0010 92B1     		cbz	r2, .L37
+ 102:System/storage/Storage_Bus_Port.c ****     {
+ 103:System/storage/Storage_Bus_Port.c ****         if (ExtFlash_Bus_Api.trans_receive(&ExtFlash_Bus_InstObj, tx, rx, len, time_out))
+ 314              		.loc 1 103 9 is_stmt 1 view .LVU58
+ 315              		.loc 1 103 29 is_stmt 0 view .LVU59
+ 316 0012 0B4A     		ldr	r2, .L43+4
+ 317 0014 1569     		ldr	r5, [r2, #16]
+ 318              		.loc 1 103 13 view .LVU60
+ 319 0016 9BB2     		uxth	r3, r3
+ 320              	.LVL29:
+ 321              		.loc 1 103 13 view .LVU61
+ 322 0018 0093     		str	r3, [sp]
+ 323 001a 2346     		mov	r3, r4
+ 324 001c 0A46     		mov	r2, r1
+ 325 001e 0146     		mov	r1, r0
+ 326              	.LVL30:
+ 327              		.loc 1 103 13 view .LVU62
+ 328 0020 0648     		ldr	r0, .L43
+ 329              	.LVL31:
+ 330              		.loc 1 103 13 view .LVU63
+ 331 0022 A847     		blx	r5
+ 332              	.LVL32:
+ 333              		.loc 1 103 12 view .LVU64
+ 334 0024 30B1     		cbz	r0, .L33
+ 104:System/storage/Storage_Bus_Port.c ****             return len;
+ 335              		.loc 1 104 20 view .LVU65
+ 336 0026 2046     		mov	r0, r4
+ 337 0028 04E0     		b	.L33
+ 338              	.LVL33:
+ 339              	.L34:
+ 340              	.LCFI9:
+ 341              		.cfi_def_cfa_offset 0
+ 342              		.cfi_restore 4
+ 343              		.cfi_restore 5
+ 344              		.cfi_restore 14
+ 105:System/storage/Storage_Bus_Port.c ****     }
+ 106:System/storage/Storage_Bus_Port.c **** 
+ 107:System/storage/Storage_Bus_Port.c ****     return 0;
+ 345              		.loc 1 107 12 view .LVU66
+ 346 002a 0020     		movs	r0, #0
+ 347              	.LVL34:
+ 108:System/storage/Storage_Bus_Port.c **** }
+ 348              		.loc 1 108 1 view .LVU67
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 9
+
+
+ 349 002c 7047     		bx	lr
+ 350              	.LVL35:
+ 351              	.L35:
+ 352              	.LCFI10:
+ 353              		.cfi_def_cfa_offset 24
+ 354              		.cfi_offset 4, -12
+ 355              		.cfi_offset 5, -8
+ 356              		.cfi_offset 14, -4
+ 107:System/storage/Storage_Bus_Port.c **** }
+ 357              		.loc 1 107 12 view .LVU68
+ 358 002e 0020     		movs	r0, #0
+ 359              	.LVL36:
+ 107:System/storage/Storage_Bus_Port.c **** }
+ 360              		.loc 1 107 12 view .LVU69
+ 361 0030 00E0     		b	.L33
+ 362              	.LVL37:
+ 363              	.L36:
+ 107:System/storage/Storage_Bus_Port.c **** }
+ 364              		.loc 1 107 12 view .LVU70
+ 365 0032 1046     		mov	r0, r2
+ 366              	.LVL38:
+ 367              	.L33:
+ 368              		.loc 1 108 1 view .LVU71
+ 369 0034 03B0     		add	sp, sp, #12
+ 370              	.LCFI11:
+ 371              		.cfi_remember_state
+ 372              		.cfi_def_cfa_offset 12
+ 373              		@ sp needed
+ 374 0036 30BD     		pop	{r4, r5, pc}
+ 375              	.LVL39:
+ 376              	.L37:
+ 377              	.LCFI12:
+ 378              		.cfi_restore_state
+ 107:System/storage/Storage_Bus_Port.c **** }
+ 379              		.loc 1 107 12 view .LVU72
+ 380 0038 0020     		movs	r0, #0
+ 381              	.LVL40:
+ 107:System/storage/Storage_Bus_Port.c **** }
+ 382              		.loc 1 107 12 view .LVU73
+ 383 003a FBE7     		b	.L33
+ 384              	.L44:
+ 385              		.align	2
+ 386              	.L43:
+ 387 003c 00000000 		.word	.LANCHOR0
+ 388 0040 00000000 		.word	BspSPI
+ 389              		.cfi_endproc
+ 390              	.LFE139:
+ 392              		.section	.text.Storage_External_Chip_Bus_Init,"ax",%progbits
+ 393              		.align	1
+ 394              		.syntax unified
+ 395              		.thumb
+ 396              		.thumb_func
+ 398              	Storage_External_Chip_Bus_Init:
+ 399              	.LVL41:
+ 400              	.LFB135:
+  38:System/storage/Storage_Bus_Port.c ****     void *obj = NULL;
+ 401              		.loc 1 38 1 is_stmt 1 view -0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 10
+
+
+ 402              		.cfi_startproc
+ 403              		@ args = 0, pretend = 0, frame = 0
+ 404              		@ frame_needed = 0, uses_anonymous_args = 0
+  38:System/storage/Storage_Bus_Port.c ****     void *obj = NULL;
+ 405              		.loc 1 38 1 is_stmt 0 view .LVU75
+ 406 0000 30B5     		push	{r4, r5, lr}
+ 407              	.LCFI13:
+ 408              		.cfi_def_cfa_offset 12
+ 409              		.cfi_offset 4, -12
+ 410              		.cfi_offset 5, -8
+ 411              		.cfi_offset 14, -4
+ 412 0002 8BB0     		sub	sp, sp, #44
+ 413              	.LCFI14:
+ 414              		.cfi_def_cfa_offset 56
+  39:System/storage/Storage_Bus_Port.c **** 
+ 415              		.loc 1 39 5 is_stmt 1 view .LVU76
+ 416              	.LVL42:
+  41:System/storage/Storage_Bus_Port.c ****         (p_free == NULL))
+ 417              		.loc 1 41 5 view .LVU77
+  41:System/storage/Storage_Bus_Port.c ****         (p_free == NULL))
+ 418              		.loc 1 41 8 is_stmt 0 view .LVU78
+ 419 0004 0029     		cmp	r1, #0
+ 420 0006 37D0     		beq	.L48
+  41:System/storage/Storage_Bus_Port.c ****         (p_free == NULL))
+ 421              		.loc 1 41 28 discriminator 1 view .LVU79
+ 422 0008 002A     		cmp	r2, #0
+ 423 000a 37D0     		beq	.L49
+  45:System/storage/Storage_Bus_Port.c ****     {
+ 424              		.loc 1 45 5 is_stmt 1 view .LVU80
+  45:System/storage/Storage_Bus_Port.c ****     {
+ 425              		.loc 1 45 8 is_stmt 0 view .LVU81
+ 426 000c 0128     		cmp	r0, #1
+ 427 000e 37D1     		bne	.L50
+  48:System/storage/Storage_Bus_Port.c ****         if (obj == NULL)
+ 428              		.loc 1 48 9 is_stmt 1 view .LVU82
+  48:System/storage/Storage_Bus_Port.c ****         if (obj == NULL)
+ 429              		.loc 1 48 15 is_stmt 0 view .LVU83
+ 430 0010 3020     		movs	r0, #48
+ 431              	.LVL43:
+  48:System/storage/Storage_Bus_Port.c ****         if (obj == NULL)
+ 432              		.loc 1 48 15 view .LVU84
+ 433 0012 8847     		blx	r1
+ 434              	.LVL44:
+  49:System/storage/Storage_Bus_Port.c ****             return NULL;
+ 435              		.loc 1 49 9 is_stmt 1 view .LVU85
+  49:System/storage/Storage_Bus_Port.c ****             return NULL;
+ 436              		.loc 1 49 12 is_stmt 0 view .LVU86
+ 437 0014 0446     		mov	r4, r0
+ 438 0016 0028     		cmp	r0, #0
+ 439 0018 33D0     		beq	.L45
+  52:System/storage/Storage_Bus_Port.c **** 
+ 440              		.loc 1 52 9 is_stmt 1 view .LVU87
+ 441 001a 3022     		movs	r2, #48
+ 442 001c 0021     		movs	r1, #0
+ 443 001e FFF7FEFF 		bl	memset
+ 444              	.LVL45:
+  54:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->CLKPhase = ExtFlash_Bus_CLKPhase;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 11
+
+
+ 445              		.loc 1 54 9 view .LVU88
+  54:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->CLKPhase = ExtFlash_Bus_CLKPhase;
+ 446              		.loc 1 54 53 is_stmt 0 view .LVU89
+ 447 0022 0123     		movs	r3, #1
+ 448 0024 E362     		str	r3, [r4, #44]
+  55:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->CLKPolarity = ExtFlash_Bus_CLKPolarity;
+ 449              		.loc 1 55 9 is_stmt 1 view .LVU90
+  55:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->CLKPolarity = ExtFlash_Bus_CLKPolarity;
+ 450              		.loc 1 55 44 is_stmt 0 view .LVU91
+ 451 0026 A362     		str	r3, [r4, #40]
+  56:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->Instance = ExtFLash_Bus_Instance;
+ 452              		.loc 1 56 9 is_stmt 1 view .LVU92
+  56:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->Instance = ExtFLash_Bus_Instance;
+ 453              		.loc 1 56 47 is_stmt 0 view .LVU93
+ 454 0028 6362     		str	r3, [r4, #36]
+  57:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->Pin = ExtFlash_Bus_Pin;
+ 455              		.loc 1 57 9 is_stmt 1 view .LVU94
+  57:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->Pin = ExtFlash_Bus_Pin;
+ 456              		.loc 1 57 44 is_stmt 0 view .LVU95
+ 457 002a 174B     		ldr	r3, .L52
+ 458 002c 2362     		str	r3, [r4, #32]
+  58:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->work_mode = BspSPI_Mode_Master;
+ 459              		.loc 1 58 9 is_stmt 1 view .LVU96
+  58:System/storage/Storage_Bus_Port.c ****         To_NormalSPI_ObjPtr(obj)->work_mode = BspSPI_Mode_Master;
+ 460              		.loc 1 58 39 is_stmt 0 view .LVU97
+ 461 002e A446     		mov	ip, r4
+ 462 0030 164D     		ldr	r5, .L52+4
+ 463 0032 0FCD     		ldmia	r5!, {r0, r1, r2, r3}
+ 464 0034 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 465 0038 95E80700 		ldm	r5, {r0, r1, r2}
+ 466 003c 8CE80700 		stm	ip, {r0, r1, r2}
+  59:System/storage/Storage_Bus_Port.c **** 
+ 467              		.loc 1 59 9 is_stmt 1 view .LVU98
+  61:System/storage/Storage_Bus_Port.c ****             !BspGPIO.out_init(ExtFlash_CS_Pin))
+ 468              		.loc 1 61 9 view .LVU99
+  61:System/storage/Storage_Bus_Port.c ****             !BspGPIO.out_init(ExtFlash_CS_Pin))
+ 469              		.loc 1 61 30 is_stmt 0 view .LVU100
+ 470 0040 134B     		ldr	r3, .L52+8
+ 471 0042 1D68     		ldr	r5, [r3]
+  61:System/storage/Storage_Bus_Port.c ****             !BspGPIO.out_init(ExtFlash_CS_Pin))
+ 472              		.loc 1 61 14 view .LVU101
+ 473 0044 134B     		ldr	r3, .L52+12
+ 474 0046 0893     		str	r3, [sp, #32]
+ 475 0048 EC46     		mov	ip, sp
+ 476 004a 04F1100E 		add	lr, r4, #16
+ 477 004e BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 478 0052 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 479 0056 9EE80F00 		ldm	lr, {r0, r1, r2, r3}
+ 480 005a 8CE80F00 		stm	ip, {r0, r1, r2, r3}
+ 481 005e 94E80F00 		ldm	r4, {r0, r1, r2, r3}
+ 482 0062 A847     		blx	r5
+ 483              	.LVL46:
+  61:System/storage/Storage_Bus_Port.c ****             !BspGPIO.out_init(ExtFlash_CS_Pin))
+ 484              		.loc 1 61 12 view .LVU102
+ 485 0064 30B1     		cbz	r0, .L47
+  62:System/storage/Storage_Bus_Port.c ****             return NULL;
+ 486              		.loc 1 62 21 discriminator 1 view .LVU103
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 12
+
+
+ 487 0066 0C4B     		ldr	r3, .L52+16
+ 488 0068 5D68     		ldr	r5, [r3, #4]
+  62:System/storage/Storage_Bus_Port.c ****             return NULL;
+ 489              		.loc 1 62 14 discriminator 1 view .LVU104
+ 490 006a 0C4B     		ldr	r3, .L52+20
+ 491 006c 93E80700 		ldm	r3, {r0, r1, r2}
+ 492 0070 A847     		blx	r5
+ 493              	.LVL47:
+  61:System/storage/Storage_Bus_Port.c ****             !BspGPIO.out_init(ExtFlash_CS_Pin))
+ 494              		.loc 1 61 82 discriminator 1 view .LVU105
+ 495 0072 30B9     		cbnz	r0, .L45
+ 496              	.L47:
+  63:System/storage/Storage_Bus_Port.c **** 
+ 497              		.loc 1 63 13 is_stmt 1 view .LVU106
+  63:System/storage/Storage_Bus_Port.c **** 
+ 498              		.loc 1 63 20 is_stmt 0 view .LVU107
+ 499 0074 0024     		movs	r4, #0
+ 500              	.LVL48:
+  63:System/storage/Storage_Bus_Port.c **** 
+ 501              		.loc 1 63 20 view .LVU108
+ 502 0076 04E0     		b	.L45
+ 503              	.LVL49:
+ 504              	.L48:
+  43:System/storage/Storage_Bus_Port.c **** 
+ 505              		.loc 1 43 16 view .LVU109
+ 506 0078 0024     		movs	r4, #0
+ 507 007a 02E0     		b	.L45
+ 508              	.L49:
+ 509 007c 0024     		movs	r4, #0
+ 510 007e 00E0     		b	.L45
+ 511              	.L50:
+  68:System/storage/Storage_Bus_Port.c **** }
+ 512              		.loc 1 68 12 view .LVU110
+ 513 0080 0024     		movs	r4, #0
+ 514              	.LVL50:
+ 515              	.L45:
+  69:System/storage/Storage_Bus_Port.c **** 
+ 516              		.loc 1 69 1 view .LVU111
+ 517 0082 2046     		mov	r0, r4
+ 518 0084 0BB0     		add	sp, sp, #44
+ 519              	.LCFI15:
+ 520              		.cfi_def_cfa_offset 12
+ 521              		@ sp needed
+ 522 0086 30BD     		pop	{r4, r5, pc}
+ 523              	.L53:
+ 524              		.align	2
+ 525              	.L52:
+ 526 0088 00380040 		.word	1073756160
+ 527 008c 00000000 		.word	ExtFlash_SPIPin
+ 528 0090 00000000 		.word	BspSPI
+ 529 0094 00000000 		.word	.LANCHOR0
+ 530 0098 00000000 		.word	BspGPIO
+ 531 009c 00000000 		.word	ExtFlash_CSPin
+ 532              		.cfi_endproc
+ 533              	.LFE135:
+ 535              		.global	StoragePort_Api
+ 536              		.global	ExtFlash_Bus_InstObj
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 13
+
+
+ 537              		.section	.bss.ExtFlash_Bus_InstObj,"aw",%nobits
+ 538              		.align	2
+ 539              		.set	.LANCHOR0,. + 0
+ 542              	ExtFlash_Bus_InstObj:
+ 543 0000 00000000 		.space	4
+ 544              		.section	.data.StoragePort_Api,"aw"
+ 545              		.align	2
+ 548              	StoragePort_Api:
+ 549 0000 00000000 		.word	Storage_BusType_Check
+ 550 0004 00000000 		.word	Storage_External_Chip_Bus_Init
+ 551 0008 00000000 		.word	Storage_External_Chip_SelectPin_Ctl
+ 552 000c 00000000 		.word	Storage_External_Chip_BusTx
+ 553 0010 00000000 		.word	Storage_External_Chip_BusRx
+ 554 0014 00000000 		.word	Storage_External_Chip_BusTrans
+ 555              		.text
+ 556              	.Letext0:
+ 557              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 558              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 559              		.file 4 "System/storage/Storage_Bus_Port.h"
+ 560              		.file 5 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 561              		.file 6 "HW_Lib/AT32F435/drivers/inc/at32f435_437_spi.h"
+ 562              		.file 7 "HW_Lib/Port_Def/Bsp_GPIO_Port_Def.h"
+ 563              		.file 8 "HW_Lib/AT32F435/bsp/Bsp_GPIO.h"
+ 564              		.file 9 "HW_Lib/Port_Def/Bsp_SPI_Port_Def.h"
+ 565              		.file 10 "HW_Lib/AT32F435/bsp/Bsp_SPI.h"
+ 566              		.file 11 "common/Error_Log/../../common/gen_physic_def/imu_data.h"
+ 567              		.file 12 "HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.h"
+ 568              		.file 13 "<built-in>"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s 			page 14
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Storage_Bus_Port.c
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:20     .text.Storage_BusType_Check:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:25     .text.Storage_BusType_Check:00000000 Storage_BusType_Check
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:47     .text.Storage_External_Chip_SelectPin_Ctl:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:52     .text.Storage_External_Chip_SelectPin_Ctl:00000000 Storage_External_Chip_SelectPin_Ctl
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:84     .text.Storage_External_Chip_SelectPin_Ctl:00000014 $d
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:90     .text.Storage_External_Chip_BusTx:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:95     .text.Storage_External_Chip_BusTx:00000000 Storage_External_Chip_BusTx
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:178    .text.Storage_External_Chip_BusTx:00000030 $d
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:184    .text.Storage_External_Chip_BusRx:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:189    .text.Storage_External_Chip_BusRx:00000000 Storage_External_Chip_BusRx
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:272    .text.Storage_External_Chip_BusRx:00000030 $d
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:278    .text.Storage_External_Chip_BusTrans:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:283    .text.Storage_External_Chip_BusTrans:00000000 Storage_External_Chip_BusTrans
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:387    .text.Storage_External_Chip_BusTrans:0000003c $d
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:393    .text.Storage_External_Chip_Bus_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:398    .text.Storage_External_Chip_Bus_Init:00000000 Storage_External_Chip_Bus_Init
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:526    .text.Storage_External_Chip_Bus_Init:00000088 $d
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:548    .data.StoragePort_Api:00000000 StoragePort_Api
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:542    .bss.ExtFlash_Bus_InstObj:00000000 ExtFlash_Bus_InstObj
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:538    .bss.ExtFlash_Bus_InstObj:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccyqcIKp.s:545    .data.StoragePort_Api:00000000 $d
+
+UNDEFINED SYMBOLS
+BspGPIO
+ExtFlash_CSPin
+BspSPI
+memset
+ExtFlash_SPIPin

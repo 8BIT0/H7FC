@@ -1,0 +1,2050 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Task_Sample.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.TaskInertical_Blink_Notification,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	TaskInertical_Blink_Notification:
+  26              	.LVL0:
+  27              	.LFB150:
+  28              		.file 1 "Task/Task_Sample.c"
+   1:Task/Task_Sample.c **** #include "Task_Sample.h"
+   2:Task/Task_Sample.c **** #include "debug_util.h"
+   3:Task/Task_Sample.c **** #include "Srv_OsCommon.h"
+   4:Task/Task_Sample.c **** #include "HW_Def.h"
+   5:Task/Task_Sample.c **** #include "error_log.h"
+   6:Task/Task_Sample.c **** #include "../FCHW_Config.h"
+   7:Task/Task_Sample.c **** #include "../System/DataPipe/DataPipe.h"
+   8:Task/Task_Sample.c **** #include "Srv_SensorMonitor.h"
+   9:Task/Task_Sample.c **** #include "shell_port.h"
+  10:Task/Task_Sample.c **** 
+  11:Task/Task_Sample.c **** #define ToBoolStr(x) x ? "true" : "false"
+  12:Task/Task_Sample.c **** #define DATAPIPE_TRANS_TIMEOUT_100Ms 100
+  13:Task/Task_Sample.c **** 
+  14:Task/Task_Sample.c **** #if defined MATEKH743_V1_5
+  15:Task/Task_Sample.c **** #define Sample_Blinkly Led2
+  16:Task/Task_Sample.c **** #elif defined BATEAT32F435_AIO || defined CCRC_AT32_20 || defined CAIFPV_AIO
+  17:Task/Task_Sample.c **** #define Sample_Blinkly Led1
+  18:Task/Task_Sample.c **** #endif
+  19:Task/Task_Sample.c **** 
+  20:Task/Task_Sample.c **** /* internal var */
+  21:Task/Task_Sample.c **** static uint32_t TaskSample_Period = 0;
+  22:Task/Task_Sample.c **** static bool sample_enable = false;
+  23:Task/Task_Sample.c **** static SrvSensorMonitorObj_TypeDef SensorMonitor;
+  24:Task/Task_Sample.c **** DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef, IMU_Data);
+  25:Task/Task_Sample.c **** DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, Baro_Data);
+  26:Task/Task_Sample.c **** DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorEnable_State);
+  27:Task/Task_Sample.c **** DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorInit_State);
+  28:Task/Task_Sample.c **** DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Smp_PriIMU_Range);
+  29:Task/Task_Sample.c **** #if (IMUJ_CNT == 2)
+  30:Task/Task_Sample.c **** DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Smp_SecIMU_Range);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 2
+
+
+  31:Task/Task_Sample.c **** #endif
+  32:Task/Task_Sample.c **** 
+  33:Task/Task_Sample.c **** /* internal function */
+  34:Task/Task_Sample.c **** static void TaskInertical_Blink_Notification(uint16_t duration);
+  35:Task/Task_Sample.c **** 
+  36:Task/Task_Sample.c **** /* external function */
+  37:Task/Task_Sample.c **** 
+  38:Task/Task_Sample.c **** void TaskSample_Init(uint32_t period)
+  39:Task/Task_Sample.c **** {
+  40:Task/Task_Sample.c ****     SrvSensorMonitor_IMURange_TypeDef PriIMU_Range;
+  41:Task/Task_Sample.c ****     SrvSensorMonitor_IMURange_TypeDef SecIMU_Range;
+  42:Task/Task_Sample.c **** 
+  43:Task/Task_Sample.c ****     memset(&PriIMU_Range, 0, sizeof(SrvSensorMonitor_IMURange_TypeDef));
+  44:Task/Task_Sample.c ****     memset(&SecIMU_Range, 0, sizeof(SrvSensorMonitor_IMURange_TypeDef));
+  45:Task/Task_Sample.c **** 
+  46:Task/Task_Sample.c ****     memset(&SensorMonitor, 0, sizeof(SrvSensorMonitorObj_TypeDef));
+  47:Task/Task_Sample.c ****     memset(&IMU_Smp_DataPipe, 0, sizeof(IMU_Smp_DataPipe));
+  48:Task/Task_Sample.c ****     memset(&Baro_smp_DataPipe, 0, sizeof(Baro_smp_DataPipe));
+  49:Task/Task_Sample.c **** 
+  50:Task/Task_Sample.c ****     memset(DataPipe_DataObjAddr(Baro_Data), 0, DataPipe_DataSize(Baro_Data));
+  51:Task/Task_Sample.c ****     memset(DataPipe_DataObjAddr(IMU_Data), 0, DataPipe_DataSize(IMU_Data));
+  52:Task/Task_Sample.c **** 
+  53:Task/Task_Sample.c ****     IMU_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(IMU_Data);
+  54:Task/Task_Sample.c ****     IMU_Smp_DataPipe.data_size = DataPipe_DataSize(IMU_Data);
+  55:Task/Task_Sample.c ****     DataPipe_Enable(&IMU_Smp_DataPipe);
+  56:Task/Task_Sample.c ****     
+  57:Task/Task_Sample.c ****     Baro_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Baro_Data);
+  58:Task/Task_Sample.c ****     Baro_smp_DataPipe.data_size = DataPipe_DataSize(Baro_Data);
+  59:Task/Task_Sample.c ****     DataPipe_Enable(&Baro_smp_DataPipe);
+  60:Task/Task_Sample.c **** 
+  61:Task/Task_Sample.c ****     SensorMonitor.enabled_reg.bit.imu = true;
+  62:Task/Task_Sample.c ****     SensorMonitor.freq_reg.bit.imu = SrvSensorMonitor_SampleFreq_1KHz;
+  63:Task/Task_Sample.c ****     
+  64:Task/Task_Sample.c **** #if (BARO_SUM >= 1)
+  65:Task/Task_Sample.c ****     SensorMonitor.enabled_reg.bit.baro = true;
+  66:Task/Task_Sample.c ****     SensorMonitor.freq_reg.bit.baro = SrvSensorMonitor_SampleFreq_50Hz;
+  67:Task/Task_Sample.c **** #endif
+  68:Task/Task_Sample.c **** 
+  69:Task/Task_Sample.c ****     sample_enable = SrvSensorMonitor.init(&SensorMonitor);
+  70:Task/Task_Sample.c **** 
+  71:Task/Task_Sample.c ****     DataPipe_DataObj(SensorEnable_State).val = SensorMonitor.enabled_reg.val;
+  72:Task/Task_Sample.c ****     DataPipe_DataObj(SensorInit_State).val = SensorMonitor.init_state_reg.val;
+  73:Task/Task_Sample.c ****     
+  74:Task/Task_Sample.c ****     SensorEnableState_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(SensorEnable_State);
+  75:Task/Task_Sample.c ****     SensorEnableState_smp_DataPipe.data_size = DataPipe_DataSize(SensorEnable_State);
+  76:Task/Task_Sample.c ****     DataPipe_Enable(&SensorEnableState_smp_DataPipe);
+  77:Task/Task_Sample.c ****     
+  78:Task/Task_Sample.c ****     SensorInitState_smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(SensorInit_State);
+  79:Task/Task_Sample.c ****     SensorInitState_smp_DataPipe.data_size = DataPipe_DataSize(SensorInit_State);
+  80:Task/Task_Sample.c ****     DataPipe_Enable(&SensorInitState_smp_DataPipe);
+  81:Task/Task_Sample.c **** 
+  82:Task/Task_Sample.c ****     /* pipe sensor enable and initial state to datahub */
+  83:Task/Task_Sample.c ****     DataPipe_SendTo(&SensorEnableState_smp_DataPipe, &SensorEnableState_hub_DataPipe);
+  84:Task/Task_Sample.c ****     DataPipe_SendTo(&SensorInitState_smp_DataPipe, &SensorInitState_hub_DataPipe);
+  85:Task/Task_Sample.c **** 
+  86:Task/Task_Sample.c ****     if(sample_enable)
+  87:Task/Task_Sample.c ****     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 3
+
+
+  88:Task/Task_Sample.c ****         if(SrvSensorMonitor.get_imu_range(&SensorMonitor, SrvIMU_PriModule, &PriIMU_Range))
+  89:Task/Task_Sample.c ****         {
+  90:Task/Task_Sample.c ****             DataPipe_DataObj(Smp_PriIMU_Range).Acc = PriIMU_Range.Acc;
+  91:Task/Task_Sample.c ****             DataPipe_DataObj(Smp_PriIMU_Range).Gyr = PriIMU_Range.Gyr;
+  92:Task/Task_Sample.c **** 
+  93:Task/Task_Sample.c ****             IMU_PriRange_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Smp_PriIMU_Range);
+  94:Task/Task_Sample.c ****             IMU_PriRange_Smp_DataPipe.data_size = DataPipe_DataSize(Smp_PriIMU_Range);
+  95:Task/Task_Sample.c ****             DataPipe_Enable(&IMU_PriRange_Smp_DataPipe);
+  96:Task/Task_Sample.c ****             
+  97:Task/Task_Sample.c ****             /* pipe sensor sample range to datahub */
+  98:Task/Task_Sample.c ****             DataPipe_SendTo(&IMU_PriRange_Smp_DataPipe, &IMU_PriRange_hub_DataPipe);
+  99:Task/Task_Sample.c ****         }
+ 100:Task/Task_Sample.c **** 
+ 101:Task/Task_Sample.c **** #if (IMU_CNT == 2)
+ 102:Task/Task_Sample.c ****         if(SrvSensorMonitor.get_imu_range(&SensorMonitor, SrvIMU_SecModule, &SecIMU_Range))
+ 103:Task/Task_Sample.c ****         {
+ 104:Task/Task_Sample.c ****             DataPipe_DataObj(Smp_SecIMU_Range).Acc = SecIMU_Range.Acc;
+ 105:Task/Task_Sample.c ****             DataPipe_DataObj(Smp_SecIMU_Range).Gyr = SecIMU_Range.Gyr;
+ 106:Task/Task_Sample.c ****             
+ 107:Task/Task_Sample.c ****             IMU_SecRange_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Smp_SecIMU_Range);
+ 108:Task/Task_Sample.c ****             IMU_SecRange_Smp_DataPipe.data_size = DataPipe_DataSize(Smp_SecIMU_Range);
+ 109:Task/Task_Sample.c ****             DataPipe_Enable(&IMU_SecRange_Smp_DataPipe);
+ 110:Task/Task_Sample.c ****             
+ 111:Task/Task_Sample.c ****             /* pipe sensor sample range to datahub */
+ 112:Task/Task_Sample.c ****             DataPipe_SendTo(&IMU_SecRange_Smp_DataPipe, &IMU_SecRange_hub_DataPipe);
+ 113:Task/Task_Sample.c ****         }
+ 114:Task/Task_Sample.c **** #endif
+ 115:Task/Task_Sample.c ****     }
+ 116:Task/Task_Sample.c **** 
+ 117:Task/Task_Sample.c ****     /* force make sensor sample task run as 1khz freq */
+ 118:Task/Task_Sample.c ****     TaskSample_Period = 1;
+ 119:Task/Task_Sample.c **** }
+ 120:Task/Task_Sample.c **** 
+ 121:Task/Task_Sample.c **** void TaskSample_Core(void const *arg)
+ 122:Task/Task_Sample.c **** {
+ 123:Task/Task_Sample.c ****     uint32_t sys_time = SrvOsCommon.get_os_ms();
+ 124:Task/Task_Sample.c ****     
+ 125:Task/Task_Sample.c ****     while(1)
+ 126:Task/Task_Sample.c ****     {
+ 127:Task/Task_Sample.c ****         TaskInertical_Blink_Notification(100);
+ 128:Task/Task_Sample.c **** 
+ 129:Task/Task_Sample.c ****         if(sample_enable && SrvSensorMonitor.sample_ctl(&SensorMonitor))
+ 130:Task/Task_Sample.c ****         {
+ 131:Task/Task_Sample.c ****             DataPipe_DataObj(IMU_Data) = SrvSensorMonitor.get_imu_data(&SensorMonitor);
+ 132:Task/Task_Sample.c ****             DataPipe_DataObj(Baro_Data).data = SrvSensorMonitor.get_baro_data(&SensorMonitor);
+ 133:Task/Task_Sample.c **** 
+ 134:Task/Task_Sample.c ****             /* need measurement the overhead from pipe send to pipe receive callback triggered */
+ 135:Task/Task_Sample.c ****             // DebugPin.ctl(Debug_PB4, true);
+ 136:Task/Task_Sample.c ****             /* to Log task */
+ 137:Task/Task_Sample.c ****             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_Log_DataPipe);
+ 138:Task/Task_Sample.c ****             DataPipe_SendTo(&Baro_smp_DataPipe, &Baro_Log_DataPipe);
+ 139:Task/Task_Sample.c **** 
+ 140:Task/Task_Sample.c ****             /* to data hub */
+ 141:Task/Task_Sample.c ****             DataPipe_SendTo(&IMU_Smp_DataPipe, &IMU_hub_DataPipe);
+ 142:Task/Task_Sample.c ****             DataPipe_SendTo(&Baro_smp_DataPipe, &Baro_hub_DataPipe);
+ 143:Task/Task_Sample.c ****             // DebugPin.ctl(Debug_PB4, false);
+ 144:Task/Task_Sample.c ****         }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 4
+
+
+ 145:Task/Task_Sample.c ****         
+ 146:Task/Task_Sample.c ****         SrvOsCommon.precise_delay(&sys_time, TaskSample_Period);
+ 147:Task/Task_Sample.c ****     }
+ 148:Task/Task_Sample.c **** }
+ 149:Task/Task_Sample.c **** 
+ 150:Task/Task_Sample.c **** static void TaskInertical_Blink_Notification(uint16_t duration)
+ 151:Task/Task_Sample.c **** {
+  29              		.loc 1 151 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 151 1 is_stmt 0 view .LVU1
+  34 0000 10B5     		push	{r4, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 8
+  37              		.cfi_offset 4, -8
+  38              		.cfi_offset 14, -4
+  39 0002 0446     		mov	r4, r0
+ 152:Task/Task_Sample.c ****     uint32_t Rt = 0;
+  40              		.loc 1 152 5 is_stmt 1 view .LVU2
+  41              	.LVL1:
+ 153:Task/Task_Sample.c ****     static uint32_t Lst_Rt = 0;
+  42              		.loc 1 153 5 view .LVU3
+ 154:Task/Task_Sample.c ****     static bool led_state = false;
+  43              		.loc 1 154 5 view .LVU4
+ 155:Task/Task_Sample.c **** 
+ 156:Task/Task_Sample.c ****     Rt = SrvOsCommon.get_os_ms();
+  44              		.loc 1 156 5 view .LVU5
+  45              		.loc 1 156 21 is_stmt 0 view .LVU6
+  46 0004 0D4B     		ldr	r3, .L4
+  47 0006 1B68     		ldr	r3, [r3]
+  48              		.loc 1 156 10 view .LVU7
+  49 0008 9847     		blx	r3
+  50              	.LVL2:
+ 157:Task/Task_Sample.c **** 
+ 158:Task/Task_Sample.c ****     if ((Rt % duration == 0) && (Lst_Rt != Rt))
+  51              		.loc 1 158 5 is_stmt 1 view .LVU8
+  52              		.loc 1 158 13 is_stmt 0 view .LVU9
+  53 000a B0FBF4F3 		udiv	r3, r0, r4
+  54 000e 04FB1304 		mls	r4, r4, r3, r0
+  55              		.loc 1 158 8 view .LVU10
+  56 0012 54B9     		cbnz	r4, .L2
+  57              		.loc 1 158 41 discriminator 1 view .LVU11
+  58 0014 0A4B     		ldr	r3, .L4+4
+  59 0016 1B68     		ldr	r3, [r3]
+  60              		.loc 1 158 30 discriminator 1 view .LVU12
+  61 0018 8342     		cmp	r3, r0
+  62 001a 06D0     		beq	.L2
+ 159:Task/Task_Sample.c ****     {
+ 160:Task/Task_Sample.c ****         led_state = !led_state;
+  63              		.loc 1 160 9 is_stmt 1 view .LVU13
+  64 001c 094A     		ldr	r2, .L4+8
+  65 001e 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+  66 0020 83F00103 		eor	r3, r3, #1
+  67              		.loc 1 160 19 is_stmt 0 view .LVU14
+  68 0024 1370     		strb	r3, [r2]
+ 161:Task/Task_Sample.c ****         Lst_Rt = Rt;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 5
+
+
+  69              		.loc 1 161 9 is_stmt 1 view .LVU15
+  70              		.loc 1 161 16 is_stmt 0 view .LVU16
+  71 0026 064B     		ldr	r3, .L4+4
+  72 0028 1860     		str	r0, [r3]
+  73              	.L2:
+ 162:Task/Task_Sample.c ****     }
+ 163:Task/Task_Sample.c **** 
+ 164:Task/Task_Sample.c ****     DevLED.ctl(Sample_Blinkly, led_state);
+  74              		.loc 1 164 5 is_stmt 1 view .LVU17
+  75              		.loc 1 164 11 is_stmt 0 view .LVU18
+  76 002a 074B     		ldr	r3, .L4+12
+  77 002c 5C68     		ldr	r4, [r3, #4]
+  78              		.loc 1 164 5 view .LVU19
+  79 002e 074A     		ldr	r2, .L4+16
+  80 0030 044B     		ldr	r3, .L4+8
+  81 0032 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+  82 0034 07CA     		ldm	r2, {r0, r1, r2}
+  83              	.LVL3:
+  84              		.loc 1 164 5 view .LVU20
+  85 0036 A047     		blx	r4
+  86              	.LVL4:
+ 165:Task/Task_Sample.c **** }
+  87              		.loc 1 165 1 view .LVU21
+  88 0038 10BD     		pop	{r4, pc}
+  89              	.L5:
+  90 003a 00BF     		.align	2
+  91              	.L4:
+  92 003c 00000000 		.word	SrvOsCommon
+  93 0040 00000000 		.word	.LANCHOR0
+  94 0044 00000000 		.word	.LANCHOR1
+  95 0048 00000000 		.word	DevLED
+  96 004c 00000000 		.word	Led1
+  97              		.cfi_endproc
+  98              	.LFE150:
+ 100              		.section	.rodata.TaskSample_Get_SensorState.str1.4,"aMS",%progbits,1
+ 101              		.align	2
+ 102              	.LC0:
+ 103 0000 66616C73 		.ascii	"false\000"
+ 103      6500
+ 104 0006 0000     		.align	2
+ 105              	.LC1:
+ 106 0008 74727565 		.ascii	"true\000"
+ 106      00
+ 107 000d 000000   		.align	2
+ 108              	.LC2:
+ 109 0010 556E6B6E 		.ascii	"Unknow type\000"
+ 109      6F772074 
+ 109      79706500 
+ 110              		.align	2
+ 111              	.LC3:
+ 112 001c 49434D32 		.ascii	"ICM20602\000"
+ 112      30363032 
+ 112      00
+ 113 0025 000000   		.align	2
+ 114              	.LC4:
+ 115 0028 49434D34 		.ascii	"ICM42688P\000"
+ 115      32363838 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 6
+
+
+ 115      5000
+ 116 0032 0000     		.align	2
+ 117              	.LC5:
+ 118 0034 49434D34 		.ascii	"ICM42605\000"
+ 118      32363035 
+ 118      00
+ 119 003d 000000   		.align	2
+ 120              	.LC6:
+ 121 0040 4E6F6E65 		.ascii	"None\000"
+ 121      00
+ 122 0045 000000   		.align	2
+ 123              	.LC7:
+ 124 0048 4D505536 		.ascii	"MPU6000\000"
+ 124      30303000 
+ 125              		.align	2
+ 126              	.LC8:
+ 127 0050 424D5032 		.ascii	"BMP280\000"
+ 127      383000
+ 128 0057 00       		.align	2
+ 129              	.LC9:
+ 130 0058 44505333 		.ascii	"DPS310\000"
+ 130      313000
+ 131 005f 00       		.align	2
+ 132              	.LC10:
+ 133 0060 53504900 		.ascii	"SPI\000"
+ 134              		.align	2
+ 135              	.LC11:
+ 136 0064 49494300 		.ascii	"IIC\000"
+ 137              		.align	2
+ 138              	.LC12:
+ 139 0068 4261726F 		.ascii	"Baro enable state: %s\015\012\000"
+ 139      20656E61 
+ 139      626C6520 
+ 139      73746174 
+ 139      653A2025 
+ 140              		.align	2
+ 141              	.LC13:
+ 142 0080 494D5520 		.ascii	"IMU  enable state: %s\015\012\000"
+ 142      20656E61 
+ 142      626C6520 
+ 142      73746174 
+ 142      653A2025 
+ 143              		.align	2
+ 144              	.LC14:
+ 145 0098 4D616720 		.ascii	"Mag  enable state: %s\015\012\000"
+ 145      20656E61 
+ 145      626C6520 
+ 145      73746174 
+ 145      653A2025 
+ 146              		.align	2
+ 147              	.LC15:
+ 148 00b0 466C6F77 		.ascii	"Flow enable state: %s\015\012\000"
+ 148      20656E61 
+ 148      626C6520 
+ 148      73746174 
+ 148      653A2025 
+ 149              		.align	2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 7
+
+
+ 150              	.LC16:
+ 151 00c8 2D2D2D2D 		.ascii	"---------------------------\015\012\000"
+ 151      2D2D2D2D 
+ 151      2D2D2D2D 
+ 151      2D2D2D2D 
+ 151      2D2D2D2D 
+ 152 00e6 0000     		.align	2
+ 153              	.LC17:
+ 154 00e8 4261726F 		.ascii	"Baro init   state: %s\015\012\000"
+ 154      20696E69 
+ 154      74202020 
+ 154      73746174 
+ 154      653A2025 
+ 155              		.align	2
+ 156              	.LC18:
+ 157 0100 494D5520 		.ascii	"IMU  init   state: %s\015\012\000"
+ 157      20696E69 
+ 157      74202020 
+ 157      73746174 
+ 157      653A2025 
+ 158              		.align	2
+ 159              	.LC19:
+ 160 0118 4D616720 		.ascii	"Mag  init   state: %s\015\012\000"
+ 160      20696E69 
+ 160      74202020 
+ 160      73746174 
+ 160      653A2025 
+ 161              		.align	2
+ 162              	.LC20:
+ 163 0130 466C6F77 		.ascii	"Flow init   state: %s\015\012\000"
+ 163      20696E69 
+ 163      74202020 
+ 163      73746174 
+ 163      653A2025 
+ 164              		.align	2
+ 165              	.LC21:
+ 166 0148 50726949 		.ascii	"PriIMU type: %s\015\012\000"
+ 166      4D552074 
+ 166      7970653A 
+ 166      2025730D 
+ 166      0A00
+ 167 015a 0000     		.align	2
+ 168              	.LC22:
+ 169 015c 53656349 		.ascii	"SecIMU type: %s\015\012\000"
+ 169      4D552074 
+ 169      7970653A 
+ 169      2025730D 
+ 169      0A00
+ 170 016e 0000     		.align	2
+ 171              	.LC23:
+ 172 0170 4261726F 		.ascii	"Baro   type: %s\015\012\000"
+ 172      20202074 
+ 172      7970653A 
+ 172      2025730D 
+ 172      0A00
+ 173 0182 0000     		.align	2
+ 174              	.LC24:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 8
+
+
+ 175 0184 4261726F 		.ascii	"Baro   bus:  %s\015\012\000"
+ 175      20202062 
+ 175      75733A20 
+ 175      2025730D 
+ 175      0A00
+ 176              		.section	.text.TaskSample_Get_SensorState,"ax",%progbits
+ 177              		.align	1
+ 178              		.syntax unified
+ 179              		.thumb
+ 180              		.thumb_func
+ 182              	TaskSample_Get_SensorState:
+ 183              	.LFB151:
+ 166:Task/Task_Sample.c **** 
+ 167:Task/Task_Sample.c **** static void TaskSample_Get_SensorState(void)
+ 168:Task/Task_Sample.c **** {
+ 184              		.loc 1 168 1 is_stmt 1 view -0
+ 185              		.cfi_startproc
+ 186              		@ args = 0, pretend = 0, frame = 0
+ 187              		@ frame_needed = 0, uses_anonymous_args = 0
+ 188 0000 10B5     		push	{r4, lr}
+ 189              	.LCFI1:
+ 190              		.cfi_def_cfa_offset 8
+ 191              		.cfi_offset 4, -8
+ 192              		.cfi_offset 14, -4
+ 169:Task/Task_Sample.c ****     Shell *shell_obj = Shell_GetInstence();
+ 193              		.loc 1 169 5 view .LVU23
+ 194              		.loc 1 169 24 is_stmt 0 view .LVU24
+ 195 0002 FFF7FEFF 		bl	Shell_GetInstence
+ 196              	.LVL5:
+ 170:Task/Task_Sample.c **** 
+ 171:Task/Task_Sample.c ****     if (shell_obj == NULL)
+ 197              		.loc 1 171 5 is_stmt 1 view .LVU25
+ 198              		.loc 1 171 8 is_stmt 0 view .LVU26
+ 199 0006 0028     		cmp	r0, #0
+ 200 0008 00F0AF80 		beq	.L6
+ 201 000c 0446     		mov	r4, r0
+ 172:Task/Task_Sample.c ****         return;
+ 173:Task/Task_Sample.c **** 
+ 174:Task/Task_Sample.c ****     shellPrint(shell_obj, "Baro enable state: %s\r\n", ToBoolStr(SensorMonitor.enabled_reg.bit.baro
+ 202              		.loc 1 174 5 is_stmt 1 view .LVU27
+ 203              		.loc 1 174 56 is_stmt 0 view .LVU28
+ 204 000e 624B     		ldr	r3, .L51
+ 205 0010 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 206              		.loc 1 174 5 view .LVU29
+ 207 0012 13F0040F 		tst	r3, #4
+ 208 0016 5CD0     		beq	.L32
+ 209 0018 604A     		ldr	r2, .L51+4
+ 210              	.L8:
+ 211              		.loc 1 174 5 discriminator 4 view .LVU30
+ 212 001a 6149     		ldr	r1, .L51+8
+ 213 001c 2046     		mov	r0, r4
+ 214              	.LVL6:
+ 215              		.loc 1 174 5 discriminator 4 view .LVU31
+ 216 001e FFF7FEFF 		bl	shellPrint
+ 217              	.LVL7:
+ 175:Task/Task_Sample.c ****     shellPrint(shell_obj, "IMU  enable state: %s\r\n", ToBoolStr(SensorMonitor.enabled_reg.bit.imu)
+ 218              		.loc 1 175 5 is_stmt 1 discriminator 4 view .LVU32
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 9
+
+
+ 219              		.loc 1 175 56 is_stmt 0 discriminator 4 view .LVU33
+ 220 0022 5D4B     		ldr	r3, .L51
+ 221 0024 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 222              		.loc 1 175 5 discriminator 4 view .LVU34
+ 223 0026 13F0010F 		tst	r3, #1
+ 224 002a 54D0     		beq	.L33
+ 225              		.loc 1 175 5 view .LVU35
+ 226 002c 5B4A     		ldr	r2, .L51+4
+ 227              	.L9:
+ 228              		.loc 1 175 5 discriminator 4 view .LVU36
+ 229 002e 5D49     		ldr	r1, .L51+12
+ 230 0030 2046     		mov	r0, r4
+ 231 0032 FFF7FEFF 		bl	shellPrint
+ 232              	.LVL8:
+ 176:Task/Task_Sample.c ****     shellPrint(shell_obj, "Mag  enable state: %s\r\n", ToBoolStr(SensorMonitor.enabled_reg.bit.mag)
+ 233              		.loc 1 176 5 is_stmt 1 discriminator 4 view .LVU37
+ 234              		.loc 1 176 56 is_stmt 0 discriminator 4 view .LVU38
+ 235 0036 584B     		ldr	r3, .L51
+ 236 0038 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 237              		.loc 1 176 5 discriminator 4 view .LVU39
+ 238 003a 13F0020F 		tst	r3, #2
+ 239 003e 4CD0     		beq	.L34
+ 240              		.loc 1 176 5 view .LVU40
+ 241 0040 564A     		ldr	r2, .L51+4
+ 242              	.L10:
+ 243              		.loc 1 176 5 discriminator 4 view .LVU41
+ 244 0042 5949     		ldr	r1, .L51+16
+ 245 0044 2046     		mov	r0, r4
+ 246 0046 FFF7FEFF 		bl	shellPrint
+ 247              	.LVL9:
+ 177:Task/Task_Sample.c ****     shellPrint(shell_obj, "Flow enable state: %s\r\n", ToBoolStr(SensorMonitor.enabled_reg.bit.flow
+ 248              		.loc 1 177 5 is_stmt 1 discriminator 4 view .LVU42
+ 249              		.loc 1 177 56 is_stmt 0 discriminator 4 view .LVU43
+ 250 004a 534B     		ldr	r3, .L51
+ 251 004c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 252              		.loc 1 177 5 discriminator 4 view .LVU44
+ 253 004e 13F0080F 		tst	r3, #8
+ 254 0052 44D0     		beq	.L35
+ 255              		.loc 1 177 5 view .LVU45
+ 256 0054 514A     		ldr	r2, .L51+4
+ 257              	.L11:
+ 258              		.loc 1 177 5 discriminator 4 view .LVU46
+ 259 0056 5549     		ldr	r1, .L51+20
+ 260 0058 2046     		mov	r0, r4
+ 261 005a FFF7FEFF 		bl	shellPrint
+ 262              	.LVL10:
+ 178:Task/Task_Sample.c ****     shellPrint(shell_obj, "---------------------------\r\n");
+ 263              		.loc 1 178 5 is_stmt 1 discriminator 4 view .LVU47
+ 264 005e 5449     		ldr	r1, .L51+24
+ 265 0060 2046     		mov	r0, r4
+ 266 0062 FFF7FEFF 		bl	shellPrint
+ 267              	.LVL11:
+ 179:Task/Task_Sample.c ****     shellPrint(shell_obj, "Baro init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.b
+ 268              		.loc 1 179 5 discriminator 4 view .LVU48
+ 269              		.loc 1 179 56 is_stmt 0 discriminator 4 view .LVU49
+ 270 0066 4C4B     		ldr	r3, .L51
+ 271 0068 1B79     		ldrb	r3, [r3, #4]	@ zero_extendqisi2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 10
+
+
+ 272              		.loc 1 179 5 discriminator 4 view .LVU50
+ 273 006a 13F0040F 		tst	r3, #4
+ 274 006e 38D0     		beq	.L36
+ 275              		.loc 1 179 5 view .LVU51
+ 276 0070 4A4A     		ldr	r2, .L51+4
+ 277              	.L12:
+ 278              		.loc 1 179 5 discriminator 4 view .LVU52
+ 279 0072 5049     		ldr	r1, .L51+28
+ 280 0074 2046     		mov	r0, r4
+ 281 0076 FFF7FEFF 		bl	shellPrint
+ 282              	.LVL12:
+ 180:Task/Task_Sample.c ****     shellPrint(shell_obj, "IMU  init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.i
+ 283              		.loc 1 180 5 is_stmt 1 discriminator 4 view .LVU53
+ 284              		.loc 1 180 56 is_stmt 0 discriminator 4 view .LVU54
+ 285 007a 474B     		ldr	r3, .L51
+ 286 007c 1B79     		ldrb	r3, [r3, #4]	@ zero_extendqisi2
+ 287              		.loc 1 180 5 discriminator 4 view .LVU55
+ 288 007e 13F0010F 		tst	r3, #1
+ 289 0082 30D0     		beq	.L37
+ 290              		.loc 1 180 5 view .LVU56
+ 291 0084 454A     		ldr	r2, .L51+4
+ 292              	.L13:
+ 293              		.loc 1 180 5 discriminator 4 view .LVU57
+ 294 0086 4C49     		ldr	r1, .L51+32
+ 295 0088 2046     		mov	r0, r4
+ 296 008a FFF7FEFF 		bl	shellPrint
+ 297              	.LVL13:
+ 181:Task/Task_Sample.c ****     shellPrint(shell_obj, "Mag  init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.m
+ 298              		.loc 1 181 5 is_stmt 1 discriminator 4 view .LVU58
+ 299              		.loc 1 181 56 is_stmt 0 discriminator 4 view .LVU59
+ 300 008e 424B     		ldr	r3, .L51
+ 301 0090 1B79     		ldrb	r3, [r3, #4]	@ zero_extendqisi2
+ 302              		.loc 1 181 5 discriminator 4 view .LVU60
+ 303 0092 13F0020F 		tst	r3, #2
+ 304 0096 28D0     		beq	.L38
+ 305              		.loc 1 181 5 view .LVU61
+ 306 0098 404A     		ldr	r2, .L51+4
+ 307              	.L14:
+ 308              		.loc 1 181 5 discriminator 4 view .LVU62
+ 309 009a 4849     		ldr	r1, .L51+36
+ 310 009c 2046     		mov	r0, r4
+ 311 009e FFF7FEFF 		bl	shellPrint
+ 312              	.LVL14:
+ 182:Task/Task_Sample.c ****     shellPrint(shell_obj, "Flow init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.f
+ 313              		.loc 1 182 5 is_stmt 1 discriminator 4 view .LVU63
+ 314              		.loc 1 182 56 is_stmt 0 discriminator 4 view .LVU64
+ 315 00a2 3D4B     		ldr	r3, .L51
+ 316 00a4 1B79     		ldrb	r3, [r3, #4]	@ zero_extendqisi2
+ 317              		.loc 1 182 5 discriminator 4 view .LVU65
+ 318 00a6 13F0080F 		tst	r3, #8
+ 319 00aa 20D0     		beq	.L39
+ 320              		.loc 1 182 5 view .LVU66
+ 321 00ac 3B4A     		ldr	r2, .L51+4
+ 322              	.L15:
+ 323              		.loc 1 182 5 discriminator 4 view .LVU67
+ 324 00ae 4449     		ldr	r1, .L51+40
+ 325 00b0 2046     		mov	r0, r4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 11
+
+
+ 326 00b2 FFF7FEFF 		bl	shellPrint
+ 327              	.LVL15:
+ 183:Task/Task_Sample.c ****     shellPrint(shell_obj, "---------------------------\r\n");
+ 328              		.loc 1 183 5 is_stmt 1 discriminator 4 view .LVU68
+ 329 00b6 3E49     		ldr	r1, .L51+24
+ 330 00b8 2046     		mov	r0, r4
+ 331 00ba FFF7FEFF 		bl	shellPrint
+ 332              	.LVL16:
+ 184:Task/Task_Sample.c ****     shellPrint(shell_obj, "PriIMU type: %s\r\n", IMU_TypeStr(SensorMonitor.pri_imu_type));
+ 333              		.loc 1 184 5 discriminator 4 view .LVU69
+ 334              		.loc 1 184 50 is_stmt 0 discriminator 4 view .LVU70
+ 335 00be 364B     		ldr	r3, .L51
+ 336 00c0 93F83030 		ldrb	r3, [r3, #48]	@ zero_extendqisi2
+ 337              	.LVL17:
+ 338              	.LBB24:
+ 339              	.LBI24:
+ 340              		.file 2 "Service/Srv_IMUSample.h"
+   1:Service/Srv_IMUSample.h **** #ifndef __SRV_IMUSAMPLE_H
+   2:Service/Srv_IMUSample.h **** #define __SRV_IMUSAMPLE_H
+   3:Service/Srv_IMUSample.h **** 
+   4:Service/Srv_IMUSample.h **** #ifdef __cplusplus
+   5:Service/Srv_IMUSample.h **** extern "C" {
+   6:Service/Srv_IMUSample.h **** #endif
+   7:Service/Srv_IMUSample.h **** 
+   8:Service/Srv_IMUSample.h **** #include <stdbool.h>
+   9:Service/Srv_IMUSample.h **** #include <stdint.h>
+  10:Service/Srv_IMUSample.h **** #include <string.h>
+  11:Service/Srv_IMUSample.h **** #include "Srv_OsCommon.h"
+  12:Service/Srv_IMUSample.h **** #include "imu_data.h"
+  13:Service/Srv_IMUSample.h **** #include "util.h"
+  14:Service/Srv_IMUSample.h **** #include "gen_calib.h"
+  15:Service/Srv_IMUSample.h **** #include "../FCHW_Config.h"
+  16:Service/Srv_IMUSample.h **** 
+  17:Service/Srv_IMUSample.h **** #define MPU_RANGE_MAX_THRESHOLD 1.2f
+  18:Service/Srv_IMUSample.h **** #define MPU_RANGE_MIN_THRESHOLD 0.9f
+  19:Service/Srv_IMUSample.h **** #define MPU_MODULE_OPR_DURATION 50 // duration time 50ms
+  20:Service/Srv_IMUSample.h **** 
+  21:Service/Srv_IMUSample.h **** #define IMU_Commu_TimeOut 1000
+  22:Service/Srv_IMUSample.h **** #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
+  23:Service/Srv_IMUSample.h **** #define ANGULAR_SPEED_ACCURACY 1000
+  24:Service/Srv_IMUSample.h **** 
+  25:Service/Srv_IMUSample.h **** #define GYR_STATIC_CALIB_CYCLE 1000
+  26:Service/Srv_IMUSample.h **** #define GYR_STATIC_CALIB_ACCURACY ANGULAR_SPEED_ACCURACY
+  27:Service/Srv_IMUSample.h **** #define GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD (3 * GYR_STATIC_CALIB_ACCURACY)
+  28:Service/Srv_IMUSample.h **** #define GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD (2 * GYR_STATIC_CALIB_ACCURACY)
+  29:Service/Srv_IMUSample.h **** 
+  30:Service/Srv_IMUSample.h **** #define IMU_DATA_SIZE sizeof(SrvIMU_Data_TypeDef)
+  31:Service/Srv_IMUSample.h **** 
+  32:Service/Srv_IMUSample.h **** typedef union
+  33:Service/Srv_IMUSample.h **** {
+  34:Service/Srv_IMUSample.h ****     struct
+  35:Service/Srv_IMUSample.h ****     {
+  36:Service/Srv_IMUSample.h ****         uint8_t Pri_State : 2;
+  37:Service/Srv_IMUSample.h ****         uint8_t Sec_State : 2;
+  38:Service/Srv_IMUSample.h ****         uint8_t Fus_State : 2;
+  39:Service/Srv_IMUSample.h ****         uint8_t res       : 2;
+  40:Service/Srv_IMUSample.h ****     } sec;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 12
+
+
+  41:Service/Srv_IMUSample.h **** 
+  42:Service/Srv_IMUSample.h ****     uint8_t val;
+  43:Service/Srv_IMUSample.h **** } SrvMpu_Reg_TypeDef;
+  44:Service/Srv_IMUSample.h **** 
+  45:Service/Srv_IMUSample.h **** typedef enum
+  46:Service/Srv_IMUSample.h **** {
+  47:Service/Srv_IMUSample.h ****     SrvIMU_PriModule = 1,
+  48:Service/Srv_IMUSample.h ****     SrvIMU_SecModule,
+  49:Service/Srv_IMUSample.h ****     SrvIMU_FusModule,
+  50:Service/Srv_IMUSample.h **** } SrvIMU_Module_Type;
+  51:Service/Srv_IMUSample.h **** 
+  52:Service/Srv_IMUSample.h **** typedef enum
+  53:Service/Srv_IMUSample.h **** {
+  54:Service/Srv_IMUSample.h ****     SrvIMU_PriDev_Detect_Error = -12,
+  55:Service/Srv_IMUSample.h ****     SrvIMU_SecDev_Detect_Error = -11,
+  56:Service/Srv_IMUSample.h ****     SrvIMU_SecIMU_Filter_Init_Error = -10,
+  57:Service/Srv_IMUSample.h ****     SrvIMU_PriIMU_Filter_Init_Error = -9,
+  58:Service/Srv_IMUSample.h ****     SrvIMU_PriCSPin_Init_Error = -8,
+  59:Service/Srv_IMUSample.h ****     SrvIMU_PriExtiPin_Init_Error = -7,
+  60:Service/Srv_IMUSample.h ****     SrvIMU_PriBus_Init_Error = -6,
+  61:Service/Srv_IMUSample.h ****     SrvIMU_PriDev_Init_Error = -5,
+  62:Service/Srv_IMUSample.h ****     SrvIMU_SecCSPin_Init_Error = -4,
+  63:Service/Srv_IMUSample.h ****     SrvIMU_SecExtiPin_Init_Error = -3,
+  64:Service/Srv_IMUSample.h ****     SrvIMU_SecBus_Init_Error = -2,
+  65:Service/Srv_IMUSample.h ****     SrvIMU_SecDev_Init_Error = -1,
+  66:Service/Srv_IMUSample.h ****     SrvIMU_No_Error = 0,
+  67:Service/Srv_IMUSample.h ****     SrvIMU_AllModule_Init_Error,
+  68:Service/Srv_IMUSample.h **** } SrvIMU_ErrorCode_List;
+  69:Service/Srv_IMUSample.h **** 
+  70:Service/Srv_IMUSample.h **** typedef enum
+  71:Service/Srv_IMUSample.h **** {
+  72:Service/Srv_IMUSample.h ****     SrvIMU_Sample_NoError = 0,
+  73:Service/Srv_IMUSample.h ****     SrvIMU_Sample_Module_UnReady,
+  74:Service/Srv_IMUSample.h ****     SrvIMU_Sample_Data_Acc_Blunt,
+  75:Service/Srv_IMUSample.h ****     SrvIMU_Sample_Data_Gyr_Blunt,
+  76:Service/Srv_IMUSample.h ****     SrvIMU_Sample_Data_Acc_OverRange,
+  77:Service/Srv_IMUSample.h ****     SrvIMU_Sample_Data_Gyr_OverRange,
+  78:Service/Srv_IMUSample.h ****     SrvIMU_Sample_Over_Angular_Accelerate,
+  79:Service/Srv_IMUSample.h **** } SrvIMU_SampleErrorCode_List;
+  80:Service/Srv_IMUSample.h **** 
+  81:Service/Srv_IMUSample.h **** typedef enum
+  82:Service/Srv_IMUSample.h **** {
+  83:Service/Srv_IMUSample.h ****     SrvIMU_Dev_MPU6000 = 0,
+  84:Service/Srv_IMUSample.h ****     SrvIMU_Dev_ICM20602,
+  85:Service/Srv_IMUSample.h ****     SrvIMU_Dev_ICM42688P,
+  86:Service/Srv_IMUSample.h ****     SrvIMU_Dev_ICM42605,
+  87:Service/Srv_IMUSample.h ****     SrvIMU_Dev_None,
+  88:Service/Srv_IMUSample.h **** }SrvIMU_SensorID_List;
+  89:Service/Srv_IMUSample.h **** 
+  90:Service/Srv_IMUSample.h **** static inline const char* SrvIMU_Get_TypeStr(SrvIMU_SensorID_List type)
+ 341              		.loc 2 90 27 is_stmt 1 discriminator 4 view .LVU71
+ 342              	.LBB25:
+  91:Service/Srv_IMUSample.h **** {
+  92:Service/Srv_IMUSample.h ****     switch (type)
+ 343              		.loc 2 92 5 discriminator 4 view .LVU72
+ 344 00c4 042B     		cmp	r3, #4
+ 345 00c6 29D8     		bhi	.L16
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 13
+
+
+ 346 00c8 DFE803F0 		tbb	[pc, r3]
+ 347              	.L18:
+ 348 00cc 13       		.byte	(.L22-.L18)/2
+ 349 00cd 2A       		.byte	(.L40-.L18)/2
+ 350 00ce 22       		.byte	(.L20-.L18)/2
+ 351 00cf 24       		.byte	(.L19-.L18)/2
+ 352 00d0 26       		.byte	(.L17-.L18)/2
+ 353              	.LVL18:
+ 354 00d1 00       		.p2align 1
+ 355              	.L32:
+ 356              		.loc 2 92 5 is_stmt 0 discriminator 4 view .LVU73
+ 357              	.LBE25:
+ 358              	.LBE24:
+ 174:Task/Task_Sample.c ****     shellPrint(shell_obj, "IMU  enable state: %s\r\n", ToBoolStr(SensorMonitor.enabled_reg.bit.imu)
+ 359              		.loc 1 174 5 view .LVU74
+ 360 00d2 3C4A     		ldr	r2, .L51+44
+ 361 00d4 A1E7     		b	.L8
+ 362              	.LVL19:
+ 363              	.L33:
+ 175:Task/Task_Sample.c ****     shellPrint(shell_obj, "Mag  enable state: %s\r\n", ToBoolStr(SensorMonitor.enabled_reg.bit.mag)
+ 364              		.loc 1 175 5 view .LVU75
+ 365 00d6 3B4A     		ldr	r2, .L51+44
+ 366 00d8 A9E7     		b	.L9
+ 367              	.L34:
+ 176:Task/Task_Sample.c ****     shellPrint(shell_obj, "Flow enable state: %s\r\n", ToBoolStr(SensorMonitor.enabled_reg.bit.flow
+ 368              		.loc 1 176 5 view .LVU76
+ 369 00da 3A4A     		ldr	r2, .L51+44
+ 370 00dc B1E7     		b	.L10
+ 371              	.L35:
+ 177:Task/Task_Sample.c ****     shellPrint(shell_obj, "---------------------------\r\n");
+ 372              		.loc 1 177 5 view .LVU77
+ 373 00de 394A     		ldr	r2, .L51+44
+ 374 00e0 B9E7     		b	.L11
+ 375              	.L36:
+ 179:Task/Task_Sample.c ****     shellPrint(shell_obj, "IMU  init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.i
+ 376              		.loc 1 179 5 view .LVU78
+ 377 00e2 384A     		ldr	r2, .L51+44
+ 378 00e4 C5E7     		b	.L12
+ 379              	.L37:
+ 180:Task/Task_Sample.c ****     shellPrint(shell_obj, "Mag  init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.m
+ 380              		.loc 1 180 5 view .LVU79
+ 381 00e6 374A     		ldr	r2, .L51+44
+ 382 00e8 CDE7     		b	.L13
+ 383              	.L38:
+ 181:Task/Task_Sample.c ****     shellPrint(shell_obj, "Flow init   state: %s\r\n", ToBoolStr(SensorMonitor.init_state_reg.bit.f
+ 384              		.loc 1 181 5 view .LVU80
+ 385 00ea 364A     		ldr	r2, .L51+44
+ 386 00ec D5E7     		b	.L14
+ 387              	.L39:
+ 182:Task/Task_Sample.c ****     shellPrint(shell_obj, "---------------------------\r\n");
+ 388              		.loc 1 182 5 view .LVU81
+ 389 00ee 354A     		ldr	r2, .L51+44
+ 390 00f0 DDE7     		b	.L15
+ 391              	.LVL20:
+ 392              	.L22:
+ 393              	.LBB28:
+ 394              	.LBB26:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 14
+
+
+ 395              		.loc 2 92 5 view .LVU82
+ 396 00f2 354A     		ldr	r2, .L51+48
+ 397              	.L21:
+ 398              	.LVL21:
+ 399              		.loc 2 92 5 view .LVU83
+ 400              	.LBE26:
+ 401              	.LBE28:
+ 402              		.loc 1 184 5 view .LVU84
+ 403 00f4 3549     		ldr	r1, .L51+52
+ 404 00f6 2046     		mov	r0, r4
+ 405 00f8 FFF7FEFF 		bl	shellPrint
+ 406              	.LVL22:
+ 185:Task/Task_Sample.c ****     shellPrint(shell_obj, "SecIMU type: %s\r\n", IMU_TypeStr(SensorMonitor.sec_imu_type));
+ 407              		.loc 1 185 5 is_stmt 1 view .LVU85
+ 408              		.loc 1 185 50 is_stmt 0 view .LVU86
+ 409 00fc 264B     		ldr	r3, .L51
+ 410 00fe 93F83130 		ldrb	r3, [r3, #49]	@ zero_extendqisi2
+ 411              	.LVL23:
+ 412              	.LBB29:
+ 413              	.LBI29:
+  90:Service/Srv_IMUSample.h **** {
+ 414              		.loc 2 90 27 is_stmt 1 view .LVU87
+ 415              	.LBB30:
+ 416              		.loc 2 92 5 view .LVU88
+ 417 0102 042B     		cmp	r3, #4
+ 418 0104 38D8     		bhi	.L23
+ 419 0106 DFE803F0 		tbb	[pc, r3]
+ 420              	.L25:
+ 421 010a 0D       		.byte	(.L29-.L25)/2
+ 422 010b 39       		.byte	(.L41-.L25)/2
+ 423 010c 31       		.byte	(.L27-.L25)/2
+ 424 010d 33       		.byte	(.L26-.L25)/2
+ 425 010e 35       		.byte	(.L24-.L25)/2
+ 426              	.LVL24:
+ 427 010f 00       		.p2align 1
+ 428              	.L20:
+ 429              		.loc 2 92 5 is_stmt 0 view .LVU89
+ 430              	.LBE30:
+ 431              	.LBE29:
+ 432              	.LBB33:
+ 433              	.LBB27:
+  93:Service/Srv_IMUSample.h ****     {
+  94:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_MPU6000:    return "MPU6000";
+  95:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_ICM20602:   return "ICM20602";
+  96:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_ICM42688P:  return "ICM42688P";
+ 434              		.loc 2 96 37 is_stmt 1 view .LVU90
+ 435              		.loc 2 96 44 is_stmt 0 view .LVU91
+ 436 0110 2F4A     		ldr	r2, .L51+56
+ 437 0112 EFE7     		b	.L21
+ 438              	.L19:
+  97:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_ICM42605:   return "ICM42605";
+ 439              		.loc 2 97 37 is_stmt 1 view .LVU92
+ 440              		.loc 2 97 44 is_stmt 0 view .LVU93
+ 441 0114 2F4A     		ldr	r2, .L51+60
+ 442 0116 EDE7     		b	.L21
+ 443              	.L17:
+  98:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_None:   return "None";
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 15
+
+
+ 444              		.loc 2 98 33 is_stmt 1 view .LVU94
+ 445              		.loc 2 98 40 is_stmt 0 view .LVU95
+ 446 0118 2F4A     		ldr	r2, .L51+64
+ 447 011a EBE7     		b	.L21
+ 448              	.L16:
+  99:Service/Srv_IMUSample.h ****         default: return "Unknow type";
+ 449              		.loc 2 99 18 is_stmt 1 view .LVU96
+ 450              		.loc 2 99 25 is_stmt 0 view .LVU97
+ 451 011c 2F4A     		ldr	r2, .L51+68
+ 452 011e E9E7     		b	.L21
+ 453              	.L40:
+  95:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_ICM42688P:  return "ICM42688P";
+ 454              		.loc 2 95 44 view .LVU98
+ 455 0120 2F4A     		ldr	r2, .L51+72
+ 456 0122 E7E7     		b	.L21
+ 457              	.LVL25:
+ 458              	.L29:
+  95:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_ICM42688P:  return "ICM42688P";
+ 459              		.loc 2 95 44 view .LVU99
+ 460              	.LBE27:
+ 461              	.LBE33:
+ 462              	.LBB34:
+ 463              	.LBB31:
+  92:Service/Srv_IMUSample.h ****     {
+ 464              		.loc 2 92 5 view .LVU100
+ 465 0124 284A     		ldr	r2, .L51+48
+ 466              	.L28:
+ 467              	.LVL26:
+  92:Service/Srv_IMUSample.h ****     {
+ 468              		.loc 2 92 5 view .LVU101
+ 469              	.LBE31:
+ 470              	.LBE34:
+ 471              		.loc 1 185 5 view .LVU102
+ 472 0126 2F49     		ldr	r1, .L51+76
+ 473 0128 2046     		mov	r0, r4
+ 474 012a FFF7FEFF 		bl	shellPrint
+ 475              	.LVL27:
+ 186:Task/Task_Sample.c ****     shellPrint(shell_obj, "---------------------------\r\n");
+ 476              		.loc 1 186 5 is_stmt 1 view .LVU103
+ 477 012e 2049     		ldr	r1, .L51+24
+ 478 0130 2046     		mov	r0, r4
+ 479 0132 FFF7FEFF 		bl	shellPrint
+ 480              	.LVL28:
+ 187:Task/Task_Sample.c ****     shellPrint(shell_obj, "Baro   type: %s\r\n", BARO_TypeStr(SensorMonitor.baro_type));
+ 481              		.loc 1 187 5 view .LVU104
+ 482              		.loc 1 187 50 is_stmt 0 view .LVU105
+ 483 0136 184B     		ldr	r3, .L51
+ 484 0138 93F82D30 		ldrb	r3, [r3, #45]	@ zero_extendqisi2
+ 485              	.LVL29:
+ 486              	.LBB35:
+ 487              	.LBI35:
+ 488              		.file 3 "Service/Srv_Baro.h"
+   1:Service/Srv_Baro.h **** #ifndef __SRV_BARO_H
+   2:Service/Srv_Baro.h **** #define __SRV_BARO_H
+   3:Service/Srv_Baro.h **** 
+   4:Service/Srv_Baro.h **** #ifdef __cplusplus
+   5:Service/Srv_Baro.h **** extern "C" {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 16
+
+
+   6:Service/Srv_Baro.h **** #endif
+   7:Service/Srv_Baro.h **** 
+   8:Service/Srv_Baro.h **** #include <stdint.h>
+   9:Service/Srv_Baro.h **** #include <stdbool.h>
+  10:Service/Srv_Baro.h **** #include <string.h>
+  11:Service/Srv_Baro.h **** #include <math.h>
+  12:Service/Srv_Baro.h **** #include "Dev_DPS310.h"
+  13:Service/Srv_Baro.h **** #include "Dev_BMP280.h"
+  14:Service/Srv_Baro.h **** #include "../algorithm/Filter_Dep/filter.h"
+  15:Service/Srv_Baro.h **** #include "gen_calib.h"
+  16:Service/Srv_Baro.h **** 
+  17:Service/Srv_Baro.h **** #define SRVBARO_SAMPLE_RATE_LIMIT SRVBARO_SAMPLE_RATE_100HZ   /* max sample rate 100Hz */
+  18:Service/Srv_Baro.h **** #define SRVBARO_DEFAULT_CALI_CYCLE 100
+  19:Service/Srv_Baro.h **** 
+  20:Service/Srv_Baro.h **** #define SRVBARO_SAMPLE_RATE_100HZ 100
+  21:Service/Srv_Baro.h **** #define SRVBARO_SAMPLE_RATE_50HZ  50
+  22:Service/Srv_Baro.h **** #define SRVBARO_SAMPLE_RATE_25HZ  25
+  23:Service/Srv_Baro.h **** #define SRVBARO_SAMPLE_RATE_20HZ  20
+  24:Service/Srv_Baro.h **** #define SRVBARO_SAMPLE_RATE_10HZ  10
+  25:Service/Srv_Baro.h **** #define SRVBARO_SAMPLE_RATE_5HZ   5
+  26:Service/Srv_Baro.h **** #define SRVBARO_SAMPLE_RATE_1HZ   1
+  27:Service/Srv_Baro.h **** 
+  28:Service/Srv_Baro.h **** typedef enum
+  29:Service/Srv_Baro.h **** {
+  30:Service/Srv_Baro.h ****     SrvBaro_Error_None = 0,
+  31:Service/Srv_Baro.h ****     SrvBaro_Error_BadRate,
+  32:Service/Srv_Baro.h ****     SrvBaro_Error_BusType,
+  33:Service/Srv_Baro.h ****     SrvBaro_Error_BadType,
+  34:Service/Srv_Baro.h ****     SrvBaro_Error_DevInit,
+  35:Service/Srv_Baro.h ****     SrvBaro_Error_BadSensorObj,
+  36:Service/Srv_Baro.h ****     SrvBaro_Error_FilterInit,
+  37:Service/Srv_Baro.h ****     SrvBaro_Error_BadSamplePeriod,
+  38:Service/Srv_Baro.h ****     SrvBaro_Error_BusInit,
+  39:Service/Srv_Baro.h **** }SrvBaro_ErrorCodeList;
+  40:Service/Srv_Baro.h **** 
+  41:Service/Srv_Baro.h **** typedef enum
+  42:Service/Srv_Baro.h **** {
+  43:Service/Srv_Baro.h ****     Baro_Type_None = 0,
+  44:Service/Srv_Baro.h ****     Baro_Type_DPS310,
+  45:Service/Srv_Baro.h ****     Baro_Type_BMP280,
+  46:Service/Srv_Baro.h ****     Baro_Type_Sum,
+  47:Service/Srv_Baro.h **** }SrvBaro_TypeList;
+  48:Service/Srv_Baro.h **** 
+  49:Service/Srv_Baro.h **** typedef struct
+  50:Service/Srv_Baro.h **** {
+  51:Service/Srv_Baro.h ****     uint32_t time_stamp;
+  52:Service/Srv_Baro.h ****     uint8_t cyc;
+  53:Service/Srv_Baro.h **** 
+  54:Service/Srv_Baro.h ****     float tempra;
+  55:Service/Srv_Baro.h ****     float pressure;
+  56:Service/Srv_Baro.h ****     float pressure_alt;
+  57:Service/Srv_Baro.h ****     float pressure_alt_offset;
+  58:Service/Srv_Baro.h **** 
+  59:Service/Srv_Baro.h ****     uint8_t error_code;
+  60:Service/Srv_Baro.h ****     uint8_t check_sum;
+  61:Service/Srv_Baro.h **** }SrvBaroData_TypeDef;
+  62:Service/Srv_Baro.h **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 17
+
+
+  63:Service/Srv_Baro.h **** typedef union
+  64:Service/Srv_Baro.h **** {
+  65:Service/Srv_Baro.h ****     uint8_t buff[sizeof(SrvBaroData_TypeDef)];
+  66:Service/Srv_Baro.h ****     SrvBaroData_TypeDef data;
+  67:Service/Srv_Baro.h **** }SrvBaro_UnionData_TypeDef;
+  68:Service/Srv_Baro.h **** 
+  69:Service/Srv_Baro.h **** typedef enum
+  70:Service/Srv_Baro.h **** {
+  71:Service/Srv_Baro.h ****     SrvBaro_Bus_None = 0,
+  72:Service/Srv_Baro.h ****     SrvBaro_Bus_IIC,
+  73:Service/Srv_Baro.h ****     SrvBaro_Bus_SPI,
+  74:Service/Srv_Baro.h ****     SrvBaro_BusType_Sum,
+  75:Service/Srv_Baro.h **** }SrvBaroBus_TypeList;
+  76:Service/Srv_Baro.h **** 
+  77:Service/Srv_Baro.h **** typedef struct
+  78:Service/Srv_Baro.h **** {
+  79:Service/Srv_Baro.h ****     SrvBaroBus_TypeList type;
+  80:Service/Srv_Baro.h ****     bool init;
+  81:Service/Srv_Baro.h ****     void *bus_api;
+  82:Service/Srv_Baro.h ****     void *bus_obj;
+  83:Service/Srv_Baro.h **** }SrvBaroBusObj_TypeDef;
+  84:Service/Srv_Baro.h **** 
+  85:Service/Srv_Baro.h **** typedef struct
+  86:Service/Srv_Baro.h **** {
+  87:Service/Srv_Baro.h ****     SrvBaro_TypeList type;
+  88:Service/Srv_Baro.h ****     uint16_t sample_rate;   /* unit: Hz */
+  89:Service/Srv_Baro.h ****     uint16_t sample_period; /* unit: Ms */
+  90:Service/Srv_Baro.h ****     void *sensor_obj;
+  91:Service/Srv_Baro.h ****     void *sensor_api;
+  92:Service/Srv_Baro.h ****     uint8_t init_err;
+  93:Service/Srv_Baro.h ****     uint8_t *sensor_data;
+  94:Service/Srv_Baro.h ****     uint8_t data_size;
+  95:Service/Srv_Baro.h **** 
+  96:Service/Srv_Baro.h ****     bool ready;
+  97:Service/Srv_Baro.h ****     SrvBaroData_TypeDef data;
+  98:Service/Srv_Baro.h ****     uint32_t sample_cnt;
+  99:Service/Srv_Baro.h ****     uint32_t sample_err_cnt;
+ 100:Service/Srv_Baro.h **** 
+ 101:Service/Srv_Baro.h ****     uint16_t calib_cycle;
+ 102:Service/Srv_Baro.h ****     GenCalib_State_TypeList calib_state;
+ 103:Service/Srv_Baro.h ****     float pressure_add_sum;
+ 104:Service/Srv_Baro.h ****     float alt_offset;
+ 105:Service/Srv_Baro.h **** 
+ 106:Service/Srv_Baro.h ****     SW_Object_Handle smoothwindow_filter_hdl;
+ 107:Service/Srv_Baro.h **** }SrvBaroObj_TypeDef;
+ 108:Service/Srv_Baro.h **** 
+ 109:Service/Srv_Baro.h **** typedef struct
+ 110:Service/Srv_Baro.h **** {
+ 111:Service/Srv_Baro.h ****     uint8_t (*init)(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bus_type);
+ 112:Service/Srv_Baro.h ****     bool (*sample)(void);
+ 113:Service/Srv_Baro.h ****     GenCalib_State_TypeList (*set_calib)(uint16_t calib_cyc);
+ 114:Service/Srv_Baro.h ****     GenCalib_State_TypeList (*get_calib)(void);
+ 115:Service/Srv_Baro.h ****     bool (*get_data)(SrvBaro_UnionData_TypeDef *data);
+ 116:Service/Srv_Baro.h **** }SrvBaro_TypeDef;
+ 117:Service/Srv_Baro.h **** 
+ 118:Service/Srv_Baro.h **** static inline const char* SrvBaro_Get_TypeStr(SrvBaro_TypeList type)
+ 489              		.loc 3 118 27 is_stmt 1 view .LVU106
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 18
+
+
+ 490              	.LBB36:
+ 119:Service/Srv_Baro.h **** {
+ 120:Service/Srv_Baro.h ****     switch (type)
+ 491              		.loc 3 120 5 view .LVU107
+ 492 013c 012B     		cmp	r3, #1
+ 493 013e 21D0     		beq	.L42
+ 494 0140 022B     		cmp	r3, #2
+ 495 0142 21D0     		beq	.L43
+ 496 0144 E3B1     		cbz	r3, .L49
+ 121:Service/Srv_Baro.h ****     {
+ 122:Service/Srv_Baro.h ****         case Baro_Type_None:    return "None";
+ 123:Service/Srv_Baro.h ****         case Baro_Type_DPS310:  return "DPS310";
+ 124:Service/Srv_Baro.h ****         case Baro_Type_BMP280:  return "BMP280";
+ 125:Service/Srv_Baro.h ****         default: return "Unknow type";
+ 497              		.loc 3 125 25 is_stmt 0 view .LVU108
+ 498 0146 254A     		ldr	r2, .L51+68
+ 499              	.L30:
+ 500              	.LVL30:
+ 501              		.loc 3 125 25 view .LVU109
+ 502              	.LBE36:
+ 503              	.LBE35:
+ 504              		.loc 1 187 5 view .LVU110
+ 505 0148 2749     		ldr	r1, .L51+80
+ 506 014a 2046     		mov	r0, r4
+ 507 014c FFF7FEFF 		bl	shellPrint
+ 508              	.LVL31:
+ 188:Task/Task_Sample.c ****     shellPrint(shell_obj, "Baro   bus:  %s\r\n", BARO_Bus_TypeStr(SensorMonitor.baro_bus_type));
+ 509              		.loc 1 188 5 is_stmt 1 view .LVU111
+ 510              		.loc 1 188 50 is_stmt 0 view .LVU112
+ 511 0150 114B     		ldr	r3, .L51
+ 512 0152 93F82E30 		ldrb	r3, [r3, #46]	@ zero_extendqisi2
+ 513              	.LVL32:
+ 514              	.LBB38:
+ 515              	.LBI38:
+ 126:Service/Srv_Baro.h ****     }
+ 127:Service/Srv_Baro.h **** }
+ 128:Service/Srv_Baro.h **** 
+ 129:Service/Srv_Baro.h **** static inline const char* SrvBaro_Get_BusStr(SrvBaroBus_TypeList bus)
+ 516              		.loc 3 129 27 is_stmt 1 view .LVU113
+ 517              	.LBB39:
+ 130:Service/Srv_Baro.h **** {
+ 131:Service/Srv_Baro.h ****     switch (bus)
+ 518              		.loc 3 131 5 view .LVU114
+ 519 0156 012B     		cmp	r3, #1
+ 520 0158 1AD0     		beq	.L45
+ 521 015a 022B     		cmp	r3, #2
+ 522 015c 1AD0     		beq	.L46
+ 523 015e ABB1     		cbz	r3, .L50
+ 132:Service/Srv_Baro.h ****     {
+ 133:Service/Srv_Baro.h ****         case SrvBaro_Bus_None:  return "None";
+ 134:Service/Srv_Baro.h ****         case SrvBaro_Bus_IIC:   return "IIC";
+ 135:Service/Srv_Baro.h ****         case SrvBaro_Bus_SPI:   return "SPI";
+ 136:Service/Srv_Baro.h ****         default: return "Unknow type";
+ 524              		.loc 3 136 25 is_stmt 0 view .LVU115
+ 525 0160 1E4A     		ldr	r2, .L51+68
+ 526              	.L31:
+ 527              	.LVL33:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 19
+
+
+ 528              		.loc 3 136 25 view .LVU116
+ 529              	.LBE39:
+ 530              	.LBE38:
+ 531              		.loc 1 188 5 view .LVU117
+ 532 0162 2249     		ldr	r1, .L51+84
+ 533 0164 2046     		mov	r0, r4
+ 534 0166 FFF7FEFF 		bl	shellPrint
+ 535              	.LVL34:
+ 536              	.L6:
+ 189:Task/Task_Sample.c **** }
+ 537              		.loc 1 189 1 view .LVU118
+ 538 016a 10BD     		pop	{r4, pc}
+ 539              	.LVL35:
+ 540              	.L27:
+ 541              	.LBB41:
+ 542              	.LBB32:
+  96:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_ICM42605:   return "ICM42605";
+ 543              		.loc 2 96 37 is_stmt 1 view .LVU119
+  96:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_ICM42605:   return "ICM42605";
+ 544              		.loc 2 96 44 is_stmt 0 view .LVU120
+ 545 016c 184A     		ldr	r2, .L51+56
+ 546 016e DAE7     		b	.L28
+ 547              	.L26:
+  97:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_None:   return "None";
+ 548              		.loc 2 97 37 is_stmt 1 view .LVU121
+  97:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_None:   return "None";
+ 549              		.loc 2 97 44 is_stmt 0 view .LVU122
+ 550 0170 184A     		ldr	r2, .L51+60
+ 551 0172 D8E7     		b	.L28
+ 552              	.L24:
+  98:Service/Srv_IMUSample.h ****         default: return "Unknow type";
+ 553              		.loc 2 98 33 is_stmt 1 view .LVU123
+  98:Service/Srv_IMUSample.h ****         default: return "Unknow type";
+ 554              		.loc 2 98 40 is_stmt 0 view .LVU124
+ 555 0174 184A     		ldr	r2, .L51+64
+ 556 0176 D6E7     		b	.L28
+ 557              	.L23:
+ 558              		.loc 2 99 18 is_stmt 1 view .LVU125
+ 559              		.loc 2 99 25 is_stmt 0 view .LVU126
+ 560 0178 184A     		ldr	r2, .L51+68
+ 561 017a D4E7     		b	.L28
+ 562              	.L41:
+  95:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_ICM42688P:  return "ICM42688P";
+ 563              		.loc 2 95 44 view .LVU127
+ 564 017c 184A     		ldr	r2, .L51+72
+ 565 017e D2E7     		b	.L28
+ 566              	.LVL36:
+ 567              	.L49:
+  95:Service/Srv_IMUSample.h ****         case SrvIMU_Dev_ICM42688P:  return "ICM42688P";
+ 568              		.loc 2 95 44 view .LVU128
+ 569              	.LBE32:
+ 570              	.LBE41:
+ 571              	.LBB42:
+ 572              	.LBB37:
+ 120:Service/Srv_Baro.h ****     {
+ 573              		.loc 3 120 5 view .LVU129
+ 574 0180 154A     		ldr	r2, .L51+64
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 20
+
+
+ 575 0182 E1E7     		b	.L30
+ 576              	.L42:
+ 123:Service/Srv_Baro.h ****         case Baro_Type_BMP280:  return "BMP280";
+ 577              		.loc 3 123 40 view .LVU130
+ 578 0184 1A4A     		ldr	r2, .L51+88
+ 579 0186 DFE7     		b	.L30
+ 580              	.L43:
+ 124:Service/Srv_Baro.h ****         default: return "Unknow type";
+ 581              		.loc 3 124 40 view .LVU131
+ 582 0188 1A4A     		ldr	r2, .L51+92
+ 583 018a DDE7     		b	.L30
+ 584              	.LVL37:
+ 585              	.L50:
+ 124:Service/Srv_Baro.h ****         default: return "Unknow type";
+ 586              		.loc 3 124 40 view .LVU132
+ 587              	.LBE37:
+ 588              	.LBE42:
+ 589              	.LBB43:
+ 590              	.LBB40:
+ 131:Service/Srv_Baro.h ****     {
+ 591              		.loc 3 131 5 view .LVU133
+ 592 018c 124A     		ldr	r2, .L51+64
+ 593 018e E8E7     		b	.L31
+ 594              	.L45:
+ 134:Service/Srv_Baro.h ****         case SrvBaro_Bus_SPI:   return "SPI";
+ 595              		.loc 3 134 40 view .LVU134
+ 596 0190 194A     		ldr	r2, .L51+96
+ 597 0192 E6E7     		b	.L31
+ 598              	.L46:
+ 135:Service/Srv_Baro.h ****         default: return "Unknow type";
+ 599              		.loc 3 135 40 view .LVU135
+ 600 0194 194A     		ldr	r2, .L51+100
+ 601 0196 E4E7     		b	.L31
+ 602              	.L52:
+ 603              		.align	2
+ 604              	.L51:
+ 605 0198 00000000 		.word	.LANCHOR2
+ 606 019c 08000000 		.word	.LC1
+ 607 01a0 68000000 		.word	.LC12
+ 608 01a4 80000000 		.word	.LC13
+ 609 01a8 98000000 		.word	.LC14
+ 610 01ac B0000000 		.word	.LC15
+ 611 01b0 C8000000 		.word	.LC16
+ 612 01b4 E8000000 		.word	.LC17
+ 613 01b8 00010000 		.word	.LC18
+ 614 01bc 18010000 		.word	.LC19
+ 615 01c0 30010000 		.word	.LC20
+ 616 01c4 00000000 		.word	.LC0
+ 617 01c8 48000000 		.word	.LC7
+ 618 01cc 48010000 		.word	.LC21
+ 619 01d0 28000000 		.word	.LC4
+ 620 01d4 34000000 		.word	.LC5
+ 621 01d8 40000000 		.word	.LC6
+ 622 01dc 10000000 		.word	.LC2
+ 623 01e0 1C000000 		.word	.LC3
+ 624 01e4 5C010000 		.word	.LC22
+ 625 01e8 70010000 		.word	.LC23
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 21
+
+
+ 626 01ec 84010000 		.word	.LC24
+ 627 01f0 58000000 		.word	.LC9
+ 628 01f4 50000000 		.word	.LC8
+ 629 01f8 64000000 		.word	.LC11
+ 630 01fc 60000000 		.word	.LC10
+ 631              	.LBE40:
+ 632              	.LBE43:
+ 633              		.cfi_endproc
+ 634              	.LFE151:
+ 636              		.section	.text.TaskSample_Init,"ax",%progbits
+ 637              		.align	1
+ 638              		.global	TaskSample_Init
+ 639              		.syntax unified
+ 640              		.thumb
+ 641              		.thumb_func
+ 643              	TaskSample_Init:
+ 644              	.LVL38:
+ 645              	.LFB148:
+  39:Task/Task_Sample.c ****     SrvSensorMonitor_IMURange_TypeDef PriIMU_Range;
+ 646              		.loc 1 39 1 is_stmt 1 view -0
+ 647              		.cfi_startproc
+ 648              		@ args = 0, pretend = 0, frame = 8
+ 649              		@ frame_needed = 0, uses_anonymous_args = 0
+  39:Task/Task_Sample.c ****     SrvSensorMonitor_IMURange_TypeDef PriIMU_Range;
+ 650              		.loc 1 39 1 is_stmt 0 view .LVU137
+ 651 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 652              	.LCFI2:
+ 653              		.cfi_def_cfa_offset 28
+ 654              		.cfi_offset 4, -28
+ 655              		.cfi_offset 5, -24
+ 656              		.cfi_offset 6, -20
+ 657              		.cfi_offset 7, -16
+ 658              		.cfi_offset 8, -12
+ 659              		.cfi_offset 9, -8
+ 660              		.cfi_offset 14, -4
+ 661 0004 83B0     		sub	sp, sp, #12
+ 662              	.LCFI3:
+ 663              		.cfi_def_cfa_offset 40
+  40:Task/Task_Sample.c ****     SrvSensorMonitor_IMURange_TypeDef SecIMU_Range;
+ 664              		.loc 1 40 5 is_stmt 1 view .LVU138
+  41:Task/Task_Sample.c **** 
+ 665              		.loc 1 41 5 view .LVU139
+  43:Task/Task_Sample.c ****     memset(&SecIMU_Range, 0, sizeof(SrvSensorMonitor_IMURange_TypeDef));
+ 666              		.loc 1 43 5 view .LVU140
+ 667 0006 0024     		movs	r4, #0
+ 668 0008 0194     		str	r4, [sp, #4]
+  44:Task/Task_Sample.c **** 
+ 669              		.loc 1 44 5 view .LVU141
+ 670 000a 0094     		str	r4, [sp]
+  46:Task/Task_Sample.c ****     memset(&IMU_Smp_DataPipe, 0, sizeof(IMU_Smp_DataPipe));
+ 671              		.loc 1 46 5 view .LVU142
+ 672 000c 454E     		ldr	r6, .L57
+ 673 000e AC22     		movs	r2, #172
+ 674 0010 2146     		mov	r1, r4
+ 675 0012 3046     		mov	r0, r6
+ 676              	.LVL39:
+  46:Task/Task_Sample.c ****     memset(&IMU_Smp_DataPipe, 0, sizeof(IMU_Smp_DataPipe));
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 22
+
+
+ 677              		.loc 1 46 5 is_stmt 0 view .LVU143
+ 678 0014 FFF7FEFF 		bl	memset
+ 679              	.LVL40:
+  47:Task/Task_Sample.c ****     memset(&Baro_smp_DataPipe, 0, sizeof(Baro_smp_DataPipe));
+ 680              		.loc 1 47 5 is_stmt 1 view .LVU144
+ 681 0018 DFF83891 		ldr	r9, .L57+48
+ 682 001c 2725     		movs	r5, #39
+ 683 001e 2A46     		mov	r2, r5
+ 684 0020 2146     		mov	r1, r4
+ 685 0022 4846     		mov	r0, r9
+ 686 0024 FFF7FEFF 		bl	memset
+ 687              	.LVL41:
+  48:Task/Task_Sample.c **** 
+ 688              		.loc 1 48 5 view .LVU145
+ 689 0028 3F4F     		ldr	r7, .L57+4
+ 690 002a 2A46     		mov	r2, r5
+ 691 002c 2146     		mov	r1, r4
+ 692 002e 3846     		mov	r0, r7
+ 693 0030 FFF7FEFF 		bl	memset
+ 694              	.LVL42:
+  50:Task/Task_Sample.c ****     memset(DataPipe_DataObjAddr(IMU_Data), 0, DataPipe_DataSize(IMU_Data));
+ 695              		.loc 1 50 5 view .LVU146
+ 696 0034 3D4D     		ldr	r5, .L57+8
+ 697 0036 2C60     		str	r4, [r5]
+ 698 0038 6C60     		str	r4, [r5, #4]
+ 699 003a AC60     		str	r4, [r5, #8]
+ 700 003c EC60     		str	r4, [r5, #12]
+ 701 003e 2C61     		str	r4, [r5, #16]
+ 702 0040 6C61     		str	r4, [r5, #20]
+ 703 0042 AC61     		str	r4, [r5, #24]
+  51:Task/Task_Sample.c **** 
+ 704              		.loc 1 51 5 view .LVU147
+ 705 0044 05F11C08 		add	r8, r5, #28
+ 706 0048 5422     		movs	r2, #84
+ 707 004a 2146     		mov	r1, r4
+ 708 004c 4046     		mov	r0, r8
+ 709 004e FFF7FEFF 		bl	memset
+ 710              	.LVL43:
+  53:Task/Task_Sample.c ****     IMU_Smp_DataPipe.data_size = DataPipe_DataSize(IMU_Data);
+ 711              		.loc 1 53 5 view .LVU148
+  53:Task/Task_Sample.c ****     IMU_Smp_DataPipe.data_size = DataPipe_DataSize(IMU_Data);
+ 712              		.loc 1 53 32 is_stmt 0 view .LVU149
+ 713 0052 C9F80D80 		str	r8, [r9, #13]	@ unaligned
+  54:Task/Task_Sample.c ****     DataPipe_Enable(&IMU_Smp_DataPipe);
+ 714              		.loc 1 54 5 is_stmt 1 view .LVU150
+  54:Task/Task_Sample.c ****     DataPipe_Enable(&IMU_Smp_DataPipe);
+ 715              		.loc 1 54 32 is_stmt 0 view .LVU151
+ 716 0056 5423     		movs	r3, #84
+ 717 0058 89F81130 		strb	r3, [r9, #17]
+ 718 005c 89F81240 		strb	r4, [r9, #18]
+  55:Task/Task_Sample.c ****     
+ 719              		.loc 1 55 5 is_stmt 1 view .LVU152
+ 720              	.LVL44:
+ 721              	.LBB44:
+ 722              	.LBI44:
+ 723              		.file 4 "Task/../System/DataPipe/DataPipe.h"
+   1:Task/../System/DataPipe/DataPipe.h **** #ifndef __DATAPIPE_H
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 23
+
+
+   2:Task/../System/DataPipe/DataPipe.h **** #define __DATAPIPE_H
+   3:Task/../System/DataPipe/DataPipe.h **** 
+   4:Task/../System/DataPipe/DataPipe.h **** #ifdef __cplusplus
+   5:Task/../System/DataPipe/DataPipe.h **** extern "C" {
+   6:Task/../System/DataPipe/DataPipe.h **** #endif
+   7:Task/../System/DataPipe/DataPipe.h **** 
+   8:Task/../System/DataPipe/DataPipe.h **** #include <stdint.h>
+   9:Task/../System/DataPipe/DataPipe.h **** #include <string.h>
+  10:Task/../System/DataPipe/DataPipe.h **** #include <stdbool.h>
+  11:Task/../System/DataPipe/DataPipe.h **** 
+  12:Task/../System/DataPipe/DataPipe.h **** typedef void (*Pipe_TransFinish_Callback)(void *pipe_obj);
+  13:Task/../System/DataPipe/DataPipe.h **** typedef void (*Pipe_TransError_Callback)(void *pipe_obj);
+  14:Task/../System/DataPipe/DataPipe.h **** typedef void (*Pipe_TimeOutProc_Callback)(void *pipe_obj);
+  15:Task/../System/DataPipe/DataPipe.h **** 
+  16:Task/../System/DataPipe/DataPipe.h **** #define DataPipeHandleToObj(x) ((DataPipeObj_TypeDef *)x)
+  17:Task/../System/DataPipe/DataPipe.h **** #define DataPipe_CreateDataObj(type, name) static type name##_##PipeDataObj __attribute__((section(
+  18:Task/../System/DataPipe/DataPipe.h **** #define DataPipe_DataObjAddr(name) (&name##_##PipeDataObj)
+  19:Task/../System/DataPipe/DataPipe.h **** #define DataPipe_DataObj(name) name##_##PipeDataObj
+  20:Task/../System/DataPipe/DataPipe.h **** #define DataPipe_DataSize(name) sizeof(name##_##PipeDataObj)
+  21:Task/../System/DataPipe/DataPipe.h **** 
+  22:Task/../System/DataPipe/DataPipe.h **** typedef enum
+  23:Task/../System/DataPipe/DataPipe.h **** {
+  24:Task/../System/DataPipe/DataPipe.h ****     Pipe_UnReady = 0,
+  25:Task/../System/DataPipe/DataPipe.h ****     Pipe_Ready,
+  26:Task/../System/DataPipe/DataPipe.h ****     Pipe_Busy,
+  27:Task/../System/DataPipe/DataPipe.h ****     Pipe_Error,
+  28:Task/../System/DataPipe/DataPipe.h **** } DataPipe_State_List;
+  29:Task/../System/DataPipe/DataPipe.h **** 
+  30:Task/../System/DataPipe/DataPipe.h **** #pragma pack(1)
+  31:Task/../System/DataPipe/DataPipe.h **** typedef struct
+  32:Task/../System/DataPipe/DataPipe.h **** {
+  33:Task/../System/DataPipe/DataPipe.h ****     uint32_t min_rx_interval;
+  34:Task/../System/DataPipe/DataPipe.h ****     uint32_t detect_interval;
+  35:Task/../System/DataPipe/DataPipe.h ****     uint32_t rx_ms_rt;
+  36:Task/../System/DataPipe/DataPipe.h **** 
+  37:Task/../System/DataPipe/DataPipe.h ****     bool enable;
+  38:Task/../System/DataPipe/DataPipe.h **** 
+  39:Task/../System/DataPipe/DataPipe.h ****     uint32_t data_addr;
+  40:Task/../System/DataPipe/DataPipe.h ****     uint16_t data_size;
+  41:Task/../System/DataPipe/DataPipe.h **** 
+  42:Task/../System/DataPipe/DataPipe.h ****     Pipe_TransFinish_Callback trans_finish_cb;
+  43:Task/../System/DataPipe/DataPipe.h ****     Pipe_TransError_Callback trans_error_cb;
+  44:Task/../System/DataPipe/DataPipe.h **** 
+  45:Task/../System/DataPipe/DataPipe.h ****     uint32_t tx_cnt;
+  46:Task/../System/DataPipe/DataPipe.h ****     uint32_t rx_cnt;
+  47:Task/../System/DataPipe/DataPipe.h ****     uint32_t er_cnt;
+  48:Task/../System/DataPipe/DataPipe.h **** } DataPipeObj_TypeDef;
+  49:Task/../System/DataPipe/DataPipe.h **** #pragma pack()
+  50:Task/../System/DataPipe/DataPipe.h **** 
+  51:Task/../System/DataPipe/DataPipe.h **** typedef struct
+  52:Task/../System/DataPipe/DataPipe.h **** {
+  53:Task/../System/DataPipe/DataPipe.h ****     DataPipeObj_TypeDef *org;
+  54:Task/../System/DataPipe/DataPipe.h ****     DataPipeObj_TypeDef *dst;
+  55:Task/../System/DataPipe/DataPipe.h **** } Data_PlugedPipeObj_TypeDef;
+  56:Task/../System/DataPipe/DataPipe.h **** 
+  57:Task/../System/DataPipe/DataPipe.h **** bool DataPipe_Init(void);
+  58:Task/../System/DataPipe/DataPipe.h **** bool DataPipe_DeInit(void);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 24
+
+
+  59:Task/../System/DataPipe/DataPipe.h **** bool DataPipe_SendTo(DataPipeObj_TypeDef *p_org, DataPipeObj_TypeDef *p_dst);
+  60:Task/../System/DataPipe/DataPipe.h **** bool DataPipe_DealError(void);
+  61:Task/../System/DataPipe/DataPipe.h **** 
+  62:Task/../System/DataPipe/DataPipe.h **** inline bool DataPipe_Enable(DataPipeObj_TypeDef *obj)
+ 724              		.loc 4 62 13 view .LVU153
+ 725              	.LBB45:
+  63:Task/../System/DataPipe/DataPipe.h **** {
+  64:Task/../System/DataPipe/DataPipe.h ****     if (obj == NULL)
+ 726              		.loc 4 64 5 view .LVU154
+  65:Task/../System/DataPipe/DataPipe.h ****         return false;
+  66:Task/../System/DataPipe/DataPipe.h **** 
+  67:Task/../System/DataPipe/DataPipe.h ****     obj->enable = true;
+ 727              		.loc 4 67 5 view .LVU155
+ 728              		.loc 4 67 17 is_stmt 0 view .LVU156
+ 729 0060 4FF00108 		mov	r8, #1
+ 730 0064 89F80C80 		strb	r8, [r9, #12]
+  68:Task/../System/DataPipe/DataPipe.h **** 
+  69:Task/../System/DataPipe/DataPipe.h ****     return true;
+ 731              		.loc 4 69 5 is_stmt 1 view .LVU157
+ 732              	.LVL45:
+ 733              		.loc 4 69 5 is_stmt 0 view .LVU158
+ 734              	.LBE45:
+ 735              	.LBE44:
+  57:Task/Task_Sample.c ****     Baro_smp_DataPipe.data_size = DataPipe_DataSize(Baro_Data);
+ 736              		.loc 1 57 5 is_stmt 1 view .LVU159
+  57:Task/Task_Sample.c ****     Baro_smp_DataPipe.data_size = DataPipe_DataSize(Baro_Data);
+ 737              		.loc 1 57 33 is_stmt 0 view .LVU160
+ 738 0068 C7F80D50 		str	r5, [r7, #13]	@ unaligned
+  58:Task/Task_Sample.c ****     DataPipe_Enable(&Baro_smp_DataPipe);
+ 739              		.loc 1 58 5 is_stmt 1 view .LVU161
+  58:Task/Task_Sample.c ****     DataPipe_Enable(&Baro_smp_DataPipe);
+ 740              		.loc 1 58 33 is_stmt 0 view .LVU162
+ 741 006c 1C23     		movs	r3, #28
+ 742 006e 7B74     		strb	r3, [r7, #17]
+ 743 0070 BC74     		strb	r4, [r7, #18]
+  59:Task/Task_Sample.c **** 
+ 744              		.loc 1 59 5 is_stmt 1 view .LVU163
+ 745              	.LVL46:
+ 746              	.LBB46:
+ 747              	.LBI46:
+  62:Task/../System/DataPipe/DataPipe.h **** {
+ 748              		.loc 4 62 13 view .LVU164
+ 749              	.LBB47:
+  64:Task/../System/DataPipe/DataPipe.h ****         return false;
+ 750              		.loc 4 64 5 view .LVU165
+  67:Task/../System/DataPipe/DataPipe.h **** 
+ 751              		.loc 4 67 5 view .LVU166
+  67:Task/../System/DataPipe/DataPipe.h **** 
+ 752              		.loc 4 67 17 is_stmt 0 view .LVU167
+ 753 0072 87F80C80 		strb	r8, [r7, #12]
+ 754              		.loc 4 69 5 is_stmt 1 view .LVU168
+ 755              	.LVL47:
+ 756              		.loc 4 69 5 is_stmt 0 view .LVU169
+ 757              	.LBE47:
+ 758              	.LBE46:
+  61:Task/Task_Sample.c ****     SensorMonitor.freq_reg.bit.imu = SrvSensorMonitor_SampleFreq_1KHz;
+ 759              		.loc 1 61 5 is_stmt 1 view .LVU170
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 25
+
+
+  61:Task/Task_Sample.c ****     SensorMonitor.freq_reg.bit.imu = SrvSensorMonitor_SampleFreq_1KHz;
+ 760              		.loc 1 61 39 is_stmt 0 view .LVU171
+ 761 0076 3378     		ldrb	r3, [r6]	@ zero_extendqisi2
+ 762 0078 43EA0803 		orr	r3, r3, r8
+ 763 007c 3370     		strb	r3, [r6]
+  62:Task/Task_Sample.c ****     
+ 764              		.loc 1 62 5 is_stmt 1 view .LVU172
+  65:Task/Task_Sample.c ****     SensorMonitor.freq_reg.bit.baro = SrvSensorMonitor_SampleFreq_50Hz;
+ 765              		.loc 1 65 5 view .LVU173
+  65:Task/Task_Sample.c ****     SensorMonitor.freq_reg.bit.baro = SrvSensorMonitor_SampleFreq_50Hz;
+ 766              		.loc 1 65 40 is_stmt 0 view .LVU174
+ 767 007e DBB2     		uxtb	r3, r3
+ 768 0080 43F00403 		orr	r3, r3, #4
+ 769 0084 3370     		strb	r3, [r6]
+  66:Task/Task_Sample.c **** #endif
+ 770              		.loc 1 66 5 is_stmt 1 view .LVU175
+  66:Task/Task_Sample.c **** #endif
+ 771              		.loc 1 66 37 is_stmt 0 view .LVU176
+ 772 0086 737A     		ldrb	r3, [r6, #9]	@ zero_extendqisi2
+ 773 0088 0522     		movs	r2, #5
+ 774 008a 62F30303 		bfi	r3, r2, #0, #4
+ 775 008e 7372     		strb	r3, [r6, #9]
+  69:Task/Task_Sample.c **** 
+ 776              		.loc 1 69 5 is_stmt 1 view .LVU177
+  69:Task/Task_Sample.c **** 
+ 777              		.loc 1 69 37 is_stmt 0 view .LVU178
+ 778 0090 274B     		ldr	r3, .L57+12
+ 779 0092 1B68     		ldr	r3, [r3]
+  69:Task/Task_Sample.c **** 
+ 780              		.loc 1 69 21 view .LVU179
+ 781 0094 3046     		mov	r0, r6
+ 782 0096 9847     		blx	r3
+ 783              	.LVL48:
+  69:Task/Task_Sample.c **** 
+ 784              		.loc 1 69 19 view .LVU180
+ 785 0098 264F     		ldr	r7, .L57+16
+ 786 009a 3870     		strb	r0, [r7]
+  71:Task/Task_Sample.c ****     DataPipe_DataObj(SensorInit_State).val = SensorMonitor.init_state_reg.val;
+ 787              		.loc 1 71 5 is_stmt 1 view .LVU181
+  71:Task/Task_Sample.c ****     DataPipe_DataObj(SensorInit_State).val = SensorMonitor.init_state_reg.val;
+ 788              		.loc 1 71 73 is_stmt 0 view .LVU182
+ 789 009c 3368     		ldr	r3, [r6]
+  71:Task/Task_Sample.c ****     DataPipe_DataObj(SensorInit_State).val = SensorMonitor.init_state_reg.val;
+ 790              		.loc 1 71 46 view .LVU183
+ 791 009e 2B67     		str	r3, [r5, #112]
+  72:Task/Task_Sample.c ****     
+ 792              		.loc 1 72 5 is_stmt 1 view .LVU184
+  72:Task/Task_Sample.c ****     
+ 793              		.loc 1 72 74 is_stmt 0 view .LVU185
+ 794 00a0 7368     		ldr	r3, [r6, #4]
+  72:Task/Task_Sample.c ****     
+ 795              		.loc 1 72 44 view .LVU186
+ 796 00a2 6B67     		str	r3, [r5, #116]
+  74:Task/Task_Sample.c ****     SensorEnableState_smp_DataPipe.data_size = DataPipe_DataSize(SensorEnable_State);
+ 797              		.loc 1 74 5 is_stmt 1 view .LVU187
+  74:Task/Task_Sample.c ****     SensorEnableState_smp_DataPipe.data_size = DataPipe_DataSize(SensorEnable_State);
+ 798              		.loc 1 74 48 is_stmt 0 view .LVU188
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 26
+
+
+ 799 00a4 05F17003 		add	r3, r5, #112
+  74:Task/Task_Sample.c ****     SensorEnableState_smp_DataPipe.data_size = DataPipe_DataSize(SensorEnable_State);
+ 800              		.loc 1 74 46 view .LVU189
+ 801 00a8 2348     		ldr	r0, .L57+20
+ 802 00aa C0F80D30 		str	r3, [r0, #13]	@ unaligned
+  75:Task/Task_Sample.c ****     DataPipe_Enable(&SensorEnableState_smp_DataPipe);
+ 803              		.loc 1 75 5 is_stmt 1 view .LVU190
+  75:Task/Task_Sample.c ****     DataPipe_Enable(&SensorEnableState_smp_DataPipe);
+ 804              		.loc 1 75 46 is_stmt 0 view .LVU191
+ 805 00ae 0423     		movs	r3, #4
+ 806 00b0 4374     		strb	r3, [r0, #17]
+ 807 00b2 8474     		strb	r4, [r0, #18]
+  76:Task/Task_Sample.c ****     
+ 808              		.loc 1 76 5 is_stmt 1 view .LVU192
+ 809              	.LVL49:
+ 810              	.LBB48:
+ 811              	.LBI48:
+  62:Task/../System/DataPipe/DataPipe.h **** {
+ 812              		.loc 4 62 13 view .LVU193
+ 813              	.LBB49:
+  64:Task/../System/DataPipe/DataPipe.h ****         return false;
+ 814              		.loc 4 64 5 view .LVU194
+  67:Task/../System/DataPipe/DataPipe.h **** 
+ 815              		.loc 4 67 5 view .LVU195
+  67:Task/../System/DataPipe/DataPipe.h **** 
+ 816              		.loc 4 67 17 is_stmt 0 view .LVU196
+ 817 00b4 80F80C80 		strb	r8, [r0, #12]
+ 818              		.loc 4 69 5 is_stmt 1 view .LVU197
+ 819              	.LVL50:
+ 820              		.loc 4 69 5 is_stmt 0 view .LVU198
+ 821              	.LBE49:
+ 822              	.LBE48:
+  78:Task/Task_Sample.c ****     SensorInitState_smp_DataPipe.data_size = DataPipe_DataSize(SensorInit_State);
+ 823              		.loc 1 78 5 is_stmt 1 view .LVU199
+  78:Task/Task_Sample.c ****     SensorInitState_smp_DataPipe.data_size = DataPipe_DataSize(SensorInit_State);
+ 824              		.loc 1 78 46 is_stmt 0 view .LVU200
+ 825 00b8 7435     		adds	r5, r5, #116
+  78:Task/Task_Sample.c ****     SensorInitState_smp_DataPipe.data_size = DataPipe_DataSize(SensorInit_State);
+ 826              		.loc 1 78 44 view .LVU201
+ 827 00ba 204E     		ldr	r6, .L57+24
+ 828 00bc C6F80D50 		str	r5, [r6, #13]	@ unaligned
+  79:Task/Task_Sample.c ****     DataPipe_Enable(&SensorInitState_smp_DataPipe);
+ 829              		.loc 1 79 5 is_stmt 1 view .LVU202
+  79:Task/Task_Sample.c ****     DataPipe_Enable(&SensorInitState_smp_DataPipe);
+ 830              		.loc 1 79 44 is_stmt 0 view .LVU203
+ 831 00c0 7374     		strb	r3, [r6, #17]
+ 832 00c2 B474     		strb	r4, [r6, #18]
+  80:Task/Task_Sample.c **** 
+ 833              		.loc 1 80 5 is_stmt 1 view .LVU204
+ 834              	.LVL51:
+ 835              	.LBB50:
+ 836              	.LBI50:
+  62:Task/../System/DataPipe/DataPipe.h **** {
+ 837              		.loc 4 62 13 view .LVU205
+ 838              	.LBB51:
+  64:Task/../System/DataPipe/DataPipe.h ****         return false;
+ 839              		.loc 4 64 5 view .LVU206
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 27
+
+
+  67:Task/../System/DataPipe/DataPipe.h **** 
+ 840              		.loc 4 67 5 view .LVU207
+  67:Task/../System/DataPipe/DataPipe.h **** 
+ 841              		.loc 4 67 17 is_stmt 0 view .LVU208
+ 842 00c4 86F80C80 		strb	r8, [r6, #12]
+ 843              		.loc 4 69 5 is_stmt 1 view .LVU209
+ 844              	.LVL52:
+ 845              		.loc 4 69 5 is_stmt 0 view .LVU210
+ 846              	.LBE51:
+ 847              	.LBE50:
+  83:Task/Task_Sample.c ****     DataPipe_SendTo(&SensorInitState_smp_DataPipe, &SensorInitState_hub_DataPipe);
+ 848              		.loc 1 83 5 is_stmt 1 view .LVU211
+ 849 00c8 1D49     		ldr	r1, .L57+28
+ 850 00ca FFF7FEFF 		bl	DataPipe_SendTo
+ 851              	.LVL53:
+  84:Task/Task_Sample.c **** 
+ 852              		.loc 1 84 5 view .LVU212
+ 853 00ce 1D49     		ldr	r1, .L57+32
+ 854 00d0 3046     		mov	r0, r6
+ 855 00d2 FFF7FEFF 		bl	DataPipe_SendTo
+ 856              	.LVL54:
+  86:Task/Task_Sample.c ****     {
+ 857              		.loc 1 86 5 view .LVU213
+  86:Task/Task_Sample.c ****     {
+ 858              		.loc 1 86 8 is_stmt 0 view .LVU214
+ 859 00d6 3B78     		ldrb	r3, [r7]	@ zero_extendqisi2
+  86:Task/Task_Sample.c ****     {
+ 860              		.loc 1 86 7 view .LVU215
+ 861 00d8 33B1     		cbz	r3, .L54
+  88:Task/Task_Sample.c ****         {
+ 862              		.loc 1 88 9 is_stmt 1 view .LVU216
+  88:Task/Task_Sample.c ****         {
+ 863              		.loc 1 88 28 is_stmt 0 view .LVU217
+ 864 00da 154B     		ldr	r3, .L57+12
+ 865 00dc DB68     		ldr	r3, [r3, #12]
+  88:Task/Task_Sample.c ****         {
+ 866              		.loc 1 88 12 view .LVU218
+ 867 00de 01AA     		add	r2, sp, #4
+ 868 00e0 4146     		mov	r1, r8
+ 869 00e2 1048     		ldr	r0, .L57
+ 870 00e4 9847     		blx	r3
+ 871              	.LVL55:
+  88:Task/Task_Sample.c ****         {
+ 872              		.loc 1 88 11 view .LVU219
+ 873 00e6 28B9     		cbnz	r0, .L56
+ 874              	.L54:
+ 118:Task/Task_Sample.c **** }
+ 875              		.loc 1 118 5 is_stmt 1 view .LVU220
+ 118:Task/Task_Sample.c **** }
+ 876              		.loc 1 118 23 is_stmt 0 view .LVU221
+ 877 00e8 174B     		ldr	r3, .L57+36
+ 878 00ea 0122     		movs	r2, #1
+ 879 00ec 1A60     		str	r2, [r3]
+ 119:Task/Task_Sample.c **** 
+ 880              		.loc 1 119 1 view .LVU222
+ 881 00ee 03B0     		add	sp, sp, #12
+ 882              	.LCFI4:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 28
+
+
+ 883              		.cfi_remember_state
+ 884              		.cfi_def_cfa_offset 28
+ 885              		@ sp needed
+ 886 00f0 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 887              	.L56:
+ 888              	.LCFI5:
+ 889              		.cfi_restore_state
+  90:Task/Task_Sample.c ****             DataPipe_DataObj(Smp_PriIMU_Range).Gyr = PriIMU_Range.Gyr;
+ 890              		.loc 1 90 13 is_stmt 1 view .LVU223
+  90:Task/Task_Sample.c ****             DataPipe_DataObj(Smp_PriIMU_Range).Gyr = PriIMU_Range.Gyr;
+ 891              		.loc 1 90 66 is_stmt 0 view .LVU224
+ 892 00f4 9DF80420 		ldrb	r2, [sp, #4]	@ zero_extendqisi2
+  90:Task/Task_Sample.c ****             DataPipe_DataObj(Smp_PriIMU_Range).Gyr = PriIMU_Range.Gyr;
+ 893              		.loc 1 90 52 view .LVU225
+ 894 00f8 A5F17403 		sub	r3, r5, #116
+ 895 00fc 83F87820 		strb	r2, [r3, #120]
+  91:Task/Task_Sample.c **** 
+ 896              		.loc 1 91 13 is_stmt 1 view .LVU226
+  91:Task/Task_Sample.c **** 
+ 897              		.loc 1 91 66 is_stmt 0 view .LVU227
+ 898 0100 BDF80620 		ldrh	r2, [sp, #6]
+  91:Task/Task_Sample.c **** 
+ 899              		.loc 1 91 52 view .LVU228
+ 900 0104 A3F87A20 		strh	r2, [r3, #122]	@ movhi
+  93:Task/Task_Sample.c ****             IMU_PriRange_Smp_DataPipe.data_size = DataPipe_DataSize(Smp_PriIMU_Range);
+ 901              		.loc 1 93 13 is_stmt 1 view .LVU229
+  93:Task/Task_Sample.c ****             IMU_PriRange_Smp_DataPipe.data_size = DataPipe_DataSize(Smp_PriIMU_Range);
+ 902              		.loc 1 93 51 is_stmt 0 view .LVU230
+ 903 0108 7833     		adds	r3, r3, #120
+  93:Task/Task_Sample.c ****             IMU_PriRange_Smp_DataPipe.data_size = DataPipe_DataSize(Smp_PriIMU_Range);
+ 904              		.loc 1 93 49 view .LVU231
+ 905 010a 1048     		ldr	r0, .L57+40
+ 906 010c C0F80D30 		str	r3, [r0, #13]	@ unaligned
+  94:Task/Task_Sample.c ****             DataPipe_Enable(&IMU_PriRange_Smp_DataPipe);
+ 907              		.loc 1 94 13 is_stmt 1 view .LVU232
+  94:Task/Task_Sample.c ****             DataPipe_Enable(&IMU_PriRange_Smp_DataPipe);
+ 908              		.loc 1 94 49 is_stmt 0 view .LVU233
+ 909 0110 0423     		movs	r3, #4
+ 910 0112 4374     		strb	r3, [r0, #17]
+ 911 0114 8474     		strb	r4, [r0, #18]
+  95:Task/Task_Sample.c ****             
+ 912              		.loc 1 95 13 is_stmt 1 view .LVU234
+ 913              	.LVL56:
+ 914              	.LBB52:
+ 915              	.LBI52:
+  62:Task/../System/DataPipe/DataPipe.h **** {
+ 916              		.loc 4 62 13 view .LVU235
+ 917              	.LBB53:
+  64:Task/../System/DataPipe/DataPipe.h ****         return false;
+ 918              		.loc 4 64 5 view .LVU236
+  67:Task/../System/DataPipe/DataPipe.h **** 
+ 919              		.loc 4 67 5 view .LVU237
+  67:Task/../System/DataPipe/DataPipe.h **** 
+ 920              		.loc 4 67 17 is_stmt 0 view .LVU238
+ 921 0116 80F80C80 		strb	r8, [r0, #12]
+ 922              		.loc 4 69 5 is_stmt 1 view .LVU239
+ 923              	.LVL57:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 29
+
+
+ 924              		.loc 4 69 5 is_stmt 0 view .LVU240
+ 925              	.LBE53:
+ 926              	.LBE52:
+  98:Task/Task_Sample.c ****         }
+ 927              		.loc 1 98 13 is_stmt 1 view .LVU241
+ 928 011a 0D49     		ldr	r1, .L57+44
+ 929 011c FFF7FEFF 		bl	DataPipe_SendTo
+ 930              	.LVL58:
+ 931 0120 E2E7     		b	.L54
+ 932              	.L58:
+ 933 0122 00BF     		.align	2
+ 934              	.L57:
+ 935 0124 00000000 		.word	.LANCHOR2
+ 936 0128 00000000 		.word	Baro_smp_DataPipe
+ 937 012c 00000000 		.word	.LANCHOR3
+ 938 0130 00000000 		.word	SrvSensorMonitor
+ 939 0134 00000000 		.word	.LANCHOR4
+ 940 0138 00000000 		.word	SensorEnableState_smp_DataPipe
+ 941 013c 00000000 		.word	SensorInitState_smp_DataPipe
+ 942 0140 00000000 		.word	SensorEnableState_hub_DataPipe
+ 943 0144 00000000 		.word	SensorInitState_hub_DataPipe
+ 944 0148 00000000 		.word	.LANCHOR5
+ 945 014c 00000000 		.word	IMU_PriRange_Smp_DataPipe
+ 946 0150 00000000 		.word	IMU_PriRange_hub_DataPipe
+ 947 0154 00000000 		.word	IMU_Smp_DataPipe
+ 948              		.cfi_endproc
+ 949              	.LFE148:
+ 951              		.section	.text.TaskSample_Core,"ax",%progbits
+ 952              		.align	1
+ 953              		.global	TaskSample_Core
+ 954              		.syntax unified
+ 955              		.thumb
+ 956              		.thumb_func
+ 958              	TaskSample_Core:
+ 959              	.LVL59:
+ 960              	.LFB149:
+ 122:Task/Task_Sample.c ****     uint32_t sys_time = SrvOsCommon.get_os_ms();
+ 961              		.loc 1 122 1 view -0
+ 962              		.cfi_startproc
+ 963              		@ Volatile: function does not return.
+ 964              		@ args = 0, pretend = 0, frame = 96
+ 965              		@ frame_needed = 0, uses_anonymous_args = 0
+ 122:Task/Task_Sample.c ****     uint32_t sys_time = SrvOsCommon.get_os_ms();
+ 966              		.loc 1 122 1 is_stmt 0 view .LVU243
+ 967 0000 00B5     		push	{lr}
+ 968              	.LCFI6:
+ 969              		.cfi_def_cfa_offset 4
+ 970              		.cfi_offset 14, -4
+ 971 0002 99B0     		sub	sp, sp, #100
+ 972              	.LCFI7:
+ 973              		.cfi_def_cfa_offset 104
+ 123:Task/Task_Sample.c ****     
+ 974              		.loc 1 123 5 is_stmt 1 view .LVU244
+ 123:Task/Task_Sample.c ****     
+ 975              		.loc 1 123 36 is_stmt 0 view .LVU245
+ 976 0004 224B     		ldr	r3, .L63
+ 977 0006 1B68     		ldr	r3, [r3]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 30
+
+
+ 123:Task/Task_Sample.c ****     
+ 978              		.loc 1 123 25 view .LVU246
+ 979 0008 9847     		blx	r3
+ 980              	.LVL60:
+ 123:Task/Task_Sample.c ****     
+ 981              		.loc 1 123 14 view .LVU247
+ 982 000a 1790     		str	r0, [sp, #92]
+ 983 000c 05E0     		b	.L61
+ 984              	.L60:
+ 146:Task/Task_Sample.c ****     }
+ 985              		.loc 1 146 9 is_stmt 1 view .LVU248
+ 146:Task/Task_Sample.c ****     }
+ 986              		.loc 1 146 20 is_stmt 0 view .LVU249
+ 987 000e 204B     		ldr	r3, .L63
+ 988 0010 9B68     		ldr	r3, [r3, #8]
+ 146:Task/Task_Sample.c ****     }
+ 989              		.loc 1 146 9 view .LVU250
+ 990 0012 204A     		ldr	r2, .L63+4
+ 991 0014 1168     		ldr	r1, [r2]
+ 992 0016 17A8     		add	r0, sp, #92
+ 993 0018 9847     		blx	r3
+ 994              	.LVL61:
+ 125:Task/Task_Sample.c ****     {
+ 995              		.loc 1 125 10 is_stmt 1 view .LVU251
+ 996              	.L61:
+ 125:Task/Task_Sample.c ****     {
+ 997              		.loc 1 125 5 view .LVU252
+ 127:Task/Task_Sample.c **** 
+ 998              		.loc 1 127 9 view .LVU253
+ 999 001a 6420     		movs	r0, #100
+ 1000 001c FFF7FEFF 		bl	TaskInertical_Blink_Notification
+ 1001              	.LVL62:
+ 129:Task/Task_Sample.c ****         {
+ 1002              		.loc 1 129 9 view .LVU254
+ 129:Task/Task_Sample.c ****         {
+ 1003              		.loc 1 129 12 is_stmt 0 view .LVU255
+ 1004 0020 1D4B     		ldr	r3, .L63+8
+ 1005 0022 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 129:Task/Task_Sample.c ****         {
+ 1006              		.loc 1 129 11 view .LVU256
+ 1007 0024 002B     		cmp	r3, #0
+ 1008 0026 F2D0     		beq	.L60
+ 129:Task/Task_Sample.c ****         {
+ 1009              		.loc 1 129 45 discriminator 1 view .LVU257
+ 1010 0028 1C4B     		ldr	r3, .L63+12
+ 1011 002a 5B68     		ldr	r3, [r3, #4]
+ 129:Task/Task_Sample.c ****         {
+ 1012              		.loc 1 129 29 discriminator 1 view .LVU258
+ 1013 002c 1C48     		ldr	r0, .L63+16
+ 1014 002e 9847     		blx	r3
+ 1015              	.LVL63:
+ 129:Task/Task_Sample.c ****         {
+ 1016              		.loc 1 129 26 discriminator 1 view .LVU259
+ 1017 0030 0028     		cmp	r0, #0
+ 1018 0032 ECD0     		beq	.L60
+ 131:Task/Task_Sample.c ****             DataPipe_DataObj(Baro_Data).data = SrvSensorMonitor.get_baro_data(&SensorMonitor);
+ 1019              		.loc 1 131 13 is_stmt 1 view .LVU260
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 31
+
+
+ 131:Task/Task_Sample.c ****             DataPipe_DataObj(Baro_Data).data = SrvSensorMonitor.get_baro_data(&SensorMonitor);
+ 1020              		.loc 1 131 58 is_stmt 0 view .LVU261
+ 1021 0034 194E     		ldr	r6, .L63+12
+ 1022 0036 3369     		ldr	r3, [r6, #16]
+ 131:Task/Task_Sample.c ****             DataPipe_DataObj(Baro_Data).data = SrvSensorMonitor.get_baro_data(&SensorMonitor);
+ 1023              		.loc 1 131 42 view .LVU262
+ 1024 0038 1A4C     		ldr	r4, .L63+20
+ 1025 003a 194D     		ldr	r5, .L63+16
+ 1026 003c 2946     		mov	r1, r5
+ 1027 003e 6846     		mov	r0, sp
+ 1028 0040 9847     		blx	r3
+ 1029              	.LVL64:
+ 1030 0042 5422     		movs	r2, #84
+ 1031 0044 6946     		mov	r1, sp
+ 1032 0046 04F11C00 		add	r0, r4, #28
+ 1033 004a FFF7FEFF 		bl	memcpy
+ 1034              	.LVL65:
+ 132:Task/Task_Sample.c **** 
+ 1035              		.loc 1 132 13 is_stmt 1 view .LVU263
+ 132:Task/Task_Sample.c **** 
+ 1036              		.loc 1 132 64 is_stmt 0 view .LVU264
+ 1037 004e 7369     		ldr	r3, [r6, #20]
+ 132:Task/Task_Sample.c **** 
+ 1038              		.loc 1 132 48 view .LVU265
+ 1039 0050 2946     		mov	r1, r5
+ 1040 0052 6846     		mov	r0, sp
+ 1041 0054 9847     		blx	r3
+ 1042              	.LVL66:
+ 1043 0056 A646     		mov	lr, r4
+ 1044 0058 EC46     		mov	ip, sp
+ 1045 005a BCE80F00 		ldmia	ip!, {r0, r1, r2, r3}
+ 1046 005e AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 1047 0062 9CE80700 		ldm	ip, {r0, r1, r2}
+ 1048 0066 8EE80700 		stm	lr, {r0, r1, r2}
+ 137:Task/Task_Sample.c ****             DataPipe_SendTo(&Baro_smp_DataPipe, &Baro_Log_DataPipe);
+ 1049              		.loc 1 137 13 is_stmt 1 view .LVU266
+ 1050 006a 0F4D     		ldr	r5, .L63+24
+ 1051 006c 0F49     		ldr	r1, .L63+28
+ 1052 006e 2846     		mov	r0, r5
+ 1053 0070 FFF7FEFF 		bl	DataPipe_SendTo
+ 1054              	.LVL67:
+ 138:Task/Task_Sample.c **** 
+ 1055              		.loc 1 138 13 view .LVU267
+ 1056 0074 0E4C     		ldr	r4, .L63+32
+ 1057 0076 0F49     		ldr	r1, .L63+36
+ 1058 0078 2046     		mov	r0, r4
+ 1059 007a FFF7FEFF 		bl	DataPipe_SendTo
+ 1060              	.LVL68:
+ 141:Task/Task_Sample.c ****             DataPipe_SendTo(&Baro_smp_DataPipe, &Baro_hub_DataPipe);
+ 1061              		.loc 1 141 13 view .LVU268
+ 1062 007e 0E49     		ldr	r1, .L63+40
+ 1063 0080 2846     		mov	r0, r5
+ 1064 0082 FFF7FEFF 		bl	DataPipe_SendTo
+ 1065              	.LVL69:
+ 142:Task/Task_Sample.c ****             // DebugPin.ctl(Debug_PB4, false);
+ 1066              		.loc 1 142 13 view .LVU269
+ 1067 0086 0D49     		ldr	r1, .L63+44
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 32
+
+
+ 1068 0088 2046     		mov	r0, r4
+ 1069 008a FFF7FEFF 		bl	DataPipe_SendTo
+ 1070              	.LVL70:
+ 1071 008e BEE7     		b	.L60
+ 1072              	.L64:
+ 1073              		.align	2
+ 1074              	.L63:
+ 1075 0090 00000000 		.word	SrvOsCommon
+ 1076 0094 00000000 		.word	.LANCHOR5
+ 1077 0098 00000000 		.word	.LANCHOR4
+ 1078 009c 00000000 		.word	SrvSensorMonitor
+ 1079 00a0 00000000 		.word	.LANCHOR2
+ 1080 00a4 00000000 		.word	.LANCHOR3
+ 1081 00a8 00000000 		.word	IMU_Smp_DataPipe
+ 1082 00ac 00000000 		.word	IMU_Log_DataPipe
+ 1083 00b0 00000000 		.word	Baro_smp_DataPipe
+ 1084 00b4 00000000 		.word	Baro_Log_DataPipe
+ 1085 00b8 00000000 		.word	IMU_hub_DataPipe
+ 1086 00bc 00000000 		.word	Baro_hub_DataPipe
+ 1087              		.cfi_endproc
+ 1088              	.LFE149:
+ 1090              		.global	shellCommandsensor_status
+ 1091              		.global	shellDescsensor_status
+ 1092              		.global	shellCmdsensor_status
+ 1093              		.section	.Perph_Section,"aw"
+ 1094              		.align	2
+ 1095              		.set	.LANCHOR3,. + 0
+ 1098              	Baro_Data_PipeDataObj:
+ 1099 0000 00000000 		.space	28
+ 1099      00000000 
+ 1099      00000000 
+ 1099      00000000 
+ 1099      00000000 
+ 1102              	IMU_Data_PipeDataObj:
+ 1103 001c 00000000 		.space	84
+ 1103      00000000 
+ 1103      00000000 
+ 1103      00000000 
+ 1103      00000000 
+ 1106              	SensorEnable_State_PipeDataObj:
+ 1107 0070 00000000 		.space	4
+ 1110              	SensorInit_State_PipeDataObj:
+ 1111 0074 00000000 		.space	4
+ 1114              	Smp_PriIMU_Range_PipeDataObj:
+ 1115 0078 00000000 		.space	4
+ 1116              		.section	.bss.Lst_Rt.1,"aw",%nobits
+ 1117              		.align	2
+ 1118              		.set	.LANCHOR0,. + 0
+ 1121              	Lst_Rt.1:
+ 1122 0000 00000000 		.space	4
+ 1123              		.section	.bss.SensorMonitor,"aw",%nobits
+ 1124              		.align	2
+ 1125              		.set	.LANCHOR2,. + 0
+ 1128              	SensorMonitor:
+ 1129 0000 00000000 		.space	172
+ 1129      00000000 
+ 1129      00000000 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 33
+
+
+ 1129      00000000 
+ 1129      00000000 
+ 1130              		.section	.bss.TaskSample_Period,"aw",%nobits
+ 1131              		.align	2
+ 1132              		.set	.LANCHOR5,. + 0
+ 1135              	TaskSample_Period:
+ 1136 0000 00000000 		.space	4
+ 1137              		.section	.bss.led_state.0,"aw",%nobits
+ 1138              		.set	.LANCHOR1,. + 0
+ 1141              	led_state.0:
+ 1142 0000 00       		.space	1
+ 1143              		.section	.bss.sample_enable,"aw",%nobits
+ 1144              		.set	.LANCHOR4,. + 0
+ 1147              	sample_enable:
+ 1148 0000 00       		.space	1
+ 1149              		.section	.rodata.shellCmdsensor_status,"a"
+ 1150              		.align	2
+ 1153              	shellCmdsensor_status:
+ 1154 0000 73656E73 		.ascii	"sensor_status\000"
+ 1154      6F725F73 
+ 1154      74617475 
+ 1154      7300
+ 1155              		.section	.rodata.shellDescsensor_status,"a"
+ 1156              		.align	2
+ 1159              	shellDescsensor_status:
+ 1160 0000 73686F77 		.ascii	"show sensor status\000"
+ 1160      2073656E 
+ 1160      736F7220 
+ 1160      73746174 
+ 1160      757300
+ 1161              		.section	shellCommand,"a"
+ 1162              		.align	2
+ 1165              	shellCommandsensor_status:
+ 1166 0000 00210000 		.word	8448
+ 1167 0004 00000000 		.word	shellCmdsensor_status
+ 1168 0008 00000000 		.word	TaskSample_Get_SensorState
+ 1169 000c 00000000 		.word	shellDescsensor_status
+ 1170              		.text
+ 1171              	.Letext0:
+ 1172              		.file 5 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1173              		.file 6 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1174              		.file 7 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi\
+ 1175              		.file 8 "System/FreeRTOS/include/portable.h"
+ 1176              		.file 9 "Service/Srv_OsCommon.h"
+ 1177              		.file 10 "HW_Lib/Port_Def/Bsp_GPIO_Port_Def.h"
+ 1178              		.file 11 "common/gen_physic_def/imu_data.h"
+ 1179              		.file 12 "common/gen_physic_def/gen_calib.h"
+ 1180              		.file 13 "Service/Srv_SensorMonitor.h"
+ 1181              		.file 14 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 1182              		.file 15 "Device/Dev_Led.h"
+ 1183              		.file 16 "HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.h"
+ 1184              		.file 17 "System/shell/shell.h"
+ 1185              		.file 18 "System/FreeRTOS/FreeRTOSConfig.h"
+ 1186              		.file 19 "System/shell/shell_port.h"
+ 1187              		.file 20 "<built-in>"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 34
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Task_Sample.c
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:20     .text.TaskInertical_Blink_Notification:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:25     .text.TaskInertical_Blink_Notification:00000000 TaskInertical_Blink_Notification
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:92     .text.TaskInertical_Blink_Notification:0000003c $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:101    .rodata.TaskSample_Get_SensorState.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:177    .text.TaskSample_Get_SensorState:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:182    .text.TaskSample_Get_SensorState:00000000 TaskSample_Get_SensorState
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:348    .text.TaskSample_Get_SensorState:000000cc $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:421    .text.TaskSample_Get_SensorState:0000010a $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:605    .text.TaskSample_Get_SensorState:00000198 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:637    .text.TaskSample_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:643    .text.TaskSample_Init:00000000 TaskSample_Init
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:935    .text.TaskSample_Init:00000124 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:952    .text.TaskSample_Core:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:958    .text.TaskSample_Core:00000000 TaskSample_Core
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1075   .text.TaskSample_Core:00000090 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1165   shellCommand:00000000 shellCommandsensor_status
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1159   .rodata.shellDescsensor_status:00000000 shellDescsensor_status
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1153   .rodata.shellCmdsensor_status:00000000 shellCmdsensor_status
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1094   .Perph_Section:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1098   .Perph_Section:00000000 Baro_Data_PipeDataObj
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1102   .Perph_Section:0000001c IMU_Data_PipeDataObj
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1106   .Perph_Section:00000070 SensorEnable_State_PipeDataObj
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1110   .Perph_Section:00000074 SensorInit_State_PipeDataObj
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1114   .Perph_Section:00000078 Smp_PriIMU_Range_PipeDataObj
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1117   .bss.Lst_Rt.1:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1121   .bss.Lst_Rt.1:00000000 Lst_Rt.1
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1124   .bss.SensorMonitor:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1128   .bss.SensorMonitor:00000000 SensorMonitor
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1131   .bss.TaskSample_Period:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1135   .bss.TaskSample_Period:00000000 TaskSample_Period
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1141   .bss.led_state.0:00000000 led_state.0
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1142   .bss.led_state.0:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1147   .bss.sample_enable:00000000 sample_enable
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1148   .bss.sample_enable:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1150   .rodata.shellCmdsensor_status:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1156   .rodata.shellDescsensor_status:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:1162   shellCommand:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:354    .text.TaskSample_Get_SensorState:000000d1 $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:354    .text.TaskSample_Get_SensorState:000000d2 $t
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:427    .text.TaskSample_Get_SensorState:0000010f $d
+C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s:427    .text.TaskSample_Get_SensorState:00000110 $t
+
+UNDEFINED SYMBOLS
+SrvOsCommon
+DevLED
+Led1
+Shell_GetInstence
+shellPrint
+memset
+DataPipe_SendTo
+Baro_smp_DataPipe
+SrvSensorMonitor
+SensorEnableState_smp_DataPipe
+SensorInitState_smp_DataPipe
+SensorEnableState_hub_DataPipe
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccXFi4DA.s 			page 35
+
+
+SensorInitState_hub_DataPipe
+IMU_PriRange_Smp_DataPipe
+IMU_PriRange_hub_DataPipe
+IMU_Smp_DataPipe
+memcpy
+IMU_Log_DataPipe
+Baro_Log_DataPipe
+IMU_hub_DataPipe
+Baro_hub_DataPipe

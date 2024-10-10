@@ -138,8 +138,8 @@ void TaskBlackBox_Init(void)
     switch ((uint8_t)Monitor.medium)
     {
         case BlackBox_Medium_Com:
-            unit = SrvCom_BlackBox.init(TaskBlackBox_PushFinish_Callback, BlackBoxDevInfo);
-            p_blackbox = &SrvCom_BlackBox;
+            unit = SrvPort_BlackBox.init(TaskBlackBox_PushFinish_Callback, BlackBoxDevInfo);
+            p_blackbox = &SrvPort_BlackBox;
             break;
 
         case BlackBox_Medium_Chip:

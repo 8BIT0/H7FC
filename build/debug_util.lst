@@ -1,0 +1,617 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccs24omY.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"debug_util.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.DebugPin_Init,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	DebugPin_Init:
+  26              	.LFB133:
+  27              		.file 1 "debug/debug_util.c"
+   1:debug/debug_util.c **** #include "debug_util.h"
+   2:debug/debug_util.c **** #define MAX_PRINT_SIZE 512
+   3:debug/debug_util.c **** 
+   4:debug/debug_util.c **** static bool DebugPin_Init(DebugPinObj_TypeDef pin);
+   5:debug/debug_util.c **** static bool DebugPin_Ctl(DebugPinObj_TypeDef pin, bool state);
+   6:debug/debug_util.c **** 
+   7:debug/debug_util.c **** DebugPin_TypeDef DebugPin = {
+   8:debug/debug_util.c ****     .init = DebugPin_Init,
+   9:debug/debug_util.c ****     .ctl = DebugPin_Ctl,
+  10:debug/debug_util.c **** };
+  11:debug/debug_util.c **** 
+  12:debug/debug_util.c **** static bool DebugPin_Init(DebugPinObj_TypeDef debug_pin)
+  13:debug/debug_util.c **** {
+  28              		.loc 1 13 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 16
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32 0000 00B5     		push	{lr}
+  33              	.LCFI0:
+  34              		.cfi_def_cfa_offset 4
+  35              		.cfi_offset 14, -4
+  36 0002 85B0     		sub	sp, sp, #20
+  37              	.LCFI1:
+  38              		.cfi_def_cfa_offset 24
+  39 0004 04AB     		add	r3, sp, #16
+  40 0006 03E90700 		stmdb	r3, {r0, r1, r2}
+  14:debug/debug_util.c ****     if (BspGPIO.out_init == NULL)
+  41              		.loc 1 14 5 view .LVU1
+  42              		.loc 1 14 16 is_stmt 0 view .LVU2
+  43 000a 064B     		ldr	r3, .L5
+  44 000c 5B68     		ldr	r3, [r3, #4]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccs24omY.s 			page 2
+
+
+  45              		.loc 1 14 8 view .LVU3
+  46 000e 33B1     		cbz	r3, .L3
+  15:debug/debug_util.c ****         return false;
+  16:debug/debug_util.c **** 
+  17:debug/debug_util.c ****     return BspGPIO.out_init(debug_pin);
+  47              		.loc 1 17 5 is_stmt 1 view .LVU4
+  48              		.loc 1 17 12 is_stmt 0 view .LVU5
+  49 0010 04AA     		add	r2, sp, #16
+  50 0012 12E90700 		ldmdb	r2, {r0, r1, r2}
+  51 0016 9847     		blx	r3
+  52              	.LVL0:
+  53              	.L2:
+  18:debug/debug_util.c **** }
+  54              		.loc 1 18 1 view .LVU6
+  55 0018 05B0     		add	sp, sp, #20
+  56              	.LCFI2:
+  57              		.cfi_remember_state
+  58              		.cfi_def_cfa_offset 4
+  59              		@ sp needed
+  60 001a 5DF804FB 		ldr	pc, [sp], #4
+  61              	.L3:
+  62              	.LCFI3:
+  63              		.cfi_restore_state
+  15:debug/debug_util.c ****         return false;
+  64              		.loc 1 15 16 view .LVU7
+  65 001e 0020     		movs	r0, #0
+  66 0020 FAE7     		b	.L2
+  67              	.L6:
+  68 0022 00BF     		.align	2
+  69              	.L5:
+  70 0024 00000000 		.word	BspGPIO
+  71              		.cfi_endproc
+  72              	.LFE133:
+  74              		.section	.text.DebugPin_Ctl,"ax",%progbits
+  75              		.align	1
+  76              		.syntax unified
+  77              		.thumb
+  78              		.thumb_func
+  80              	DebugPin_Ctl:
+  81              	.LVL1:
+  82              	.LFB134:
+  19:debug/debug_util.c **** 
+  20:debug/debug_util.c **** static bool DebugPin_Ctl(DebugPinObj_TypeDef debug_pin, bool state)
+  21:debug/debug_util.c **** {
+  83              		.loc 1 21 1 is_stmt 1 view -0
+  84              		.cfi_startproc
+  85              		@ args = 0, pretend = 0, frame = 16
+  86              		@ frame_needed = 0, uses_anonymous_args = 0
+  87              		.loc 1 21 1 is_stmt 0 view .LVU9
+  88 0000 10B5     		push	{r4, lr}
+  89              	.LCFI4:
+  90              		.cfi_def_cfa_offset 8
+  91              		.cfi_offset 4, -8
+  92              		.cfi_offset 14, -4
+  93 0002 84B0     		sub	sp, sp, #16
+  94              	.LCFI5:
+  95              		.cfi_def_cfa_offset 24
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccs24omY.s 			page 3
+
+
+  96 0004 04AC     		add	r4, sp, #16
+  97 0006 04E90700 		stmdb	r4, {r0, r1, r2}
+  22:debug/debug_util.c ****     if (BspGPIO.write == NULL)
+  98              		.loc 1 22 5 is_stmt 1 view .LVU10
+  99              		.loc 1 22 16 is_stmt 0 view .LVU11
+ 100 000a 064A     		ldr	r2, .L11
+ 101 000c D469     		ldr	r4, [r2, #28]
+ 102              		.loc 1 22 8 view .LVU12
+ 103 000e 34B1     		cbz	r4, .L9
+  23:debug/debug_util.c ****         return false;
+  24:debug/debug_util.c **** 
+  25:debug/debug_util.c ****     BspGPIO.write(debug_pin, state);
+ 104              		.loc 1 25 5 is_stmt 1 view .LVU13
+ 105 0010 04AA     		add	r2, sp, #16
+ 106 0012 12E90700 		ldmdb	r2, {r0, r1, r2}
+ 107 0016 A047     		blx	r4
+ 108              	.LVL2:
+  26:debug/debug_util.c ****     return true;
+ 109              		.loc 1 26 5 view .LVU14
+ 110              		.loc 1 26 12 is_stmt 0 view .LVU15
+ 111 0018 0120     		movs	r0, #1
+ 112              	.L8:
+  27:debug/debug_util.c **** }
+ 113              		.loc 1 27 1 view .LVU16
+ 114 001a 04B0     		add	sp, sp, #16
+ 115              	.LCFI6:
+ 116              		.cfi_remember_state
+ 117              		.cfi_def_cfa_offset 8
+ 118              		@ sp needed
+ 119 001c 10BD     		pop	{r4, pc}
+ 120              	.LVL3:
+ 121              	.L9:
+ 122              	.LCFI7:
+ 123              		.cfi_restore_state
+  23:debug/debug_util.c ****         return false;
+ 124              		.loc 1 23 16 view .LVU17
+ 125 001e 0020     		movs	r0, #0
+ 126 0020 FBE7     		b	.L8
+ 127              	.L12:
+ 128 0022 00BF     		.align	2
+ 129              	.L11:
+ 130 0024 00000000 		.word	BspGPIO
+ 131              		.cfi_endproc
+ 132              	.LFE134:
+ 134              		.section	.text.Debug_PrintOut,"ax",%progbits
+ 135              		.align	1
+ 136              		.syntax unified
+ 137              		.thumb
+ 138              		.thumb_func
+ 140              	Debug_PrintOut:
+ 141              	.LVL4:
+ 142              	.LFB136:
+  28:debug/debug_util.c **** 
+  29:debug/debug_util.c **** void assert(bool state)
+  30:debug/debug_util.c **** {
+  31:debug/debug_util.c ****     if (state)
+  32:debug/debug_util.c ****         while (true)
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccs24omY.s 			page 4
+
+
+  33:debug/debug_util.c ****             ;
+  34:debug/debug_util.c **** }
+  35:debug/debug_util.c **** 
+  36:debug/debug_util.c **** static void Debug_PrintOut(DebugPrintObj_TypeDef *Obj, uint8_t *p_data, uint16_t len)
+  37:debug/debug_util.c **** {
+ 143              		.loc 1 37 1 is_stmt 1 view -0
+ 144              		.cfi_startproc
+ 145              		@ args = 0, pretend = 0, frame = 0
+ 146              		@ frame_needed = 0, uses_anonymous_args = 0
+  38:debug/debug_util.c ****     if (p_data && len)
+ 147              		.loc 1 38 5 view .LVU19
+ 148              		.loc 1 38 8 is_stmt 0 view .LVU20
+ 149 0000 41B1     		cbz	r1, .L16
+ 150 0002 0B46     		mov	r3, r1
+ 151              		.loc 1 38 16 discriminator 1 view .LVU21
+ 152 0004 32B1     		cbz	r2, .L16
+  37:debug/debug_util.c ****     if (p_data && len)
+ 153              		.loc 1 37 1 view .LVU22
+ 154 0006 10B5     		push	{r4, lr}
+ 155              	.LCFI8:
+ 156              		.cfi_def_cfa_offset 8
+ 157              		.cfi_offset 4, -8
+ 158              		.cfi_offset 14, -4
+  39:debug/debug_util.c ****         BspUart.send(To_BspUart_Obj(Obj->port_obj), p_data, len);
+ 159              		.loc 1 39 9 is_stmt 1 view .LVU23
+ 160              		.loc 1 39 16 is_stmt 0 view .LVU24
+ 161 0008 0349     		ldr	r1, .L19
+ 162              	.LVL5:
+ 163              		.loc 1 39 16 view .LVU25
+ 164 000a CC69     		ldr	r4, [r1, #28]
+ 165              		.loc 1 39 9 view .LVU26
+ 166 000c 1946     		mov	r1, r3
+ 167 000e 0068     		ldr	r0, [r0]
+ 168              	.LVL6:
+ 169              		.loc 1 39 9 view .LVU27
+ 170 0010 A047     		blx	r4
+ 171              	.LVL7:
+  40:debug/debug_util.c **** }
+ 172              		.loc 1 40 1 view .LVU28
+ 173 0012 10BD     		pop	{r4, pc}
+ 174              	.LVL8:
+ 175              	.L16:
+ 176              	.LCFI9:
+ 177              		.cfi_def_cfa_offset 0
+ 178              		.cfi_restore 4
+ 179              		.cfi_restore 14
+ 180              		.loc 1 40 1 view .LVU29
+ 181 0014 7047     		bx	lr
+ 182              	.L20:
+ 183 0016 00BF     		.align	2
+ 184              	.L19:
+ 185 0018 00000000 		.word	BspUart
+ 186              		.cfi_endproc
+ 187              	.LFE136:
+ 189              		.section	.text.assert,"ax",%progbits
+ 190              		.align	1
+ 191              		.global	assert
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccs24omY.s 			page 5
+
+
+ 192              		.syntax unified
+ 193              		.thumb
+ 194              		.thumb_func
+ 196              	assert:
+ 197              	.LVL9:
+ 198              	.LFB135:
+  30:debug/debug_util.c ****     if (state)
+ 199              		.loc 1 30 1 is_stmt 1 view -0
+ 200              		.cfi_startproc
+ 201              		@ args = 0, pretend = 0, frame = 0
+ 202              		@ frame_needed = 0, uses_anonymous_args = 0
+ 203              		@ link register save eliminated.
+  31:debug/debug_util.c ****         while (true)
+ 204              		.loc 1 31 5 view .LVU31
+  31:debug/debug_util.c ****         while (true)
+ 205              		.loc 1 31 8 is_stmt 0 view .LVU32
+ 206 0000 00B1     		cbz	r0, .L21
+ 207              	.L23:
+  32:debug/debug_util.c ****             ;
+ 208              		.loc 1 32 9 is_stmt 1 discriminator 1 view .LVU33
+  33:debug/debug_util.c **** }
+ 209              		.loc 1 33 13 discriminator 1 view .LVU34
+  32:debug/debug_util.c ****             ;
+ 210              		.loc 1 32 15 discriminator 1 view .LVU35
+ 211 0002 FEE7     		b	.L23
+ 212              	.L21:
+  34:debug/debug_util.c **** 
+ 213              		.loc 1 34 1 is_stmt 0 view .LVU36
+ 214 0004 7047     		bx	lr
+ 215              		.cfi_endproc
+ 216              	.LFE135:
+ 218              		.section	.text.Debug_Port_Init,"ax",%progbits
+ 219              		.align	1
+ 220              		.global	Debug_Port_Init
+ 221              		.syntax unified
+ 222              		.thumb
+ 223              		.thumb_func
+ 225              	Debug_Port_Init:
+ 226              	.LVL10:
+ 227              	.LFB137:
+  41:debug/debug_util.c **** 
+  42:debug/debug_util.c **** void Debug_Port_Init(DebugPrintObj_TypeDef *Obj)
+  43:debug/debug_util.c **** {
+ 228              		.loc 1 43 1 is_stmt 1 view -0
+ 229              		.cfi_startproc
+ 230              		@ args = 0, pretend = 0, frame = 0
+ 231              		@ frame_needed = 0, uses_anonymous_args = 0
+ 232              		.loc 1 43 1 is_stmt 0 view .LVU38
+ 233 0000 10B5     		push	{r4, lr}
+ 234              	.LCFI10:
+ 235              		.cfi_def_cfa_offset 8
+ 236              		.cfi_offset 4, -8
+ 237              		.cfi_offset 14, -4
+ 238 0002 0446     		mov	r4, r0
+  44:debug/debug_util.c ****     if (!Obj->port_obj || !BspUart.init(To_BspUart_Obj(Obj->port_obj)))
+ 239              		.loc 1 44 5 is_stmt 1 view .LVU39
+ 240              		.loc 1 44 13 is_stmt 0 view .LVU40
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccs24omY.s 			page 6
+
+
+ 241 0004 0068     		ldr	r0, [r0]
+ 242              	.LVL11:
+ 243              		.loc 1 44 8 view .LVU41
+ 244 0006 40B1     		cbz	r0, .L25
+ 245              		.loc 1 44 35 discriminator 1 view .LVU42
+ 246 0008 054B     		ldr	r3, .L29
+ 247 000a 1B68     		ldr	r3, [r3]
+ 248              		.loc 1 44 28 discriminator 1 view .LVU43
+ 249 000c 9847     		blx	r3
+ 250              	.LVL12:
+ 251              		.loc 1 44 24 discriminator 1 view .LVU44
+ 252 000e 20B1     		cbz	r0, .L25
+  45:debug/debug_util.c ****     {
+  46:debug/debug_util.c ****         Obj->port_obj = NULL;
+  47:debug/debug_util.c ****         return;
+  48:debug/debug_util.c ****     }
+  49:debug/debug_util.c **** 
+  50:debug/debug_util.c ****     Obj->init = true;
+ 253              		.loc 1 50 5 is_stmt 1 view .LVU45
+ 254              		.loc 1 50 15 is_stmt 0 view .LVU46
+ 255 0010 0123     		movs	r3, #1
+ 256 0012 2371     		strb	r3, [r4, #4]
+  51:debug/debug_util.c ****     To_BspUart_Obj(Obj->port_obj)->cust_data_addr = ((uint32_t)Obj);
+ 257              		.loc 1 51 5 is_stmt 1 view .LVU47
+ 258 0014 2368     		ldr	r3, [r4]
+ 259              		.loc 1 51 51 is_stmt 0 view .LVU48
+ 260 0016 9C64     		str	r4, [r3, #72]
+ 261              	.L24:
+  52:debug/debug_util.c **** }
+ 262              		.loc 1 52 1 view .LVU49
+ 263 0018 10BD     		pop	{r4, pc}
+ 264              	.LVL13:
+ 265              	.L25:
+  46:debug/debug_util.c ****         return;
+ 266              		.loc 1 46 9 is_stmt 1 view .LVU50
+  46:debug/debug_util.c ****         return;
+ 267              		.loc 1 46 23 is_stmt 0 view .LVU51
+ 268 001a 0023     		movs	r3, #0
+ 269 001c 2360     		str	r3, [r4]
+  47:debug/debug_util.c ****     }
+ 270              		.loc 1 47 9 is_stmt 1 view .LVU52
+ 271 001e FBE7     		b	.L24
+ 272              	.L30:
+ 273              		.align	2
+ 274              	.L29:
+ 275 0020 00000000 		.word	BspUart
+ 276              		.cfi_endproc
+ 277              	.LFE137:
+ 279              		.section	.text.Debug_Print,"ax",%progbits
+ 280              		.align	1
+ 281              		.global	Debug_Print
+ 282              		.syntax unified
+ 283              		.thumb
+ 284              		.thumb_func
+ 286              	Debug_Print:
+ 287              	.LVL14:
+ 288              	.LFB138:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccs24omY.s 			page 7
+
+
+  53:debug/debug_util.c **** 
+  54:debug/debug_util.c **** void Debug_Print(DebugPrintObj_TypeDef *Obj, const char *tag, const char* fmt, ...)
+  55:debug/debug_util.c **** {
+ 289              		.loc 1 55 1 view -0
+ 290              		.cfi_startproc
+ 291              		@ args = 4, pretend = 8, frame = 136
+ 292              		@ frame_needed = 0, uses_anonymous_args = 1
+ 293              		.loc 1 55 1 is_stmt 0 view .LVU54
+ 294 0000 0CB4     		push	{r2, r3}
+ 295              	.LCFI11:
+ 296              		.cfi_def_cfa_offset 8
+ 297              		.cfi_offset 2, -8
+ 298              		.cfi_offset 3, -4
+ 299 0002 30B5     		push	{r4, r5, lr}
+ 300              	.LCFI12:
+ 301              		.cfi_def_cfa_offset 20
+ 302              		.cfi_offset 4, -20
+ 303              		.cfi_offset 5, -16
+ 304              		.cfi_offset 14, -12
+ 305 0004 A3B0     		sub	sp, sp, #140
+ 306              	.LCFI13:
+ 307              		.cfi_def_cfa_offset 160
+  56:debug/debug_util.c **** 	va_list ap;
+ 308              		.loc 1 56 2 is_stmt 1 view .LVU55
+  57:debug/debug_util.c ****     uint16_t length = 0;
+ 309              		.loc 1 57 5 view .LVU56
+ 310              	.LVL15:
+  58:debug/debug_util.c ****     char new_fmt[128];
+ 311              		.loc 1 58 5 view .LVU57
+  59:debug/debug_util.c **** 
+  60:debug/debug_util.c ****     if (!Obj->init)
+ 312              		.loc 1 60 5 view .LVU58
+ 313              		.loc 1 60 13 is_stmt 0 view .LVU59
+ 314 0006 0379     		ldrb	r3, [r0, #4]	@ zero_extendqisi2
+ 315              		.loc 1 60 8 view .LVU60
+ 316 0008 002B     		cmp	r3, #0
+ 317 000a 37D0     		beq	.L31
+ 318 000c 0446     		mov	r4, r0
+ 319 000e 0D46     		mov	r5, r1
+  61:debug/debug_util.c ****         return;
+  62:debug/debug_util.c **** 
+  63:debug/debug_util.c ****     if (Obj->free && Obj->malloc && (Obj->p_buf == NULL))
+ 320              		.loc 1 63 5 is_stmt 1 view .LVU61
+ 321              		.loc 1 63 12 is_stmt 0 view .LVU62
+ 322 0010 0369     		ldr	r3, [r0, #16]
+ 323              		.loc 1 63 8 view .LVU63
+ 324 0012 23B1     		cbz	r3, .L33
+ 325              		.loc 1 63 25 discriminator 1 view .LVU64
+ 326 0014 C368     		ldr	r3, [r0, #12]
+ 327              		.loc 1 63 19 discriminator 1 view .LVU65
+ 328 0016 13B1     		cbz	r3, .L33
+ 329              		.loc 1 63 41 discriminator 2 view .LVU66
+ 330 0018 8268     		ldr	r2, [r0, #8]
+ 331              		.loc 1 63 34 discriminator 2 view .LVU67
+ 332 001a 002A     		cmp	r2, #0
+ 333 001c 33D0     		beq	.L39
+ 334              	.LVL16:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccs24omY.s 			page 8
+
+
+ 335              	.L33:
+  64:debug/debug_util.c ****     {
+  65:debug/debug_util.c ****         Obj->p_buf = Obj->malloc(MAX_PRINT_SIZE);
+  66:debug/debug_util.c ****         if (Obj->p_buf == NULL)
+  67:debug/debug_util.c ****             return;
+  68:debug/debug_util.c ****     }
+  69:debug/debug_util.c **** 
+  70:debug/debug_util.c ****     memset(Obj->p_buf, 0, MAX_PRINT_SIZE);
+ 336              		.loc 1 70 5 is_stmt 1 view .LVU68
+ 337 001e 4FF40072 		mov	r2, #512
+ 338 0022 0021     		movs	r1, #0
+ 339 0024 A068     		ldr	r0, [r4, #8]
+ 340 0026 FFF7FEFF 		bl	memset
+ 341              	.LVL17:
+  71:debug/debug_util.c ****     memset(new_fmt, 0, sizeof(new_fmt));
+ 342              		.loc 1 71 5 view .LVU69
+ 343 002a 8022     		movs	r2, #128
+ 344 002c 0021     		movs	r1, #0
+ 345 002e 01A8     		add	r0, sp, #4
+ 346 0030 FFF7FEFF 		bl	memset
+ 347              	.LVL18:
+  72:debug/debug_util.c ****     strcpy(new_fmt, tag);
+ 348              		.loc 1 72 5 view .LVU70
+ 349 0034 2946     		mov	r1, r5
+ 350 0036 01A8     		add	r0, sp, #4
+ 351 0038 FFF7FEFF 		bl	strcpy
+ 352              	.LVL19:
+  73:debug/debug_util.c ****     strcat(new_fmt, fmt);
+ 353              		.loc 1 73 5 view .LVU71
+ 354 003c 2699     		ldr	r1, [sp, #152]
+ 355 003e 01A8     		add	r0, sp, #4
+ 356 0040 FFF7FEFF 		bl	strcat
+ 357              	.LVL20:
+  74:debug/debug_util.c **** 
+  75:debug/debug_util.c ****     if (Obj->p_buf && Obj->port_obj)
+ 358              		.loc 1 75 5 view .LVU72
+ 359              		.loc 1 75 12 is_stmt 0 view .LVU73
+ 360 0044 A368     		ldr	r3, [r4, #8]
+ 361              		.loc 1 75 8 view .LVU74
+ 362 0046 CBB1     		cbz	r3, .L31
+ 363              		.loc 1 75 26 discriminator 1 view .LVU75
+ 364 0048 2368     		ldr	r3, [r4]
+ 365              		.loc 1 75 20 discriminator 1 view .LVU76
+ 366 004a BBB1     		cbz	r3, .L31
+ 367              	.LBB2:
+  76:debug/debug_util.c ****     {
+  77:debug/debug_util.c **** 	    va_start(ap, new_fmt);
+ 368              		.loc 1 77 6 is_stmt 1 view .LVU77
+ 369 004c 27AB     		add	r3, sp, #156
+ 370 004e 2193     		str	r3, [sp, #132]
+  78:debug/debug_util.c **** 	    length = vsnprintf(Obj->p_buf, MAX_PRINT_SIZE, new_fmt, ap);
+ 371              		.loc 1 78 6 view .LVU78
+ 372              		.loc 1 78 15 is_stmt 0 view .LVU79
+ 373 0050 01AA     		add	r2, sp, #4
+ 374 0052 4FF40071 		mov	r1, #512
+ 375 0056 A068     		ldr	r0, [r4, #8]
+ 376 0058 FFF7FEFF 		bl	vsnprintf
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccs24omY.s 			page 9
+
+
+ 377              	.LVL21:
+ 378              		.loc 1 78 13 view .LVU80
+ 379 005c 85B2     		uxth	r5, r0
+ 380              	.LVL22:
+  79:debug/debug_util.c **** 	    va_end(ap);
+ 381              		.loc 1 79 6 is_stmt 1 view .LVU81
+  80:debug/debug_util.c **** 
+  81:debug/debug_util.c ****         if (length > MAX_PRINT_SIZE)
+ 382              		.loc 1 81 9 view .LVU82
+ 383              		.loc 1 81 12 is_stmt 0 view .LVU83
+ 384 005e B5F5007F 		cmp	r5, #512
+ 385 0062 01D9     		bls	.L35
+  82:debug/debug_util.c ****             length = MAX_PRINT_SIZE;
+ 386              		.loc 1 82 20 view .LVU84
+ 387 0064 4FF40075 		mov	r5, #512
+ 388              	.LVL23:
+ 389              	.L35:
+  83:debug/debug_util.c **** 
+  84:debug/debug_util.c ****         Debug_PrintOut(Obj, Obj->p_buf, length);
+ 390              		.loc 1 84 9 is_stmt 1 view .LVU85
+ 391 0068 2A46     		mov	r2, r5
+ 392 006a A168     		ldr	r1, [r4, #8]
+ 393 006c 2046     		mov	r0, r4
+ 394 006e FFF7FEFF 		bl	Debug_PrintOut
+ 395              	.LVL24:
+  85:debug/debug_util.c ****         memset(Obj->p_buf, 0, length);
+ 396              		.loc 1 85 9 view .LVU86
+ 397 0072 2A46     		mov	r2, r5
+ 398 0074 0021     		movs	r1, #0
+ 399 0076 A068     		ldr	r0, [r4, #8]
+ 400 0078 FFF7FEFF 		bl	memset
+ 401              	.LVL25:
+ 402              	.L31:
+ 403              		.loc 1 85 9 is_stmt 0 view .LVU87
+ 404              	.LBE2:
+  86:debug/debug_util.c ****     }
+  87:debug/debug_util.c **** }
+ 405              		.loc 1 87 1 view .LVU88
+ 406 007c 23B0     		add	sp, sp, #140
+ 407              	.LCFI14:
+ 408              		.cfi_remember_state
+ 409              		.cfi_def_cfa_offset 20
+ 410              		@ sp needed
+ 411 007e BDE83040 		pop	{r4, r5, lr}
+ 412              	.LCFI15:
+ 413              		.cfi_restore 14
+ 414              		.cfi_restore 5
+ 415              		.cfi_restore 4
+ 416              		.cfi_def_cfa_offset 8
+ 417 0082 02B0     		add	sp, sp, #8
+ 418              	.LCFI16:
+ 419              		.cfi_restore 3
+ 420              		.cfi_restore 2
+ 421              		.cfi_def_cfa_offset 0
+ 422 0084 7047     		bx	lr
+ 423              	.LVL26:
+ 424              	.L39:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccs24omY.s 			page 10
+
+
+ 425              	.LCFI17:
+ 426              		.cfi_restore_state
+  65:debug/debug_util.c ****         if (Obj->p_buf == NULL)
+ 427              		.loc 1 65 9 is_stmt 1 view .LVU89
+  65:debug/debug_util.c ****         if (Obj->p_buf == NULL)
+ 428              		.loc 1 65 22 is_stmt 0 view .LVU90
+ 429 0086 4FF40070 		mov	r0, #512
+ 430              	.LVL27:
+  65:debug/debug_util.c ****         if (Obj->p_buf == NULL)
+ 431              		.loc 1 65 22 view .LVU91
+ 432 008a 9847     		blx	r3
+ 433              	.LVL28:
+  65:debug/debug_util.c ****         if (Obj->p_buf == NULL)
+ 434              		.loc 1 65 20 view .LVU92
+ 435 008c A060     		str	r0, [r4, #8]
+  66:debug/debug_util.c ****             return;
+ 436              		.loc 1 66 9 is_stmt 1 view .LVU93
+  66:debug/debug_util.c ****             return;
+ 437              		.loc 1 66 12 is_stmt 0 view .LVU94
+ 438 008e 0028     		cmp	r0, #0
+ 439 0090 C5D1     		bne	.L33
+ 440 0092 F3E7     		b	.L31
+ 441              		.cfi_endproc
+ 442              	.LFE138:
+ 444              		.global	DebugPin
+ 445              		.section	.data.DebugPin,"aw"
+ 446              		.align	2
+ 449              	DebugPin:
+ 450 0000 00000000 		.word	DebugPin_Init
+ 451 0004 00000000 		.word	DebugPin_Ctl
+ 452              		.text
+ 453              	.Letext0:
+ 454              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 455              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 456              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\lib\\gcc\\arm-none-eabi\
+ 457              		.file 5 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 458              		.file 6 "HW_Lib/Port_Def/Bsp_GPIO_Port_Def.h"
+ 459              		.file 7 "HW_Lib/Port_Def/Bsp_Uart_Port_Def.h"
+ 460              		.file 8 "HW_Lib/AT32F435/bsp/Bsp_GPIO.h"
+ 461              		.file 9 "HW_Lib/AT32F435/bsp/Bsp_Uart.h"
+ 462              		.file 10 "debug/debug_util.h"
+ 463              		.file 11 "<built-in>"
+ 464              		.file 12 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccs24omY.s 			page 11
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 debug_util.c
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:20     .text.DebugPin_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:25     .text.DebugPin_Init:00000000 DebugPin_Init
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:70     .text.DebugPin_Init:00000024 $d
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:75     .text.DebugPin_Ctl:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:80     .text.DebugPin_Ctl:00000000 DebugPin_Ctl
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:130    .text.DebugPin_Ctl:00000024 $d
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:135    .text.Debug_PrintOut:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:140    .text.Debug_PrintOut:00000000 Debug_PrintOut
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:185    .text.Debug_PrintOut:00000018 $d
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:190    .text.assert:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:196    .text.assert:00000000 assert
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:219    .text.Debug_Port_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:225    .text.Debug_Port_Init:00000000 Debug_Port_Init
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:275    .text.Debug_Port_Init:00000020 $d
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:280    .text.Debug_Print:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:286    .text.Debug_Print:00000000 Debug_Print
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:449    .data.DebugPin:00000000 DebugPin
+C:\Users\8bit\AppData\Local\Temp\ccs24omY.s:446    .data.DebugPin:00000000 $d
+
+UNDEFINED SYMBOLS
+BspGPIO
+BspUart
+memset
+strcpy
+strcat
+vsnprintf

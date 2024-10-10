@@ -1,0 +1,1003 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"HW_Def.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.global	__aeabi_f2d
+  20              		.global	__aeabi_d2f
+  21              		.section	.text.PriIMU_Dir_Tune,"ax",%progbits
+  22              		.align	1
+  23              		.global	PriIMU_Dir_Tune
+  24              		.syntax unified
+  25              		.thumb
+  26              		.thumb_func
+  28              	PriIMU_Dir_Tune:
+  29              	.LVL0:
+  30              	.LFB134:
+  31              		.file 1 "HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c"
+   1:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** #include "HW_Def.h"
+   2:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+   3:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // MOTOR 1 B06
+   4:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // MOTOR 2 B07
+   5:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // MOTOR 3 A03
+   6:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // MOTOR 4 B01
+   7:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+   8:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // OSD_CS 1 B12
+   9:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  10:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // ADC_BATT 1 A00
+  11:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // ADC_CURR 1 A01
+  12:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  13:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // timer A08 AF1
+  14:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // # pin A08: TIM1 CH1 (AF1)
+  15:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  16:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // timer B06 AF2
+  17:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // # pin B06: TIM4 CH1 (AF2)
+  18:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // timer B07 AF2
+  19:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // # pin B07: TIM4 CH2 (AF2)
+  20:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // timer A03 AF1
+  21:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // # pin A03: TIM2 CH4 (AF1)
+  22:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // timer B01 AF2
+  23:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // # pin B01: TIM3 CH4 (AF2)
+  24:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  25:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // dma ADC 1 11
+  26:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // # ADC 1: DMA2 Channel 0 Channel 5
+  27:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 2
+
+
+  28:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // dma pin A08 7
+  29:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // # pin A08: DMA2 Channel 0 Channel 42
+  30:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // dma pin B06 0
+  31:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // # pin B06: DMA1 Channel 0 Channel 67
+  32:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // dma pin B07 1
+  33:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // # pin B07: DMA1 Channel 0 Channel 68
+  34:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // dma pin A03 2
+  35:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // # pin A03: DMA1 Channel 0 Channel 59
+  36:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // dma pin B01 3
+  37:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** // # pin B01: DMA1 Channel 0 Channel 64
+  38:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  39:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* Led 1 C13 */
+  40:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Led1_Port = {
+  41:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOC,
+  42:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+  43:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  44:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Led1 = {
+  45:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Led1_Port,
+  46:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_13,
+  47:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+  48:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+  49:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  50:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* Led 2 C14 */
+  51:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Led2_Port = {
+  52:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOC,
+  53:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+  54:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  55:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Led2 = {
+  56:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Led2_Port,
+  57:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_14,
+  58:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+  59:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+  60:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  61:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* on board receiver uart tx port B11 */
+  62:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Uart3_Tx_Port = {
+  63:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOB,
+  64:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+  65:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  66:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Uart3_TxPin = {
+  67:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Uart3_Tx_Port,
+  68:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_11,
+  69:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+  70:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .alternate = GPIO_MUX_7,
+  71:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+  72:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  73:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* on board receiver uart rx port B10 */
+  74:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Uart3_Rx_Port = {
+  75:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOB,
+  76:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+  77:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  78:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Uart3_RxPin = {
+  79:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Uart3_Rx_Port,
+  80:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_10,
+  81:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+  82:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .alternate = GPIO_MUX_7,
+  83:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+  84:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 3
+
+
+  85:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* uart 1 tx pin A09 */
+  86:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Uart1_Tx_Port = {
+  87:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOA,
+  88:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+  89:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  90:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Uart1_TxPin = {
+  91:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Uart1_Tx_Port,
+  92:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_9,
+  93:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+  94:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .alternate = GPIO_MUX_7,
+  95:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+  96:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+  97:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* uart 1 rx pin A10 */
+  98:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Uart1_Rx_Port = {
+  99:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOA,
+ 100:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 101:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 102:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Uart1_RxPin = {
+ 103:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Uart1_Rx_Port,
+ 104:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_10,
+ 105:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+ 106:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .alternate = GPIO_MUX_7,
+ 107:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 108:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 109:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* uart 2 tx pin A02 */
+ 110:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Uart2_Tx_Port = {
+ 111:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOA,
+ 112:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 113:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 114:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Uart2_TxPin = {
+ 115:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Uart2_Tx_Port,
+ 116:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_2,
+ 117:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+ 118:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .alternate = GPIO_MUX_7,
+ 119:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 120:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 121:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* uart 2 rx pin B00 */
+ 122:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Uart2_Rx_Port = {
+ 123:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOB,
+ 124:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 125:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 126:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Uart2_RxPin = {
+ 127:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Uart2_Rx_Port,
+ 128:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_0,
+ 129:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+ 130:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .alternate = GPIO_MUX_6,
+ 131:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 132:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 133:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* uart 5 tx pin B09 */
+ 134:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Uart5_Tx_Port = {
+ 135:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOB,
+ 136:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 137:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 138:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Uart5_TxPin = {
+ 139:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Uart5_Tx_Port,
+ 140:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_9,
+ 141:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 4
+
+
+ 142:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .alternate = GPIO_MUX_8,
+ 143:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 144:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 145:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* uart 5 rx pin B08 */
+ 146:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Uart5_Rx_Port = {
+ 147:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOB,
+ 148:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 149:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 150:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Uart5_RxPin = {
+ 151:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Uart5_Rx_Port,
+ 152:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_8,
+ 153:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+ 154:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .alternate = GPIO_MUX_8,
+ 155:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 156:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 157:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* uart 7 tx pin B04 */
+ 158:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Uart7_Tx_Port = {
+ 159:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOB,
+ 160:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 161:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 162:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Uart7_TxPin = {
+ 163:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Uart7_Tx_Port,
+ 164:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_4,
+ 165:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+ 166:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .alternate = GPIO_MUX_8,
+ 167:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 168:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 169:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* uart 7 rx pin B03 */
+ 170:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef Uart7_Rx_Port = {
+ 171:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOB,
+ 172:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 173:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 174:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef Uart7_RxPin = {
+ 175:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&Uart7_Rx_Port,
+ 176:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_3,
+ 177:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_NONE,
+ 178:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .alternate = GPIO_MUX_8,
+ 179:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 180:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 181:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* IMU CS Pin A04 */
+ 182:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef PriIMU_CS_Port = {
+ 183:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOA,
+ 184:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 185:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 186:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef PriIMU_CSPin = {
+ 187:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_UP,
+ 188:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_4,
+ 189:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = &PriIMU_CS_Port,
+ 190:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 191:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 192:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* IMU INT Pin A15 */
+ 193:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_EXTI_Port_TypeDef PriIMU_INT_Port = {
+ 194:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = SCFG_PORT_SOURCE_GPIOA,
+ 195:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 196:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 197:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef PriIMU_INTPin = {
+ 198:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&PriIMU_INT_Port,
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 5
+
+
+ 199:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_15,
+ 200:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = EXINT_TRIGGER_FALLING_EDGE,
+ 201:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 202:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 203:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* IMU Bus Pin (SPI1) */
+ 204:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* SPI_SCK  1 A05 */
+ 205:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* SPI_MISO 1 A06 */
+ 206:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* SPI_MOSI 1 A07 */
+ 207:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspSPI_PinConfig_TypeDef PriIMU_BusPin = {
+ 208:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port_mosi = (void *)GPIOA,
+ 209:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port_miso = (void *)GPIOA,
+ 210:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port_clk = (void *)GPIOA,
+ 211:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     
+ 212:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin_mosi = GPIO_PINS_7,
+ 213:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin_miso = GPIO_PINS_6,
+ 214:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin_clk = GPIO_PINS_5,
+ 215:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 216:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin_Alternate = GPIO_MUX_5,
+ 217:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 218:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 219:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg = {
+ 220:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .Instance = PriIMU_SPI_BUS,
+ 221:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .CLKPolarity = SPI_CLOCK_POLARITY_HIGH,
+ 222:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .CLKPhase = SPI_CLOCK_PHASE_2EDGE,
+ 223:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .BaudRatePrescaler = SPI_MCLK_DIV_8,
+ 224:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .work_mode = BspSPI_Mode_Master,
+ 225:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 226:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 227:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* external flash chip cs B05 */
+ 228:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef ExtFlash_CS_Port = {
+ 229:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOB,
+ 230:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 231:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 232:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Obj_TypeDef ExtFlash_CSPin = {
+ 233:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = (void *)&ExtFlash_CS_Port,
+ 234:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin = GPIO_PINS_5,
+ 235:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init_state = GPIO_PULL_UP,
+ 236:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 237:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 238:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* external flash chip bus Pin (SPI2) */
+ 239:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* SPI_SCK  2 B13 */
+ 240:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* SPI_MISO 2 B14 */
+ 241:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* SPI_MOSI 2 B15 */
+ 242:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspSPI_PinConfig_TypeDef ExtFlash_SPIPin = {
+ 243:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port_mosi = (void *)GPIOB,
+ 244:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port_miso = (void *)GPIOB,
+ 245:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port_clk = (void *)GPIOB,
+ 246:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     
+ 247:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin_mosi = GPIO_PINS_15,
+ 248:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin_miso = GPIO_PINS_14,
+ 249:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin_clk = GPIO_PINS_13,
+ 250:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 251:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin_Alternate = GPIO_MUX_5,
+ 252:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 253:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 254:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* PWM IO */
+ 255:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef PWM_1_Port = {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 6
+
+
+ 256:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOB,
+ 257:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 258:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 259:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef PWM_2_Port = {
+ 260:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOB,
+ 261:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 262:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 263:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef PWM_3_Port = {
+ 264:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOA,
+ 265:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 266:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 267:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspGPIO_Port_TypeDef PWM_4_Port = {
+ 268:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOB,
+ 269:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 270:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 271:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* I2c 2 SCL H02 */
+ 272:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** static BspGPIO_Port_TypeDef I2c2_SCL_Port = {
+ 273:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOH,
+ 274:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 275:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 276:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** /* I2C 2 SDA H03 */
+ 277:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** static BspGPIO_Port_TypeDef I2c2_SDA_Port = {
+ 278:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port = GPIOH,
+ 279:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 280:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 281:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** static BspIIC_PinConfig_TypeDef I2c2_BusPin = {
+ 282:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port_sck = &I2c2_SCL_Port,
+ 283:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .port_sda = &I2c2_SDA_Port,
+ 284:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin_sck = GPIO_PINS_2,
+ 285:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin_sda = GPIO_PINS_3,
+ 286:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 287:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .pin_Alternate = GPIO_MUX_4,
+ 288:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 289:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 290:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** BspIICObj_TypeDef Baro_BusCfg = {
+ 291:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .init = false,
+ 292:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .Pin = &I2c2_BusPin,
+ 293:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     .instance_id = BspIIC_Instance_I2C_2,
+ 294:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** };
+ 295:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 296:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** void PriIMU_Dir_Tune(float *gyr, float *acc)
+ 297:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** {
+  32              		.loc 1 297 1 view -0
+  33              		.cfi_startproc
+  34              		@ args = 0, pretend = 0, frame = 48
+  35              		@ frame_needed = 0, uses_anonymous_args = 0
+  36              		.loc 1 297 1 is_stmt 0 view .LVU1
+  37 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+  38              	.LCFI0:
+  39              		.cfi_def_cfa_offset 24
+  40              		.cfi_offset 4, -24
+  41              		.cfi_offset 5, -20
+  42              		.cfi_offset 6, -16
+  43              		.cfi_offset 7, -12
+  44              		.cfi_offset 8, -8
+  45              		.cfi_offset 14, -4
+  46 0004 8CB0     		sub	sp, sp, #48
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 7
+
+
+  47              	.LCFI1:
+  48              		.cfi_def_cfa_offset 72
+ 298:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     double gyr_tmp[Axis_Sum] = {0.0};
+  49              		.loc 1 298 5 is_stmt 1 view .LVU2
+  50              		.loc 1 298 12 is_stmt 0 view .LVU3
+  51 0006 0023     		movs	r3, #0
+  52 0008 0693     		str	r3, [sp, #24]
+  53 000a 0793     		str	r3, [sp, #28]
+  54 000c 0893     		str	r3, [sp, #32]
+  55 000e 0993     		str	r3, [sp, #36]
+  56 0010 0A93     		str	r3, [sp, #40]
+  57 0012 0B93     		str	r3, [sp, #44]
+ 299:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     double acc_tmp[Axis_Sum] = {0.0};
+  58              		.loc 1 299 5 is_stmt 1 view .LVU4
+  59              		.loc 1 299 12 is_stmt 0 view .LVU5
+  60 0014 0093     		str	r3, [sp]
+  61 0016 0193     		str	r3, [sp, #4]
+  62 0018 0293     		str	r3, [sp, #8]
+  63 001a 0393     		str	r3, [sp, #12]
+  64 001c 0493     		str	r3, [sp, #16]
+  65 001e 0593     		str	r3, [sp, #20]
+ 300:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 301:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     if (gyr && acc)
+  66              		.loc 1 301 5 is_stmt 1 view .LVU6
+  67              		.loc 1 301 8 is_stmt 0 view .LVU7
+  68 0020 0028     		cmp	r0, #0
+  69 0022 56D0     		beq	.L1
+  70 0024 0E46     		mov	r6, r1
+  71 0026 8046     		mov	r8, r0
+  72              		.loc 1 301 13 discriminator 1 view .LVU8
+  73 0028 0029     		cmp	r1, #0
+  74 002a 52D0     		beq	.L1
+  75              	.LBB2:
+ 302:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     {
+ 303:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         for (uint8_t i = Axis_X; i < Axis_Sum; i++)
+  76              		.loc 1 303 22 view .LVU9
+  77 002c 0024     		movs	r4, #0
+  78 002e 12E0     		b	.L3
+  79              	.LVL1:
+  80              	.L4:
+ 304:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         {
+ 305:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****             gyr_tmp[i] = gyr[i];
+  81              		.loc 1 305 13 is_stmt 1 discriminator 3 view .LVU10
+  82              		.loc 1 305 29 is_stmt 0 discriminator 3 view .LVU11
+  83 0030 A500     		lsls	r5, r4, #2
+  84 0032 08EB8403 		add	r3, r8, r4, lsl #2
+  85 0036 1868     		ldr	r0, [r3]	@ float
+  86 0038 FFF7FEFF 		bl	__aeabi_f2d
+  87              	.LVL2:
+  88              		.loc 1 305 24 discriminator 3 view .LVU12
+  89 003c 0CAB     		add	r3, sp, #48
+  90 003e 03EBC407 		add	r7, r3, r4, lsl #3
+  91 0042 47E90601 		strd	r0, [r7, #-24]
+ 306:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****             acc_tmp[i] = acc[i];
+  92              		.loc 1 306 13 is_stmt 1 discriminator 3 view .LVU13
+  93              		.loc 1 306 29 is_stmt 0 discriminator 3 view .LVU14
+  94 0046 3544     		add	r5, r5, r6
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 8
+
+
+  95 0048 2868     		ldr	r0, [r5]	@ float
+  96 004a FFF7FEFF 		bl	__aeabi_f2d
+  97              	.LVL3:
+  98              		.loc 1 306 24 discriminator 3 view .LVU15
+  99 004e 47E90C01 		strd	r0, [r7, #-48]
+ 303:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         {
+ 100              		.loc 1 303 48 is_stmt 1 discriminator 3 view .LVU16
+ 303:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         {
+ 101              		.loc 1 303 49 is_stmt 0 discriminator 3 view .LVU17
+ 102 0052 0134     		adds	r4, r4, #1
+ 103              	.LVL4:
+ 303:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         {
+ 104              		.loc 1 303 49 discriminator 3 view .LVU18
+ 105 0054 E4B2     		uxtb	r4, r4
+ 106              	.LVL5:
+ 107              	.L3:
+ 303:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         {
+ 108              		.loc 1 303 34 is_stmt 1 discriminator 1 view .LVU19
+ 303:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         {
+ 109              		.loc 1 303 9 is_stmt 0 discriminator 1 view .LVU20
+ 110 0056 022C     		cmp	r4, #2
+ 111 0058 EAD9     		bls	.L4
+ 112              	.LBE2:
+ 307:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         }
+ 308:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 309:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         gyr[Axis_X] = -gyr_tmp[Axis_Y];
+ 113              		.loc 1 309 9 is_stmt 1 view .LVU21
+ 114              		.loc 1 309 31 is_stmt 0 view .LVU22
+ 115 005a DDE90801 		ldrd	r0, [sp, #32]
+ 116 005e FFF7FEFF 		bl	__aeabi_d2f
+ 117              	.LVL6:
+ 118              		.loc 1 309 21 view .LVU23
+ 119 0062 07EE900A 		vmov	s15, r0
+ 120 0066 F1EE677A 		vneg.f32	s15, s15
+ 121 006a C8ED007A 		vstr.32	s15, [r8]
+ 310:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         gyr[Axis_Y] = -gyr_tmp[Axis_X];
+ 122              		.loc 1 310 9 is_stmt 1 view .LVU24
+ 123              		.loc 1 310 31 is_stmt 0 view .LVU25
+ 124 006e DDE90601 		ldrd	r0, [sp, #24]
+ 125 0072 FFF7FEFF 		bl	__aeabi_d2f
+ 126              	.LVL7:
+ 127              		.loc 1 310 21 view .LVU26
+ 128 0076 07EE900A 		vmov	s15, r0
+ 129 007a F1EE677A 		vneg.f32	s15, s15
+ 130 007e C8ED017A 		vstr.32	s15, [r8, #4]
+ 311:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         gyr[Axis_Z] = -gyr_tmp[Axis_Z];
+ 131              		.loc 1 311 9 is_stmt 1 view .LVU27
+ 132              		.loc 1 311 31 is_stmt 0 view .LVU28
+ 133 0082 DDE90A01 		ldrd	r0, [sp, #40]
+ 134 0086 FFF7FEFF 		bl	__aeabi_d2f
+ 135              	.LVL8:
+ 136              		.loc 1 311 21 view .LVU29
+ 137 008a 07EE900A 		vmov	s15, r0
+ 138 008e F1EE677A 		vneg.f32	s15, s15
+ 139 0092 C8ED027A 		vstr.32	s15, [r8, #8]
+ 312:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** 
+ 313:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         acc[Axis_X] = -acc_tmp[Axis_Y];
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 9
+
+
+ 140              		.loc 1 313 9 is_stmt 1 view .LVU30
+ 141              		.loc 1 313 31 is_stmt 0 view .LVU31
+ 142 0096 DDE90201 		ldrd	r0, [sp, #8]
+ 143 009a FFF7FEFF 		bl	__aeabi_d2f
+ 144              	.LVL9:
+ 145              		.loc 1 313 21 view .LVU32
+ 146 009e 07EE900A 		vmov	s15, r0
+ 147 00a2 F1EE677A 		vneg.f32	s15, s15
+ 148 00a6 C6ED007A 		vstr.32	s15, [r6]
+ 314:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         acc[Axis_Y] = -acc_tmp[Axis_X];
+ 149              		.loc 1 314 9 is_stmt 1 view .LVU33
+ 150              		.loc 1 314 31 is_stmt 0 view .LVU34
+ 151 00aa DDE90001 		ldrd	r0, [sp]
+ 152 00ae FFF7FEFF 		bl	__aeabi_d2f
+ 153              	.LVL10:
+ 154              		.loc 1 314 21 view .LVU35
+ 155 00b2 07EE900A 		vmov	s15, r0
+ 156 00b6 F1EE677A 		vneg.f32	s15, s15
+ 157 00ba C6ED017A 		vstr.32	s15, [r6, #4]
+ 315:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****         acc[Axis_Z] = -acc_tmp[Axis_Z];
+ 158              		.loc 1 315 9 is_stmt 1 view .LVU36
+ 159              		.loc 1 315 31 is_stmt 0 view .LVU37
+ 160 00be DDE90401 		ldrd	r0, [sp, #16]
+ 161 00c2 FFF7FEFF 		bl	__aeabi_d2f
+ 162              	.LVL11:
+ 163              		.loc 1 315 21 view .LVU38
+ 164 00c6 07EE900A 		vmov	s15, r0
+ 165 00ca F1EE677A 		vneg.f32	s15, s15
+ 166 00ce C6ED027A 		vstr.32	s15, [r6, #8]
+ 167              	.LVL12:
+ 168              	.L1:
+ 316:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c ****     }
+ 317:HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.c **** }
+ 169              		.loc 1 317 1 view .LVU39
+ 170 00d2 0CB0     		add	sp, sp, #48
+ 171              	.LCFI2:
+ 172              		.cfi_def_cfa_offset 24
+ 173              		@ sp needed
+ 174 00d4 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 175              		.cfi_endproc
+ 176              	.LFE134:
+ 178              		.global	DebugPort
+ 179              		.global	Baro_BusCfg
+ 180              		.global	PWM_4_Port
+ 181              		.global	PWM_3_Port
+ 182              		.global	PWM_2_Port
+ 183              		.global	PWM_1_Port
+ 184              		.global	ExtFlash_SPIPin
+ 185              		.global	ExtFlash_CSPin
+ 186              		.global	ExtFlash_CS_Port
+ 187              		.global	PriIMU_BusCfg
+ 188              		.global	PriIMU_BusPin
+ 189              		.global	PriIMU_INTPin
+ 190              		.global	PriIMU_INT_Port
+ 191              		.global	PriIMU_CSPin
+ 192              		.global	PriIMU_CS_Port
+ 193              		.global	Uart7_RxPin
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 10
+
+
+ 194              		.global	Uart7_Rx_Port
+ 195              		.global	Uart7_TxPin
+ 196              		.global	Uart7_Tx_Port
+ 197              		.global	Uart5_RxPin
+ 198              		.global	Uart5_Rx_Port
+ 199              		.global	Uart5_TxPin
+ 200              		.global	Uart5_Tx_Port
+ 201              		.global	Uart2_RxPin
+ 202              		.global	Uart2_Rx_Port
+ 203              		.global	Uart2_TxPin
+ 204              		.global	Uart2_Tx_Port
+ 205              		.global	Uart1_RxPin
+ 206              		.global	Uart1_Rx_Port
+ 207              		.global	Uart1_TxPin
+ 208              		.global	Uart1_Tx_Port
+ 209              		.global	Uart3_RxPin
+ 210              		.global	Uart3_Rx_Port
+ 211              		.global	Uart3_TxPin
+ 212              		.global	Uart3_Tx_Port
+ 213              		.global	Led2
+ 214              		.global	Led2_Port
+ 215              		.global	Led1
+ 216              		.global	Led1_Port
+ 217              		.section	.bss.PriIMU_INT_Port,"aw",%nobits
+ 218              		.align	2
+ 221              	PriIMU_INT_Port:
+ 222 0000 00       		.space	1
+ 223              		.section	.data.Baro_BusCfg,"aw"
+ 224              		.align	2
+ 227              	Baro_BusCfg:
+ 228 0000 00000000 		.word	I2c2_BusPin
+ 229 0004 00       		.byte	0
+ 230 0005 01       		.byte	1
+ 231 0006 00000000 		.space	10
+ 231      00000000 
+ 231      0000
+ 232              		.section	.data.DebugPort,"aw"
+ 233              		.align	2
+ 236              	DebugPort:
+ 237 0000 00000000 		.word	Debug_Port_Obj
+ 238 0004 00000000 		.space	16
+ 238      00000000 
+ 238      00000000 
+ 238      00000000 
+ 239              		.section	.data.Debug_Port_Obj,"aw"
+ 240              		.align	2
+ 243              	Debug_Port_Obj:
+ 244 0000 00080700 		.word	460800
+ 245 0004 00       		.byte	0
+ 246 0005 000000   		.space	3
+ 247 0008 00780040 		.word	1073772544
+ 248 000c 00000000 		.space	4
+ 249 0010 FF       		.byte	-1
+ 250 0011 FF       		.byte	-1
+ 251 0012 00000000 		.space	6
+ 251      0000
+ 252 0018 FF       		.byte	-1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 11
+
+
+ 253 0019 FF       		.byte	-1
+ 254 001a 00000000 		.space	6
+ 254      0000
+ 255 0020 00000000 		.word	Uart7_Tx_Port
+ 256 0024 1000     		.short	16
+ 257 0026 00       		.byte	0
+ 258 0027 00       		.space	1
+ 259 0028 08000000 		.word	8
+ 260 002c 00000000 		.word	Uart7_Rx_Port
+ 261 0030 0800     		.short	8
+ 262 0032 00       		.byte	0
+ 263 0033 00       		.space	1
+ 264 0034 08000000 		.word	8
+ 265 0038 00000000 		.space	8
+ 265      00000000 
+ 266 0040 00000000 		.word	0
+ 267 0044 0000     		.short	0
+ 268 0046 00000000 		.space	42
+ 268      00000000 
+ 268      00000000 
+ 268      00000000 
+ 268      00000000 
+ 269              		.section	.data.ExtFlash_CSPin,"aw"
+ 270              		.align	2
+ 273              	ExtFlash_CSPin:
+ 274 0000 00000000 		.word	ExtFlash_CS_Port
+ 275 0004 2000     		.short	32
+ 276 0006 01       		.byte	1
+ 277 0007 00000000 		.space	5
+ 277      00
+ 278              		.section	.data.ExtFlash_CS_Port,"aw"
+ 279              		.align	2
+ 282              	ExtFlash_CS_Port:
+ 283 0000 00040240 		.word	1073873920
+ 284              		.section	.data.ExtFlash_SPIPin,"aw"
+ 285              		.align	2
+ 288              	ExtFlash_SPIPin:
+ 289 0000 00040240 		.word	1073873920
+ 290 0004 00040240 		.word	1073873920
+ 291 0008 00040240 		.word	1073873920
+ 292 000c 00800000 		.word	32768
+ 293 0010 00400000 		.word	16384
+ 294 0014 00200000 		.word	8192
+ 295 0018 05000000 		.word	5
+ 296              		.section	.data.I2c2_BusPin,"aw"
+ 297              		.align	2
+ 300              	I2c2_BusPin:
+ 301 0000 00000000 		.word	I2c2_SDA_Port
+ 302 0004 00000000 		.word	I2c2_SCL_Port
+ 303 0008 08000000 		.word	8
+ 304 000c 04000000 		.word	4
+ 305 0010 04000000 		.word	4
+ 306              		.section	.data.I2c2_SCL_Port,"aw"
+ 307              		.align	2
+ 310              	I2c2_SCL_Port:
+ 311 0000 001C0240 		.word	1073880064
+ 312              		.section	.data.I2c2_SDA_Port,"aw"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 12
+
+
+ 313              		.align	2
+ 316              	I2c2_SDA_Port:
+ 317 0000 001C0240 		.word	1073880064
+ 318              		.section	.data.Led1,"aw"
+ 319              		.align	2
+ 322              	Led1:
+ 323 0000 00000000 		.word	Led1_Port
+ 324 0004 0020     		.short	8192
+ 325 0006 00       		.byte	0
+ 326 0007 00000000 		.space	5
+ 326      00
+ 327              		.section	.data.Led1_Port,"aw"
+ 328              		.align	2
+ 331              	Led1_Port:
+ 332 0000 00080240 		.word	1073874944
+ 333              		.section	.data.Led2,"aw"
+ 334              		.align	2
+ 337              	Led2:
+ 338 0000 00000000 		.word	Led2_Port
+ 339 0004 0040     		.short	16384
+ 340 0006 00       		.byte	0
+ 341 0007 00000000 		.space	5
+ 341      00
+ 342              		.section	.data.Led2_Port,"aw"
+ 343              		.align	2
+ 346              	Led2_Port:
+ 347 0000 00080240 		.word	1073874944
+ 348              		.section	.data.PWM_1_Port,"aw"
+ 349              		.align	2
+ 352              	PWM_1_Port:
+ 353 0000 00040240 		.word	1073873920
+ 354              		.section	.data.PWM_2_Port,"aw"
+ 355              		.align	2
+ 358              	PWM_2_Port:
+ 359 0000 00040240 		.word	1073873920
+ 360              		.section	.data.PWM_3_Port,"aw"
+ 361              		.align	2
+ 364              	PWM_3_Port:
+ 365 0000 00000240 		.word	1073872896
+ 366              		.section	.data.PWM_4_Port,"aw"
+ 367              		.align	2
+ 370              	PWM_4_Port:
+ 371 0000 00040240 		.word	1073873920
+ 372              		.section	.data.PriIMU_BusCfg,"aw"
+ 373              		.align	2
+ 376              	PriIMU_BusCfg:
+ 377 0000 00000000 		.space	28
+ 377      00000000 
+ 377      00000000 
+ 377      00000000 
+ 377      00000000 
+ 378 001c 00       		.byte	0
+ 379 001d 000000   		.space	3
+ 380 0020 00300140 		.word	1073819648
+ 381 0024 01000000 		.word	1
+ 382 0028 01000000 		.word	1
+ 383 002c 02000000 		.word	2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 13
+
+
+ 384              		.section	.data.PriIMU_BusPin,"aw"
+ 385              		.align	2
+ 388              	PriIMU_BusPin:
+ 389 0000 00000240 		.word	1073872896
+ 390 0004 00000240 		.word	1073872896
+ 391 0008 00000240 		.word	1073872896
+ 392 000c 80000000 		.word	128
+ 393 0010 40000000 		.word	64
+ 394 0014 20000000 		.word	32
+ 395 0018 05000000 		.word	5
+ 396              		.section	.data.PriIMU_CSPin,"aw"
+ 397              		.align	2
+ 400              	PriIMU_CSPin:
+ 401 0000 00000000 		.word	PriIMU_CS_Port
+ 402 0004 1000     		.short	16
+ 403 0006 01       		.byte	1
+ 404 0007 00000000 		.space	5
+ 404      00
+ 405              		.section	.data.PriIMU_CS_Port,"aw"
+ 406              		.align	2
+ 409              	PriIMU_CS_Port:
+ 410 0000 00000240 		.word	1073872896
+ 411              		.section	.data.PriIMU_INTPin,"aw"
+ 412              		.align	2
+ 415              	PriIMU_INTPin:
+ 416 0000 00000000 		.word	PriIMU_INT_Port
+ 417 0004 0080     		.short	-32768
+ 418 0006 01       		.byte	1
+ 419 0007 00000000 		.space	5
+ 419      00
+ 420              		.section	.data.Uart1_RxPin,"aw"
+ 421              		.align	2
+ 424              	Uart1_RxPin:
+ 425 0000 00000000 		.word	Uart1_Rx_Port
+ 426 0004 0004     		.short	1024
+ 427 0006 00       		.byte	0
+ 428 0007 00       		.space	1
+ 429 0008 07000000 		.word	7
+ 430              		.section	.data.Uart1_Rx_Port,"aw"
+ 431              		.align	2
+ 434              	Uart1_Rx_Port:
+ 435 0000 00000240 		.word	1073872896
+ 436              		.section	.data.Uart1_TxPin,"aw"
+ 437              		.align	2
+ 440              	Uart1_TxPin:
+ 441 0000 00000000 		.word	Uart1_Tx_Port
+ 442 0004 0002     		.short	512
+ 443 0006 00       		.byte	0
+ 444 0007 00       		.space	1
+ 445 0008 07000000 		.word	7
+ 446              		.section	.data.Uart1_Tx_Port,"aw"
+ 447              		.align	2
+ 450              	Uart1_Tx_Port:
+ 451 0000 00000240 		.word	1073872896
+ 452              		.section	.data.Uart2_RxPin,"aw"
+ 453              		.align	2
+ 456              	Uart2_RxPin:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 14
+
+
+ 457 0000 00000000 		.word	Uart2_Rx_Port
+ 458 0004 0100     		.short	1
+ 459 0006 00       		.byte	0
+ 460 0007 00       		.space	1
+ 461 0008 06000000 		.word	6
+ 462              		.section	.data.Uart2_Rx_Port,"aw"
+ 463              		.align	2
+ 466              	Uart2_Rx_Port:
+ 467 0000 00040240 		.word	1073873920
+ 468              		.section	.data.Uart2_TxPin,"aw"
+ 469              		.align	2
+ 472              	Uart2_TxPin:
+ 473 0000 00000000 		.word	Uart2_Tx_Port
+ 474 0004 0400     		.short	4
+ 475 0006 00       		.byte	0
+ 476 0007 00       		.space	1
+ 477 0008 07000000 		.word	7
+ 478              		.section	.data.Uart2_Tx_Port,"aw"
+ 479              		.align	2
+ 482              	Uart2_Tx_Port:
+ 483 0000 00000240 		.word	1073872896
+ 484              		.section	.data.Uart3_RxPin,"aw"
+ 485              		.align	2
+ 488              	Uart3_RxPin:
+ 489 0000 00000000 		.word	Uart3_Rx_Port
+ 490 0004 0004     		.short	1024
+ 491 0006 00       		.byte	0
+ 492 0007 00       		.space	1
+ 493 0008 07000000 		.word	7
+ 494              		.section	.data.Uart3_Rx_Port,"aw"
+ 495              		.align	2
+ 498              	Uart3_Rx_Port:
+ 499 0000 00040240 		.word	1073873920
+ 500              		.section	.data.Uart3_TxPin,"aw"
+ 501              		.align	2
+ 504              	Uart3_TxPin:
+ 505 0000 00000000 		.word	Uart3_Tx_Port
+ 506 0004 0008     		.short	2048
+ 507 0006 00       		.byte	0
+ 508 0007 00       		.space	1
+ 509 0008 07000000 		.word	7
+ 510              		.section	.data.Uart3_Tx_Port,"aw"
+ 511              		.align	2
+ 514              	Uart3_Tx_Port:
+ 515 0000 00040240 		.word	1073873920
+ 516              		.section	.data.Uart5_RxPin,"aw"
+ 517              		.align	2
+ 520              	Uart5_RxPin:
+ 521 0000 00000000 		.word	Uart5_Rx_Port
+ 522 0004 0001     		.short	256
+ 523 0006 00       		.byte	0
+ 524 0007 00       		.space	1
+ 525 0008 08000000 		.word	8
+ 526              		.section	.data.Uart5_Rx_Port,"aw"
+ 527              		.align	2
+ 530              	Uart5_Rx_Port:
+ 531 0000 00040240 		.word	1073873920
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 15
+
+
+ 532              		.section	.data.Uart5_TxPin,"aw"
+ 533              		.align	2
+ 536              	Uart5_TxPin:
+ 537 0000 00000000 		.word	Uart5_Tx_Port
+ 538 0004 0002     		.short	512
+ 539 0006 00       		.byte	0
+ 540 0007 00       		.space	1
+ 541 0008 08000000 		.word	8
+ 542              		.section	.data.Uart5_Tx_Port,"aw"
+ 543              		.align	2
+ 546              	Uart5_Tx_Port:
+ 547 0000 00040240 		.word	1073873920
+ 548              		.section	.data.Uart7_RxPin,"aw"
+ 549              		.align	2
+ 552              	Uart7_RxPin:
+ 553 0000 00000000 		.word	Uart7_Rx_Port
+ 554 0004 0800     		.short	8
+ 555 0006 00       		.byte	0
+ 556 0007 00       		.space	1
+ 557 0008 08000000 		.word	8
+ 558              		.section	.data.Uart7_Rx_Port,"aw"
+ 559              		.align	2
+ 562              	Uart7_Rx_Port:
+ 563 0000 00040240 		.word	1073873920
+ 564              		.section	.data.Uart7_TxPin,"aw"
+ 565              		.align	2
+ 568              	Uart7_TxPin:
+ 569 0000 00000000 		.word	Uart7_Tx_Port
+ 570 0004 1000     		.short	16
+ 571 0006 00       		.byte	0
+ 572 0007 00       		.space	1
+ 573 0008 08000000 		.word	8
+ 574              		.section	.data.Uart7_Tx_Port,"aw"
+ 575              		.align	2
+ 578              	Uart7_Tx_Port:
+ 579 0000 00040240 		.word	1073873920
+ 580              		.text
+ 581              	.Letext0:
+ 582              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 583              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 584              		.file 4 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 585              		.file 5 "HW_Lib/AT32F435/drivers/inc/at32f435_437_gpio.h"
+ 586              		.file 6 "HW_Lib/AT32F435/drivers/inc/at32f435_437_usart.h"
+ 587              		.file 7 "HW_Lib/AT32F435/drivers/inc/at32f435_437_spi.h"
+ 588              		.file 8 "HW_Lib/AT32F435/drivers/inc/at32f435_437_exint.h"
+ 589              		.file 9 "HW_Lib/AT32F435/drivers/inc/at32f435_437_scfg.h"
+ 590              		.file 10 "HW_Lib/Port_Def/Bsp_GPIO_Port_Def.h"
+ 591              		.file 11 "HW_Lib/AT32F435/bsp/Bsp_GPIO.h"
+ 592              		.file 12 "HW_Lib/Port_Def/Bsp_IIC_Port_Def.h"
+ 593              		.file 13 "HW_Lib/AT32F435/bsp/Bsp_IIC.h"
+ 594              		.file 14 "HW_Lib/AT32F435/bsp/Bsp_DMA.h"
+ 595              		.file 15 "HW_Lib/Port_Def/Bsp_Uart_Port_Def.h"
+ 596              		.file 16 "HW_Lib/Port_Def/Bsp_SPI_Port_Def.h"
+ 597              		.file 17 "Device/Dev_Led.h"
+ 598              		.file 18 "debug/debug_util.h"
+ 599              		.file 19 "common/Error_Log/../../common/gen_physic_def/imu_data.h"
+ 600              		.file 20 "HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 16
+
+
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 17
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 HW_Def.c
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:22     .text.PriIMU_Dir_Tune:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:28     .text.PriIMU_Dir_Tune:00000000 PriIMU_Dir_Tune
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:236    .data.DebugPort:00000000 DebugPort
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:227    .data.Baro_BusCfg:00000000 Baro_BusCfg
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:370    .data.PWM_4_Port:00000000 PWM_4_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:364    .data.PWM_3_Port:00000000 PWM_3_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:358    .data.PWM_2_Port:00000000 PWM_2_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:352    .data.PWM_1_Port:00000000 PWM_1_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:288    .data.ExtFlash_SPIPin:00000000 ExtFlash_SPIPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:273    .data.ExtFlash_CSPin:00000000 ExtFlash_CSPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:282    .data.ExtFlash_CS_Port:00000000 ExtFlash_CS_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:376    .data.PriIMU_BusCfg:00000000 PriIMU_BusCfg
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:388    .data.PriIMU_BusPin:00000000 PriIMU_BusPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:415    .data.PriIMU_INTPin:00000000 PriIMU_INTPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:221    .bss.PriIMU_INT_Port:00000000 PriIMU_INT_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:400    .data.PriIMU_CSPin:00000000 PriIMU_CSPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:409    .data.PriIMU_CS_Port:00000000 PriIMU_CS_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:552    .data.Uart7_RxPin:00000000 Uart7_RxPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:562    .data.Uart7_Rx_Port:00000000 Uart7_Rx_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:568    .data.Uart7_TxPin:00000000 Uart7_TxPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:578    .data.Uart7_Tx_Port:00000000 Uart7_Tx_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:520    .data.Uart5_RxPin:00000000 Uart5_RxPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:530    .data.Uart5_Rx_Port:00000000 Uart5_Rx_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:536    .data.Uart5_TxPin:00000000 Uart5_TxPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:546    .data.Uart5_Tx_Port:00000000 Uart5_Tx_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:456    .data.Uart2_RxPin:00000000 Uart2_RxPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:466    .data.Uart2_Rx_Port:00000000 Uart2_Rx_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:472    .data.Uart2_TxPin:00000000 Uart2_TxPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:482    .data.Uart2_Tx_Port:00000000 Uart2_Tx_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:424    .data.Uart1_RxPin:00000000 Uart1_RxPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:434    .data.Uart1_Rx_Port:00000000 Uart1_Rx_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:440    .data.Uart1_TxPin:00000000 Uart1_TxPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:450    .data.Uart1_Tx_Port:00000000 Uart1_Tx_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:488    .data.Uart3_RxPin:00000000 Uart3_RxPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:498    .data.Uart3_Rx_Port:00000000 Uart3_Rx_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:504    .data.Uart3_TxPin:00000000 Uart3_TxPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:514    .data.Uart3_Tx_Port:00000000 Uart3_Tx_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:337    .data.Led2:00000000 Led2
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:346    .data.Led2_Port:00000000 Led2_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:322    .data.Led1:00000000 Led1
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:331    .data.Led1_Port:00000000 Led1_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:218    .bss.PriIMU_INT_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:224    .data.Baro_BusCfg:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:300    .data.I2c2_BusPin:00000000 I2c2_BusPin
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:233    .data.DebugPort:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:243    .data.Debug_Port_Obj:00000000 Debug_Port_Obj
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:240    .data.Debug_Port_Obj:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:270    .data.ExtFlash_CSPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:279    .data.ExtFlash_CS_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:285    .data.ExtFlash_SPIPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:297    .data.I2c2_BusPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:316    .data.I2c2_SDA_Port:00000000 I2c2_SDA_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:310    .data.I2c2_SCL_Port:00000000 I2c2_SCL_Port
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:307    .data.I2c2_SCL_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:313    .data.I2c2_SDA_Port:00000000 $d
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s 			page 18
+
+
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:319    .data.Led1:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:328    .data.Led1_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:334    .data.Led2:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:343    .data.Led2_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:349    .data.PWM_1_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:355    .data.PWM_2_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:361    .data.PWM_3_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:367    .data.PWM_4_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:373    .data.PriIMU_BusCfg:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:385    .data.PriIMU_BusPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:397    .data.PriIMU_CSPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:406    .data.PriIMU_CS_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:412    .data.PriIMU_INTPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:421    .data.Uart1_RxPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:431    .data.Uart1_Rx_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:437    .data.Uart1_TxPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:447    .data.Uart1_Tx_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:453    .data.Uart2_RxPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:463    .data.Uart2_Rx_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:469    .data.Uart2_TxPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:479    .data.Uart2_Tx_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:485    .data.Uart3_RxPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:495    .data.Uart3_Rx_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:501    .data.Uart3_TxPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:511    .data.Uart3_Tx_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:517    .data.Uart5_RxPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:527    .data.Uart5_Rx_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:533    .data.Uart5_TxPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:543    .data.Uart5_Tx_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:549    .data.Uart7_RxPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:559    .data.Uart7_Rx_Port:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:565    .data.Uart7_TxPin:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZzQ1c9.s:575    .data.Uart7_Tx_Port:00000000 $d
+
+UNDEFINED SYMBOLS
+__aeabi_f2d
+__aeabi_d2f

@@ -1,0 +1,341 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccu3Isxg.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"usb_core.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.usb_core_config,"ax",%progbits
+  20              		.align	1
+  21              		.global	usb_core_config
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	usb_core_config:
+  27              	.LVL0:
+  28              	.LFB136:
+  29              		.file 1 "HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c"
+   1:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** /**
+   2:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   **************************************************************************
+   3:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @file     usb_core.c
+   4:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @version  v2.0.8
+   5:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @date     2022-04-25
+   6:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @brief    usb driver
+   7:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   **************************************************************************
+   8:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   *                       Copyright notice & Disclaimer
+   9:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   *
+  10:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * The software Board Support Package (BSP) that is made available to
+  11:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * download from Artery official website is the copyrighted work of Artery.
+  12:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * Artery authorizes customers to use, copy, and distribute the BSP
+  13:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * software and its related documentation for the purpose of design and
+  14:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * development in conjunction with Artery microcontrollers. Use of the
+  15:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * software is governed by this copyright notice and the following disclaimer.
+  16:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   *
+  17:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
+  18:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * GUARANTEES OR REPRESENTATIONS OF ANY KIND. ARTERY EXPRESSLY DISCLAIMS,
+  19:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * TO THE FULLEST EXTENT PERMITTED BY LAW, ALL EXPRESS, IMPLIED OR
+  20:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * STATUTORY OR OTHER WARRANTIES, GUARANTEES OR REPRESENTATIONS,
+  21:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+  22:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+  23:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   *
+  24:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   **************************************************************************
+  25:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   */
+  26:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** #include "usb_core.h"
+  27:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+  28:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** /** @addtogroup AT32F435_437_middlewares_usb_drivers
+  29:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @{
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccu3Isxg.s 			page 2
+
+
+  30:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   */
+  31:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+  32:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** /** @defgroup USB_drivers_core
+  33:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @brief usb global drivers core
+  34:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @{
+  35:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   */
+  36:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+  37:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** /** @defgroup USB_core_private_functions
+  38:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @{
+  39:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   */
+  40:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+  41:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** usb_sts_type usb_core_config(otg_core_type *udev, uint8_t core_id);
+  42:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+  43:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** /**
+  44:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @brief  usb core config
+  45:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @param  otgdev: to the structure of otg_core_type
+  46:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @param  core_id: usb core id number (USB_FULL_SPEED_CORE_ID)
+  47:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @retval usb_sts_type
+  48:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   */
+  49:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** usb_sts_type usb_core_config(otg_core_type *otgdev, uint8_t core_id)
+  50:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** {
+  30              		.loc 1 50 1 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		@ link register save eliminated.
+  51:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   /* set usb speed and core id */
+  52:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   otgdev->cfg.speed = core_id;
+  35              		.loc 1 52 3 view .LVU1
+  36              		.loc 1 52 21 is_stmt 0 view .LVU2
+  37 0000 80F8F412 		strb	r1, [r0, #756]
+  53:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   otgdev->cfg.core_id = core_id;
+  38              		.loc 1 53 3 is_stmt 1 view .LVU3
+  39              		.loc 1 53 23 is_stmt 0 view .LVU4
+  40 0004 80F8FD12 		strb	r1, [r0, #765]
+  54:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+  55:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   /* default sof out and vbus ignore */
+  56:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   otgdev->cfg.sof_out = FALSE;
+  41              		.loc 1 56 3 is_stmt 1 view .LVU5
+  42              		.loc 1 56 23 is_stmt 0 view .LVU6
+  43 0008 0023     		movs	r3, #0
+  44 000a 80F8FF32 		strb	r3, [r0, #767]
+  57:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   otgdev->cfg.vbusig = FALSE;
+  45              		.loc 1 57 3 is_stmt 1 view .LVU7
+  46              		.loc 1 57 22 is_stmt 0 view .LVU8
+  47 000e 80F80133 		strb	r3, [r0, #769]
+  58:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+  59:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   /* set max size */
+  60:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   otgdev->cfg.max_size = 64;
+  48              		.loc 1 60 3 is_stmt 1 view .LVU9
+  49              		.loc 1 60 24 is_stmt 0 view .LVU10
+  50 0012 4023     		movs	r3, #64
+  51 0014 A0F8F832 		strh	r3, [r0, #760]	@ movhi
+  61:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+  62:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   /* set support number of channel and endpoint */
+  63:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** #ifdef USE_OTG_HOST_MODE
+  64:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   otgdev->cfg.hc_num = USB_HOST_CHANNEL_NUM;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccu3Isxg.s 			page 3
+
+
+  65:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** #endif
+  66:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** #ifdef USE_OTG_DEVICE_MODE
+  67:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   otgdev->cfg.ept_num = USB_EPT_MAX_NUM;
+  52              		.loc 1 67 3 is_stmt 1 view .LVU11
+  53              		.loc 1 67 23 is_stmt 0 view .LVU12
+  54 0018 0823     		movs	r3, #8
+  55 001a 80F8F732 		strb	r3, [r0, #759]
+  68:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** #endif
+  69:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   otgdev->cfg.fifo_size = OTG_FIFO_SIZE;
+  56              		.loc 1 69 3 is_stmt 1 view .LVU13
+  57              		.loc 1 69 25 is_stmt 0 view .LVU14
+  58 001e 4FF4A073 		mov	r3, #320
+  59 0022 A0F8FA32 		strh	r3, [r0, #762]	@ movhi
+  70:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   if(core_id == USB_FULL_SPEED_CORE_ID)
+  60              		.loc 1 70 3 is_stmt 1 view .LVU15
+  61              		.loc 1 70 5 is_stmt 0 view .LVU16
+  62 0026 0129     		cmp	r1, #1
+  63 0028 04D0     		beq	.L3
+  64              	.L2:
+  71:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   {
+  72:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****     otgdev->cfg.phy_itface = 2;
+  73:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   }
+  74:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** #ifdef USB_SOF_OUTPUT_ENABLE
+  75:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   otgdev->cfg.sof_out = TRUE;
+  76:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** #endif
+  77:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+  78:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** #ifdef USB_VBUS_IGNORE
+  79:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   otgdev->cfg.vbusig = TRUE;
+  65              		.loc 1 79 3 is_stmt 1 view .LVU17
+  66              		.loc 1 79 22 is_stmt 0 view .LVU18
+  67 002a 0123     		movs	r3, #1
+  68 002c 80F80133 		strb	r3, [r0, #769]
+  80:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** #endif
+  81:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+  82:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   return USB_OK;
+  69              		.loc 1 82 3 is_stmt 1 view .LVU19
+  83:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** }
+  70              		.loc 1 83 1 is_stmt 0 view .LVU20
+  71 0030 0020     		movs	r0, #0
+  72              	.LVL1:
+  73              		.loc 1 83 1 view .LVU21
+  74 0032 7047     		bx	lr
+  75              	.LVL2:
+  76              	.L3:
+  72:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   }
+  77              		.loc 1 72 5 is_stmt 1 view .LVU22
+  72:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   }
+  78              		.loc 1 72 28 is_stmt 0 view .LVU23
+  79 0034 0223     		movs	r3, #2
+  80 0036 80F8FC32 		strb	r3, [r0, #764]
+  81 003a F6E7     		b	.L2
+  82              		.cfi_endproc
+  83              	.LFE136:
+  85              		.section	.text.usbd_init,"ax",%progbits
+  86              		.align	1
+  87              		.global	usbd_init
+  88              		.syntax unified
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccu3Isxg.s 			page 4
+
+
+  89              		.thumb
+  90              		.thumb_func
+  92              	usbd_init:
+  93              	.LVL3:
+  94              	.LFB137:
+  84:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+  85:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** #ifdef USE_OTG_DEVICE_MODE
+  86:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** /**
+  87:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @brief  usb device initialization
+  88:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @param  otgdev: to the structure of otg_core_type
+  89:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @param  core_id: usb core id number (USB_FULL_SPEED_CORE_ID)
+  90:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @param  usb_id: select use OTG1 or OTG2
+  91:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   *         this parameter can be one of the following values:
+  92:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   *         - USB_OTG1_ID
+  93:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   *         - USB_OTG2_ID
+  94:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @param  dev_handler: usb class callback handler
+  95:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @param  desc_handler: device config callback handler
+  96:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   * @retval usb_sts_type
+  97:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   */
+  98:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** usb_sts_type usbd_init(otg_core_type *otgdev,
+  99:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****                   uint8_t core_id, uint8_t usb_id,
+ 100:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****                   usbd_class_handler *class_handler,
+ 101:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****                   usbd_desc_handler *desc_handler)
+ 102:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** {
+  95              		.loc 1 102 1 is_stmt 1 view -0
+  96              		.cfi_startproc
+  97              		@ args = 4, pretend = 0, frame = 0
+  98              		@ frame_needed = 0, uses_anonymous_args = 0
+  99              		.loc 1 102 1 is_stmt 0 view .LVU25
+ 100 0000 70B5     		push	{r4, r5, r6, lr}
+ 101              	.LCFI0:
+ 102              		.cfi_def_cfa_offset 16
+ 103              		.cfi_offset 4, -16
+ 104              		.cfi_offset 5, -12
+ 105              		.cfi_offset 6, -8
+ 106              		.cfi_offset 14, -4
+ 107 0002 82B0     		sub	sp, sp, #8
+ 108              	.LCFI1:
+ 109              		.cfi_def_cfa_offset 24
+ 110 0004 0446     		mov	r4, r0
+ 111 0006 0D46     		mov	r5, r1
+ 112 0008 1E46     		mov	r6, r3
+ 103:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   usb_sts_type usb_sts = USB_OK;
+ 113              		.loc 1 103 3 is_stmt 1 view .LVU26
+ 114              	.LVL4:
+ 104:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+ 105:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   /* select use OTG1 or OTG2 */
+ 106:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   otgdev->usb_reg = usb_global_select_core(usb_id);
+ 115              		.loc 1 106 3 view .LVU27
+ 116              		.loc 1 106 21 is_stmt 0 view .LVU28
+ 117 000a 1046     		mov	r0, r2
+ 118              	.LVL5:
+ 119              		.loc 1 106 21 view .LVU29
+ 120 000c FFF7FEFF 		bl	usb_global_select_core
+ 121              	.LVL6:
+ 122              		.loc 1 106 19 view .LVU30
+ 123 0010 2060     		str	r0, [r4]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccu3Isxg.s 			page 5
+
+
+ 107:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+ 108:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   /* usb device core config */
+ 109:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   usb_core_config(otgdev, core_id);
+ 124              		.loc 1 109 3 is_stmt 1 view .LVU31
+ 125 0012 2946     		mov	r1, r5
+ 126 0014 2046     		mov	r0, r4
+ 127 0016 FFF7FEFF 		bl	usb_core_config
+ 128              	.LVL7:
+ 110:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+ 111:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   if(otgdev->cfg.sof_out)
+ 129              		.loc 1 111 3 view .LVU32
+ 130              		.loc 1 111 17 is_stmt 0 view .LVU33
+ 131 001a 94F8FF32 		ldrb	r3, [r4, #767]	@ zero_extendqisi2
+ 132              		.loc 1 111 5 view .LVU34
+ 133 001e 23B1     		cbz	r3, .L5
+ 112:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   {
+ 113:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****     otgdev->usb_reg->gccfg_bit.sofouten = TRUE;
+ 134              		.loc 1 113 5 is_stmt 1 view .LVU35
+ 135              		.loc 1 113 11 is_stmt 0 view .LVU36
+ 136 0020 2268     		ldr	r2, [r4]
+ 137              		.loc 1 113 41 view .LVU37
+ 138 0022 936B     		ldr	r3, [r2, #56]
+ 139 0024 43F48013 		orr	r3, r3, #1048576
+ 140 0028 9363     		str	r3, [r2, #56]
+ 141              	.LVL8:
+ 142              	.L5:
+ 114:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   }
+ 115:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+ 116:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   if(otgdev->cfg.vbusig)
+ 143              		.loc 1 116 3 is_stmt 1 view .LVU38
+ 144              		.loc 1 116 17 is_stmt 0 view .LVU39
+ 145 002a 94F80133 		ldrb	r3, [r4, #769]	@ zero_extendqisi2
+ 146              		.loc 1 116 5 view .LVU40
+ 147 002e 23B1     		cbz	r3, .L6
+ 117:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   {
+ 118:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****     otgdev->usb_reg->gccfg_bit.vbusig = TRUE;
+ 148              		.loc 1 118 5 is_stmt 1 view .LVU41
+ 149              		.loc 1 118 11 is_stmt 0 view .LVU42
+ 150 0030 2268     		ldr	r2, [r4]
+ 151              		.loc 1 118 39 view .LVU43
+ 152 0032 936B     		ldr	r3, [r2, #56]
+ 153 0034 43F40013 		orr	r3, r3, #2097152
+ 154 0038 9363     		str	r3, [r2, #56]
+ 155              	.L6:
+ 119:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   }
+ 120:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+ 121:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   /* usb device core init */
+ 122:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   usbd_core_init(&(otgdev->dev), otgdev->usb_reg,
+ 156              		.loc 1 122 3 is_stmt 1 view .LVU44
+ 157 003a 2046     		mov	r0, r4
+ 158 003c 0095     		str	r5, [sp]
+ 159 003e 069B     		ldr	r3, [sp, #24]
+ 160 0040 3246     		mov	r2, r6
+ 161 0042 50F8041B 		ldr	r1, [r0], #4
+ 162 0046 FFF7FEFF 		bl	usbd_core_init
+ 163              	.LVL9:
+ 123:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****                 class_handler,
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccu3Isxg.s 			page 6
+
+
+ 124:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****                 desc_handler,
+ 125:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****                 core_id);
+ 126:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** 
+ 127:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c ****   return usb_sts;
+ 164              		.loc 1 127 3 view .LVU45
+ 128:HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c **** }
+ 165              		.loc 1 128 1 is_stmt 0 view .LVU46
+ 166 004a 0020     		movs	r0, #0
+ 167 004c 02B0     		add	sp, sp, #8
+ 168              	.LCFI2:
+ 169              		.cfi_def_cfa_offset 16
+ 170              		@ sp needed
+ 171 004e 70BD     		pop	{r4, r5, r6, pc}
+ 172              		.loc 1 128 1 view .LVU47
+ 173              		.cfi_endproc
+ 174              	.LFE137:
+ 176              		.text
+ 177              	.Letext0:
+ 178              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 179              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 180              		.file 4 "HW_Lib/AT32F435/drivers/inc/at32f435_437_usb.h"
+ 181              		.file 5 "HW_Lib/AT32F435/device_support/at32f435_437.h"
+ 182              		.file 6 "HW_Lib/AT32F435/USB/usb_drivers/inc/usb_std.h"
+ 183              		.file 7 "HW_Lib/AT32F435/USB/usb_drivers/inc/usbd_core.h"
+ 184              		.file 8 "HW_Lib/AT32F435/USB/usb_drivers/inc/usb_core.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccu3Isxg.s 			page 7
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 usb_core.c
+C:\Users\8bit\AppData\Local\Temp\ccu3Isxg.s:20     .text.usb_core_config:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccu3Isxg.s:26     .text.usb_core_config:00000000 usb_core_config
+C:\Users\8bit\AppData\Local\Temp\ccu3Isxg.s:86     .text.usbd_init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccu3Isxg.s:92     .text.usbd_init:00000000 usbd_init
+
+UNDEFINED SYMBOLS
+usb_global_select_core
+usbd_core_init
