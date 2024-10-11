@@ -622,10 +622,10 @@ bool Brush_Port_Init(void *obj, uint32_t prescaler, uint32_t autoreload, void *t
         (pin == NULL))
         return false;
 
-    To_BrushObj_Ptr(obj)->p_timr_obj = Actuator_Malloc(sizeof(BspTimerPWMObj_TypeDef));
-    if (To_BrushObj_Ptr(obj)->p_timr_obj == NULL)
+    To_BrushObj_Ptr(obj)->p_timer_obj = Actuator_Malloc(sizeof(BspTimerPWMObj_TypeDef));
+    if (To_BrushObj_Ptr(obj)->p_timer_obj == NULL)
     {
-        Actuator_Free(To_BrushObj_Ptr(obj)->p_timr_obj);
+        Actuator_Free(To_BrushObj_Ptr(obj)->p_timer_obj);
         return false;
     }
 }
