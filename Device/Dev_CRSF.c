@@ -34,7 +34,7 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj);
 static uint8_t DevCRSF_Decode(DevCRSFObj_TypeDef *obj);
 static void DevCRSF_Get_Channel(DevCRSFObj_TypeDef *obj, uint16_t *ch_in);
 static crsf_LinkStatistics_t DevCESF_Get_Statistics(DevCRSFObj_TypeDef *obj);
-static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t arg);
+static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t arg);
 
 DevCRSF_TypeDef DevCRSF = {
     .init = DevCrsf_Init,
@@ -85,13 +85,13 @@ static bool DevCrsf_Init(DevCRSFObj_TypeDef *obj)
     return true;
 }
 
-static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint8_t arg)
+static uint8_t DevCRSF_FIFO_In(DevCRSFObj_TypeDef *obj, uint8_t *p_data, uint16_t arg)
 {
     uint8_t decode_state = 0;
 
     if (obj && arg)
     {
-        for (uint8_t i = 0; i < arg; i ++)
+        for (uint16_t i = 0; i < arg; i ++)
         {
             switch ((uint8_t)(obj->rec_stage))
             {

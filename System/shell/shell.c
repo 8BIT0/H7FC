@@ -891,7 +891,6 @@ ShellCommand *shellSeekCommand(Shell *shell,
                                unsigned short compareLength)
 {
     const char *name;
-    int ret;
     unsigned short count = shell->commandList.count -
                            ((int)base - (int)shell->commandList.base) / sizeof(ShellCommand);
     for (unsigned short i = 0; i < count; i++)
@@ -903,7 +902,7 @@ ShellCommand *shellSeekCommand(Shell *shell,
         name = shellGetCommandName(&base[i]);
         if (!compareLength)
         {
-            ret = strcmp(cmd, name);
+            strcmp(cmd, name);
             if (strcmp(cmd, name) == 0)
             {
                 return &base[i];
