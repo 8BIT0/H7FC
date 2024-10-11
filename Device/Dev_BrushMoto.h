@@ -5,6 +5,16 @@
 #include <stdbool.h>
 #include <string.h>
 
+#define BRUSH_LOCK_THROTTLE 0
+#define BRUSH_MIN_THROTTLE  0
+#define BRUSH_IDLE_THROTTLE 100
+#define BRUSH_MAX_THROTTLE  1000
+#define BRUSH_RANGE         (BRUSH_MAX_THROTTLE - BRUSH_MIN_THROTTLE)
+
+#define To_BrushObj_Ptr(x)  ((DevBrushMotoObj_TypeDef *)x)
+#define To_BrushApi_Ptr(x)  ((DevBrushMoto_TypeDef *)x)
+#define BrushObj_Size       sizeof(DevBrushMotoObj_TypeDef)
+
 typedef struct
 {
     bool init;

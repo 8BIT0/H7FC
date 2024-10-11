@@ -435,7 +435,7 @@ static void SrvActuator_Saving(uint8_t component_index)
         (SrvActuator_Obj.drive_module.obj_list[component_index].drv_type != Actuator_DevType_DShot600))
         return;
 
-    SrvActuator_SendCommand(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), DevDshot_Save_Setting);
+    SrvActuator_SendCommand(To_DShotObj_Ptr(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), DevDshot_Save_Setting);
     SrvOsCommon.delay_ms(50);
 }
 
@@ -456,7 +456,7 @@ static bool SrvActuator_SetSpin_Dir(uint8_t component_index, uint8_t dir)
         if (dir == DevDshot_SpinDir_2)
             cmd = DevDshot_RotateDir_AntiClockWise;
 
-        SrvActuator_SendCommand(To_DShot_Obj(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), cmd);
+        SrvActuator_SendCommand(To_DShotObj_Ptr(SrvActuator_Obj.drive_module.obj_list[component_index].drv_obj), cmd);
         return true;
     }
 
@@ -592,19 +592,48 @@ static bool SrvActuator_Servo_DirectDrive(uint8_t index, uint16_t value)
 }
 
 /****************************************************** ESC Weak Function Implimentation *******************************************************/
-void *DShot_Malloc(uint32_t size)
+/***************************************************************** pwm *************************************************************************/
+bool Brush_Port_DeInit(void *obj)
 {
-    return Actuator_Malloc(size);
+    if (obj && BspTimer_PWM.de_init(To_TimerPWMObj_Ptr(To_BrushObj_Ptr(obj)->p_timer_obj)))
+        return true;
+
+    return false;
 }
 
-void DShot_Free(void *ptr)
+void Brush_Port_Trans(void *obj, uint16_t val)
 {
-    Actuator_Free(ptr);
+    if ((obj == NULL) || \
+        (To_BrushObj_Ptr(obj)->p_timer_obj == NULL))
+        return;
+
+    BspTimer_PWM.pwm_trans(To_TimerPWMObj_Ptr(To_BrushObj_Ptr(obj)->p_timer_obj), val);
 }
 
+uint32_t Brush_Get_Timer_CLKFreq(void *obj)
+{
+    return BspTimer_PWM.get_clock_freq(To_TimerPWMObj_Ptr(To_BrushObj_Ptr(obj)->p_timer_obj));
+}
+
+bool Brush_Port_Init(void *obj, uint32_t prescaler, uint32_t autoreload, void *time_ins, uint32_t time_ch, void *pin)
+{
+    if ((obj == NULL) || \
+        (time_ins == NULL) || \
+        (pin == NULL))
+        return false;
+
+    To_BrushObj_Ptr(obj)->p_timr_obj = Actuator_Malloc(sizeof(BspTimerPWMObj_TypeDef));
+    if (To_BrushObj_Ptr(obj)->p_timr_obj == NULL)
+    {
+        Actuator_Free(To_BrushObj_Ptr(obj)->p_timr_obj);
+        return false;
+    }
+}
+
+/**************************************************************** dshot ************************************************************************/
 bool DShot_Port_DeInit(void *obj)
 {
-    if (obj && BspTimer_PWM.de_init(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)))
+    if (obj && BspTimer_PWM.de_init(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)))
         return true;
 
     return false;
@@ -614,14 +643,14 @@ void DShot_Port_Trans(void *obj)
 {
     if (obj && SrvActuator_Sem)
     {
-        BspTimer_PWM.dma_trans(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj));
+        BspTimer_PWM.dma_trans(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj));
         osSemaphoreWait(SrvActuator_Sem, 1);
     }
 }
 
 uint32_t DShot_Get_Timer_CLKFreq(void *obj)
 {
-    return BspTimer_PWM.get_clock_freq(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj));
+    return BspTimer_PWM.get_clock_freq(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj));
 }
 
 void DShot_Tran_Finish(void)
@@ -641,45 +670,45 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
         }
 
         /* malloc timer dma pwm object */
-        To_DShot_Obj(obj)->p_timr_obj = Actuator_Malloc(sizeof(BspTimerPWMObj_TypeDef));
-        if (To_DShot_Obj(obj)->p_timr_obj == NULL)
+        To_DShotObj_Ptr(obj)->p_timr_obj = Actuator_Malloc(sizeof(BspTimerPWMObj_TypeDef));
+        if (To_DShotObj_Ptr(obj)->p_timr_obj == NULL)
         {
-            Actuator_Free(To_DShot_Obj(obj)->p_timr_obj);
+            Actuator_Free(To_DShotObj_Ptr(obj)->p_timr_obj);
             return false;
         }
 
 #if defined STM32H743xx
-        To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl = Actuator_Malloc(sizeof(TIM_HandleType_Size));
-        if (To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl == NULL)
+        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->tim_hdl = Actuator_Malloc(sizeof(TIM_HandleType_Size));
+        if (To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->tim_hdl == NULL)
         {
-            Actuator_Free(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl);
-            Actuator_Free(To_DShot_Obj(obj)->p_timr_obj);
+            Actuator_Free(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->tim_hdl);
+            Actuator_Free(To_DShotObj_Ptr(obj)->p_timr_obj);
             return false;
         }
 
-        To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_hdl = Actuator_Malloc(sizeof(TIM_DMA_HandleType_Size));
-        if (To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_hdl == NULL)
+        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->dma_hdl = Actuator_Malloc(sizeof(TIM_DMA_HandleType_Size));
+        if (To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->dma_hdl == NULL)
         {
-            Actuator_Free(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->tim_hdl);
-            Actuator_Free(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_hdl);
-            Actuator_Free(To_DShot_Obj(obj)->p_timr_obj);
+            Actuator_Free(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->tim_hdl);
+            Actuator_Free(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->dma_hdl);
+            Actuator_Free(To_DShotObj_Ptr(obj)->p_timr_obj);
             return false;
         }
 #elif defined AT32F435_437
-        To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_callback_obj = Actuator_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
-        if (To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->dma_callback_obj == NULL)
+        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->dma_callback_obj = Actuator_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
+        if (To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->dma_callback_obj == NULL)
             return false;
 #endif
 
-        if (!BspTimer_PWM.init(To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj), \
+        if (!BspTimer_PWM.init(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj), \
                                time_ins, time_ch, \
                                (MOTOR_BITLENGTH - 1), prescaler, \
                                *(BspGPIO_Obj_TypeDef *)pin, dma, stream, \
-                               (uint32_t)(To_DShot_Obj(obj)->ctl_buf), DSHOT_DMA_BUFFER_SIZE))
+                               (uint32_t)(To_DShotObj_Ptr(obj)->ctl_buf), DSHOT_DMA_BUFFER_SIZE))
             return false;
 
-        To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)->send_callback = DShot_Tran_Finish;
-        BspTimer_PWM.set_dma_pwm((To_TimerPWMObj_Ptr(To_DShot_Obj(obj)->p_timr_obj)));
+        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->send_callback = DShot_Tran_Finish;
+        BspTimer_PWM.set_dma_pwm((To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)));
         return true;
     }
 

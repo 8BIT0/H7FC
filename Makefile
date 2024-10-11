@@ -83,6 +83,7 @@ Device/Dev_W25Nxx.c \
 Device/Dev_Sbus.c \
 Device/Dev_CRSF.c \
 Device/Dev_Dshot.c \
+Device/Dev_BrushMoto.c \
 Service/Srv_IMUSample.c \
 Service/Srv_Baro.c \
 Service/Srv_Receiver.c \

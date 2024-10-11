@@ -12,6 +12,7 @@ extern "C" {
 #include "Bsp_Timer.h"
 #include "Bsp_DMA.h"
 #include "Dev_Dshot.h"
+#include "Dev_BrushMoto.h"
 #include "HW_Def.h"
 
 #if defined BATEAT32F435_AIO

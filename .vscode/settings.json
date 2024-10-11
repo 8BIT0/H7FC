@@ -204,7 +204,8 @@
                 "*.tcc": "c",
                 "dev_w25nxx.h": "c",
                 "functional": "c",
-                "tuple": "c"
+                "tuple": "c",
+                "dev_brushmoto.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

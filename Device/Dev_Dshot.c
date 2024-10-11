@@ -1,8 +1,6 @@
 #include "Dev_Dshot.h"
 #include <math.h>
 
-__attribute__((weak)) void *DShot_Malloc(uint32_t size){return NULL;}
-__attribute__((weak)) void DShot_Free(void *ptr){return;}
 __attribute__((weak)) bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t time_ch, void *pin, uint8_t dma, uint8_t stream){return false;}
 __attribute__((weak)) bool DShot_Port_DeInit(void *obj){return false;}
 __attribute__((weak)) void DShot_Port_Trans(void *obj){return;}

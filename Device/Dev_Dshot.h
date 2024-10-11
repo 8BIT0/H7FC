@@ -9,7 +9,7 @@ extern "C" {
 #include <string.h>
 #include <stdbool.h>
 
-#define To_DShot_Obj(x) ((DevDshotObj_TypeDef *)x)
+#define To_DShotObj_Ptr(x) ((DevDshotObj_TypeDef *)x)
 
 #define MHZ_TO_HZ(x) (x * 1000000)
 
