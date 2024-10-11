@@ -569,14 +569,17 @@ static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value)
 
         switch (SrvActuator_Obj.drive_module.obj_list[index].drv_type)
         {
-            case  Actuator_DevType_DShot600:
-            case  Actuator_DevType_DShot300:
-            case  Actuator_DevType_DShot150:
+            case Actuator_DevType_DShot600:
+            case Actuator_DevType_DShot300:
+            case Actuator_DevType_DShot150:
                 DevDshot.control(SrvActuator_Obj.drive_module.obj_list[index].drv_obj, SrvActuator_Obj.drive_module.obj_list[index].ctl_val);
                 return true;
 
-            default:
-                break;
+            /* still in developping */
+            case Actuator_DevType_Brush:
+                return true;
+
+            default: break;
         }
     }
 
