@@ -31,7 +31,6 @@ static BspDMA_Pipe_TransErr_Cb DataPipe_Trans_Err_Callback = NULL;
 /* external funtion */
 static bool BspDMA_Regist_Obj(BspDMA_List dma, BspDMA_Stream_List stream, void *hdl);
 static bool BspDMA_Unregist_Obj(BspDMA_List dma, BspDMA_Stream_List stream);
-static void *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream);
 static void *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream);
 static bool BspDMA_DisableIRQ(BspDMA_List dma, BspDMA_Stream_List stream);
 static void BspDMA_EnableIRQ(BspDMA_List dma, BspDMA_Stream_List stream, uint32_t preempt, uint32_t sub, uint32_t mux_seq, void *cb);
@@ -46,7 +45,7 @@ static void *BspDMA_Get_Pipe_Handle(void);
 BspDMA_TypeDef BspDMA = {
     .regist = BspDMA_Regist_Obj,
     .unregist = BspDMA_Unregist_Obj,
-    .get_handle = BspDMA_Get_Handle,
+    .get_handle = NULL,
     .get_instance = BspDMA_Get_Instance,
     .enable_irq = BspDMA_EnableIRQ,
     .disable_irq = BspDMA_DisableIRQ,
@@ -143,14 +142,6 @@ static void* BspDMA_Get_Channel_Instance(int8_t dma, int8_t stream)
     }
 
     return 0;
-}
-
-static void *BspDMA_Get_Handle(BspDMA_List dma, BspDMA_Stream_List stream)
-{
-    UNUSED(dma);
-    UNUSED(stream);
-
-    return NULL;
 }
 
 static void *BspDMA_Get_Instance(BspDMA_List dma, BspDMA_Stream_List stream)
