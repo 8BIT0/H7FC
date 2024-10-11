@@ -16,7 +16,7 @@ typedef HeapStats_t SrvOs_HeapStatus_TypeDef;
 typedef struct
 {
     uint32_t (*get_os_ms)(void);
-    int32_t (*delay_ms)(uint32_t ms);
+    void (*delay_ms)(uint32_t ms);
     void (*precise_delay)(uint32_t *p_time, uint32_t ms);
     uint32_t (*get_systimer_current_tick)(void);
     uint32_t (*get_systimer_period)(void);
@@ -24,7 +24,7 @@ typedef struct
     bool (*set_systimer_tick_value)(uint32_t value);
     bool (*set_systimer_period)(uint32_t period);
     bool (*systimer_disable)(void);
-    void (*systimer_enable)(void);
+    bool (*systimer_enable)(void);
 
     void *(*malloc)(uint32_t size);
     void (*free)(void *ptr);

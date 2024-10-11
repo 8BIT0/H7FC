@@ -53,7 +53,7 @@
   #if !defined AT32F435_437
   extern uint32_t SystemCoreClock;
   #elif defined AT32F435_437
-  static uint32_t systemcoreclock = 288000000;
+  // static uint32_t systemcoreclock = 288000000;
   #endif
   void xPortSysTickHandler(void);
 #endif
@@ -68,7 +68,7 @@
 #if !defined AT32F435_437
 #define configCPU_CLOCK_HZ                       ( SystemCoreClock )
 #elif defined AT32F435_437
-#define configCPU_CLOCK_HZ                       ( systemcoreclock )
+#define configCPU_CLOCK_HZ                       ( 288000000 )
 #endif
 #define configTICK_RATE_HZ                       ((TickType_t)1000)
 #define configMAX_PRIORITIES                     ( 5 )

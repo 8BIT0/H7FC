@@ -147,7 +147,7 @@ typedef struct
     bool (*get_imu_num)(SrvSensorMonitorObj_TypeDef *obj, uint8_t *num);
     bool (*get_imu_range)(SrvSensorMonitorObj_TypeDef *obj, SrvIMU_Module_Type type, SrvSensorMonitor_IMURange_TypeDef *range);
     SrvIMU_UnionData_TypeDef (*get_imu_data)(SrvSensorMonitorObj_TypeDef *obj);
-    SrvBaroData_TypeDef (*get_baro_data)(SrvSensorMonitorObj_TypeDef *obj);
+    SrvBaro_UnionData_TypeDef (*get_baro_data)(SrvSensorMonitorObj_TypeDef *obj);
     GenCalib_State_TypeList (*set_calib)(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
     GenCalib_State_TypeList (*get_calib)(SrvSensorMonitorObj_TypeDef *obj, SrvSensorMonitor_Type_List type);
 }SrvSensorMonitor_TypeDef;

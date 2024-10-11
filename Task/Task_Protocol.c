@@ -615,26 +615,23 @@ static void TaskFrameCTL_USB_VCP_Connect_Callback(uint32_t Obj_addr, uint32_t *t
 /************************************** upgrade protocol section ********************************************/
 static void TaskFrameCTL_Upgrade_Send(uint8_t *p_buf, uint16_t size)
 {
-    if (Upgrade_Monitor.port_addr && p_buf && size)
+    if ((Upgrade_Monitor.port_addr == 0) || \
+        (p_buf == NULL) || \
+        (size == 0))
+        return;
+
+    switch ((uint8_t) Upgrade_Monitor.port_type)
     {
-        if(p_buf && size)
-        {
-            switch ((uint8_t) Upgrade_Monitor.port_type)
-            {
-                case Port_Uart:
-                    TaskFrameCTL_Port_Tx(Upgrade_Monitor.port_addr, (uint8_t *)p_buf, size);
-                    break;
-            
-                case Port_USB:
-                    TaskFrameCTL_DefaultPort_Trans((uint8_t *)p_buf, size);
-                    break; 
+        case Port_Uart:
+            TaskFrameCTL_Port_Tx(Upgrade_Monitor.port_addr, (uint8_t *)p_buf, size);
+            break;
+    
+        case Port_USB:
+            TaskFrameCTL_DefaultPort_Trans((uint8_t *)p_buf, size);
+            break; 
 
-                default:
-                    break;
-            }
-        }
-
-        return 0;
+        default:
+            break;
     }
 }
 
@@ -935,9 +932,6 @@ static void TaskFrameCTL_MavMsg_Trans(FrameCTL_Monitor_TypeDef *Obj, uint8_t *p_
 
 static void TaskFrameCTL_ConfigureStateCheck(void)
 {
-    uint32_t tunning_time_stamp = 0;
-    uint32_t tunning_port = 0;
-    bool tunning_state = false;
     uint32_t cur_time = SrvOsCommon.get_os_ms();
     bool lst_vcp_state = false;
 

@@ -52,7 +52,7 @@ static uint32_t SrvIMU_Reupdate_Statistics_CNT = 0;
 static BWF_Object_Handle PriIMU_Gyr_LPF_Handle[Axis_Sum] = {0};
 static BWF_Object_Handle PriIMU_Acc_LPF_Handle[Axis_Sum] = {0};
 
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
 /* SecIMU Butterworth filter object handle */
 static BWF_Object_Handle SecIMU_Gyr_LPF_Handle[Axis_Sum] = {0};
 static BWF_Object_Handle SecIMU_Acc_LPF_Handle[Axis_Sum] = {0};
@@ -63,7 +63,7 @@ static SrvIMU_CalibMonitor_TypeDef Gyro_Calib_Monitor;
 
 /* Gyro Calibration Zero Offset Val */
 static float PriIMU_Gyr_ZeroOffset[Axis_Sum] = {0.0f};
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
 static float SecIMU_Gyr_ZeroOffset[Axis_Sum] = {0.0f};
 #endif
 
@@ -105,7 +105,9 @@ static void SrvIMU_SecDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_
 static void SrvIMU_Dev_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void SrvIMU_AllModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void SrvIMU_PriSample_Undrdy(uint8_t *p_arg, uint16_t size);
+#if (IMU_NUM > 1)
 static void SrvIMU_SecSample_Undrdy(uint8_t *p_arg, uint16_t size);
+#endif
 
 static Error_Obj_Typedef SrvIMU_ErrorList[] = {
     {
@@ -285,15 +287,12 @@ static void SrvIMU_PriIMU_ExtiCallback(void);
 static void SrvIMU_PriIMU_CS_Ctl(bool state);
 static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
 static int8_t SrvIMU_SecIMU_Init(void);
 static void SrvIMU_SecIMU_ExtiCallback(void);
 static void SrvIMU_SecIMU_CS_Ctl(bool state);
 static bool SrvIMU_SecIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size);
 #endif
-
-/* test var */
-static uint32_t SrvIMU_ALLModule_Init_Error_CNT = 0;
 
 static bool SrvIMU_Detect_AngularOverSpeed(float angular_speed, float lst_angular_speed, float ms_diff);
 static SrvIMU_SensorID_List SrvIMU_AutoDetect(bus_trans_callback trans, cs_ctl_callback cs_ctl);
@@ -372,7 +371,7 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     else
         ErrorLog.trigger(SrvMPU_Error_Handle, PriIMU_Init_State, (uint8_t *)&InUse_PriIMU_Obj, sizeof(InUse_PriIMU_Obj));
 
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
     
     if (SecIMU_Init_State == SrvIMU_No_Error)
@@ -565,7 +564,7 @@ static bool SrvIMU_PriIMU_BusTrans_Rec(uint8_t *Tx, uint8_t *Rx, uint16_t size)
     return BspSPI.trans_receive(&PriIMU_Bus_Instance, Tx, Rx, size, IMU_Commu_TimeOut);
 }
 
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
 /* init primary IMU Device */
 /* consider use spi dma sample raw data */
 static SrvIMU_ErrorCode_List SrvIMU_SecIMU_Init(void)
@@ -800,7 +799,7 @@ static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle,
     if(calib_cycle_cnt == NULL)
         return Calib_Failed;
 
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
     static int16_t lst_sec_gyr[Axis_Sum] = {0};
     static int16_t SecIMU_Prc_Gyr_ZeroOffset[Axis_Sum] = {0};
     int16_t sec_gyr_tmp[Axis_Sum] = {0};
@@ -834,7 +833,7 @@ static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle,
             /* we need to keep sensor for static statment for entiry calibration proce */
             lst_pri_gyr[i] = pri_gyr_tmp[i];
 
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
             sec_gyr_tmp[i] = (int16_t)(sec_gyr[i] * GYR_STATIC_CALIB_ACCURACY);
             
             /* motion detect */
@@ -859,7 +858,7 @@ static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle,
             for(i = Axis_X; i < Axis_Sum; i++)
             {
                 PriIMU_Gyr_ZeroOffset[i] = (PriIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / calib_cycle;
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
                 SecIMU_Gyr_ZeroOffset[i] = (SecIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / calib_cycle;
 #endif
             }
@@ -877,7 +876,7 @@ reset_calib_var:
         PriIMU_Prc_Gyr_ZeroOffset[i] = 0;
         lst_pri_gyr[i] = 0;
 
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
         SecIMU_Prc_Gyr_ZeroOffset[i] = 0;
         lst_sec_gyr[i] = 0;
 #endif
@@ -989,7 +988,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
     else
         pri_sample_state = false;
 
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
     /* sec imu init successed */
     if (SrvMpu_Init_Reg.sec.Sec_State & SecSample_Enable)
     {
@@ -1135,7 +1134,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
 
 static bool SrvIMU_Get_Range(SrvIMU_Module_Type module, SrvIMU_Range_TypeDef *range)
 {
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
     if(((SrvIMU_PriModule == module) || (SrvIMU_SecModule == module)) && range)
     {
         if((SrvIMU_PriModule == module) && SrvMpu_Init_Reg.sec.Pri_State)
@@ -1305,7 +1304,7 @@ static void SrvIMU_PriIMU_ExtiCallback(void)
         InUse_PriIMU_Obj.set_drdy(InUse_PriIMU_Obj.obj_ptr);
 }
 
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
 static void SrvIMU_SecIMU_ExtiCallback(void)
 {
     if (SrvMpu_Init_Reg.sec.Sec_State)
@@ -1354,7 +1353,7 @@ static void SrvIMU_PriSample_Undrdy(uint8_t *p_arg, uint16_t size)
 {
 }
 
-#if (IMU_SUM >= 2)
+#if (IMU_SUM > 1)
 static void SrvIMU_SecSample_Undrdy(uint8_t *p_arg, uint16_t size)
 {
 }

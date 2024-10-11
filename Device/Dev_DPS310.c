@@ -13,8 +13,6 @@ static bool DevDPS310_WaitRegValue(DevDPS310Obj_TypeDef *obj, uint8_t reg_addr, 
 static bool DevDPS310_Temperature_Sensor(DevDPS310Obj_TypeDef *obj, uint8_t *p_sensor);
 static bool DevDPS310_Get_ProdID(DevDPS310Obj_TypeDef *obj);
 static float DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj, uint8_t rate);
-static bool DevDPS310_WakeUp(DevDPS310Obj_TypeDef *obj, uint8_t mode);
-static bool DevDPS310_Sleep(DevDPS310Obj_TypeDef *obj);
 static bool DevDPS310_Reset(DevDPS310Obj_TypeDef *obj);
 static bool DevDPS310_Configure_Temperature(DevDPS310Obj_TypeDef *obj, uint8_t data);
 static int32_t DevDPS310_GetTwoComplementOf(uint32_t value, uint8_t length);
@@ -144,22 +142,6 @@ static float DevDPS310_GetScale(DevDPS310Obj_TypeDef *obj, uint8_t rate)
     }
 
     return 0.0f;
-}
-
-static bool DevDPS310_WakeUp(DevDPS310Obj_TypeDef *obj, uint8_t mode)
-{
-    if(obj)
-        return DevDPS310_WriteByteToReg(obj, DPS310_MEAS_CFG_REG, mode);
-
-    return false;
-}
-
-static bool DevDPS310_Sleep(DevDPS310Obj_TypeDef *obj)
-{
-    if(obj)
-        return DevDPS310_WriteByteToReg(obj, DPS310_MEAS_CFG_REG, DPS310_MEAS_CFG_MEAS_CTRL_IDLE);
-
-    return false;
 }
 
 static bool DevDPS310_Reset(DevDPS310Obj_TypeDef *obj)

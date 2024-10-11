@@ -90,7 +90,7 @@ typedef enum
 } DevBMP280_Filter_List;
 
 typedef uint32_t (*DevBMP280_Get_Tick)(void);
-typedef int32_t (*DevBMP280_Delay_Ms)(uint32_t ms);
+typedef void (*DevBMP280_Delay_Ms)(uint32_t ms);
 typedef uint16_t (*DevBMP280_BusCommu)(uint8_t *p_data, uint16_t len);
 typedef uint16_t (*DevBMP280_Trans)(uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
 

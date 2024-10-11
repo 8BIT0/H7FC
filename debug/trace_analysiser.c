@@ -79,6 +79,11 @@ void trace_analysiser(uint32_t lr, uint32_t sp)
         trace_overflow(err_stack, _sstack, _estack);
     }
 
+    DEBUG_INFO("sp      : %08x\r\n", sp);
+    DEBUG_INFO("cur_sp  : %08x\r\n", cur_sp);
+    DEBUG_INFO("psp     : %08x\r\n", psp);
+    DEBUG_INFO("msp     : %08x\r\n", msp);
+
     /* dump regular register r0 r1 r2 r3 r12 lr pc psr */
     DEBUG_INFO("r0  : %08x\r\n", ((uint32_t *)err_stack)[0]);
     DEBUG_INFO("r1  : %08x\r\n", ((uint32_t *)err_stack)[1]);

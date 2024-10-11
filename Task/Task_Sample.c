@@ -129,7 +129,7 @@ void TaskSample_Core(void const *arg)
         if(sample_enable && SrvSensorMonitor.sample_ctl(&SensorMonitor))
         {
             DataPipe_DataObj(IMU_Data) = SrvSensorMonitor.get_imu_data(&SensorMonitor);
-            DataPipe_DataObj(Baro_Data).data = SrvSensorMonitor.get_baro_data(&SensorMonitor);
+            DataPipe_DataObj(Baro_Data) = SrvSensorMonitor.get_baro_data(&SensorMonitor);
 
             /* need measurement the overhead from pipe send to pipe receive callback triggered */
             // DebugPin.ctl(Debug_PB4, true);

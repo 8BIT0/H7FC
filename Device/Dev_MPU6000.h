@@ -185,8 +185,8 @@ typedef struct
     void (*set_ready)(DevMPU6000Obj_TypeDef *sensor_obj);
     bool (*sample)(DevMPU6000Obj_TypeDef *sensor_obj);
     IMUData_TypeDef (*get_data)(DevMPU6000Obj_TypeDef *sensor_obj);
-    DevMPU6000_Error_List (*get_error)(DevMPU6000Obj_TypeDef *sensor_obj);
-    IMU_Error_TypeDef (*get_scale)(const DevMPU6000Obj_TypeDef *sensor_obj);
+    IMU_Error_TypeDef (*get_error)(DevMPU6000Obj_TypeDef *sensor_obj);
+    IMUModuleScale_TypeDef (*get_scale)(const DevMPU6000Obj_TypeDef *sensor_obj);
     float (*get_gyr_angular_speed_diff)(const DevMPU6000Obj_TypeDef *sensor_obj);
 } DevMPU6000_TypeDef;
 

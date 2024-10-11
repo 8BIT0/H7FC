@@ -6,7 +6,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "Task_BlackBox.h"
-#include "shell.h"
+#include "shell_port.h"
 #include "debug_util.h"
 #include "../DataStructure/CusQueue.h"
 #include "error_log.h"
@@ -116,12 +116,12 @@ void TaskBlackBox_Init(void)
         BlackBoxInfo.log_size = 0;
         BlackBoxInfo.medium = BlackBox_Medium_None;
         BlackBoxInfo.log_type = BlackBox_Log_None;
-        if (Storage.create(Para_User, BlackBox_Storage_Name, &BlackBoxInfo, sizeof(BlackBox_LogInfo_TypeDef)) != Storage_Error_None)
+        if (Storage.create(Para_User, BlackBox_Storage_Name, (uint8_t *)&BlackBoxInfo, sizeof(BlackBox_LogInfo_TypeDef)) != Storage_Error_None)
             return;
     }
     else
     {
-        if (Storage.get(Para_User, Monitor.storage_search.item, &BlackBoxInfo, sizeof(BlackBox_LogInfo_TypeDef)) != Storage_Error_None)
+        if (Storage.get(Para_User, Monitor.storage_search.item, (uint8_t *)&BlackBoxInfo, sizeof(BlackBox_LogInfo_TypeDef)) != Storage_Error_None)
             return;
 
         Monitor.medium = BlackBoxInfo.medium;
@@ -205,23 +205,23 @@ void TaskBlackBox_Init(void)
     /* pipe object init */
     IMU_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogImu_Data);
     IMU_Log_DataPipe.data_size = DataPipe_DataSize(LogImu_Data);
-    IMU_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
+    IMU_Log_DataPipe.trans_finish_cb = (Pipe_TransFinish_Callback)TaskBlackBox_PipeTransFinish_Callback;
     
     Baro_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogBaro_Data);
     Baro_Log_DataPipe.data_size = DataPipe_DataSize(LogBaro_Data);
-    Baro_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
+    Baro_Log_DataPipe.trans_finish_cb = (Pipe_TransFinish_Callback)TaskBlackBox_PipeTransFinish_Callback;
 
     CtlData_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogCtl_Data);
     CtlData_Log_DataPipe.data_size = DataPipe_DataSize(LogCtl_Data);
-    CtlData_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
+    CtlData_Log_DataPipe.trans_finish_cb = (Pipe_TransFinish_Callback)TaskBlackBox_PipeTransFinish_Callback;
 
     Attitude_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogAtt_Data);
     Attitude_Log_DataPipe.data_size = DataPipe_DataSize(LogAtt_Data);
-    Attitude_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
+    Attitude_Log_DataPipe.trans_finish_cb = (Pipe_TransFinish_Callback)TaskBlackBox_PipeTransFinish_Callback;
 
     Altitude_Log_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(LogAlt_Data);
     Altitude_Log_DataPipe.data_size = DataPipe_DataSize(LogAlt_Data);
-    Altitude_Log_DataPipe.trans_finish_cb = TaskBlackBox_PipeTransFinish_Callback;
+    Altitude_Log_DataPipe.trans_finish_cb = (Pipe_TransFinish_Callback)TaskBlackBox_PipeTransFinish_Callback;
 
     DataPipe_Enable(&IMU_Log_DataPipe);
     DataPipe_Enable(&Baro_Log_DataPipe);
@@ -613,7 +613,7 @@ static void TaskBlackBox_Set_Log(uint8_t medium, uint8_t type, uint32_t size)
 
     search_out = Storage.search(Para_User, BlackBox_Storage_Name);
     if ((search_out.item_addr == 0) || \
-        (Storage.update(Para_User, search_out.item.data_addr, (uint32_t)&info, sizeof(BlackBox_LogInfo_TypeDef)) != Storage_Error_None))
+        (Storage.update(Para_User, search_out.item.data_addr, (uint8_t *)&info, sizeof(BlackBox_LogInfo_TypeDef)) != Storage_Error_None))
     {
         shellPrint(shell_obj, "\tLog info storage failed\r\n");
         return;

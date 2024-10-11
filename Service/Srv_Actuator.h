@@ -372,7 +372,7 @@ typedef struct
     bool (*de_init)(void);
     SrvActuator_Setting_TypeDef (*default_param)(void);
     bool (*lock)(void);
-    void (*moto_control)(uint16_t *p_val);
+    void (*moto_control)(int16_t *p_val);
     void (*servo_conttol)(uint8_t index, uint16_t val);
     bool (*tmp_reverse_spin)(uint8_t component_index);
     bool (*set_spin_dir)(uint8_t component_index, uint8_t dir);

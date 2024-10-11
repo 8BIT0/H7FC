@@ -79,13 +79,13 @@ osSemaphoreId SrvActuator_Sem = NULL;
 
 /* internal function */
 static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg);
-static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *rc_ctl);
+static bool SrvActuator_QuadDrone_MotoMixControl(int16_t *rc_ctl);
 static void SrvActuator_PipeData(void);
 
 /* external function */
 static bool SrvActuator_DeInit(void);
 static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg);
-static void SrvActuator_MotoControl(uint16_t *p_val);
+static void SrvActuator_MotoControl(int16_t *p_val);
 static bool SrvActuator_TmpReversedMotoSpinDir(uint8_t component_index);
 static bool SrvActuator_Lock(void);
 static SrvActuator_ModelComponentNum_TypeDef SrvActuator_Get_NumData(void);
@@ -370,7 +370,7 @@ static void SrvActuator_PipeData(void)
     DataPipe_SendTo(&Actuator_Smp_DataPipe, &Actuator_hub_DataPipe);
 }
 
-static void SrvActuator_MotoControl(uint16_t *p_val)
+static void SrvActuator_MotoControl(int16_t *p_val)
 {
     uint8_t i = 0;
     uint8_t offset;
@@ -395,10 +395,6 @@ static void SrvActuator_MotoControl(uint16_t *p_val)
     }
 
     SrvActuator_PipeData();
-}
-
-static void SrvActuator_ServoControl(uint8_t index, uint16_t val)
-{
 }
 
 static void SrvActuator_SendCommand(DevDshotObj_TypeDef *p_moto, uint8_t cmd)
@@ -490,7 +486,7 @@ static SrvActuator_Model_List SrvActuator_GetModel(void)
  * M3    M4
  *
  */
-static bool SrvActuator_QuadDrone_MotoMixControl(uint16_t *pid_ctl)
+static bool SrvActuator_QuadDrone_MotoMixControl(int16_t *pid_ctl)
 {
     float throttle_base_percent = 0.0f;
 

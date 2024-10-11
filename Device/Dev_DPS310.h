@@ -11,7 +11,7 @@ extern "C" {
 
 typedef bool (*DevDPS310_BusWrite)(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint16_t len);
 typedef bool (*DevDPS310_BusRead)(uint16_t dev_addr, uint16_t reg_addr, uint8_t *p_data, uint16_t len);
-typedef int32_t (*DevDPS310_DelayMs)(uint32_t ms);
+typedef void (*DevDPS310_DelayMs)(uint32_t ms);
 typedef uint32_t (*DevDPS310_GetTick)(void);
 
 #define ToDPS310_OBJ(x)     ((DevDPS310Obj_TypeDef *)x)

@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 
-typedef void* (*StorageBus_Malloc_Callback)(uint16_t size);
+typedef void* (*StorageBus_Malloc_Callback)(uint32_t size);
 typedef void (*StorageBus_Free_Callback)(void *ptr);
 
 typedef enum

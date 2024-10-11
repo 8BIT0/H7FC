@@ -308,15 +308,15 @@ static uint8_t SrvBaro_Init(SrvBaro_TypeList sensor_type, SrvBaroBus_TypeList bu
                     switch (SrvBaroBus.type)
                     {
                         case SrvBaro_Bus_SPI:
-                            ToBMP280_OBJ(SrvBaroObj.sensor_obj)->send = SrvBaro_SPIBus_Tx;
-                            ToBMP280_OBJ(SrvBaroObj.sensor_obj)->recv = SrvBaro_SPIBus_Rx;
-                            ToBMP280_OBJ(SrvBaroObj.sensor_obj)->trans = SrvBaro_SPIBus_Trans;
+                            ToBMP280_OBJ(SrvBaroObj.sensor_obj)->send = (DevBMP280_BusCommu)SrvBaro_SPIBus_Tx;
+                            ToBMP280_OBJ(SrvBaroObj.sensor_obj)->recv = (DevBMP280_BusCommu)SrvBaro_SPIBus_Rx;
+                            ToBMP280_OBJ(SrvBaroObj.sensor_obj)->trans = (DevBMP280_Trans)SrvBaro_SPIBus_Trans;
                             break;
                         
                         case SrvBaro_Bus_IIC:
                             ToBMP280_OBJ(SrvBaroObj.sensor_obj)->DevAddr = BMP280_ADDR_1;
-                            ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_tx = SrvBaro_IICBus_Tx;
-                            ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_rx = SrvBaro_IICBus_Rx;
+                            ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_tx = (DevBMP280_IIC_Write)SrvBaro_IICBus_Tx;
+                            ToBMP280_OBJ(SrvBaroObj.sensor_obj)->bus_rx = (DevBMP280_IIC_Read)SrvBaro_IICBus_Rx;
                             break;
 
                         default: return SrvBaro_Error_BusType;

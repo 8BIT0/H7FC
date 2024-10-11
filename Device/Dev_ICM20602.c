@@ -3,7 +3,6 @@
 #define ConvertToICM20602Trip_Reg(x) (x << 3)
 
 /* internal function */
-static bool DevICM20602_Regs_Read(DevICM20602Obj_TypeDef *Obj, uint32_t addr, uint8_t *tx, uint8_t *rx, uint16_t size);
 static bool DevICM20602_Reg_Read(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t *rx);
 static bool DevICM20602_Reg_Write(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t tx);
 
@@ -70,27 +69,6 @@ static bool DevICM20602_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
         return true;
 
     return false;
-}
-
-static bool DevICM20602_Regs_Read(DevICM20602Obj_TypeDef *Obj, uint32_t addr, uint8_t *tx, uint8_t *rx, uint16_t size)
-{
-    bool state = false;
-    uint8_t addr_tmp = addr | ICM20602_READ_MASK;
-    uint8_t read_tmp = 0;
-
-    if (Obj == NULL || Obj->cs_ctl == NULL || Obj->bus_trans == NULL)
-        return false;
-
-    /* CS Low */
-    Obj->cs_ctl(false);
-
-    state = Obj->bus_trans(&addr_tmp, &read_tmp, 1);
-    state = Obj->bus_trans(tx, rx, size);
-
-    /* CS High */
-    Obj->cs_ctl(true);
-
-    return state;
 }
 
 static bool DevICM20602_Reg_Read(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t *rx)

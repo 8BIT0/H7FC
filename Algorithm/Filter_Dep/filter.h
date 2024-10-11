@@ -70,7 +70,7 @@ typedef struct
 typedef struct
 {
     RC_Object_Handle (*init)(RC_Filter_Param_TypeDef *obj);
-    float (*update)(RC_Object_Handle obj, float in);
+    float (*update)(RC_Object_Handle obj, uint32_t sys_ms, float in);
 } RC_Filter_TypeDef;
 
 typedef struct

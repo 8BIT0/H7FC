@@ -592,7 +592,8 @@ static SrvBaro_UnionData_TypeDef SrvSensorMonitor_Get_BaroData(SrvSensorMonitorO
 /******************************************* Flow Section **********************************************/
 static bool SrvSensorMonitor_Flow_Init(void)
 {
-    return SrvFlow.init(FLOW_TYPE);
+    // return SrvFlow.init(FLOW_TYPE);
+    return false;
 }
 
 static bool SrvSensorMonitor_Flow_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)

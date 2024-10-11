@@ -178,40 +178,6 @@ static bool SrvComProto_MsgEnable_Control(SrvComProto_MsgInfo_TypeDef *msg, bool
 }
 
 /******************************************* Frame Out ****************************************/
-static uint16_t SrvComProto_MavMsg_Moto(SrvComProto_MsgInfo_TypeDef *pck)
-{
-    uint32_t time_stamp = 0;
-    uint16_t moto[8] = {0};
-    uint8_t moto_dir[8] = {0};
-    uint8_t moto_cnt = 0;
-
-    SrvDataHub.get_moto(&time_stamp, &moto_cnt, moto, moto_dir);
-
-    return mavlink_msg_servo_output_raw_pack_chan(pck->pck_info.system_id,
-                                                  pck->pck_info.component_id,
-                                                  pck->pck_info.chan, pck->msg_obj,
-                                                  time_stamp, MAV_ActuatorPort_Moto,
-                                                  moto[0], moto[1], moto[2], moto[3],
-                                                  moto[4], moto[5], moto[6], moto[7]);
-}
-
-static uint16_t SrvComProto_MavMsg_MotoDir(SrvComProto_MsgInfo_TypeDef *pck)
-{
-    uint32_t time_stamp = 0;
-    uint16_t moto[8] = {0};
-    uint8_t moto_dir[8] = {0};
-    uint8_t moto_cnt = 0;
-
-    SrvDataHub.get_moto(&time_stamp, &moto_cnt, moto, moto_dir);
-
-    return mavlink_msg_servo_output_raw_pack_chan(pck->pck_info.system_id,
-                                                  pck->pck_info.component_id,
-                                                  pck->pck_info.chan, pck->msg_obj,
-                                                  time_stamp, MAV_ActuatorPort_MotoDir,
-                                                  moto_dir[0], moto_dir[1], moto_dir[2], moto_dir[3],
-                                                  moto_dir[4], moto_dir[5], moto_dir[6], moto_dir[7]);
-}
-
 static uint16_t SrvComProto_MavMsg_Raw_IMU(SrvComProto_MsgInfo_TypeDef *pck)
 {
     uint32_t time_stamp = 0;
@@ -352,10 +318,6 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
                                           baro_alt, baro_pressure, 0, 0, 0, 0);
 }
 
-static uint16_t SrvComProto_MavMsg_MotoActuator(SrvComProto_MsgInfo_TypeDef *pck)
-{
-    return 0;
-}
 /******************************************* Frame Out ****************************************/
 /******************************************* Frame In  ****************************************/
 static void SrvComProto_MavMsg_Ack(SrvComProto_MsgObj_TypeDef *obj, uint16_t sys_id, uint16_t compo_id, bool state)

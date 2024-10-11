@@ -77,7 +77,6 @@ Device/Dev_BMP280.c \
 Device/Dev_MPU6000.c \
 Device/Dev_ICM20602.c \
 Device/Dev_ICM426xx.c \
-Device/Dev_Flow_3901U.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 Device/Dev_W25Nxx.c \
@@ -86,7 +85,6 @@ Device/Dev_CRSF.c \
 Device/Dev_Dshot.c \
 Service/Srv_IMUSample.c \
 Service/Srv_Baro.c \
-Service/Srv_Flow.c \
 Service/Srv_Receiver.c \
 Service/Srv_Actuator.c \
 Service/Srv_ComProto.c \

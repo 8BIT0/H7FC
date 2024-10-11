@@ -47,18 +47,6 @@ static bool DevW25Qxx_BusReceive(DevW25QxxObj_TypeDef *dev, uint8_t *rx, uint16_
     return false;
 }
 
-static bool DevW25Qxx_BusTrans_Receive(DevW25QxxObj_TypeDef *dev, uint8_t *tx, uint8_t *rx, uint16_t size)
-{
-    if ((dev == NULL) || \
-        (dev->bus_trans == NULL))
-        return false;
-
-    if (dev->bus_trans(tx, rx, size, W25Qx_TIMEOUT_VALUE))
-        return true;
-
-    return false;
-}
-
 static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef *dev)
 {
     uint8_t cmd[2] = {RESET_ENABLE_CMD, RESET_MEMORY_CMD};

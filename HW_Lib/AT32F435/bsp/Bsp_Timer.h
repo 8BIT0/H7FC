@@ -11,7 +11,6 @@ extern "C" {
 #include <string.h>
 
 #define To_Timer_Instance(x) ((tmr_type *)x)
-#define To_TimerPWMObj_Ptr(x) ((BspTimerPWMObj_TypeDef *)x)
 
 extern BspTimerPWM_TypeDef BspTimer_PWM;
 

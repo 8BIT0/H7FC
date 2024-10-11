@@ -202,7 +202,9 @@
                 "pid.h": "c",
                 "bsp_spi_port_def.h": "c",
                 "*.tcc": "c",
-                "dev_w25nxx.h": "c"
+                "dev_w25nxx.h": "c",
+                "functional": "c",
+                "tuple": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,
