@@ -1,3 +1,7 @@
+/*
+ * Author: 8_B!T0
+ * Still in developping
+ */
 #include "Dev_W25Nxx.h"
 
 /* test code */
