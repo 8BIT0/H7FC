@@ -241,7 +241,7 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
                 SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)Actuator_Malloc(sizeof(DevDshotObj_TypeDef));
                 break;
 
-            case Actuator_DevType_PWM:
+            case Actuator_DevType_Brush:
                 SrvActuator_Obj.drive_module.obj_list[i].drv_type = cfg.esc_type;
                 break;
 
@@ -339,7 +339,7 @@ static bool SrvActuator_Lock(void)
                 break;
 
             /* still in developping */
-            case Actuator_DevType_PWM:
+            case Actuator_DevType_Brush:
                 break;
                 
             default: return false;
