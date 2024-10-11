@@ -66,9 +66,7 @@ typedef enum
 typedef struct
 {
     DevDshotType_List type;
-
     void *p_timr_obj;
-
     uint32_t ctl_buf[DSHOT_DMA_BUFFER_SIZE];
 } DevDshotObj_TypeDef;
 
