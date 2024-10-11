@@ -1,7 +1,5 @@
 #include "Dev_CRSF.h"
 
-#include "HW_Def.h"
-#include "../debug/debug_util.h"
 /*
  * CRSF protocol
  *
