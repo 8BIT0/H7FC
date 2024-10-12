@@ -246,8 +246,6 @@ extern "C" {
         5, 2, 3                             \
     }
 
-#define SRV_ACTUATOR_MAX_THROTTLE_PERCENT 80
-
 typedef enum
 {
     Model_Quad = 0,

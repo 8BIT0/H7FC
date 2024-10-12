@@ -26,6 +26,7 @@
 #include "Srv_OsCommon.h"
 #include "../System/DataPipe/DataPipe.h"
 
+#define SRV_ACTUATOR_MAX_THROTTLE_PERCENT 80
 #define Actuator_Malloc(size) SrvOsCommon.malloc(size)
 #define Actuator_Free(ptr) SrvOsCommon.free(ptr)
 
@@ -125,36 +126,39 @@ static bool SrvActuator_DeInit(void)
 
     memset(&actuator_num, 0, sizeof(SrvActuator_ModelComponentNum_TypeDef));
 
-    if (SrvActuator_Obj.init)
+    if (!SrvActuator_Obj.init || \
+        (SrvActuator_Obj.drive_module.obj_list == NULL))
+        return false;
+
+    actuator_num = SrvActuator_Obj.drive_module.num;
+    PWM_List = SrvActuator_Obj.drive_module.obj_list;
+
+    /* deinit moto timer */
+    for (; m_i < actuator_num.moto_cnt; m_i ++)
     {
-        actuator_num = SrvActuator_Obj.drive_module.num;
-        PWM_List = SrvActuator_Obj.drive_module.obj_list;
-
-        if (PWM_List)
+        switch(PWM_List[m_i].drv_type)
         {
-            /* deinit moto timer */
-            for (; m_i < actuator_num.moto_cnt; m_i ++)
-            {
-                switch(PWM_List[m_i].drv_type)
-                {
-                    case DevDshot_150:
-                    case DevDshot_300:
-                    case DevDshot_600:
-                        if (!DevDshot.de_init(PWM_List[m_i].drv_obj))
-                            return false;
-                        break;
+            case Actuator_DevType_DShot150:
+            case Actuator_DevType_DShot300:
+            case Actuator_DevType_DShot600:
+                if (!DevDshot.de_init(To_DShotObj_Ptr(PWM_List[m_i].drv_obj)))
+                    return false;
+                break;
 
-                    default: break;
-                }
-            }
+            case Actuator_DevType_Brush:
+                if (!DevBrushMoto.de_init(To_BrushObj_Ptr(PWM_List[m_i].drv_obj)))
+                    return false;
+                break;
 
-            /* deinit servo timer */
-            /* still in developping */
-            for (; s_i < actuator_num.servo_cnt; s_i ++)
-            {
-
-            }
+            default: break;
         }
+    }
+
+    /* deinit servo timer */
+    /* still in developping */
+    for (; s_i < actuator_num.servo_cnt; s_i ++)
+    {
+
     }
 
     return true;
