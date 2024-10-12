@@ -231,18 +231,22 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
                 case Actuator_DevType_DShot300:
                 case Actuator_DevType_DShot600:
                     SrvActuator_Obj.drive_module.obj_list[i].drv_type = cfg.esc_type;
-
-                    SrvActuator_Obj.drive_module.obj_list[i].ctl_val = DSHOT_LOCK_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].min_val = DSHOT_MIN_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].max_val = DSHOT_MAX_THROTTLE;
+                    SrvActuator_Obj.drive_module.obj_list[i].ctl_val  = DSHOT_LOCK_THROTTLE;
+                    SrvActuator_Obj.drive_module.obj_list[i].min_val  = DSHOT_MIN_THROTTLE;
+                    SrvActuator_Obj.drive_module.obj_list[i].max_val  = DSHOT_MAX_THROTTLE;
                     SrvActuator_Obj.drive_module.obj_list[i].idle_val = DSHOT_IDLE_THROTTLE;
                     SrvActuator_Obj.drive_module.obj_list[i].lock_val = DSHOT_LOCK_THROTTLE;
-
-                    SrvActuator_Obj.drive_module.obj_list[i].drv_obj = (DevDshotObj_TypeDef *)Actuator_Malloc(sizeof(DevDshotObj_TypeDef));
+                    SrvActuator_Obj.drive_module.obj_list[i].drv_obj  = (DevDshotObj_TypeDef *)Actuator_Malloc(sizeof(DevDshotObj_TypeDef));
                     break;
 
                 case Actuator_DevType_Brush:
                     SrvActuator_Obj.drive_module.obj_list[i].drv_type = cfg.esc_type;
+                    SrvActuator_Obj.drive_module.obj_list[i].ctl_val  = BRUSH_LOCK_THROTTLE;
+                    SrvActuator_Obj.drive_module.obj_list[i].min_val  = BRUSH_MIN_THROTTLE;
+                    SrvActuator_Obj.drive_module.obj_list[i].max_val  = BRUSH_MAX_THROTTLE;
+                    SrvActuator_Obj.drive_module.obj_list[i].idle_val = BRUSH_IDLE_THROTTLE;
+                    SrvActuator_Obj.drive_module.obj_list[i].lock_val = BRUSH_LOCK_THROTTLE;
+                    SrvActuator_Obj.drive_module.obj_list[i].drv_obj  = (DevBrushMotoObj_TypeDef *)Actuator_Malloc(sizeof(DevBrushMotoObj_TypeDef));
                     break;
 
                 default:
@@ -305,17 +309,31 @@ static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg)
 
     /* get remap relationship */
     /* moto section */
-    if (SrvActuator_Obj.drive_module.num.moto_cnt)
+    if (SrvActuator_Obj.drive_module.num.moto_cnt == 0)
+        return;
+        
+    for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
     {
-        for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
-        {
-            SrvActuator_Obj.drive_module.obj_list[i].sig_id = cfg.moto_map[i];
-            SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = (SrvActuator_PeriphSet_TypeDef *)&SrvActuator_Periph_List[cfg.moto_map[i]];
-            periph_ptr = SrvActuator_Obj.drive_module.obj_list[i].periph_ptr;
+        SrvActuator_Obj.drive_module.obj_list[i].sig_id = cfg.moto_map[i];
+        SrvActuator_Obj.drive_module.obj_list[i].periph_ptr = (SrvActuator_PeriphSet_TypeDef *)&SrvActuator_Periph_List[cfg.moto_map[i]];
+        periph_ptr = SrvActuator_Obj.drive_module.obj_list[i].periph_ptr;
 
-            DevDshot.init(SrvActuator_Obj.drive_module.obj_list[i].drv_obj,
-                          periph_ptr->tim_base, periph_ptr->tim_channel, (void *)&(periph_ptr->pin),
-                          periph_ptr->dma, periph_ptr->dma_channel);
+        switch (cfg.esc_type)
+        {
+            case Actuator_DevType_DShot150:
+            case Actuator_DevType_DShot300:
+            case Actuator_DevType_DShot600:
+                DevDshot.init(To_DShotObj_Ptr(SrvActuator_Obj.drive_module.obj_list[i].drv_obj), \
+                                periph_ptr->tim_base, periph_ptr->tim_channel, (void *)&(periph_ptr->pin), \
+                                periph_ptr->dma, periph_ptr->dma_channel);
+                break;
+
+            case Actuator_DevType_Brush:
+                DevBrushMoto.init(To_BrushObj_Ptr(SrvActuator_Obj.drive_module.obj_list[i].drv_obj), \
+                                    periph_ptr->tim_base, periph_ptr->tim_channel, (void *)&(periph_ptr->pin));
+                break;
+
+            default: return;
         }
     }
 }
@@ -334,16 +352,17 @@ static bool SrvActuator_Lock(void)
             case Actuator_DevType_DShot150:
             case Actuator_DevType_DShot300:
             case Actuator_DevType_DShot600:
-                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[i].drv_obj, SrvActuator_Obj.drive_module.obj_list[i].lock_val);
-                SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].lock_val;
+                DevDshot.control(To_DShotObj_Ptr(SrvActuator_Obj.drive_module.obj_list[i].drv_obj), SrvActuator_Obj.drive_module.obj_list[i].lock_val);
                 break;
 
-            /* still in developping */
             case Actuator_DevType_Brush:
+                DevBrushMoto.control(To_BrushObj_Ptr(SrvActuator_Obj.drive_module.obj_list[i].drv_obj), SrvActuator_Obj.drive_module.obj_list[i].lock_val);
                 break;
                 
             default: return false;
         }
+
+        SrvActuator_Obj.drive_module.obj_list[i].ctl_val = SrvActuator_Obj.drive_module.obj_list[i].lock_val;
     }
 
     SrvActuator_PipeData();
@@ -397,6 +416,7 @@ static void SrvActuator_MotoControl(int16_t *p_val)
     SrvActuator_PipeData();
 }
 
+/* dshot only */
 static void SrvActuator_SendCommand(DevDshotObj_TypeDef *p_moto, uint8_t cmd)
 {
     if (p_moto == NULL)
@@ -462,6 +482,7 @@ static bool SrvActuator_SetSpin_Dir(uint8_t component_index, uint8_t dir)
 
     return false;
 }
+/* dshot only */
 
 static SrvActuator_ModelComponentNum_TypeDef SrvActuator_Get_NumData(void)
 {
@@ -572,11 +593,11 @@ static bool SrvActuator_Moto_DirectDrive(uint8_t index, uint16_t value)
             case Actuator_DevType_DShot600:
             case Actuator_DevType_DShot300:
             case Actuator_DevType_DShot150:
-                DevDshot.control(SrvActuator_Obj.drive_module.obj_list[index].drv_obj, SrvActuator_Obj.drive_module.obj_list[index].ctl_val);
+                DevDshot.control(To_DShotObj_Ptr(SrvActuator_Obj.drive_module.obj_list[index].drv_obj), SrvActuator_Obj.drive_module.obj_list[index].ctl_val);
                 return true;
 
-            /* still in developping */
             case Actuator_DevType_Brush:
+                DevBrushMoto.control(To_BrushObj_Ptr(SrvActuator_Obj.drive_module.obj_list[index].drv_obj), SrvActuator_Obj.drive_module.obj_list[index].ctl_val);
                 return true;
 
             default: break;
@@ -628,6 +649,10 @@ bool Brush_Port_Init(void *obj, uint32_t prescaler, uint32_t autoreload, void *t
         Actuator_Free(To_BrushObj_Ptr(obj)->p_timer_obj);
         return false;
     }
+    BspTimerPWMObj_TypeDef *p_tmr = To_BrushObj_Ptr(obj)->p_timer_obj;
+    return BspTimer_PWM.init(p_tmr, time_ins, time_ch, \
+                             autoreload, prescaler, *(BspGPIO_Obj_TypeDef *)pin, \
+                             Bsp_DMA_None, Bsp_DMA_Stream_None, 0, 0);
 }
 
 /**************************************************************** dshot ************************************************************************/
