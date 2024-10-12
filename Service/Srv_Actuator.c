@@ -297,7 +297,7 @@ static SrvActuator_Setting_TypeDef SrvActuator_Default_Setting(void)
     memset(&default_setting, 0, sizeof(SrvActuator_Setting_TypeDef));
 
     default_setting.model = Model_Quad;
-    default_setting.esc_type = DevDshot_300;
+    default_setting.esc_type = Actuator_DevType_DShot300;
 
     default_setting.moto_num = 4;
     default_setting.servo_num = 0;

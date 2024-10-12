@@ -543,6 +543,110 @@ static void TaskControl_CLI_Polling(void)
         SrvActuator.lock();
 }
 
+static void TaskControl_CLI_ShowModleInfo(void)
+{
+    Shell *shell_obj = Shell_GetInstence();
+    if (shell_obj == NULL)
+        return;
+
+    shellPrint(shell_obj, "[ control parameter ]\r\n");
+    shellPrint(shell_obj, "--- control rate ---\r\n");
+    shellPrint(shell_obj, "    attitude        control rate %f\r\n", TaskControl_Monitor.ctl_para.att_rate);
+    shellPrint(shell_obj, "    X angular speed control rate %f\r\n", TaskControl_Monitor.ctl_para.gx_rate);
+    shellPrint(shell_obj, "    Y angular speed control rate %f\r\n", TaskControl_Monitor.ctl_para.gy_rate);
+    shellPrint(shell_obj, "    Z angular speed control rate %f\r\n", TaskControl_Monitor.ctl_para.gz_rate);
+    
+    shellPrint(shell_obj, "--- control range ---\r\n");
+    shellPrint(shell_obj, "    pitch           range ±%d\r\n", TaskControl_Monitor.ctl_para.pitch_range);
+    shellPrint(shell_obj, "    roll            range ±%d\r\n", TaskControl_Monitor.ctl_para.roll_range);
+    shellPrint(shell_obj, "    X angular speed range ±%d\r\n", TaskControl_Monitor.ctl_para.gx_range);
+    shellPrint(shell_obj, "    Y angular speed range ±%d\r\n", TaskControl_Monitor.ctl_para.gy_range);
+    shellPrint(shell_obj, "    Z angular speed range ±%d\r\n", TaskControl_Monitor.ctl_para.gz_range);
+    shellPrint(shell_obj, "--- attitude control mode ---\r\n");
+    switch (TaskControl_Monitor.ctl_para.att_mode)
+    {
+        case CtlM_PID:   shellPrint(shell_obj, " ---- pid\r\n"); break;
+        case CtlM_LADRC: shellPrint(shell_obj, " ---- ladrc\r\n"); break;
+        case CtlM_MUDE:  shellPrint(shell_obj, " ---- mude\r\n"); break;
+        default: shellPrint(shell_obj, " ---- unknow control mode\r\n"); break;
+    }
+
+    shellPrint(shell_obj, "--- altitude control mode ---\r\n");
+    switch (TaskControl_Monitor.ctl_para.alt_mode)
+    {
+        case CtlM_PID:   shellPrint(shell_obj, " ---- pid\r\n"); break;
+        case CtlM_LADRC: shellPrint(shell_obj, " ---- ladrc\r\n"); break;
+        case CtlM_MUDE:  shellPrint(shell_obj, " ---- mude\r\n"); break;
+        default: shellPrint(shell_obj, " ---- unknow control mode\r\n"); break;
+    }
+
+    shellPrint(shell_obj, "[ actuator parameter ]\r\n");
+    shellPrint(shell_obj, "    moto  num %d\r\n", TaskControl_Monitor.actuator_param.moto_num);
+    shellPrint(shell_obj, "    servo num %d\r\n", TaskControl_Monitor.actuator_param.servo_num);
+    switch (TaskControl_Monitor.actuator_param.esc_type)
+    {
+        case Actuator_DevType_DShot150: shellPrint(shell_obj, " ---- ESC DShot_150\r\n"); break;
+        case Actuator_DevType_DShot300: shellPrint(shell_obj, " ---- ESC DShot_300\r\n"); break;
+        case Actuator_DevType_DShot600: shellPrint(shell_obj, " ---- ESC DShot_600\r\n"); break;
+        case Actuator_DevType_Brush:    shellPrint(shell_obj, " ---- ESC Brush\r\n"); break;
+        default: break;
+    }
+    
+    switch (TaskControl_Monitor.actuator_param.model)
+    {
+        case Model_Quad:   shellPrint(shell_obj, " ---- QUAD\r\n"); break;
+        case Model_Hex:    shellPrint(shell_obj, " ---- HEX\r\n"); break;
+        case Model_Y6:     shellPrint(shell_obj, " ---- Y6\r\n"); break;
+        case Model_Tri:    shellPrint(shell_obj, " ---- TRI\r\n"); break;
+        case Model_TDrone: shellPrint(shell_obj, " ---- TDrone\r\n"); break;
+        default: break;
+    }
+
+    shellPrint(shell_obj, "---- moto mapping relationship ----\r\n");
+    for (uint8_t i = 0; i < TaskControl_Monitor.actuator_param.moto_num; i ++)
+    {
+        shellPrint(shell_obj, "    moto list index %d -> map to phy rotor %d\r\n", i, TaskControl_Monitor.actuator_param.moto_map[i]);
+    }
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, show_ctl_modle, TaskControl_CLI_ShowModleInfo, show modle info);
+
+static void TaskControl_CLI_SetMotoType(uint8_t type)
+{
+    Shell *shell_obj = Shell_GetInstence();
+    SrvActuator_Setting_TypeDef actuator_para_tmp = TaskControl_Monitor.actuator_param;
+
+    if (shell_obj == NULL)
+        return;
+
+    shellPrint(shell_obj, "ESC type list\r\n");
+    shellPrint(shell_obj, " %d ---- DShot150 \r\n", Actuator_DevType_DShot150);
+    shellPrint(shell_obj, " %d ---- DShot300 \r\n", Actuator_DevType_DShot300);
+    shellPrint(shell_obj, " %d ---- DShot600 \r\n", Actuator_DevType_DShot600);
+    shellPrint(shell_obj, " %d ---- Brush \r\n", Actuator_DevType_Brush);
+
+    switch (type)
+    {
+        case Actuator_DevType_DShot300: shellPrint(shell_obj, "    DShot300 Selected\r\n"); break;
+        case Actuator_DevType_Brush:    shellPrint(shell_obj, "    BrushMoto Selected\r\n"); break;
+        default: shellPrint(shell_obj, "Error ESC type or none support ESC type input\r\n"); return;
+    }
+
+    actuator_para_tmp.esc_type = type;
+    if (Storage.update(Para_User, TaskControl_Monitor.actuator_store_info.item_addr, (uint8_t *)&actuator_para_tmp, sizeof(SrvActuator_Setting_TypeDef)) != Storage_Error_None)
+    {
+        shellPrint(shell_obj, "Parameter update failed\r\n");
+        return;
+    }
+
+    /* after setting reboot is required */
+    shellPrint(shell_obj, "Parameter update done\r\n");
+    shellPrint(shell_obj, "rebooting\r\n");
+
+    SrvOsCommon.delay_ms(200);
+    SrvOsCommon.reboot();
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, set_moto_type, TaskControl_CLI_SetMotoType, set moto type);
+
 static void TaskControl_CLI_MotoSpinTest(uint8_t moto_index, uint16_t test_val)
 {
     uint8_t moto_num = SrvActuator.get_cnt().moto_cnt;
