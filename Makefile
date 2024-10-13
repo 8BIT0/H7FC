@@ -183,14 +183,14 @@ endif
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32h743xx.s \
+HW_Lib/STM32H7/startup/startup_stm32h743xx.s \
 debug/trace.s
 
 #######################################
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32H743VIHx_FLASH.ld
+LDSCRIPT = HW_Lib/STM32H7/Link/STM32H743VIHx_FLASH.ld
 
 #######################################
 # CFLAGS
@@ -201,14 +201,14 @@ CPU = -mcpu=cortex-m7
 else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 C_SOURCES += \
 System/kernel/kernel_at32f435.c \
-HW_Lib/AT32F435/bsp/Bsp_GPIO.c \
-HW_Lib/AT32F435/bsp/Bsp_Spi.c \
-HW_Lib/AT32F435/bsp/Bsp_Uart.c \
-HW_Lib/AT32F435/bsp/Bsp_Flash.c \
-HW_Lib/AT32F435/bsp/Bsp_USB.c \
-HW_Lib/AT32F435/bsp/Bsp_DMA.c \
-HW_Lib?AT32F435/bsp/Bsp_Timer.c \
-HW_Lib/AT32F435/bsp/Bsp_IIC.c \
+HW_Lib/AT32F435/BSP/Bsp_GPIO.c \
+HW_Lib/AT32F435/BSP/Bsp_Spi.c \
+HW_Lib/AT32F435/BSP/Bsp_Uart.c \
+HW_Lib/AT32F435/BSP/Bsp_Flash.c \
+HW_Lib/AT32F435/BSP/Bsp_USB.c \
+HW_Lib/AT32F435/BSP/Bsp_DMA.c \
+HW_Lib?AT32F435/BSP/Bsp_Timer.c \
+HW_Lib/AT32F435/BSP/Bsp_IIC.c \
 HW_Lib/AT32F435/USB/usb_drivers/src/usb_core.c \
 HW_Lib/AT32F435/USB/usb_drivers/src/usbd_core.c \
 HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c \
@@ -243,14 +243,14 @@ HW_Lib/AT32F435/PinPort_Def/CaiFPV/HW_Def.c
 endif
 
 ASM_SOURCES =  \
-startup_at32f435_437.s \
+HW_Lib/AT32F435/startup/startup_at32f435_437.s \
 debug/trace.s
 
 #######################################
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = AT32F435xG_FLASH.ld
+LDSCRIPT = HW_Lib/AT32F435/Link/AT32F435xG_FLASH.ld
 
 #######################################
 # CFLAGS
