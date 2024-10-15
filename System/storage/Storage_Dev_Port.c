@@ -18,9 +18,9 @@ StorageDevApi_TypeDef StorageDev = {
     .set = Storage_Dev_Set,
     .init = Storage_Dev_Init,
 
-    .write_sec = Storage_Dev_Write_Section,
-    .read_sec = Storage_Dev_Read_Section,
-    .erase_sec = Storage_Dev_Erase_Section,
+    .write_phy_sec = Storage_Dev_Write_Section,
+    .read_phy_sec = Storage_Dev_Read_Section,
+    .erase_phy_sec = Storage_Dev_Erase_Section,
 };
 
 static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev)

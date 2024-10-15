@@ -1645,7 +1645,7 @@ static bool Storage_Write_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
     if (p_dev == NULL)
         return false;
 
-    return StorageDev.write_sec(To_StorageDevObj_Ptr(p_dev), addr, p_data, len);
+    return StorageDev.write_phy_sec(To_StorageDevObj_Ptr(p_dev), addr, p_data, len);
 }
 
 static bool Storage_Read_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
@@ -1655,7 +1655,7 @@ static bool Storage_Read_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
     if (p_dev == NULL)
         return false;
 
-    return StorageDev.read_sec(To_StorageDevObj_Ptr(p_dev), addr, p_data, len);
+    return StorageDev.read_phy_sec(To_StorageDevObj_Ptr(p_dev), addr, p_data, len);
 }
 
 static bool Storage_Erase_Section(uint32_t addr, uint16_t len)
@@ -1665,7 +1665,7 @@ static bool Storage_Erase_Section(uint32_t addr, uint16_t len)
     if (p_dev == NULL)
         return false;
 
-    return StorageDev.erase_sec(To_StorageDevObj_Ptr(p_dev), addr, len);
+    return StorageDev.erase_phy_sec(To_StorageDevObj_Ptr(p_dev), addr, len);
 }
 
 /********************************************** External Firmware Storage API Section ********************************************/
