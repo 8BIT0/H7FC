@@ -27,7 +27,7 @@ SrvBaroObj_TypeDef SrvBaroObj = {
     .sensor_data = NULL,
 };
 
-#if defined MATEKH743_V1_5
+#if defined MATEKH743_V1_5 || defined NEURE
 #if defined  STM32H743xx
 static SPI_HandleTypeDef Baro_Bus_Instance;
 #endif

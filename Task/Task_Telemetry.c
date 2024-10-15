@@ -32,6 +32,8 @@
 
 #if defined MATEKH743_V1_5
 #define Noti_LED_Ptr NULL
+#elif defined NEURE
+#define Noti_LED_Ptr NULL
 #elif defined BATEAT32F435_AIO
 #define Noti_LED_Ptr NULL
 #elif defined CAIFPV_AIO || defined CCRC_AT32_20

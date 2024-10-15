@@ -252,7 +252,8 @@ extern BspIICObj_TypeDef Baro_BusCfg;
 #define RADIO_RX_DMA Bsp_DMA_2
 #define RADIO_RX_DMA_STREAM Bsp_DMA_Stream_1
 
-#if (FLASH_CHIP_STATE == OFF)
+#if (FLASH_CHIP_STATE == ON)
+#else
 #define ExtFlash_Bus_Type Storage_ChipBus_None
 
 #define Boot_Firmware_Addr 0
@@ -325,9 +326,7 @@ extern DebugPrintObj_TypeDef DebugPort;
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 void SecIMU_Dir_Tune(float *gyr, float *acc);
 
-#if defined NEURE
 #define Select_Hardware "Hardware NEURE"
-#endif
 
 #ifdef __cplusplus
 }

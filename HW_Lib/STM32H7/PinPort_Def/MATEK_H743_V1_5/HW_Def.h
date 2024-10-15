@@ -325,9 +325,7 @@ extern DebugPrintObj_TypeDef DebugPort;
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 void SecIMU_Dir_Tune(float *gyr, float *acc);
 
-#if defined MATEKH743_V1_5
 #define Select_Hardware "Hardware MATEKH743"
-#endif
 
 #ifdef __cplusplus
 }

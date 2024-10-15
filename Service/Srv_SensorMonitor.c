@@ -13,6 +13,9 @@
 #if defined MATEKH743_V1_5
 #define BARO_TYPE Baro_Type_DPS310
 #define BARO_BUS_TYPE SrvBaro_Bus_IIC
+#elif defined NEURE
+#define BARO_TYPE Baro_Type_BMP280
+#define BARO_BUS_TYPE SrvBaro_Bus_SPI
 #elif defined BATEAT32F435_AIO
 #define BARO_TYPE Baro_Type_BMP280
 #define BARO_BUS_TYPE SrvBaro_Bus_SPI
