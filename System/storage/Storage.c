@@ -215,6 +215,7 @@ static Storage_ErrorCode_List Storage_Get_DevInfo(StorageDevObj_TypeDef *info)
 
 static bool Storage_Format(void)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     uint32_t size = 0;
     uint8_t default_data = 0;
     uint32_t read_time = 0;
@@ -251,12 +252,13 @@ static bool Storage_Format(void)
         if (remain_size == 0)
             return true;
     }
-
+#endif
     return false;
 }
 
 static bool Storage_Check_Tab(Storage_BaseSecInfo_TypeDef *sec_info)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     uint32_t free_i = 0;
     uint32_t tab_addr = 0;
     uint32_t store_param_found = 0;
@@ -354,12 +356,14 @@ static bool Storage_Check_Tab(Storage_BaseSecInfo_TypeDef *sec_info)
 
         return true;
     }
+#endif
 
     return false;
 }
 
 static bool Storage_Get_StorageInfo(void)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     Storage_FlashInfo_TypeDef *p_Info = NULL;
     Storage_FlashInfo_TypeDef Info_r;
     uint16_t crc = 0;
@@ -406,12 +410,14 @@ static bool Storage_Get_StorageInfo(void)
             return true;
         }
     }
+#endif
 
     return false;
 }
 
 static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     uint32_t addr_tmp = 0;
 
     if ((addr == 0) || \
@@ -430,6 +436,9 @@ static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num)
     }
 
     return true;
+#else
+    return false;
+#endif
 }
 
 /* 
@@ -438,11 +447,12 @@ static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num)
  */
 static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_ParaClassType_List _class, const char *name)
 {
+    Storage_ItemSearchOut_TypeDef ItemSearch;
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_Item_TypeDef *item_list = NULL;
     Storage_Item_TypeDef *p_item = NULL;
     uint32_t tab_addr = 0;
-    Storage_ItemSearchOut_TypeDef ItemSearch;
 
     memset(&ItemSearch, 0, sizeof(ItemSearch));
 
@@ -489,12 +499,16 @@ static Storage_ItemSearchOut_TypeDef Storage_Search(Storage_ParaClassType_List _
         /* update tab address */
         tab_addr += (p_Sec->tab_size / p_Sec->page_num);
     }
+#else
+    memset(&ItemSearch, 0, sizeof(ItemSearch));
+#endif
 
     return ItemSearch;
 }
 
 static Storage_ErrorCode_List Storage_ItemSlot_Update(uint32_t tab_addr, uint8_t item_index, Storage_BaseSecInfo_TypeDef *p_Sec, Storage_Item_TypeDef item)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     Storage_Item_TypeDef *ItemList = NULL;
 
     if ((tab_addr == 0) || \
@@ -516,10 +530,14 @@ static Storage_ErrorCode_List Storage_ItemSlot_Update(uint32_t tab_addr, uint8_t
         return Storage_Write_Error;
 
     return Storage_Error_None;
+#else
+    return Storage_Read_Error;
+#endif
 }
 
 static Storage_ErrorCode_List Storage_Get_Data(Storage_ParaClassType_List class, Storage_Item_TypeDef item, uint8_t *p_data, uint16_t size)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     uint32_t data_len = 0;
     uint32_t data_addr = 0;
     uint8_t *p_read_out = NULL;
@@ -599,12 +617,13 @@ static Storage_ErrorCode_List Storage_Get_Data(Storage_ParaClassType_List class,
 
         return Storage_Error_None;
     }
-
+#endif
     return Storage_GetData_Error;
 }
 
 static Storage_ErrorCode_List Storage_SlotData_Update(Storage_ParaClassType_List _class, storage_handle data_slot_hdl, uint8_t *p_data, uint16_t size)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_DataSlot_TypeDef *p_slotdata = NULL;
     uint8_t *p_read_tmp = page_data_tmp;
@@ -742,10 +761,14 @@ static Storage_ErrorCode_List Storage_SlotData_Update(Storage_ParaClassType_List
     }
 
     return Storage_Error_None;
+#else
+    return Storage_Write_Error;
+#endif
 }
 
 static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behind_free_addr, uint32_t new_free_addr, Storage_FreeSlot_TypeDef *new_free_slot)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     Storage_FreeSlot_TypeDef front_slot;
     Storage_FreeSlot_TypeDef behind_slot;
 
@@ -785,6 +808,9 @@ static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behind_free
         return false;
 
     return true;
+#else
+    return false;
+#endif
 }
 
 /* developping & untested */
@@ -1355,6 +1381,7 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List _cla
 
 static bool Storage_Establish_Tab(Storage_ParaClassType_List class)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_SecInfo = NULL;
     uint16_t clear_cnt = 0;
@@ -1433,12 +1460,13 @@ static bool Storage_Establish_Tab(Storage_ParaClassType_List class)
 
         return true;
     }
-
+#endif
     return false;
 }
 
 static bool Storage_Build_StorageInfo(void)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     uint32_t page_num = 0;
     Storage_FlashInfo_TypeDef Info;
     Storage_FlashInfo_TypeDef Info_Rx;
@@ -1547,6 +1575,9 @@ static bool Storage_Build_StorageInfo(void)
         return false;
 
     return true;
+#else
+    return false;
+#endif
 }
 
 static bool Storage_Compare_ItemSlot_CRC(const Storage_Item_TypeDef item)
