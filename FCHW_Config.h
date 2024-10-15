@@ -11,8 +11,8 @@
 // #endif
 
 #define Storage_ChipBus_None    0
-#define Storage_ChipBus_Spi     1
-#define Storage_ChipBus_QSpi    2
+#define Storage_ChipBus_Spi     (Storage_ChipBus_None + 1)
+#define Storage_ChipBus_QSpi    (Storage_ChipBus_Spi + 1)
 
 #if defined MATEKH743_V1_5
 
