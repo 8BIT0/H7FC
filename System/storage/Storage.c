@@ -1611,163 +1611,61 @@ static bool Storage_Comput_ItemSlot_CRC(Storage_Item_TypeDef *p_item)
     uint8_t *crc_buf = NULL;
     uint16_t crc_len = sizeof(Storage_Item_TypeDef);
     
-    if (p_item)
-    {
-        crc_buf = ((uint8_t *)p_item) + sizeof(p_item->head_tag);
-        crc_len -= sizeof(p_item->head_tag);
-        crc_len -= sizeof(p_item->end_tag);
-        crc_len -= sizeof(p_item->crc16);
-        p_item->crc16 = Common_CRC16(crc_buf, crc_len);
+    if (p_item == NULL)
+        return false;
 
-        return true;
-    }
+    crc_buf = ((uint8_t *)p_item) + sizeof(p_item->head_tag);
+    crc_len -= sizeof(p_item->head_tag);
+    crc_len -= sizeof(p_item->end_tag);
+    crc_len -= sizeof(p_item->crc16);
+    p_item->crc16 = Common_CRC16(crc_buf, crc_len);
 
-    return false;
+    return true;
 }
 
 static Storage_BaseSecInfo_TypeDef* Storage_Get_SecInfo(Storage_FlashInfo_TypeDef *info, Storage_ParaClassType_List class)
 {
-    if (info)
-    {
-        switch(class)
-        {
-            case Para_Boot: return &(info->boot_sec);
-            case Para_Sys:  return &(info->sys_sec);
-            case Para_User: return &(info->user_sec);
-            default:        return NULL;
-        }
-    }
+    if (info == NULL)
+        return NULL;
 
-    return NULL;
+    switch(class)
+    {
+        case Para_Boot: return &(info->boot_sec);
+        case Para_Sys:  return &(info->sys_sec);
+        case Para_User: return &(info->user_sec);
+        default:        return NULL;
+    }
 }
 
 /********************************************** BlackBox Storage API Section *****************************************************/
 static bool Storage_Write_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
 {
-    uint32_t write_cnt = 0;
-    uint32_t addr_tmp = 0;
-    StorageDevObj_TypeDef *p_dev = NULL;
+    void *p_dev = Storage_Monitor.ExtDev_ptr;
 
-    p_dev = (StorageDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
-    if (addr && p_data && len && p_dev && p_dev->api && p_dev->obj)
-    {
-        if ((addr % p_dev->sector_size) || \
-            (len % p_dev->sector_size))
-            return false;
+    if (p_dev == NULL)
+        return false;
 
-        write_cnt = len / p_dev->sector_size;
-        addr_tmp = addr;
-
-        for (uint8_t i = 0; i < write_cnt; i ++)
-        {
-            switch((uint8_t)p_dev->chip_type)
-            {
-                case Storage_ChipType_W25Qxx:
-                    /* erase sector */
-                    if (To_DevW25Qxx_API(p_dev->api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp) != DevW25Qxx_Ok)
-                    {
-                        STORAGE_INFO("section erase failed\r\n");
-                        return false;
-                    }
-
-                    /* update sector */
-                    if (To_DevW25Qxx_API(p_dev->api)->write(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, p_dev->sector_size))
-                    {
-                        STORAGE_INFO("section write failed\r\n");
-                        return false;
-                    }
-                    break;
-
-                default: return false;
-            }
-
-            addr_tmp += p_dev->sector_size;
-        }
-
-        return true;
-    }
-
-    return false;
+    return StorageDev.write_sec(To_StorageDevObj_Ptr(p_dev), addr, p_data, len);
 }
 
 static bool Storage_Read_Section(uint32_t addr, uint8_t *p_data, uint16_t len)
 {
-    uint32_t read_cnt = 0;
-    uint32_t addr_tmp = 0;
-    StorageDevObj_TypeDef *p_dev = NULL;
+    void *p_dev = Storage_Monitor.ExtDev_ptr;
 
-    p_dev = (StorageDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
-    if (addr && p_data && len && p_dev && p_dev->api && p_dev->obj)
-    {
-        if ((addr % p_dev->sector_size) || \
-            (len % p_dev->sector_size))
-            return false;
-    
-        read_cnt = len / p_dev->sector_size;
-        addr_tmp = addr;
+    if (p_dev == NULL)
+        return false;
 
-        for (uint8_t i = 0; i < read_cnt; i++)
-        {
-            switch((uint8_t)p_dev->chip_type)
-            {
-                case Storage_ChipType_W25Qxx:
-                    /* read sector */
-                    if (To_DevW25Qxx_API(p_dev->api)->read(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, len) != DevW25Qxx_Ok)
-                    {
-                        STORAGE_INFO("section read failed\r\n");
-                        memset(p_data, 0, len);
-                        return false;
-                    }
-                    break;
-
-                default: return false;
-            }
-
-            addr_tmp += p_dev->sector_size;
-        }
-
-        return true;
-    }
-
-    return false;
+    return StorageDev.read_sec(To_StorageDevObj_Ptr(p_dev), addr, p_data, len);
 }
 
 static bool Storage_Erase_Section(uint32_t addr, uint16_t len)
 {
-    uint32_t erase_cnt = 0;
-    uint32_t addr_tmp = 0;
-    StorageDevObj_TypeDef *p_dev = NULL;
+    void *p_dev = Storage_Monitor.ExtDev_ptr;
 
-    p_dev = (StorageDevObj_TypeDef *)Storage_Monitor.ExtDev_ptr;
-    if (addr && len && p_dev && p_dev->api && p_dev->obj)
-    {
-        if ((addr % p_dev->sector_size) || \
-            (len % p_dev->sector_size))
-            return false;
-    
-        erase_cnt = len / p_dev->sector_size;
-        addr_tmp = addr;
+    if (p_dev == NULL)
+        return false;
 
-        for (uint8_t i = 0; i < erase_cnt; i ++)
-        {
-            switch((uint8_t)p_dev->chip_type)
-            {
-                case Storage_ChipType_W25Qxx:
-                    /* erase sector */
-                    if (To_DevW25Qxx_API(p_dev->api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp) != DevW25Qxx_Ok)
-                        return false;
-                    break;
-
-                default: return false;
-            }
-
-            addr_tmp += p_dev->sector_size;
-        }
-
-        return true;
-    }
-
-    return false;
+    return StorageDev.erase_sec(To_StorageDevObj_Ptr(p_dev), addr, len);
 }
 
 /********************************************** External Firmware Storage API Section ********************************************/

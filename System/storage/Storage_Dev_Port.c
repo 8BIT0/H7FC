@@ -10,10 +10,17 @@
 /* external function */
 static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev);
 static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, uint16_t *p_code);
+static bool Storage_Dev_Write_Section(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint8_t *p_data, uint16_t len);
+static bool Storage_Dev_Read_Section(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint8_t *p_data, uint16_t len);
+static bool Storage_Dev_Erase_Section(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint16_t len);
 
 StorageDevApi_TypeDef StorageDev = {
     .set = Storage_Dev_Set,
     .init = Storage_Dev_Init,
+
+    .write_sec = Storage_Dev_Write_Section,
+    .read_sec = Storage_Dev_Read_Section,
+    .erase_sec = Storage_Dev_Erase_Section,
 };
 
 static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev)
@@ -111,3 +118,118 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
 
     return false;
 }
+
+static bool Storage_Dev_Write_Section(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint8_t *p_data, uint16_t len)
+{
+    uint32_t write_cnt = 0;
+    uint32_t addr_tmp = 0;
+
+    if ((p_dev == NULL) || \
+        (p_dev->api == NULL) || \
+        (p_dev->obj == NULL) || \
+        (p_data == NULL) || \
+        (len == 0) || \
+        ((addr % p_dev->sector_size) || \
+        (len % p_dev->sector_size)))
+        return false;
+
+    write_cnt = len / p_dev->sector_size;
+    addr_tmp = addr;
+
+    for (uint8_t i = 0; i < write_cnt; i ++)
+    {
+        switch((uint8_t)p_dev->chip_type)
+        {
+            case Storage_ChipType_W25Qxx:
+                /* erase sector */
+                if (To_DevW25Qxx_API(p_dev->api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp) != DevW25Qxx_Ok)
+                    return false;
+
+                /* update sector */
+                if (To_DevW25Qxx_API(p_dev->api)->write(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, p_dev->sector_size))
+                    return false;
+                break;
+
+            default: return false;
+        }
+
+        addr_tmp += p_dev->sector_size;
+    }
+
+    return true;
+}
+
+static bool Storage_Dev_Read_Section(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint8_t *p_data, uint16_t len)
+{
+    uint32_t read_cnt = 0;
+    uint32_t addr_tmp = 0;
+    
+    if ((p_dev == NULL) || \
+        (p_dev->api == NULL) || \
+        (p_dev->obj == NULL) || \
+        (p_data == NULL) || \
+        (len == 0) || \
+        ((addr % p_dev->sector_size) || \
+        (len % p_dev->sector_size)))
+        return false;
+
+    read_cnt = len / p_dev->sector_size;
+    addr_tmp = addr;
+
+    for (uint8_t i = 0; i < read_cnt; i++)
+    {
+        switch((uint8_t)p_dev->chip_type)
+        {
+            case Storage_ChipType_W25Qxx:
+                /* read sector */
+                if (To_DevW25Qxx_API(p_dev->api)->read(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, len) != DevW25Qxx_Ok)
+                {
+                    memset(p_data, 0, len);
+                    return false;
+                }
+                break;
+
+            default: return false;
+        }
+
+        addr_tmp += p_dev->sector_size;
+    }
+
+    return true;
+}
+
+static bool Storage_Dev_Erase_Section(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint16_t len)
+{
+    uint32_t erase_cnt = 0;
+    uint32_t addr_tmp = 0;
+
+    if ((p_dev == NULL) || \
+        (p_dev->api == NULL) || \
+        (p_dev->obj == NULL) || \
+        (len == 0) || \
+        ((addr % p_dev->sector_size) || \
+        (len % p_dev->sector_size)))
+        return false;
+
+    erase_cnt = len / p_dev->sector_size;
+    addr_tmp = addr;
+
+    for (uint8_t i = 0; i < erase_cnt; i ++)
+    {
+        switch((uint8_t)p_dev->chip_type)
+        {
+            case Storage_ChipType_W25Qxx:
+                /* erase sector */
+                if (To_DevW25Qxx_API(p_dev->api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp) != DevW25Qxx_Ok)
+                    return false;
+                break;
+
+            default: return false;
+        }
+
+        addr_tmp += p_dev->sector_size;
+    }
+
+    return true;
+}
+
