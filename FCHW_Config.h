@@ -10,6 +10,10 @@
 // #define HW_MATEK_STM32H743
 // #endif
 
+#define Storage_ChipBus_None    0
+#define Storage_ChipBus_Spi     1
+#define Storage_ChipBus_QSpi    2
+
 #if defined MATEKH743_V1_5
 
 #define IMU_CNT 2
@@ -18,6 +22,10 @@
 #define SD_CARD_ENABLE_STATE ON
 #define FLASH_CHIP_ENABLE_STATE OFF
 #define RADIO_NUM 1
+
+#define Flash_MaxRWSize (0 Kb)
+#define Flash_Storage_TabSize (0 Kb)
+#define Flash_Storage_InfoPageSize (0 Kb)
 
 #elif defined BATEAT32F435_AIO || defined CCRC_AT32_20 || defined CAIFPV_AIO
 
@@ -28,7 +36,13 @@
 #define FLASH_CHIP_ENABLE_STATE ON
 #define RADIO_NUM 1
 
+#define Flash_MaxRWSize (2 Kb)
+#define Flash_Storage_TabSize (4 Kb)
+#define Flash_Storage_InfoPageSize (1 Kb)
+
 #endif
+
+#define Storage_InfoPageSize Flash_Storage_InfoPageSize
 
 /* get virable from .ld file defined */
 extern uint32_t __rom_s;
@@ -41,10 +55,6 @@ extern uint32_t __boot_e;
 
 #define App_Address_Base    ((uint32_t)&__boot_e)
 #define App_Section_Size    ((uint32_t)&__rom_e - App_Address_Base)
-
-#define Flash_MaxRWSize (2 Kb)
-#define Flash_Storage_TabSize (4 Kb)
-#define Flash_Storage_InfoPageSize (1 Kb)
 
 #define IMU_SUM IMU_CNT
 #define BARO_SUM BARO_CNT

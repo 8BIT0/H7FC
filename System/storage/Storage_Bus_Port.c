@@ -8,15 +8,13 @@ void *ExtFlash_Bus_InstObj = NULL;
 #endif
 
 /* external function */
-static void *Storage_External_Chip_Bus_Init(Storage_ExtFlash_BusType_List bus_type, StorageBus_Malloc_Callback p_malloc, StorageBus_Free_Callback p_free);
-static bool Storage_BusType_Check(Storage_ExtFlash_BusType_List bus_type);
+static void *Storage_External_Chip_Bus_Init(StorageBus_Malloc_Callback p_malloc, StorageBus_Free_Callback p_free);
 static bool Storage_External_Chip_SelectPin_Ctl(bool state);
 static uint16_t Storage_External_Chip_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out);
 static uint16_t Storage_External_Chip_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out);
 static uint16_t Storage_External_Chip_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out);
 
 StorageBusApi_TypeDef StoragePort_Api = {
-    .bus_type_check = Storage_BusType_Check,
     .init = Storage_External_Chip_Bus_Init,
     .cs_ctl = Storage_External_Chip_SelectPin_Ctl,
     .bus_tx = Storage_External_Chip_BusTx,
@@ -25,16 +23,7 @@ StorageBusApi_TypeDef StoragePort_Api = {
 };
 
 /************************************************** External Flash IO API Section ************************************************/
-static bool Storage_BusType_Check(Storage_ExtFlash_BusType_List bus_type)
-{
-    switch ((uint8_t) bus_type)
-    {
-        case Storage_ChipBus_Spi: return true;
-        default: return false;
-    }
-}
-
-static void* Storage_External_Chip_Bus_Init(Storage_ExtFlash_BusType_List bus_type, StorageBus_Malloc_Callback p_malloc, StorageBus_Free_Callback p_free)
+static void* Storage_External_Chip_Bus_Init(StorageBus_Malloc_Callback p_malloc, StorageBus_Free_Callback p_free)
 {
     void *obj = NULL;
 
@@ -42,8 +31,7 @@ static void* Storage_External_Chip_Bus_Init(Storage_ExtFlash_BusType_List bus_ty
         (p_free == NULL))
         return NULL;
 
-    if (bus_type == Storage_ChipBus_Spi)
-    {
+#if (ExtFlash_Bus_Type == Storage_ChipBus_Spi)
         /* malloc bus object */
         obj = p_malloc(sizeof(BspSPI_NorModeConfig_TypeDef));
         if (obj == NULL)
@@ -63,46 +51,58 @@ static void* Storage_External_Chip_Bus_Init(Storage_ExtFlash_BusType_List bus_ty
             return NULL;
 
         return obj;
-    }
-
+#elif (ExtFlash_Bus_Type == Storage_ChipBus_QSpi)
+    /* still in developping */
+    return NULL;
+#else
+    return NULL;
+#endif
     return NULL;
 }
 
 static bool Storage_External_Chip_SelectPin_Ctl(bool state)
 {
+#if (ExtFlash_Bus_Type == Storage_ChipBus_Spi)
     BspGPIO.write(ExtFlash_CS_Pin, state);
+#endif
     return true;
 }
 
 static uint16_t Storage_External_Chip_BusTx(uint8_t *p_data, uint16_t len, uint32_t time_out)
 {
-    if (p_data && len && ExtFlash_Bus_InstObj)
+#if (ExtFlash_Bus_Type == Storage_ChipBus_Spi)
+    if (p_data && len)
     {
         if (ExtFlash_Bus_Api.trans(&ExtFlash_Bus_InstObj, p_data, len, time_out))
             return len;
     }
+#endif
 
     return 0;
 }
 
 static uint16_t Storage_External_Chip_BusRx(uint8_t *p_data, uint16_t len, uint32_t time_out)
 {
-    if (p_data && len && ExtFlash_Bus_InstObj)
+#if (ExtFlash_Bus_Type == Storage_ChipBus_Spi)
+    if (p_data && len)
     {
         if (ExtFlash_Bus_Api.receive(&ExtFlash_Bus_InstObj, p_data, len, time_out))
             return len;
     }
+#endif
 
     return 0;
 }
 
 static uint16_t Storage_External_Chip_BusTrans(uint8_t *tx, uint8_t *rx, uint16_t len, uint32_t time_out)
 {
-    if (tx && rx && len && ExtFlash_Bus_InstObj)
+#if (ExtFlash_Bus_Type == Storage_ChipBus_Spi)
+    if (tx && rx && len)
     {
         if (ExtFlash_Bus_Api.trans_receive(&ExtFlash_Bus_InstObj, tx, rx, len, time_out))
             return len;
     }
+#endif
 
     return 0;
 }

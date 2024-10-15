@@ -161,7 +161,9 @@ SECTIONS
     PROVIDE ( end = . );
     PROVIDE ( _end = . );
     . = . + _Min_Heap_Size;
+    _sstack = .;
     . = . + _Min_Stack_Size;
+    _estack = .;
     . = ALIGN(8);
   } >DTCMRAM
 

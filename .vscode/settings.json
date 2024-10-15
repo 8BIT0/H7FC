@@ -206,7 +206,8 @@
                 "functional": "c",
                 "tuple": "c",
                 "dev_brushmoto.h": "c",
-                "storage_def.h": "c"
+                "storage_def.h": "c",
+                "storage_bus_port.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

@@ -14,8 +14,6 @@
 #include "Srv_OsCommon.h"
 #include "debug_util.h"
 
-#define FLASH_CHIP_ENABLE_STATE ON
-
 #define STORAGE_TAG                     "[ STORAGE INFO ] "
 #define STORAGE_INFO(fmt, ...)          Debug_Print(&DebugPort, STORAGE_TAG, fmt, ##__VA_ARGS__)
 
@@ -28,7 +26,11 @@
 
 /* internal vriable */
 Storage_Monitor_TypeDef Storage_Monitor;
+#if (FLASH_CHIP_STATE == ON)
 static uint8_t page_data_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = {0};
+#else
+static uint8_t page_data_tmp[1];
+#endif
 
 static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num);
 static bool Storage_Establish_Tab(Storage_ParaClassType_List class);
@@ -89,11 +91,11 @@ static bool Storage_Init(StorageDevObj_TypeDef *ExtDev)
 
     /* external flash init */
 #if (FLASH_CHIP_STATE == ON)
-    if ((ExtDev == NULL) || !StoragePort_Api.bus_type_check(ExtDev->chip_type))
+    if (ExtDev == NULL)
         return false;
 
     Storage_Monitor.ExtDev_ptr = NULL;
-    bus_cfg = StoragePort_Api.init(ExtDev->bus_type, SrvOsCommon.malloc, SrvOsCommon.free);
+    bus_cfg = StoragePort_Api.init(SrvOsCommon.malloc, SrvOsCommon.free);
     if (bus_cfg == NULL)
     {
         STORAGE_INFO("Bus Init Failed\r\n");
@@ -374,8 +376,8 @@ static bool Storage_Get_StorageInfo(void)
         return false;
 
     /* get crc from storage baseinfo section check crc value */
-    memcpy(&crc_read, &page_data_tmp[OnChipFlash_Storage_InfoPageSize - sizeof(uint16_t)], sizeof(uint16_t));
-    crc = Common_CRC16(page_data_tmp, OnChipFlash_Storage_InfoPageSize - sizeof(crc));
+    memcpy(&crc_read, &page_data_tmp[Storage_InfoPageSize - sizeof(uint16_t)], sizeof(uint16_t));
+    crc = Common_CRC16(page_data_tmp, Storage_InfoPageSize - sizeof(crc));
     if (crc != crc_read)
         return false;
 
@@ -1981,17 +1983,13 @@ static void Storage_Show_ModuleInfo(void)
     shellPrint(shell_obj, "\t[ExtDev pointer %08x]\r\n", Storage_Monitor.ExtDev_ptr);
     p_ext_flash = Storage_Monitor.ExtDev_ptr;
 
-    switch (p_ext_flash->bus_type)
-    {
-        case Storage_ChipBus_Spi:
-            shellPrint(shell_obj, "\t[external flash bus type SPI]\r\n");
-            break;
-        
-        case Storage_ChipBus_None:
-        default:
-            shellPrint(shell_obj, "\t[none external flash bus matched %d]\r\n", p_ext_flash->bus_type);
-            break;
-    }
+#if (ExtFlash_Bus_Type == Storage_ChipBus_Spi)
+    shellPrint(shell_obj, "\t[external flash bus type SPI]\r\n");
+#elif (ExtFlash_Bus_Type == Storage_ChipBus_QSpi)
+    shellPrint(shell_obj, "\t[external flash bus type QSPI]\r\n");
+#else
+    shellPrint(shell_obj, "\t[none external flash bus matched]\r\n");
+#endif
 
     dev_api = p_ext_flash->api;
     dev_obj = p_ext_flash->obj;

@@ -6,14 +6,15 @@ extern "C" {
 #endif
 
 #include "Bsp_GPIO.h"
+#include "Bsp_IIC.h"
 #include "Bsp_DMA.h"
 #include "Bsp_SPI.h"
 #include "Bsp_SDMMC.h"
 #include "Bsp_Uart.h"
-#include "Bsp_IIC.h"
 #include "Bsp_Flash.h"
 #include "debug_util.h"
 #include "Dev_Led.h"
+#include "../../../../FCHW_Config.h"
 #include "../../common/gen_physic_def/imu_data.h"
 
 #define LED1_PIN GPIO_PIN_3
@@ -251,33 +252,39 @@ extern BspIICObj_TypeDef Baro_BusCfg;
 #define RADIO_RX_DMA Bsp_DMA_2
 #define RADIO_RX_DMA_STREAM Bsp_DMA_Stream_1
 
-/* internal flash storage */
-#define OnChipFlash_Storage_StartAddress (FLASH_BASE_ADDR + FLASH_SECTOR_7_OFFSET_ADDR)
-#define OnChipFlash_Storage_TotalSize FLASH_SECTOR_7_SIZE
-#define OnChipFlash_Storage_DefaultData FLASH_DEFAULT_DATA
-
-#define OnChipFlash_MaxRWSize (2 Kb)
-#define OnChipFlash_Storage_TabSize Flash_Storage_TabSize
-#define OnChipFlash_Storage_InfoPageSize Flash_Storage_InfoPageSize
-
-/* external flash */
-#define ExtFlash_Firmware_Addr 0
-#define ExtFlash_Firmware_Size (1 Mb)
-
+#if (FLASH_CHIP_STATE == OFF)
 #define ExtFlash_Bus_Type Storage_ChipBus_None
-#define ExtFlash_Chip_Type Storage_Chip_None
-#define ExtFlash_Dev_Api NULL
 
-#define ExtFlash_Start_Addr (ExtFlash_Firmware_Addr + ExtFlash_Firmware_Size)
+#define Boot_Firmware_Addr 0
+#define Boot_Firmware_Size (0 Kb)
+
+#define Block_Addr Boot_Firmware_Size + Boot_Firmware_Addr
+#define Block_Size (0 Kb)
+
+#define Reserve_Addr (Block_Addr + Block_Size)
+#define Reserve_Size ((0 Mb) - Block_Size)
+
+#define App_Firmware_Addr (Reserve_Addr + Reserve_Size)
+#define App_Firmware_Size (0 Mb)
+
+#define ExtFlash_Dev_Api NULL
+#define ExtFlash_Start_Addr (App_Firmware_Addr + App_Firmware_Size)
+
 #define ExtFlash_Storage_DefaultData FLASH_DEFAULT_DATA
 #define ExtFlash_Storage_TotalSize (0 Kb)
-#define ExtFlash_Storage_TabSize  Flash_Storage_TabSize
+#define ExtFlash_Storage_TabSize Flash_Storage_TabSize
 #define ExtFlash_Storage_InfoPageSize Flash_Storage_InfoPageSize
+#define ExtFlash_Storage_Reserve_Size (0 Mb) - ExtFlash_Storage_TotalSize 
+
+#define BlackBox_Storage_Start_Addr (ExtFlash_Start_Addr + \
+                                     ExtFlash_Storage_TotalSize + \
+                                     ExtFlash_Storage_Reserve_Size)
 
 /* store boot info boot parameter and firmware */
 #define ExternalFlash_BootDataSec_Size (0 Kb)
 #define ExternalFlash_SysDataSec_Size (0 Kb)
 #define ExternalFlash_UserDataSec_Size (0 Kb)
+#endif
 
 extern DebugPinObj_TypeDef Debug_PC0;
 extern DebugPinObj_TypeDef Debug_PC1;

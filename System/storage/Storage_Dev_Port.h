@@ -19,7 +19,6 @@ typedef enum
 /* hadware flash chip info */
 typedef struct
 {
-    Storage_ExtFlash_BusType_List bus_type;
     Storage_ExtFlashChipType_List chip_type;
 
     uint32_t start_addr;

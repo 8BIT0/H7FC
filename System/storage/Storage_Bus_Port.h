@@ -8,16 +8,9 @@
 typedef void* (*StorageBus_Malloc_Callback)(uint32_t size);
 typedef void (*StorageBus_Free_Callback)(void *ptr);
 
-typedef enum
-{
-    Storage_ChipBus_None = 0,
-    Storage_ChipBus_Spi,
-} Storage_ExtFlash_BusType_List;
-
 typedef struct
 {
-    bool (*bus_type_check)(Storage_ExtFlash_BusType_List bus_type);
-    void* (*init)( Storage_ExtFlash_BusType_List bus_type, StorageBus_Malloc_Callback p_malloc, StorageBus_Free_Callback p_free);
+    void* (*init)(StorageBus_Malloc_Callback p_malloc, StorageBus_Free_Callback p_free);
     bool (*cs_ctl)(bool en);
     uint16_t (*bus_tx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
     uint16_t (*bus_rx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
