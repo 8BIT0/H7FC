@@ -34,6 +34,8 @@ osThreadId TaskManager_Handle = NULL;
 
 #if defined MATEKH743_V1_5
 #define Select_Hardware "Hardware MATEKH743"
+#elif defined NEURE
+#define Select_Hardware "Hardware NEURE"
 #elif defined BATEAT32F435_AIO
 #define Select_Hardware "Hardware BATE_AT32_AIO"
 #elif defined CCRC_AT32_20
