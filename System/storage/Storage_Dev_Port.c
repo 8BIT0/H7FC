@@ -13,8 +13,9 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
 static bool Storage_Dev_Write_Section(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint8_t *p_data, uint16_t len);
 static bool Storage_Dev_Read_Section(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint8_t *p_data, uint16_t len);
 static bool Storage_Dev_Erase_Section(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint16_t len);
-static bool Storage_Dev_Firmware_Format(StorageDevObj_TypeDef *p_dev, uint32_t TabSize, uint32_t addr, uint32_t firmware_size);
+static bool Storage_Dev_Firmware_Format(StorageDevObj_TypeDef *p_dev, uint32_t tab_size, uint32_t addr, uint32_t firmware_size);
 static bool Storage_Dev_Firmware_Read(StorageDevObj_TypeDef *p_dev, uint32_t tab_size, uint32_t base_addr, uint32_t addr_offset, uint8_t *p_tmp_buf, uint16_t tmp_buf_size, uint8_t *p_data, uint16_t size);
+static bool Storage_Dev_Firmware_Write(StorageDevObj_TypeDef *p_dev, uint32_t tab_size, uint32_t base_addr, uint32_t addr_offset, uint8_t *p_tmp_buf, uint16_t tmp_buf_size, uint8_t *p_data, uint16_t size);
 
 StorageDevApi_TypeDef StorageDev = {
     .set = Storage_Dev_Set,
@@ -26,6 +27,7 @@ StorageDevApi_TypeDef StorageDev = {
 
     .firmware_format = Storage_Dev_Firmware_Format,
     .firmware_read = Storage_Dev_Firmware_Read,
+    .firmware_write = Storage_Dev_Firmware_Write,
 };
 
 static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev)
@@ -238,18 +240,19 @@ static bool Storage_Dev_Erase_Section(StorageDevObj_TypeDef *p_dev, uint32_t add
     return true;
 }
 
-static bool Storage_Dev_Firmware_Format(StorageDevObj_TypeDef *p_dev, uint32_t TabSize, uint32_t addr, uint32_t firmware_size)
+static bool Storage_Dev_Firmware_Format(StorageDevObj_TypeDef *p_dev, uint32_t tab_size, uint32_t addr, uint32_t firmware_size)
 {
     uint32_t format_size = firmware_size;
     uint32_t erase_addr = addr;
 
     if ((p_dev == NULL) || \
-        ((format_size % TabSize) != 0) || \
+        (tab_size == 0) || \
+        ((format_size % tab_size) != 0) || \
         (p_dev->api == NULL) || \
         (p_dev->obj == NULL))
         return false;
 
-    for (uint16_t i = 0; i < format_size / TabSize; i++)
+    for (uint16_t i = 0; i < format_size / tab_size; i++)
     {
         switch (p_dev->chip_type)
         {
@@ -260,8 +263,8 @@ static bool Storage_Dev_Firmware_Format(StorageDevObj_TypeDef *p_dev, uint32_t T
                 if (To_DevW25Qxx_API(p_dev->api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->obj), erase_addr) != DevW25Qxx_Ok)
                     return false;
             
-                erase_addr += TabSize;
-                format_size -= TabSize;
+                erase_addr += tab_size;
+                format_size -= tab_size;
                 break;
 
             default: break;
@@ -281,7 +284,8 @@ static bool Storage_Dev_Firmware_Read(StorageDevObj_TypeDef *p_dev, uint32_t tab
         (p_data == NULL) || \
         (size == 0) || \
         (p_tmp_buf == NULL) || \
-        (tmp_buf_size < size))
+        (tmp_buf_size < size) || \
+        (tab_size == 0))
         return false;
         
     read_addr = addr_offset + base_addr;
@@ -315,5 +319,65 @@ static bool Storage_Dev_Firmware_Read(StorageDevObj_TypeDef *p_dev, uint32_t tab
         
             default: return false;
         }
+    }
+}
+
+static bool Storage_Dev_Firmware_Write(StorageDevObj_TypeDef *p_dev, uint32_t tab_size, uint32_t base_addr, uint32_t addr_offset, uint8_t *p_tmp_buf, uint16_t tmp_buf_size, uint8_t *p_data, uint16_t size)
+{
+    uint32_t write_addr = base_addr + addr_offset;
+    uint32_t section_addr = 0;
+    uint32_t write_size = 0;
+    
+    if ((p_dev == NULL) || \
+        (tab_size == 0) || \
+        (p_tmp_buf == NULL) || \
+        (tmp_buf_size < size) || \
+        (p_dev->api == NULL) || \
+        (p_dev->obj == NULL))
+        return false;
+
+    switch ((uint8_t)p_dev->chip_type)
+    {
+        case Storage_ChipType_W25Qxx:
+            section_addr = To_DevW25Qxx_API(p_dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(p_dev->obj), write_addr);
+
+            while (true)
+            {
+                if (size == 0)
+                    return true;
+
+                /* read section first */
+                memset(p_tmp_buf, 0, tab_size);
+                if (To_DevW25Qxx_API(p_dev->api)->read(To_DevW25Qxx_OBJ(p_dev->obj), section_addr, p_tmp_buf, tab_size) != DevW25Qxx_Ok)
+                    return false;
+
+                /* erase whole section */
+                if (To_DevW25Qxx_API(p_dev->api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->obj), section_addr) != DevW25Qxx_Ok)
+                    return false;
+
+                if ((write_addr + size) >= (section_addr + tab_size))
+                {
+                    write_size = tab_size - (write_addr - section_addr);
+                    size -= write_size;
+                }
+                else
+                {
+                    write_size = size;
+                    size = 0;
+                }
+
+                /* update to flash */
+                memcpy(&p_tmp_buf[write_addr - section_addr], p_data, write_size);
+                if (To_DevW25Qxx_API(p_dev->api)->write(To_DevW25Qxx_OBJ(p_dev->obj), section_addr, p_tmp_buf, tab_size) != DevW25Qxx_Ok)
+                    return false;
+
+                /* update section address */
+                p_data += write_size;
+                write_addr += write_size;
+                section_addr = To_DevW25Qxx_API(p_dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(p_dev->obj), write_addr);
+            }
+            break;
+
+        default: return false;
     }
 }

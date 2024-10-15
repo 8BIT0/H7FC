@@ -1712,51 +1712,10 @@ static bool Storage_Firmware_Write(Storage_MediumType_List medium, uint32_t addr
         if (dev == NULL)
             return false;
 
-        switch ((uint8_t)dev->chip_type)
-        {
-            case Storage_ChipType_W25Qxx:
-                write_addr = App_Firmware_Addr + addr_offset;
-                section_addr = To_DevW25Qxx_API(dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->obj), write_addr);
-
-                while (true)
-                {
-                    if (size == 0)
-                        return true;
-
-                    /* read section first */
-                    memset(flash_read_tmp, 0, Storage_TabSize);
-                    if (To_DevW25Qxx_API(dev->api)->read(To_DevW25Qxx_OBJ(dev->obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
-                        return false;
-
-                    /* erase whole section */
-                    if (To_DevW25Qxx_API(dev->api)->erase_sector(To_DevW25Qxx_OBJ(dev->obj), section_addr) != DevW25Qxx_Ok)
-                        return false;
-
-                    if ((write_addr + size) >= (section_addr + Storage_TabSize))
-                    {
-                        write_size = Storage_TabSize - (write_addr - section_addr);
-                        size -= write_size;
-                    }
-                    else
-                    {
-                        write_size = size;
-                        size = 0;
-                    }
-
-                    /* update to flash */
-                    memcpy(&flash_read_tmp[write_addr - section_addr], p_data, write_size);
-                    if (To_DevW25Qxx_API(dev->api)->write(To_DevW25Qxx_OBJ(dev->obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
-                        return false;
-
-                    /* update section address */
-                    p_data += write_size;
-                    write_addr += write_size;
-                    section_addr = To_DevW25Qxx_API(dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->obj), write_addr);
-                }
-                break;
-
-            default: return false;
-        }
+        return StorageDev.firmware_write(dev, Storage_TabSize, \
+                                         App_Firmware_Addr, addr_offset, \
+                                         flash_read_tmp, sizeof(flash_read_tmp), \
+                                         p_data, size);
     }
 
     return false;
