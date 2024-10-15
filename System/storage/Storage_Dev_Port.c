@@ -161,12 +161,9 @@ static bool Storage_Dev_Write_Section(StorageDevObj_TypeDef *p_dev, uint32_t add
         switch((uint8_t)p_dev->chip_type)
         {
             case Storage_ChipType_W25Qxx:
-                /* erase sector */
-                if (To_DevW25Qxx_API(p_dev->api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp) != DevW25Qxx_Ok)
-                    return false;
-
-                /* update sector */
-                if (To_DevW25Qxx_API(p_dev->api)->write(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, p_dev->sector_size))
+                /* erase sector and update sector */
+                if ((To_DevW25Qxx_API(p_dev->api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp) != DevW25Qxx_Ok) || \
+                    (To_DevW25Qxx_API(p_dev->api)->write(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, p_dev->sector_size) != DevW25Qxx_Ok))
                     return false;
                 break;
 
