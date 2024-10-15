@@ -3,7 +3,7 @@
 #include "at32f435_437.h"
 #include "i2c_application.h"
 
-#define I2C_TIMEOUT     0xFFFFFFFF
+#define I2C_TIMEOUT     50000
 
 #define I2Cx_CLK_10K    0xB170FFFF   //10K
 #define I2Cx_CLK_50K    0xC0E06969   //50K

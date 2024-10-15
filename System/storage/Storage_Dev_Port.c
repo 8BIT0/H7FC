@@ -61,16 +61,8 @@ static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev)
     if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
     {
         ext_dev->obj = Storage_Dev_Malloc(sizeof(DevW25QxxObj_TypeDef));
-        if ((ext_dev->obj == NULL) || \
-            (To_DevW25Qxx_API(ext_dev->api)->info == NULL))
+        if (ext_dev->obj == NULL)
             return false;
-
-        ext_dev->start_addr  = W25QXX_BASE_ADDRESS;
-        ext_dev->sector_num  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).subsector_num;
-        ext_dev->sector_size = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).subsector_size;
-        ext_dev->total_size  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).flash_size;
-        ext_dev->page_num    = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_num;
-        ext_dev->page_size   = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_size;
 
         To_DevW25Qxx_OBJ(ext_dev->obj)->systick   = Storage_Dev_GetSstsTick;
         To_DevW25Qxx_OBJ(ext_dev->obj)->cs_ctl    = StoragePort_Api.cs_ctl;
@@ -84,15 +76,9 @@ static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev)
     else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
     {
         ext_dev->obj = Storage_Dev_Malloc(sizeof(DevW25NxxObj_TypeDef));
-        if ((ext_dev->obj == NULL) || \
-            (To_DevW25Nxx_API(ext_dev->api)->info == NULL))
+        if (ext_dev->obj == NULL)
             return false;
         
-        ext_dev->start_addr  = W25NXX_BASE_ADDRESS;
-        ext_dev->total_size  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).flash_size;
-        ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
-        ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;
-
         To_DevW25Nxx_OBJ(ext_dev->obj)->systick   = Storage_Dev_GetSstsTick;
         To_DevW25Nxx_OBJ(ext_dev->obj)->cs_ctl    = StoragePort_Api.cs_ctl;
         To_DevW25Nxx_OBJ(ext_dev->obj)->bus_tx    = StoragePort_Api.bus_tx;
@@ -123,6 +109,13 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
         *p_type = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_type;
         *p_code = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_code;
     
+        ext_dev->start_addr  = W25QXX_BASE_ADDRESS;
+        ext_dev->sector_num  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).subsector_num;
+        ext_dev->sector_size = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).subsector_size;
+        ext_dev->total_size  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).flash_size;
+        ext_dev->page_num    = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_num;
+        ext_dev->page_size   = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_size;
+
         return ((DevW25Qxx_Error_List)init_state == DevW25Qxx_Ok) ? true : false;
     }
     else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
@@ -134,6 +127,11 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
         init_state = To_DevW25Nxx_API(ext_dev->api)->init(To_DevW25Nxx_OBJ(ext_dev->obj));
         *p_type = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_type;
         *p_code = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_code;
+
+        ext_dev->start_addr  = W25NXX_BASE_ADDRESS;
+        ext_dev->total_size  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).flash_size;
+        ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
+        ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;
 
         return ((DevW25Nxx_Error_List)init_state == DevW25Nxx_Ok) ? true : false;
     }

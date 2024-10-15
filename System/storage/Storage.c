@@ -123,6 +123,7 @@ static bool Storage_Init(StorageDevObj_TypeDef *ExtDev)
     Storage_Monitor.ExternalFlash_ReInit_cnt = ExternalModule_ReInit_Cnt;
 
 reinit_external_flash_module:
+    Storage_Monitor.ExternalFlash_Error_Code = Storage_Error_None;
     if (!StorageDev.init(ExtDev, &Storage_Monitor.module_prod_type, &Storage_Monitor.module_prod_code))
     {
         Storage_Monitor.ExternalFlash_Error_Code = Storage_ModuleInit_Error;
