@@ -28,19 +28,19 @@
 #define FLASH_CHIP_ENABLE_STATE ON
 #define RADIO_NUM 1
 
+#endif
+
 /* get virable from .ld file defined */
 extern uint32_t __rom_s;
 extern uint32_t __rom_e;
 extern uint32_t __boot_s;
 extern uint32_t __boot_e;
 
-
 #define Boot_Address_Base   ((uint32_t)(&__boot_s))
 #define Boot_Section_Size   ((uint32_t)&__boot_e - (uint32_t)&__boot_s)
 
 #define App_Address_Base    ((uint32_t)&__boot_e)
 #define App_Section_Size    ((uint32_t)&__rom_e - App_Address_Base)
-#endif
 
 #define Flash_MaxRWSize (2 Kb)
 #define Flash_Storage_TabSize (4 Kb)

@@ -311,6 +311,10 @@ extern BspIIC_PinConfig_TypeDef SrvBaro_BusPin;
 extern BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg;
 extern BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg;
 
+extern DebugPrintObj_TypeDef DebugPort;
+#define DEBUG_TAG "[ DEBUG INFO ] "
+#define DEBUG_INFO(fmt, ...) Debug_Print(&DebugPort, DEBUG_TAG, fmt, ##__VA_ARGS__)
+
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 void SecIMU_Dir_Tune(float *gyr, float *acc);
 

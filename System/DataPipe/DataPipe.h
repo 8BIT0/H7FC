@@ -8,6 +8,7 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#include "../../FCHW_Config.h"
 
 typedef void (*Pipe_TransFinish_Callback)(void *pipe_obj);
 typedef void (*Pipe_TransError_Callback)(void *pipe_obj);
@@ -104,7 +105,7 @@ extern DataPipeObj_TypeDef IMU_hub_DataPipe;
 
 extern DataPipeObj_TypeDef IMU_PriRange_Smp_DataPipe;
 extern DataPipeObj_TypeDef IMU_PriRange_hub_DataPipe;
-#if (IMU_CNT == 2)
+#if (IMU_SUM == 2)
 extern DataPipeObj_TypeDef IMU_SecRange_Smp_DataPipe;
 extern DataPipeObj_TypeDef IMU_SecRange_hub_DataPipe;
 #endif

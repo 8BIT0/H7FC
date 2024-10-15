@@ -26,7 +26,7 @@ DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, Baro_Data);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorEnable_State);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, SensorInit_State);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Smp_PriIMU_Range);
-#if (IMUJ_CNT == 2)
+#if (IMU_SUM == 2)
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Smp_SecIMU_Range);
 #endif
 
@@ -98,7 +98,7 @@ void TaskSample_Init(uint32_t period)
             DataPipe_SendTo(&IMU_PriRange_Smp_DataPipe, &IMU_PriRange_hub_DataPipe);
         }
 
-#if (IMU_CNT == 2)
+#if (IMU_SUM == 2)
         if(SrvSensorMonitor.get_imu_range(&SensorMonitor, SrvIMU_SecModule, &SecIMU_Range))
         {
             DataPipe_DataObj(Smp_SecIMU_Range).Acc = SecIMU_Range.Acc;

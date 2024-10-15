@@ -219,3 +219,47 @@ void SecIMU_Dir_Tune(float *gyr, float *acc)
         acc[Axis_Y] = -acc_tmp[Axis_Y];
     }
 }
+
+/* debug print port uart4 */
+#define DEBUG_PORT_BAUDRATE 460800
+#define DEBUG_P4_PORT UART4
+#define DEBUG_P4_TX_PIN_INIT_STATE GPIO_PULL_NONE
+#define DEBUG_P4_RX_PIN_INIT_STATE GPIO_PULL_NONE
+#define DEBUG_P4_TX_PIN_ALT GPIO_MUX_8
+#define DEBUG_P4_RX_PIN_ALT GPIO_MUX_8
+#define DEBUG_P4_TX_DMA Bsp_DMA_None
+#define DEBUG_P4_TX_DMA_STREAM Bsp_DMA_Stream_None
+#define DEBUG_P4_RX_DMA Bsp_DMA_None
+#define DEBUG_P4_RX_DMA_STREAM Bsp_DMA_Stream_None
+#define DEBUG_P4_TX_PIN GPIO_PINS_0
+#define DEBUG_P4_RX_PIN GPIO_PINS_1
+#define DEBUG_P4_TX_PORT &Uart4_Tx_Port
+#define DEBUG_P4_RX_PORT &Uart4_Rx_Port
+
+static BspUARTObj_TypeDef Debug_Port4_Obj = {
+    .instance = DEBUG_P4_PORT,
+    .baudrate = DEBUG_PORT_BAUDRATE,
+    .tx_io = {
+        .init_state = DEBUG_P4_TX_PIN_INIT_STATE,
+        .pin = DEBUG_P4_TX_PIN,
+        .port = DEBUG_P4_TX_PORT,
+        .alternate = DEBUG_P4_TX_PIN_ALT,
+    }, 
+    .rx_io = {
+        .init_state = DEBUG_P4_RX_PIN_INIT_STATE,
+        .pin = DEBUG_P4_RX_PIN,
+        .port = DEBUG_P4_RX_PORT,
+        .alternate = DEBUG_P4_RX_PIN_ALT,
+    }, 
+    .pin_swap = false,
+    .rx_dma = DEBUG_P4_RX_DMA,
+    .rx_stream = DEBUG_P4_RX_DMA_STREAM,
+    .tx_dma = DEBUG_P4_TX_DMA,
+    .tx_stream = DEBUG_P4_TX_DMA_STREAM,
+    .rx_buf = NULL,
+    .rx_size = 0,
+};
+
+DebugPrintObj_TypeDef DebugPort = {
+    .port_obj = &Debug_Port4_Obj,
+};

@@ -18,7 +18,7 @@ DataPipeObj_TypeDef IMU_hub_DataPipe = {.enable = true};
 
 DataPipeObj_TypeDef IMU_PriRange_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef IMU_PriRange_hub_DataPipe = {.enable = true};
-#if (IMU_CNT == 2)
+#if (IMU_SUM == 2)
 DataPipeObj_TypeDef IMU_SecRange_Smp_DataPipe = {.enable = true};
 DataPipeObj_TypeDef IMU_SecRange_hub_DataPipe = {.enable = true};
 #endif

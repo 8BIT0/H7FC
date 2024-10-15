@@ -18,7 +18,9 @@ DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, Hub_Baro_Data);
 DataPipe_CreateDataObj(PosData_TypeDef, Hub_Pos);
 DataPipe_CreateDataObj(AltData_TypeDef, Hub_Alt);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_PriIMU_Range);
+#if (IMU_SUM == 2)
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_SecIMU_Range);
+#endif
 DataPipe_CreateDataObj(ExpControlData_TypeDef, Hub_Cnv_CtlData);
 DataPipe_CreateDataObj(bool, Hub_VCP_Attach_State);
 
@@ -111,7 +113,7 @@ static void SrvDataHub_Init(void)
     IMU_PriRange_hub_DataPipe.trans_finish_cb = To_Pipe_TransFinish_Callback(SrvDataHub_IMU_Range_DataPipe_Finish_Callback);
     DataPipe_Enable(&IMU_PriRange_hub_DataPipe);
 
-#if (IMU_CNT == 2)
+#if (IMU_SUM == 2)
     memset(DataPipe_DataObjAddr(Hub_SecIMU_Range), 0, DataPipe_DataSize(Hub_SecIMU_Range));
     IMU_SecRange_hub_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Hub_SecIMU_Range);
     IMU_SecRange_hub_DataPipe.data_size = DataPipe_DataSize(Hub_SecIMU_Range);
@@ -298,7 +300,7 @@ static void SrvDataHub_IMU_Range_DataPipe_Finish_Callback(DataPipeObj_TypeDef *o
 
         SrvDataHub_Monitor.update_reg.bit.range_imu = false;
     }
-#if (IMU_CNT == 2)
+#if (IMU_SUM == 2)
     else if(obj == &IMU_SecRange_hub_DataPipe)
     {
         SrvDataHub_Monitor.update_reg.bit.range_imu = true;

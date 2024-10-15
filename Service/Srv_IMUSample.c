@@ -105,7 +105,7 @@ static void SrvIMU_SecDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_
 static void SrvIMU_Dev_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void SrvIMU_AllModule_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
 static void SrvIMU_PriSample_Undrdy(uint8_t *p_arg, uint16_t size);
-#if (IMU_NUM > 1)
+#if (IMU_SUM > 1)
 static void SrvIMU_SecSample_Undrdy(uint8_t *p_arg, uint16_t size);
 #endif
 
@@ -397,7 +397,7 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
 
     if (!SrvMpu_Init_Reg.sec.Pri_State && !SrvMpu_Init_Reg.sec.Sec_State)
     {
-        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_AllModule_Init_Error, &SrvIMU_ALLModule_Init_Error_CNT, sizeof(SrvIMU_ALLModule_Init_Error_CNT));
+        ErrorLog.trigger(SrvMPU_Error_Handle, SrvIMU_AllModule_Init_Error, NULL, 0);
         return SrvIMU_AllModule_Init_Error;
     }
     else if (!SrvMpu_Init_Reg.sec.Pri_State && SrvMpu_Init_Reg.sec.Sec_State)

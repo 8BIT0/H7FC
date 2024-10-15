@@ -43,7 +43,7 @@ RAM (xrw)        : ORIGIN = 0x20030000, LENGTH = 192K
 }
 
 __rom_s = ORIGIN(FLASH);
-__rom_e = ORIGIN(FLASH) + FLASH_SIZE;
+__rom_e = __rom_s + FLASH_SIZE;
 __boot_s = __rom_s;
 __boot_e = __boot_s + BOOT_SIZE;
 
