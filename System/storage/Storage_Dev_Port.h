@@ -42,7 +42,7 @@ typedef struct
 typedef struct
 {
     bool (*set)(StorageDevObj_TypeDef *ext_dev);
-    bool (*init)();
+    bool (*init)(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, uint16_t *p_code);
 } StorageDevApi_TypeDef;
 
 extern StorageDevApi_TypeDef StorageDev;

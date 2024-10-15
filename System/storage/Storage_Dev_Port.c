@@ -9,9 +9,11 @@
 
 /* external function */
 static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev);
+static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, uint16_t *p_code);
 
 StorageDevApi_TypeDef StorageDev = {
     .set = Storage_Dev_Set,
+    .init = Storage_Dev_Init,
 };
 
 static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev)
@@ -72,5 +74,40 @@ static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev)
         return true;
     }
     
+    return false;
+}
+
+static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, uint16_t *p_code)
+{
+    uint8_t init_state = 0;
+
+    if (ext_dev == NULL)
+        return false;
+
+    if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
+    {
+        if ((To_DevW25Qxx_API(ext_dev->api)->init == NULL) || \
+            (To_DevW25Qxx_API(ext_dev->api)->info == NULL))
+            return false;
+
+        init_state = To_DevW25Qxx_API(ext_dev->api)->init(To_DevW25Qxx_OBJ(ext_dev->obj));
+        *p_type = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_type;
+        *p_code = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_code;
+    
+        return ((DevW25Qxx_Error_List)init_state == DevW25Qxx_Ok) ? true : false;
+    }
+    else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
+    {
+        if ((To_DevW25Nxx_API(ext_dev->api)->init == NULL) || \
+            (To_DevW25Nxx_API(ext_dev->api)->info == NULL))
+            return false;
+
+        init_state = To_DevW25Nxx_API(ext_dev->api)->init(To_DevW25Nxx_OBJ(ext_dev->obj));
+        *p_type = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_type;
+        *p_code = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_code;
+
+        return ((DevW25Nxx_Error_List)init_state == DevW25Nxx_Ok) ? true : false;
+    }
+
     return false;
 }
