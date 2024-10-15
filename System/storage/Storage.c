@@ -264,93 +264,93 @@ static bool Storage_Check_Tab(Storage_BaseSecInfo_TypeDef *sec_info)
     Storage_FreeSlot_TypeDef *FreeSlot_Info = NULL;
     Storage_Item_TypeDef *p_ItemList = NULL;
 
-    if (sec_info)
+    if (sec_info == NULL)
+        return false;
+
+    /* free address & slot check */
+    free_slot_addr = sec_info->free_slot_addr;
+    sec_start_addr = sec_info->data_sec_addr;
+    sec_end_addr = sec_start_addr + sec_info->data_sec_size;
+
+    for(free_i = 0; ;)
     {
-        /* free address & slot check */
-        free_slot_addr = sec_info->free_slot_addr;
-        sec_start_addr = sec_info->data_sec_addr;
-        sec_end_addr = sec_start_addr + sec_info->data_sec_size;
+        /* check boot section free slot */
+        if ((free_slot_addr == 0) || \
+            (free_slot_addr < sec_start_addr) || \
+            (free_slot_addr > sec_end_addr) || \
+            !Storage_ExtFlash_ParaSec_Read(free_slot_addr, page_data_tmp, Storage_TabSize))
+            return false;
 
-        for(free_i = 0; ;)
+        FreeSlot_Info = (Storage_FreeSlot_TypeDef *)page_data_tmp;
+
+        if ((FreeSlot_Info->head_tag != STORAGE_SLOT_HEAD_TAG) || \
+            (FreeSlot_Info->end_tag != STORAGE_SLOT_END_TAG))
+            return false;
+
+        free_i ++;
+        if (FreeSlot_Info->nxt_addr == 0)
+            break;
+
+        free_slot_addr = FreeSlot_Info->nxt_addr;
+    }
+    
+    if (sec_info->para_num)
+    {
+        tab_addr = sec_info->tab_addr;
+
+        for (uint16_t tab_i = 0; tab_i < sec_info->page_num; tab_i ++)
         {
-            /* check boot section free slot */
-            if ((free_slot_addr == 0) || \
-                (free_slot_addr < sec_start_addr) || \
-                (free_slot_addr > sec_end_addr) || \
-                !Storage_ExtFlash_ParaSec_Read(free_slot_addr, page_data_tmp, Storage_TabSize))
+            if (!Storage_ExtFlash_ParaSec_Read(tab_addr, page_data_tmp, sec_info->tab_size / sec_info->page_num))
                 return false;
-
-            FreeSlot_Info = (Storage_FreeSlot_TypeDef *)page_data_tmp;
-
-            if ((FreeSlot_Info->head_tag != STORAGE_SLOT_HEAD_TAG) || \
-                (FreeSlot_Info->end_tag != STORAGE_SLOT_END_TAG))
-                return false;
-
-            free_i ++;
-            if (FreeSlot_Info->nxt_addr == 0)
-                break;
-
-            free_slot_addr = FreeSlot_Info->nxt_addr;
-        }
         
-        if (sec_info->para_num)
-        {
-            tab_addr = sec_info->tab_addr;
-
-            for (uint16_t tab_i = 0; tab_i < sec_info->page_num; tab_i ++)
+            p_ItemList = (Storage_Item_TypeDef *)page_data_tmp;
+            for(uint16_t item_i = 0; item_i < Item_Capacity_Per_Tab; item_i ++)
             {
-                if (!Storage_ExtFlash_ParaSec_Read(tab_addr, page_data_tmp, sec_info->tab_size / sec_info->page_num))
-                    return false;
-            
-                p_ItemList = (Storage_Item_TypeDef *)page_data_tmp;
-                for(uint16_t item_i = 0; item_i < Item_Capacity_Per_Tab; item_i ++)
+                if ((p_ItemList[item_i].head_tag == STORAGE_ITEM_HEAD_TAG) && \
+                    (p_ItemList[item_i].end_tag == STORAGE_ITEM_END_TAG))
                 {
-                    if ((p_ItemList[item_i].head_tag == STORAGE_ITEM_HEAD_TAG) && \
-                        (p_ItemList[item_i].end_tag == STORAGE_ITEM_END_TAG))
-                    {
-                        /* check item slot crc */
-                        /*
-                         *  typedef struct
-                         *  {
-                         *      uint8_t head_tag;
-                         *      uint8_t class;
-                         *      uint8_t name[STORAGE_NAME_LEN];
-                         *      uint32_t data_addr;
-                         *      uint16_t len;
-                         *      uint16_t crc16;
-                         *      uint8_t end_tag;
-                         *  } Storage_Item_TypeDef;
-                         *  
-                         * comput crc from class to len
-                         */
-                        crc_buf = (uint8_t *)&p_ItemList[item_i] + sizeof(p_ItemList[item_i].head_tag);
-                        crc_len = sizeof(Storage_Item_TypeDef);
-                        crc_len -= sizeof(p_ItemList[item_i].head_tag);
-                        crc_len -= sizeof(p_ItemList[item_i].end_tag);
-                        crc_len -= sizeof(p_ItemList[item_i].crc16);
-                        store_param_size += p_ItemList[item_i].len;
-                        
-                        crc16 = Common_CRC16(crc_buf, crc_len);
-                        if (crc16 != p_ItemList[item_i].crc16)
-                            return false;
+                    /* check item slot crc */
+                    /*
+                        *  typedef struct
+                        *  {
+                        *      uint8_t head_tag;
+                        *      uint8_t class;
+                        *      uint8_t name[STORAGE_NAME_LEN];
+                        *      uint32_t data_addr;
+                        *      uint16_t len;
+                        *      uint16_t crc16;
+                        *      uint8_t end_tag;
+                        *  } Storage_Item_TypeDef;
+                        *  
+                        * comput crc from class to len
+                        */
+                    crc_buf = (uint8_t *)&p_ItemList[item_i] + sizeof(p_ItemList[item_i].head_tag);
+                    crc_len = sizeof(Storage_Item_TypeDef);
+                    crc_len -= sizeof(p_ItemList[item_i].head_tag);
+                    crc_len -= sizeof(p_ItemList[item_i].end_tag);
+                    crc_len -= sizeof(p_ItemList[item_i].crc16);
+                    store_param_size += p_ItemList[item_i].len;
+                    
+                    crc16 = Common_CRC16(crc_buf, crc_len);
+                    if (crc16 != p_ItemList[item_i].crc16)
+                        return false;
 
-                        store_param_found ++;
-                    }
+                    store_param_found ++;
                 }
-
-                tab_addr += (sec_info->tab_size / sec_info->page_num);
             }
 
-            if ((store_param_found != sec_info->para_num) || \
-                (store_param_size != sec_info->para_size))
-                return false;
+            tab_addr += (sec_info->tab_size / sec_info->page_num);
         }
 
-        return true;
+        if ((store_param_found != sec_info->para_num) || \
+            (store_param_size != sec_info->para_size))
+            return false;
     }
-#endif
 
+    return true;
+#else
     return false;
+#endif
 }
 
 static bool Storage_Get_StorageInfo(void)
