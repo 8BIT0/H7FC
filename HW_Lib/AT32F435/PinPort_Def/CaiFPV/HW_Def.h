@@ -212,6 +212,10 @@ extern DebugPrintObj_TypeDef DebugPort;
 
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 
+#if defined CAIFPV_AIO
+#define Select_Hardware "Hardware CaiFPV_AIO"
+#endif
+
 #ifdef __cplusplus
 }
 #endif

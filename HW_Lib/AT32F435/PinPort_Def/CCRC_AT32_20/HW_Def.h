@@ -211,6 +211,10 @@ extern DebugPrintObj_TypeDef DebugPort;
 
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 
+#if defined CCRC_AT32_20
+#define Select_Hardware "Hardware CCRC_AT32"
+#endif
+
 #ifdef __cplusplus
 }
 #endif

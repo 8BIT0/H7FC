@@ -256,6 +256,10 @@ extern DebugPrintObj_TypeDef DebugPort;
 
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 
+#if defined BATEAT32F435_AIO
+#define Select_Hardware "Hardware BATE_AT32_AIO"
+#endif
+
 #ifdef __cplusplus
 }
 #endif

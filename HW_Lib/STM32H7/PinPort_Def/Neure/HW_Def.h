@@ -325,6 +325,10 @@ extern DebugPrintObj_TypeDef DebugPort;
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 void SecIMU_Dir_Tune(float *gyr, float *acc);
 
+#if defined NEURE
+#define Select_Hardware "Hardware NEURE"
+#endif
+
 #ifdef __cplusplus
 }
 #endif

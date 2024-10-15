@@ -32,18 +32,6 @@ osThreadId TaskTelemetry_Handle = NULL;
 osThreadId TaskFrameCTL_Handle = NULL;
 osThreadId TaskManager_Handle = NULL;
 
-#if defined MATEKH743_V1_5
-#define Select_Hardware "Hardware MATEKH743"
-#elif defined NEURE
-#define Select_Hardware "Hardware NEURE"
-#elif defined BATEAT32F435_AIO
-#define Select_Hardware "Hardware BATE_AT32_AIO"
-#elif defined CCRC_AT32_20
-#define Select_Hardware "Hardware CCRC_AT32"
-#elif defined CAIFPV_AIO
-#define Select_Hardware "Hardware CaiFPV_AIO"
-#endif
-
 #define SYS_TAG "[ HARDWARE INFO ] "
 #define SYS_INFO(fmt, ...) Debug_Print(&DebugPort, SYS_TAG, fmt, ##__VA_ARGS__)
 
