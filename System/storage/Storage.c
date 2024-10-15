@@ -1674,13 +1674,11 @@ static bool Storage_Firmware_Format(void)
         return false;
 
     dev = To_StorageDevObj_Ptr(Storage_Monitor.ExtDev_ptr);
-    if (dev == NULL)
-        return false;
-
     format_size = App_Firmware_Size;
     erase_addr = App_Firmware_Addr;
-
-    if ((format_size % Storage_TabSize) != 0)
+    
+    if ((dev == NULL) || \
+        ((format_size % Storage_TabSize) != 0))
         return false;
 
     for (uint16_t i = 0; i < format_size / Storage_TabSize; i++)
