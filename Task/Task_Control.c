@@ -151,8 +151,12 @@ static void TaskControl_Get_StoreParam(void)
     /* get actuator parameter */
     /* set as default */
     TaskControl_Monitor.actuator_param = SrvActuator.default_param();
-    if (TaskControl_Monitor.actuator_store_info.item_addr && \
-        (Storage.get(Para_User, TaskControl_Monitor.actuator_store_info.item, (uint8_t *)&Actuator_Param, sizeof(SrvActuator_Setting_TypeDef)) == Storage_Error_None))
+    if (TaskControl_Monitor.actuator_store_info.item_addr == 0)
+    {
+        Storage.create(Para_User, ACTUATOR_STORAGE_SECTION_NAME, (uint8_t *)&TaskControl_Monitor.actuator_param, sizeof(SrvActuator_Setting_TypeDef));
+    }
+    else if (TaskControl_Monitor.actuator_store_info.item_addr && \
+             (Storage.get(Para_User, TaskControl_Monitor.actuator_store_info.item, (uint8_t *)&Actuator_Param, sizeof(SrvActuator_Setting_TypeDef)) == Storage_Error_None))
         TaskControl_Monitor.actuator_param = Actuator_Param;
 }
 

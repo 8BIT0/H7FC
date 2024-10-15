@@ -18,10 +18,11 @@ TARGET = H7FC
 PLATFORM_AT32 := 1
 PLATFORM_STM32H7 := 2
 
-# PLATFORM := $(PLATFORM_AT32)
-PLATFORM := $(PLATFORM_STM32H7)
+PLATFORM := $(PLATFORM_AT32)
+# PLATFORM := $(PLATFORM_STM32H7)
 ifeq ($(PLATFORM), $(PLATFORM_STM32H7))
 HW_MATEK_H743_V1_5 := 1
+HW_NEURE := 2
 
 HARDWARE := $(HW_MATEK_H743_V1_5)
 else ifeq ($(PLATFORM), $(PLATFORM_AT32))
@@ -181,6 +182,9 @@ HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c
 ifeq ($(HARDWARE), $(HW_MATEK_H743_V1_5))
 C_SOURCES +=  \
 HW_Lib/STM32H7/PinPort_Def/MATEK_H743_V1_5/HW_Def.c
+else ifeq ($(HARDWARE), $(HW_NEURE))
+C_SOURCES +=  \
+HW_Lib/STM32H7/PinPort_Def/Neure/HW_Def.c
 endif
 
 # ASM sources
@@ -192,7 +196,11 @@ debug/trace.s
 # LDFLAGS
 #######################################
 # link script
+ifeq ($(HARDWARE), $(HW_MATEK_H743_V1_5))
 LDSCRIPT = HW_Lib/STM32H7/Link/STM32H743VIHx_FLASH.ld
+else ifeq ($(HARDWARE), $(HW_NEURE))
+LDSCRIPT = HW_Lib/STM32H7/Link/STM32H743IITx_FLASH.ld
+endif 
 
 #######################################
 # CFLAGS
@@ -374,6 +382,9 @@ C_INCLUDES +=  \
 ifeq ($(HARDWARE), $(HW_MATEK_H743_V1_5))
 C_INCLUDES += \
 -IHW_Lib/STM32H7/PinPort_Def/MATEK_H743_V1_5
+else ifeq ($(HARDWARE), $(HW_NEURE))
+C_INCLUDES += \
+-IHW_Lib/STM32H7/PinPort_Def/Neure
 endif
 else ifeq ($(PLATFORM), $(PLATFORM_AT32))
 C_INCLUDES += \
