@@ -49,6 +49,9 @@ typedef struct
     bool (*write_phy_sec)(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint8_t *p_data, uint16_t len);
     bool (*read_phy_sec)(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint8_t *p_data, uint16_t len);
     bool (*erase_phy_sec)(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint16_t len);
+
+    bool (*firmware_format)(StorageDevObj_TypeDef *p_dev, uint32_t TabSize, uint32_t addr, uint32_t firmware_size);
+    bool (*firmware_read)(StorageDevObj_TypeDef *p_dev, uint32_t tab_size, uint32_t base_addr, uint32_t addr_offset, uint8_t *p_tmp_buf, uint16_t tmp_buf_size, uint8_t *p_data, uint16_t size);
 } StorageDevApi_TypeDef;
 
 extern StorageDevApi_TypeDef StorageDev;

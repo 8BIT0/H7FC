@@ -1666,84 +1666,28 @@ static bool Storage_Erase_Section(uint32_t addr, uint16_t len)
 /********************************************** External Firmware Storage API Section ********************************************/
 static bool Storage_Firmware_Format(void)
 {
-    uint32_t format_size = 0;
-    uint32_t erase_addr = 0;
-    StorageDevObj_TypeDef *dev = NULL;
-
-    if (!Storage_Monitor.init_state)
-        return false;
-
-    dev = To_StorageDevObj_Ptr(Storage_Monitor.ExtDev_ptr);
-    format_size = App_Firmware_Size;
-    erase_addr = App_Firmware_Addr;
+    StorageDevObj_TypeDef *dev = To_StorageDevObj_Ptr(Storage_Monitor.ExtDev_ptr);
     
-    if ((dev == NULL) || \
-        ((format_size % Storage_TabSize) != 0))
+    if ((dev == NULL) || !Storage_Monitor.init_state)
         return false;
 
-    for (uint16_t i = 0; i < format_size / Storage_TabSize; i++)
-    {
-        switch (dev->chip_type)
-        {
-            case Storage_ChipType_W25Qxx:
-                if (dev->api && dev->obj)
-                {
-                    if (format_size == 0)
-                        return true;
-
-                    if (To_DevW25Qxx_API(dev->api)->erase_sector(To_DevW25Qxx_OBJ(dev->obj), erase_addr) != DevW25Qxx_Ok)
-                        return false;
-                
-                    erase_addr += Storage_TabSize;
-                    format_size -= Storage_TabSize;
-                }
-                break;
-
-            default: break;
-        }
-    }
-
-    return false;
+    return StorageDev.firmware_format(dev, Storage_TabSize, App_Firmware_Addr, App_Firmware_Size);
 }
 
 static bool Storage_Frimware_Read(uint32_t addr_offset, uint8_t *p_data, uint16_t size)
 {
-    uint32_t read_addr = 0;
-    uint32_t section_addr = 0;
-    uint32_t read_size = 0;
-    StorageDevObj_TypeDef *dev = NULL;
-    dev = To_StorageDevObj_Ptr(Storage_Monitor.ExtDev_ptr);
+    StorageDevObj_TypeDef *dev = To_StorageDevObj_Ptr(Storage_Monitor.ExtDev_ptr);
 
     if ((dev == NULL) || \
+        !Storage_Monitor.init_state || \
         (p_data == NULL) || \
         (size == 0))
         return false;
         
-    read_addr = addr_offset + App_Firmware_Addr;
-    while (true)
-    {
-        section_addr = To_DevW25Qxx_API(dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(dev->obj), read_addr);
-        if (To_DevW25Qxx_API(dev->api)->read(To_DevW25Qxx_OBJ(dev->obj), section_addr, flash_read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
-            return false;
-
-        if ((read_addr + size) > (section_addr + Storage_TabSize))
-        {
-            read_size = Storage_TabSize - (read_addr - section_addr);
-            size -= read_size;
-            p_data += read_size;
-        }
-        else
-        {
-            read_size = size;
-            size = 0;
-        }
-
-        memcpy(p_data, &flash_read_tmp[read_addr - section_addr], read_size);
-        read_addr = section_addr + Storage_TabSize;
-
-        if (size == 0)
-            return true;
-    }
+    return StorageDev.firmware_read(dev, Storage_TabSize, \
+                                    App_Firmware_Addr, addr_offset, \
+                                    flash_read_tmp, sizeof(flash_read_tmp), \
+                                    p_data, size);
 }
 
 static bool Storage_Firmware_Write(Storage_MediumType_List medium, uint32_t addr_offset, uint8_t *p_data, uint16_t size)
