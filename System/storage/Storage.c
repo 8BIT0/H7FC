@@ -368,39 +368,39 @@ static bool Storage_Get_StorageInfo(void)
     memcpy(flash_tag, EXTERNAL_STORAGE_PAGE_TAG, EXTERNAL_PAGE_TAG_SIZE);
     p_Info = &Storage_Monitor.external_info;
     
-    if (Storage_ExtFlash_ParaSec_Read(From_Start_Address, page_data_tmp, Storage_TabSize))
+    if (!Storage_ExtFlash_ParaSec_Read(From_Start_Address, page_data_tmp, Storage_TabSize))
+        return false;
+
+    /* check internal storage tag */
+    Info_r = *(Storage_FlashInfo_TypeDef *)page_data_tmp;
+    
+    /* check storage tag */
+    /* check boot / sys / user  start addr */
+    if ((strcmp((const char *)Info_r.tag, flash_tag) != 0) || \
+        (Info_r.boot_sec.tab_addr == 0) || \
+        (Info_r.sys_sec.tab_addr == 0) || \
+        (Info_r.user_sec.tab_addr == 0) || \
+        (Info_r.boot_sec.tab_addr == Info_r.sys_sec.tab_addr) || \
+        (Info_r.boot_sec.tab_addr == Info_r.user_sec.tab_addr) || \
+        (Info_r.sys_sec.tab_addr == Info_r.user_sec.tab_addr))
+        return false;
+
+    /* get crc from storage baseinfo section check crc value */
+    memcpy(&crc_read, &page_data_tmp[OnChipFlash_Storage_InfoPageSize - sizeof(uint16_t)], sizeof(uint16_t));
+    crc = Common_CRC16(page_data_tmp, OnChipFlash_Storage_InfoPageSize - sizeof(crc));
+    if (crc != crc_read)
+        return false;
+
+    memset(page_data_tmp, 0, Storage_TabSize);
+    /* check  boot  section tab & free slot info & stored item */
+    /* check system section tab & free slot info & stored item */
+    /* check  user  section tab & free slot info & stored item */
+    if (Storage_Check_Tab(&Info_r.boot_sec) && \
+        Storage_Check_Tab(&Info_r.sys_sec) && \
+        Storage_Check_Tab(&Info_r.user_sec))
     {
-        /* check internal storage tag */
-        Info_r = *(Storage_FlashInfo_TypeDef *)page_data_tmp;
-        
-        /* check storage tag */
-        /* check boot / sys / user  start addr */
-        if ((strcmp((const char *)Info_r.tag, flash_tag) != 0) || \
-            (Info_r.boot_sec.tab_addr == 0) || \
-            (Info_r.sys_sec.tab_addr == 0) || \
-            (Info_r.user_sec.tab_addr == 0) || \
-            (Info_r.boot_sec.tab_addr == Info_r.sys_sec.tab_addr) || \
-            (Info_r.boot_sec.tab_addr == Info_r.user_sec.tab_addr) || \
-            (Info_r.sys_sec.tab_addr == Info_r.user_sec.tab_addr))
-            return false;
-
-        /* get crc from storage baseinfo section check crc value */
-        memcpy(&crc_read, &page_data_tmp[OnChipFlash_Storage_InfoPageSize - sizeof(uint16_t)], sizeof(uint16_t));
-        crc = Common_CRC16(page_data_tmp, OnChipFlash_Storage_InfoPageSize - sizeof(crc));
-        if (crc != crc_read)
-            return false;
-
-        memset(page_data_tmp, 0, Storage_TabSize);
-        /* check  boot  section tab & free slot info & stored item */
-        /* check system section tab & free slot info & stored item */
-        /* check  user  section tab & free slot info & stored item */
-        if (Storage_Check_Tab(&Info_r.boot_sec) && \
-            Storage_Check_Tab(&Info_r.sys_sec) && \
-            Storage_Check_Tab(&Info_r.user_sec))
-        {
-            memcpy(p_Info, &Info_r, sizeof(Storage_FlashInfo_TypeDef));
-            return true;
-        }
+        memcpy(p_Info, &Info_r, sizeof(Storage_FlashInfo_TypeDef));
+        return true;
     }
 #endif
 
