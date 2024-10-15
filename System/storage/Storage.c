@@ -816,6 +816,7 @@ static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behind_free
 /* developping & untested */
 static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_FreeSlot_TypeDef *slot_info, Storage_BaseSecInfo_TypeDef *p_Sec)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     Storage_FreeSlot_TypeDef FreeSlot_Info;
     uint32_t front_freeslot_addr = 0;
     uint32_t behind_freeslot_addr = 0;
@@ -909,13 +910,14 @@ static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, St
         /* update front free slot address */
         front_freeslot_addr = behind_freeslot_addr;
     }
-
+#endif
     return Storage_Delete_Error;
 }
 
 /* untested */
 static bool Storage_DeleteSingleDataSlot(uint32_t slot_addr, uint8_t *p_data, Storage_BaseSecInfo_TypeDef *p_Sec)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     uint32_t cur_slot_size = 0;
     uint32_t inc_free_space = sizeof(Storage_DataSlot_TypeDef);
     uint8_t *p_freeslot_start = NULL;
@@ -1001,13 +1003,14 @@ static bool Storage_DeleteSingleDataSlot(uint32_t slot_addr, uint8_t *p_data, St
         if (Storage_FreeSlot_CheckMerge(slot_addr, (Storage_FreeSlot_TypeDef *)p_freeslot_start, p_Sec) == Storage_Error_None)
             return true;
     }
-
+#endif
     return false;
 }
 
 /* developping & untested */
 static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_size, Storage_BaseSecInfo_TypeDef *p_Sec)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     Storage_DataSlot_TypeDef data_slot;
     uint8_t *p_read = page_data_tmp;
     uint8_t name_len = 0;
@@ -1081,11 +1084,15 @@ static bool Storage_DeleteAllDataSlot(uint32_t addr, char *name, uint32_t total_
         return false;
 
     return true;
+#else
+    return false;
+#endif
 }
 
 /* developping */
 static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List _class, const char *name, uint32_t size)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     Storage_FlashInfo_TypeDef *p_Flash = NULL;
     Storage_BaseSecInfo_TypeDef *p_Sec = NULL;
     Storage_ItemSearchOut_TypeDef ItemSearch;
@@ -1126,12 +1133,13 @@ static Storage_ErrorCode_List Storage_DeleteItem(Storage_ParaClassType_List _cla
         return Storage_ItemUpdate_Error;
 
     /* update base info */
-
+#endif
     return Storage_Delete_Error;
 }
 
 static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List _class, const char *name, uint8_t *p_data, uint16_t size)
 {
+#if (FLASH_CHIP_ENABLE_STATE == ON)
     uint8_t *crc_buf = NULL;
     uint8_t *slot_update_ptr = NULL;
     uint16_t base_info_crc = 0;
@@ -1377,6 +1385,9 @@ static Storage_ErrorCode_List Storage_CreateItem(Storage_ParaClassType_List _cla
     }
 
     return Storage_Error_None;
+#else
+    return Storage_No_Enough_Space;
+#endif
 }
 
 static bool Storage_Establish_Tab(Storage_ParaClassType_List class)
