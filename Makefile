@@ -108,6 +108,7 @@ common/util.c \
 common/compess/minilzo.c \
 System/storage/Storage.c \
 System/storage/Storage_Bus_Port.c \
+System/storage/Storage_Dev_Port.c \
 System/DataPipe/DataPipe.c \
 System/DataPipe/DataPipe_Def.c \
 System/FreeRTOS/croutine.c \

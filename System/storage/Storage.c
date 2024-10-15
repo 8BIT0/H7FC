@@ -10,6 +10,7 @@
 #include "util.h"
 #include "HW_Def.h"
 #include "Storage_Bus_Port.h"
+#include "Storage_Dev_Port.h"
 #include "Srv_OsCommon.h"
 #include "debug_util.h"
 
@@ -18,7 +19,6 @@
 
 #define Storage_Malloc(size)            SrvOsCommon.malloc(size)
 #define Storage_Free(ptr)               SrvOsCommon.free(ptr)
-#define Storage_GetSysTick_Ptr          SrvOsCommon.get_os_ms
 
 #define STORAGE_DEBUG                   1
 
@@ -37,7 +37,6 @@ static uint8_t page_data_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) = 
 static uint8_t flash_write_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
 static uint8_t flash_read_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
 
-static bool Storage_Set_DeviceObj(StorageDevObj_TypeDef *ext_dev);
 static bool Storage_Device_Init(StorageDevObj_TypeDef *ext_dev);
 
 static bool Storage_Clear_Tab(uint32_t addr, uint32_t tab_num);
@@ -126,7 +125,7 @@ static bool Storage_Init(StorageDevObj_TypeDef *ExtDev)
         return false;
     }
 
-    if (!Storage_Set_DeviceObj(ExtDev))
+    if (!StorageDev.set(ExtDev))
     {
         Storage_Monitor.ExternalFlash_Error_Code = Storage_ExtDevObj_Error;
         return false;
@@ -2144,67 +2143,6 @@ static bool Storage_ExtFlash_ParaSec_Erase(uint32_t addr_offset, uint32_t len)
 static bool Storage_ExtFlash_EraseAll(void)
 {
     /* still in developping */
-    return false;
-}
-
-static bool Storage_Set_DeviceObj(StorageDevObj_TypeDef *ext_dev)
-{
-    if ((ext_dev == NULL) || \
-        (ext_dev->api == NULL))
-        return false;
-
-    ext_dev->start_addr  = 0;
-    ext_dev->sector_num  = 0;
-    ext_dev->sector_size = 0;
-    ext_dev->total_size  = 0;
-    ext_dev->page_num    = 0;
-    ext_dev->page_size   = 0;
-
-    if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
-    {
-        ext_dev->obj = Storage_Malloc(sizeof(DevW25QxxObj_TypeDef));
-        if ((ext_dev->obj == NULL) || \
-            (To_DevW25Qxx_API(ext_dev->api)->info == NULL))
-            return false;
-
-        ext_dev->start_addr  = W25QXX_BASE_ADDRESS;
-        ext_dev->sector_num  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).subsector_num;
-        ext_dev->sector_size = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).subsector_size;
-        ext_dev->total_size  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).flash_size;
-        ext_dev->page_num    = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_num;
-        ext_dev->page_size   = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_size;
-
-        To_DevW25Qxx_OBJ(ext_dev->obj)->systick   = Storage_GetSysTick_Ptr;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->cs_ctl    = StoragePort_Api.cs_ctl;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_tx    = StoragePort_Api.bus_tx;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_rx    = StoragePort_Api.bus_rx;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->bus_trans = StoragePort_Api.bus_trans;
-        To_DevW25Qxx_OBJ(ext_dev->obj)->delay_ms  = SrvOsCommon.delay_ms;
-
-        return true;
-    }
-    else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
-    {
-        ext_dev->obj = Storage_Malloc(sizeof(DevW25NxxObj_TypeDef));
-        if ((ext_dev->obj == NULL) || \
-            (To_DevW25Nxx_API(ext_dev->api)->info == NULL))
-            return false;
-        
-        ext_dev->start_addr  = W25NXX_BASE_ADDRESS;
-        ext_dev->total_size  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).flash_size;
-        ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
-        ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;
-
-        To_DevW25Nxx_OBJ(ext_dev->obj)->systick   = Storage_GetSysTick_Ptr;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->cs_ctl    = StoragePort_Api.cs_ctl;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_tx    = StoragePort_Api.bus_tx;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_rx    = StoragePort_Api.bus_rx;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_trans = StoragePort_Api.bus_trans;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->delay_ms  = SrvOsCommon.delay_ms;
-
-        return true;
-    }
-    
     return false;
 }
 
