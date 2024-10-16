@@ -1,5 +1,5 @@
 #include "Task_Manager.h"
-#include "Task_Log.h"
+// #include "Task_Log.h"
 #include "Task_Control.h"
 #include "Task_Sample.h"
 #include "Task_Telemetry.h"
@@ -59,10 +59,6 @@ void Task_Manager_Init(void)
 
     /* cur ADC init */
 
-    DebugPort.free = SrvOsCommon.free;
-    DebugPort.malloc = SrvOsCommon.malloc;
-    Debug_Port_Init(&DebugPort);
-
     osThreadDef(ManagerTask, Task_Manager_CreateTask, osPriorityLow, 0, 1024);
     TaskManager_Handle = osThreadCreate(osThread(ManagerTask), NULL);
 
@@ -74,8 +70,12 @@ void Task_Manager_CreateTask(void const *arg)
     bool init = false;
     StorageDevObj_TypeDef *storage_ExtFlashObj = NULL;
 
+    DebugPort.free = SrvOsCommon.free;
+    DebugPort.malloc = SrvOsCommon.malloc;
+    Debug_Port_Init(&DebugPort);
+
     SYS_INFO("%s\r\n", Select_Hardware);
-    SYS_INFO("Hardware Version %d.%d.%d\r\n", Select_Hardware, HWVer[0], HWVer[1], HWVer[2]);
+    SYS_INFO("Hardware Version %d.%d.%d\r\n", HWVer[0], HWVer[1], HWVer[2]);
 
 #if (FLASH_CHIP_STATE == ON)
     storage_ExtFlashObj = (StorageDevObj_TypeDef *)SrvOsCommon.malloc(sizeof(StorageDevObj_TypeDef));
@@ -131,8 +131,9 @@ void Task_Manager_CreateTask(void const *arg)
             TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
 
 #if (SD_CARD_ENABLE_STATE  == ON)
-            osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
-            TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
+            /* lagecy */
+            // osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
+            // TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
 #else
             osThreadDef(BlackBoxTask, TaskBlackBox_Core, osPriorityNormal, 0, 4096);
             TaskLog_Handle = osThreadCreate(osThread(BlackBoxTask), NULL);

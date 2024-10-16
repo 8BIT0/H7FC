@@ -1,5 +1,6 @@
 #include "debug_util.h"
-#define MAX_PRINT_SIZE 512
+
+#define MAX_PRINT_SIZE ((uint16_t)512)
 
 static bool DebugPin_Init(DebugPinObj_TypeDef pin);
 static bool DebugPin_Ctl(DebugPinObj_TypeDef pin, bool state);
@@ -28,9 +29,7 @@ static bool DebugPin_Ctl(DebugPinObj_TypeDef debug_pin, bool state)
 
 void assert(bool state)
 {
-    if (state)
-        while (true)
-            ;
+    while (state);
 }
 
 static void Debug_PrintOut(DebugPrintObj_TypeDef *Obj, uint8_t *p_data, uint16_t len)
@@ -41,6 +40,12 @@ static void Debug_PrintOut(DebugPrintObj_TypeDef *Obj, uint8_t *p_data, uint16_t
 
 void Debug_Port_Init(DebugPrintObj_TypeDef *Obj)
 {
+#if defined STM32H743xx
+    To_BspUart_Obj(Obj->port_obj)->hdl = Obj->malloc(UART_HandleType_Size);
+    if (To_BspUart_Obj(Obj->port_obj)->hdl == NULL)
+        return;
+#endif
+
     if (!Obj->port_obj || !BspUart.init(To_BspUart_Obj(Obj->port_obj)))
     {
         Obj->port_obj = NULL;

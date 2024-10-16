@@ -19,14 +19,8 @@ extern "C" {
 
 extern const uint8_t HWVer[3];
 
-#define LED1_PIN GPIO_PIN_3
-#define LED1_PORT GPIOE
-
-#define LED2_PIN GPIO_PIN_4
-#define LED2_PORT GPIOE
-
-#define LED3_PIN GPIO_PIN_7
-#define LED3_PORT GPIOH
+#define LED1_PIN GPIO_PIN_7
+#define LED1_PORT GPIOH
 
 #define Baro_SPI_BUS NULL
 
@@ -235,7 +229,8 @@ extern BspIICObj_TypeDef Baro_BusCfg;
 #define CRSF_PIN_SWAP false
 
 /* radio uart */
-#define RADIO_PORT USART1
+// #define RADIO_PORT USART1
+#define RADIO_PORT NULL
 
 #define RADIO_TX_PIN UART1_TX_PIN
 #define RADIO_RX_PIN UART1_RX_PIN
@@ -342,8 +337,6 @@ extern DebugPinObj_TypeDef Debug_PB6;
 extern DebugPinObj_TypeDef Debug_PB10;
 
 extern DevLedObj_TypeDef Led1;
-extern DevLedObj_TypeDef Led2;
-extern DevLedObj_TypeDef Led3;
 
 extern BspGPIO_Obj_TypeDef USB_DctPin;
 extern BspGPIO_Obj_TypeDef PriIMU_CSPin;
@@ -374,7 +367,7 @@ void SecIMU_Dir_Tune(float *gyr, float *acc);
 
 #define BARO_TYPE Baro_Type_BMP280
 #define BARO_BUS_TYPE SrvBaro_Bus_SPI
-#define Sample_Blinkly Led2
+#define Sample_Blinkly Led1
 #define Noti_LED_Ptr NULL
 
 extern SPI_HandleTypeDef Baro_Bus_Instance;

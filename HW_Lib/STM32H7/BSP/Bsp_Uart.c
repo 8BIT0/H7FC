@@ -234,54 +234,44 @@ static int BspUart_SetIRQ(BspUARTObj_TypeDef *obj)
 
 static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 {
-    UART_HandleTypeDef uart_cfg;
     int8_t port_index;
 
     obj->init_state = false;
-
     port_index = BspUart_Init_Clock(obj);
 
     if ((port_index < 0) || (To_Uart_Handle_Ptr(obj->hdl) == NULL))
         return false;
 
-    uart_cfg.Instance = To_Uart_Instance(obj->instance);
-    uart_cfg.Init.BaudRate = obj->baudrate;
-    uart_cfg.Init.WordLength = UART_WORDLENGTH_8B;
-    uart_cfg.Init.StopBits = UART_STOPBITS_1;
-    uart_cfg.Init.Parity = UART_PARITY_NONE;
-    uart_cfg.Init.Mode = UART_MODE_TX_RX;
-    uart_cfg.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-    uart_cfg.Init.OverSampling = UART_OVERSAMPLING_16;
-    uart_cfg.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-    uart_cfg.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-    uart_cfg.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-    uart_cfg.AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
+    To_Uart_Handle_Ptr(obj->hdl)->Instance = To_Uart_Instance(obj->instance);
+    To_Uart_Handle_Ptr(obj->hdl)->Init.BaudRate = obj->baudrate;
+    To_Uart_Handle_Ptr(obj->hdl)->Init.WordLength = UART_WORDLENGTH_8B;
+    To_Uart_Handle_Ptr(obj->hdl)->Init.StopBits = UART_STOPBITS_1;
+    To_Uart_Handle_Ptr(obj->hdl)->Init.Parity = UART_PARITY_NONE;
+    To_Uart_Handle_Ptr(obj->hdl)->Init.Mode = UART_MODE_TX_RX;
+    To_Uart_Handle_Ptr(obj->hdl)->Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    To_Uart_Handle_Ptr(obj->hdl)->Init.OverSampling = UART_OVERSAMPLING_16;
+    To_Uart_Handle_Ptr(obj->hdl)->Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+    To_Uart_Handle_Ptr(obj->hdl)->Init.ClockPrescaler = UART_PRESCALER_DIV1;
+    To_Uart_Handle_Ptr(obj->hdl)->AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+    To_Uart_Handle_Ptr(obj->hdl)->AdvancedInit.OverrunDisable = UART_ADVFEATURE_OVERRUN_DISABLE;
 
     /* swap tx rx pin */
     if (obj->pin_swap)
-        uart_cfg.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
-
-    memcpy(To_Uart_Handle_Ptr(obj->hdl), &uart_cfg, sizeof(UART_HandleTypeDef));
+        To_Uart_Handle_Ptr(obj->hdl)->AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
 
     if (HAL_UART_Init(To_Uart_Handle_Ptr(obj->hdl)) != HAL_OK)
         return false;
 
+    obj->irq_type = BspUart_IRQ_Type_Idle;
     if (BspUart_Init_DMA(obj) < 0)
-    {
         obj->irq_type = BspUart_IRQ_Type_Byte;
-    }
-    else
-        obj->irq_type = BspUart_IRQ_Type_Idle;
 
     uint32_t tick = HAL_GetTick();
     while(HAL_GetTick() - tick < 50);
 
-    if (HAL_UARTEx_SetTxFifoThreshold(&uart_cfg, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK ||
-        HAL_UARTEx_SetRxFifoThreshold(&uart_cfg, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK ||
-        HAL_UARTEx_DisableFifoMode(&uart_cfg) != HAL_OK)
-        return false;
-
-    if ((obj->rx_buf == NULL) || (obj->rx_size == 0))
+    if (HAL_UARTEx_SetTxFifoThreshold(To_Uart_Handle_Ptr(obj->hdl), UART_TXFIFO_THRESHOLD_1_8) != HAL_OK ||
+        HAL_UARTEx_SetRxFifoThreshold(To_Uart_Handle_Ptr(obj->hdl), UART_RXFIFO_THRESHOLD_1_8) != HAL_OK ||
+        HAL_UARTEx_DisableFifoMode(To_Uart_Handle_Ptr(obj->hdl)) != HAL_OK)
         return false;
 
     BspUart_Obj_List[port_index] = obj;
@@ -291,16 +281,9 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
     /* enable irq callback */
     switch (obj->irq_type)
     {
-        case BspUart_IRQ_Type_Idle:
-            __HAL_UART_ENABLE_IT(To_Uart_Handle_Ptr(obj->hdl), UART_IT_IDLE);
-            break;
-
-        case BspUart_IRQ_Type_Byte:
-            __HAL_UART_ENABLE_IT(To_Uart_Handle_Ptr(obj->hdl), UART_IT_RXNE | UART_IT_ERR | UART_IT_ORE);
-            break;
-
-        default:
-            return false;
+        case BspUart_IRQ_Type_Idle: __HAL_UART_ENABLE_IT(To_Uart_Handle_Ptr(obj->hdl), UART_IT_IDLE); break;
+        case BspUart_IRQ_Type_Byte: __HAL_UART_ENABLE_IT(To_Uart_Handle_Ptr(obj->hdl), UART_IT_RXNE | UART_IT_ERR | UART_IT_ORE); break;
+        default: return false;
     }
 
     __HAL_UART_DISABLE_IT(To_Uart_Handle_Ptr(obj->hdl), UART_IT_ERR);
@@ -311,6 +294,9 @@ static bool BspUart_Init(BspUARTObj_TypeDef *obj)
 
     if (obj->irq_type == BspUart_IRQ_Type_Idle)
     {
+        if ((obj->rx_buf == NULL) || (obj->rx_size == 0))
+            return false;
+        
         /* start dma receive data */
         HAL_UART_Receive_DMA(To_Uart_Handle_Ptr(obj->hdl), obj->rx_buf, obj->rx_size);
     }
@@ -400,22 +386,27 @@ static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t 
     if(obj->monitor.tx_success_cnt != obj->monitor.tx_cnt)
         return false;
 
-    /* send data */
-    switch (HAL_UART_Transmit_DMA(To_Uart_Handle_Ptr(obj->hdl), tx_buf, size))
+    if (obj->tx_dma_hdl)
     {
-        case HAL_OK:
-            obj->monitor.tx_cnt++;
-            break;
+        /* send data */
+        switch (HAL_UART_Transmit_DMA(To_Uart_Handle_Ptr(obj->hdl), tx_buf, size))
+        {
+            case HAL_OK:
+                obj->monitor.tx_cnt++;
+                break;
 
-        case HAL_ERROR:
-        case HAL_BUSY:
-            obj->monitor.tx_err_cnt++;
-            return false;
+            case HAL_ERROR:
+            case HAL_BUSY:
+                obj->monitor.tx_err_cnt++;
+                return false;
 
-        default:
-            obj->monitor.tx_unknow_err_cnt++;
-            return false;
+            default:
+                obj->monitor.tx_unknow_err_cnt++;
+                return false;
+        }
     }
+    else
+        HAL_UART_Transmit(To_Uart_Handle_Ptr(obj->hdl), tx_buf, size, 10);
 
     return true;
 }

@@ -357,8 +357,8 @@ static void TaskFrameCTL_RadioPort_Init(FrameCTL_PortMonitor_TypeDef *monitor)
                 if(monitor->Uart_Port[i].p_tx_semphr)
                 {
                     /* set callback */
-                    BspUart.set_rx_callback(monitor->Uart_Port[i].Obj, TaskFrameCTL_Port_Rx_Callback);
-                    BspUart.set_tx_callback(monitor->Uart_Port[i].Obj, TaskFrameCTL_Port_TxCplt_Callback);
+                    BspUart.set_rx_callback(monitor->Uart_Port[i].Obj, (BspUART_Callback)TaskFrameCTL_Port_Rx_Callback);
+                    BspUart.set_tx_callback(monitor->Uart_Port[i].Obj, (BspUART_Callback)TaskFrameCTL_Port_TxCplt_Callback);
 
                     monitor->Uart_Port[i].RecObj.PortObj_addr = (uint32_t)&(monitor->Uart_Port[i]);
                     monitor->Uart_Port[i].init_state = true;
@@ -681,8 +681,10 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
     {
         case Stage_TimeOut:
             if (cli && shell_obj)
+            {
                 shellPrint(shell_obj, "\r\n");
                 shellPrint(shell_obj, "[ Upgrade ] Communicate time out\r\n");
+            }
         case Stage_Adapter_Error:
             if (cli && shell_obj)
                 shellPrint(shell_obj, "[ Upgrade ] Error\r\n");
