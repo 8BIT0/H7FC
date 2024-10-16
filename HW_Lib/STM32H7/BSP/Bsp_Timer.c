@@ -343,6 +343,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     __HAL_TIM_SET_PRESCALER(To_TIM_Handle_Ptr(obj->tim_hdl), prescale);
     __HAL_TIM_SET_AUTORELOAD(To_TIM_Handle_Ptr(obj->tim_hdl), auto_reload);
 
+    #warning "timer bug"
     // To_TIM_Handle_Ptr(obj->tim_hdl)->Instance = instance;
     // To_TIM_Handle_Ptr(obj->tim_hdl)->Init.Prescaler = 0;
     // To_TIM_Handle_Ptr(obj->tim_hdl)->Init.CounterMode = TIM_COUNTERMODE_UP;
