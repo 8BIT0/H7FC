@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-extern const uint8_t HWVer[3];
-
 #include "Bsp_GPIO.h"
 #include "Bsp_IIC.h"
 #include "Bsp_DMA.h"
@@ -21,6 +19,8 @@ extern const uint8_t HWVer[3];
 
 /* device support */
 #include "Dev_W25Qxx.h"
+
+extern const uint8_t HWVer[3];
 
 #define RECEIVER_PORT USART3
 #define CRSF_PIN_SWAP false

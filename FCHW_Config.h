@@ -32,8 +32,8 @@
 #define IMU_CNT 2
 #define BARO_CNT 1
 #define MAG_CNT 1
-#define SD_CARD_ENABLE_STATE ON
-#define FLASH_CHIP_ENABLE_STATE ON
+#define SD_CARD_ENABLE_STATE OFF
+#define FLASH_CHIP_ENABLE_STATE OFF
 #define RADIO_NUM 1
 
 #define Flash_MaxRWSize (2 Kb)

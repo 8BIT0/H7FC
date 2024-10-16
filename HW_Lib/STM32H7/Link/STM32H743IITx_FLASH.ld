@@ -136,6 +136,11 @@ SECTIONS
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+
+    . = ALIGN(4);
+    _shell_command_start = .;
+    KEEP (*(shellCommand))
+    _shell_command_end = .;
     . = ALIGN(4);
   } >FLASH
 
@@ -206,9 +211,9 @@ SECTIONS
     PROVIDE ( end = . );
     PROVIDE ( _end = . );
     . = . + _Min_Heap_Size;
-    ._sstack = .;
+    _sstack = .;
     . = . + _Min_Stack_Size;
-    ._estack = .;
+    _estack = .;
     . = ALIGN(8);
   } >DTCMRAM
 

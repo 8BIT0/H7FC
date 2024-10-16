@@ -10,7 +10,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stdio.h>
 
-#if defined MATEKH743_V1_5
+#if defined STM32H743xx
 #include "Bsp_SDMMC.h"
 #endif
 
@@ -45,7 +45,7 @@ typedef struct
 
 typedef struct
 {
-#if defined MATEKH743_V1_5
+#if defined STM32H743xx
     BspSDMMC_Obj_TypeDef SDMMC_Obj;
 #endif
 
