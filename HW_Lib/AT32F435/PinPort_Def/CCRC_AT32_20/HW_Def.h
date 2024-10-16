@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+extern const uint8_t HWVer[3];
+
 #include "Bsp_GPIO.h"
 #include "Bsp_IIC.h"
 #include "Bsp_DMA.h"
@@ -212,6 +214,14 @@ extern DebugPrintObj_TypeDef DebugPort;
 void PriIMU_Dir_Tune(float *gyr, float *acc);
 
 #define Select_Hardware "Hardware CCRC_AT32"
+
+#define BARO_TYPE Baro_Type_DPS310
+#define BARO_BUS_TYPE SrvBaro_Bus_IIC
+#define Sample_Blinkly Led1
+#define Noti_LED_Ptr &Led2
+
+extern void *Baro_Bus_Instance;
+extern BspGPIO_Obj_TypeDef *p_Baro_CS;
 
 #ifdef __cplusplus
 }

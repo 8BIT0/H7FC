@@ -1,5 +1,7 @@
 #include "HW_Def.h"
 
+const uint8_t HWVer[3] = {0, 0, 1};
+
 DebugPinObj_TypeDef Debug_PC0 = {
     .port = GPIOC,
     .pin = GPIO_PIN_0,
@@ -220,44 +222,47 @@ void SecIMU_Dir_Tune(float *gyr, float *acc)
     }
 }
 
+SPI_HandleTypeDef Baro_Bus_Instance;
+BspGPIO_Obj_TypeDef *p_Baro_CS = NULL;
+
 /* debug print port uart4 */
 #define DEBUG_PORT_BAUDRATE 460800
 #define DEBUG_P4_PORT UART4
-#define DEBUG_P4_TX_PIN_INIT_STATE GPIO_PULL_NONE
-#define DEBUG_P4_RX_PIN_INIT_STATE GPIO_PULL_NONE
-#define DEBUG_P4_TX_PIN_ALT
-#define DEBUG_P4_RX_PIN_ALT
+#define DEBUG_P4_TX_PIN_INIT_STATE GPIO_NOPULL
+#define DEBUG_P4_RX_PIN_INIT_STATE GPIO_NOPULL
+#define DEBUG_P4_TX_PIN_ALT GPIO_AF8_UART4
+#define DEBUG_P4_RX_PIN_ALT GPIO_AF8_UART4
 #define DEBUG_P4_TX_DMA Bsp_DMA_None
 #define DEBUG_P4_TX_DMA_STREAM Bsp_DMA_Stream_None
 #define DEBUG_P4_RX_DMA Bsp_DMA_None
 #define DEBUG_P4_RX_DMA_STREAM Bsp_DMA_Stream_None
-#define DEBUG_P4_TX_PIN
-#define DEBUG_P4_RX_PIN
-#define DEBUG_P4_TX_PORT
-#define DEBUG_P4_RX_PORT
+#define DEBUG_P4_TX_PIN UART4_TX_PIN
+#define DEBUG_P4_RX_PIN UART4_RX_PIN
+#define DEBUG_P4_TX_PORT UART4_TX_PORT
+#define DEBUG_P4_RX_PORT UART4_RX_PORT
 
 static BspUARTObj_TypeDef Debug_Port4_Obj = {
-    // .instance = DEBUG_P4_PORT,
-    // .baudrate = DEBUG_PORT_BAUDRATE,
-    // .tx_io = {
-    //     .init_state = DEBUG_P4_TX_PIN_INIT_STATE,
-    //     .pin = DEBUG_P4_TX_PIN,
-    //     .port = DEBUG_P4_TX_PORT,
-    //     .alternate = DEBUG_P4_TX_PIN_ALT,
-    // }, 
-    // .rx_io = {
-    //     .init_state = DEBUG_P4_RX_PIN_INIT_STATE,
-    //     .pin = DEBUG_P4_RX_PIN,
-    //     .port = DEBUG_P4_RX_PORT,
-    //     .alternate = DEBUG_P4_RX_PIN_ALT,
-    // }, 
-    // .pin_swap = false,
-    // .rx_dma = DEBUG_P4_RX_DMA,
-    // .rx_stream = DEBUG_P4_RX_DMA_STREAM,
-    // .tx_dma = DEBUG_P4_TX_DMA,
-    // .tx_stream = DEBUG_P4_TX_DMA_STREAM,
-    // .rx_buf = NULL,
-    // .rx_size = 0,
+    .instance = DEBUG_P4_PORT,
+    .baudrate = DEBUG_PORT_BAUDRATE,
+    .tx_io = {
+        .init_state = DEBUG_P4_TX_PIN_INIT_STATE,
+        .pin = DEBUG_P4_TX_PIN,
+        .port = DEBUG_P4_TX_PORT,
+        .alternate = DEBUG_P4_TX_PIN_ALT,
+    }, 
+    .rx_io = {
+        .init_state = DEBUG_P4_RX_PIN_INIT_STATE,
+        .pin = DEBUG_P4_RX_PIN,
+        .port = DEBUG_P4_RX_PORT,
+        .alternate = DEBUG_P4_RX_PIN_ALT,
+    }, 
+    .pin_swap = false,
+    .rx_dma = DEBUG_P4_RX_DMA,
+    .rx_stream = DEBUG_P4_RX_DMA_STREAM,
+    .tx_dma = DEBUG_P4_TX_DMA,
+    .tx_stream = DEBUG_P4_TX_DMA_STREAM,
+    .rx_buf = NULL,
+    .rx_size = 0,
 };
 
 DebugPrintObj_TypeDef DebugPort = {

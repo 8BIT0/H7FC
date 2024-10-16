@@ -1,5 +1,7 @@
 #include "HW_Def.h"
 
+const uint8_t HWVer[3] = {0, 0, 5};
+
 DebugPinObj_TypeDef Debug_PC0 = {
     .port = GPIOC,
     .pin = GPIO_PIN_0,
@@ -219,6 +221,9 @@ void SecIMU_Dir_Tune(float *gyr, float *acc)
         acc[Axis_Y] = -acc_tmp[Axis_Y];
     }
 }
+
+SPI_HandleTypeDef Baro_Bus_Instance;
+BspGPIO_Obj_TypeDef *p_Baro_CS = NULL;
 
 /* debug print port uart4 */
 #define DEBUG_PORT_BAUDRATE 460800

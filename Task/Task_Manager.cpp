@@ -75,6 +75,7 @@ void Task_Manager_CreateTask(void const *arg)
     StorageDevObj_TypeDef *storage_ExtFlashObj = NULL;
 
     SYS_INFO("%s\r\n", Select_Hardware);
+    SYS_INFO("Hardware Version %d.%d.%d\r\n", Select_Hardware, HWVer[0], HWVer[1], HWVer[2]);
 
 #if (FLASH_CHIP_STATE == ON)
     storage_ExtFlashObj = (StorageDevObj_TypeDef *)SrvOsCommon.malloc(sizeof(StorageDevObj_TypeDef));

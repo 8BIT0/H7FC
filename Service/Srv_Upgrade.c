@@ -21,15 +21,6 @@
 #define DEFAULT_WINDOW_SIZE         100     /* unit: ms */
 
 const uint8_t AppVer[3] = {0, 0, 17};
-#if defined MATEKH743_V1_5
-const uint8_t HWVer[3] = {0, 0, 1};
-#elif defined BATEAT32F435_AIO
-const uint8_t HWVer[3] = {0, 0, 2};
-#elif defined CCRC_AT32_20
-const uint8_t HWVer[3] = {0, 0, 3};
-#elif defined CAIFPV_AIO
-const uint8_t HWVer[3] = {0, 0, 4};
-#endif
 
 #define AppBref "First Version of H7FC"
 #define AppCompileData __DATA__

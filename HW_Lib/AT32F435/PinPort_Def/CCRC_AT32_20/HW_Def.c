@@ -36,6 +36,8 @@
 // dma pin B01 3
 // # pin B01: DMA1 Channel 0 Channel 64
 
+const uint8_t HWVer[3] = {0, 0, 3};
+
 /* Led 1 C13 */
 BspGPIO_Port_TypeDef Led1_Port = {
     .port = GPIOC,
@@ -315,6 +317,9 @@ void PriIMU_Dir_Tune(float *gyr, float *acc)
         acc[Axis_Z] = -acc_tmp[Axis_Z];
     }
 }
+
+extern void *Baro_Bus_Instance = NULL;
+extern BspGPIO_Obj_TypeDef *p_Baro_CS = NULL;
 
 /* debug print port uart4 */
 #define DEBUG_PORT_BAUDRATE 460800

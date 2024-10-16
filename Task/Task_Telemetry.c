@@ -30,16 +30,6 @@
 #include "Srv_ComProto.h"
 #include "Storage.h"
 
-#if defined MATEKH743_V1_5
-#define Noti_LED_Ptr NULL
-#elif defined NEURE
-#define Noti_LED_Ptr NULL
-#elif defined BATEAT32F435_AIO
-#define Noti_LED_Ptr NULL
-#elif defined CAIFPV_AIO || defined CCRC_AT32_20
-#define Noti_LED_Ptr &Led2
-#endif
-
 static SrvReceiverObj_TypeDef Receiver_Obj;
 static Telemetry_Monitor_TypeDef Telemetry_Monitor;
 static uint32_t TaskTelemetry_Period = 0;

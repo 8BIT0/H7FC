@@ -11,12 +11,6 @@
 #define ToBoolStr(x) x ? "true" : "false"
 #define DATAPIPE_TRANS_TIMEOUT_100Ms 100
 
-#if defined MATEKH743_V1_5 || defined NEURE
-#define Sample_Blinkly Led2
-#elif defined BATEAT32F435_AIO || defined CCRC_AT32_20 || defined CAIFPV_AIO
-#define Sample_Blinkly Led1
-#endif
-
 /* internal var */
 static uint32_t TaskSample_Period = 0;
 static bool sample_enable = false;

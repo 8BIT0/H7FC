@@ -10,19 +10,6 @@
 #define SrvSensorMonitor_GetSampleInterval(period) (1000 / period)
 
 #define FLOW_TYPE Flow_3901U
-#if defined MATEKH743_V1_5
-#define BARO_TYPE Baro_Type_DPS310
-#define BARO_BUS_TYPE SrvBaro_Bus_IIC
-#elif defined NEURE
-#define BARO_TYPE Baro_Type_BMP280
-#define BARO_BUS_TYPE SrvBaro_Bus_SPI
-#elif defined BATEAT32F435_AIO
-#define BARO_TYPE Baro_Type_BMP280
-#define BARO_BUS_TYPE SrvBaro_Bus_SPI
-#elif defined CCRC_AT32_20 || defined CAIFPV_AIO
-#define BARO_TYPE Baro_Type_DPS310
-#define BARO_BUS_TYPE SrvBaro_Bus_IIC
-#endif
 
 #define MONITOR_TAG "[ SENSOR MONITOR INFO ] "
 #define MONITOR_INFO(fmt, ...) Debug_Print(&DebugPort, MONITOR_TAG, fmt, ##__VA_ARGS__)

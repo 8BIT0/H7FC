@@ -1,5 +1,7 @@
 #include "HW_Def.h"
 
+const uint8_t HWVer[3] = {0, 0, 2};
+
 BspGPIO_Port_TypeDef DBG_PC_Port = {
     .port = GPIOC,
 };
@@ -267,6 +269,9 @@ void PriIMU_Dir_Tune(float *gyr, float *acc)
         acc[Axis_Z] = acc_tmp[Axis_Z];
     }
 }
+
+void *Baro_Bus_Instance = NULL;
+BspGPIO_Obj_TypeDef *p_Baro_CS = &Baro_CSPin;
 
 /* debug print port uart4 */
 #define DEBUG_PORT_BAUDRATE 460800

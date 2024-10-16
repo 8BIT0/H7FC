@@ -27,19 +27,6 @@ SrvBaroObj_TypeDef SrvBaroObj = {
     .sensor_data = NULL,
 };
 
-#if defined MATEKH743_V1_5 || defined NEURE
-#if defined  STM32H743xx
-static SPI_HandleTypeDef Baro_Bus_Instance;
-#endif
-static BspGPIO_Obj_TypeDef *p_Baro_CS = NULL;
-#elif defined BATEAT32F435_AIO
-static void *Baro_Bus_Instance = NULL;
-static BspGPIO_Obj_TypeDef *p_Baro_CS = &Baro_CSPin;
-#elif defined CCRC_AT32_20 || defined CAIFPV_AIO
-static void *Baro_Bus_Instance = NULL;
-static BspGPIO_Obj_TypeDef *p_Baro_CS = NULL;
-#endif
-
 SrvBaroBusObj_TypeDef SrvBaroBus = {
     .type = SrvBaro_Bus_None,
     .init = false,

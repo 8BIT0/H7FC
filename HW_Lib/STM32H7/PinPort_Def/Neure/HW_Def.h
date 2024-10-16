@@ -17,6 +17,8 @@ extern "C" {
 #include "../../../../FCHW_Config.h"
 #include "../../common/gen_physic_def/imu_data.h"
 
+extern const uint8_t HWVer[3];
+
 #define LED1_PIN GPIO_PIN_3
 #define LED1_PORT GPIOE
 
@@ -327,6 +329,14 @@ void PriIMU_Dir_Tune(float *gyr, float *acc);
 void SecIMU_Dir_Tune(float *gyr, float *acc);
 
 #define Select_Hardware "Hardware NEURE"
+
+#define BARO_TYPE Baro_Type_BMP280
+#define BARO_BUS_TYPE SrvBaro_Bus_SPI
+#define Sample_Blinkly Led2
+#define Noti_LED_Ptr NULL
+
+extern SPI_HandleTypeDef Baro_Bus_Instance;
+extern BspGPIO_Obj_TypeDef *p_Baro_CS;
 
 #ifdef __cplusplus
 }
