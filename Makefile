@@ -131,9 +131,7 @@ System/shell/shell_port.c \
 System/shell/shell.c
 ifeq ($(PLATFORM), $(PLATFORM_STM32H7))
 C_SOURCES +=  \
-Task/Task_Log.c \
 Device/Dev_Card.c \
-System/diskio/DiskIO.c \
 System/kernel/kernel_stm32h743.c \
 HW_Lib/STM32H7/BSP/Bsp_GPIO.c \
 HW_Lib/STM32H7/BSP/Bsp_SPI.c \
@@ -179,7 +177,9 @@ HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd.c \
 HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd_ex.c \
 HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd.c \
 HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_sdmmc.c \
-HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c 
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c
+# System/diskio/DiskIO.c
+# Task/Task_Log.c
 ifeq ($(HARDWARE), $(HW_MATEK_H743_V1_5))
 C_SOURCES +=  \
 HW_Lib/STM32H7/PinPort_Def/MATEK_H743_V1_5/HW_Def.c

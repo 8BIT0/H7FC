@@ -8,6 +8,7 @@
 #include "task.h"
 #include "debug_util.h"
 #include "HW_Def.h"
+#include "Srv_Actuator.h"
 
 extern uint32_t _sstack;
 extern uint32_t _estack;
@@ -94,5 +95,10 @@ void trace_analysiser(uint32_t lr, uint32_t sp)
     DEBUG_INFO("lr  : %08x\r\n", ((uint32_t *)err_stack)[5]);
     DEBUG_INFO("pc  : %08x\r\n", ((uint32_t *)err_stack)[6]);
     DEBUG_INFO("psr : %08x\r\n", ((uint32_t *)err_stack)[7]);
+
+    /* lock all moto */
+    SrvActuator.lock();
+
+    while (1);
 }
 

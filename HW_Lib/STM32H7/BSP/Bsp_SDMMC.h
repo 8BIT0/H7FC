@@ -98,9 +98,9 @@ typedef struct
 typedef struct
 {
     bool (*init)(BspSDMMC_Obj_TypeDef *obj);
-    bool (*read)(BspSDMMC_Obj_TypeDef *obj, uint32_t addr, uint8_t *data, uint32_t size);
-    bool (*write)(BspSDMMC_Obj_TypeDef *obj, uint32_t addr, uint8_t *data, uint32_t size);
-    bool (*erase)(BspSDMMC_Obj_TypeDef *obj, uint32_t addr, uint32_t start_addr, uint32_t end_addr);
+    bool (*read)(BspSDMMC_Obj_TypeDef *obj, uint8_t *data, uint32_t addr, uint32_t size);
+    bool (*write)(BspSDMMC_Obj_TypeDef *obj, uint8_t *data, uint32_t addr, uint32_t size);
+    bool (*erase)(BspSDMMC_Obj_TypeDef *obj, uint32_t start_addr, uint32_t end_addr);
     bool (*card_status)(BspSDMMC_Obj_TypeDef *obj);
     bool (*info)(BspSDMMC_Obj_TypeDef *obj, HAL_SD_CardInfoTypeDef *info);
     void (*set_callback)(BspSDMMC_Obj_TypeDef *obj, BspSDMMC_Callback_TypeList type, SDMMC_Callback cb);

@@ -110,6 +110,8 @@ static IRQn_Type BspGPIO_GetExti_IRQnID(BspGPIO_Obj_TypeDef IO_Obj)
         assert(true);
         break;
     }
+
+    return 0;
 }
 
 static bool BspGPIO_ExtiSetMode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_List mode)
@@ -153,12 +155,15 @@ static bool BspGPIO_ExtiSetMode(BspGPIO_Obj_TypeDef IO_Obj, BspGPOP_ExtiMode_Lis
 
     HAL_NVIC_SetPriority(BspGPIO_GetExti_IRQnID(IO_Obj), 5, 0);
     HAL_NVIC_EnableIRQ(BspGPIO_GetExti_IRQnID(IO_Obj));
+
+    return true;
 }
 
 static bool BspGPIO_ResetExtiCallback(BspGPIO_Obj_TypeDef IO_Obj, EXTI_Callback callback)
 {
     /* set exti callback */
     EXTI_CallBack_List[BspGPIO_GetEXTI_Index(IO_Obj.pin)] = callback;
+    return true;
 }
 
 static bool BspGPIO_Alternate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode)

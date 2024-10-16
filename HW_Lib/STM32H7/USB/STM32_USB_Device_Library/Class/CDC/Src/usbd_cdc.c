@@ -732,6 +732,7 @@ static uint8_t USBD_CDC_SOF(USBD_HandleTypeDef *pdev)
 {
   if (((USBD_CDC_ItfTypeDef *)pdev->pUserData)->sof)
     ((USBD_CDC_ItfTypeDef *)pdev->pUserData)->sof();
+  return 0;
 }
 
 /**

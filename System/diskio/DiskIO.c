@@ -181,10 +181,10 @@ static bool ExtDisk_Init(Disk_FATFileSys_TypeDef *FATObj)
 #if (STORAGE_MODULE & EXTERNAL_INTERFACE_TYPE_TF_CARD)
     memset(FATObj, 0, sizeof(Disk_FATFileSys_TypeDef));
 
-    DevTFCard_Obj.SDMMC_Obj.pin = &SDMMC_Pin;
+    DevTFCard_Obj.SDMMC_Obj.pin = (Disk_CardFSINFO_Typedef *)&SDMMC_Pin;
 
     Disk_Info.module_reg.section.TFCard_modlue_EN = true;
-    Disk_Info.module_error_reg.section.TFCard_module_error_code = DevCard.Init(&DevTFCard_Obj.SDMMC_Obj);
+    Disk_Info.module_error_reg.section.TFCard_module_error_code = DevCard.Init(&DevTFCard_Obj);
 
     /* trigger error */
     if (Disk_Info.module_error_reg.section.TFCard_module_error_code)
@@ -454,7 +454,7 @@ static void Disk_UpdateFSINFO(Disk_FATFileSys_TypeDef *FATObj, uint32_t remain_c
 
     DevCard.read(&DevTFCard_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
-    FSInfo_Ptr = Disk_Card_SectionBuff;
+    FSInfo_Ptr = (Disk_CardFSINFO_Typedef *)Disk_Card_SectionBuff;
     LEndianWord2BytesArray(remain_clus, FSInfo_Ptr->remain_cluster);
 
     DevCard.write(&DevTFCard_Obj, FATObj->FSInfo_SecNo, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
@@ -636,7 +636,7 @@ static FATCluster_Addr Disk_Get_NextCluster(Disk_FATFileSys_TypeDef *FATObj, FAT
 static uint32_t Disk_GetPath_Layer(const char *fpath)
 {
     uint32_t layer = 0;
-    char *fpath_remain = fpath;
+    char *fpath_remain = (char *)fpath;
 
     while (fpath_remain != 0)
     {
@@ -962,7 +962,7 @@ static bool Disk_Establish_ClusterLink(Disk_FATFileSys_TypeDef *FATObj, const FA
     sec_index += FATObj->FAT_Sections;
     // DevCard.read(&DevTFCard_Obj.SDMMC_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
 
-    Data_Ptr = (uint32_t)&Disk_Card_SectionBuff[sec_item_index];
+    Data_Ptr = (uint32_t *)&Disk_Card_SectionBuff[sec_item_index];
     LEndianWord2BytesArray(nxt_cluster, (uint8_t *)Data_Ptr);
 
     state = DevCard.write(&DevTFCard_Obj, sec_index, Disk_Card_SectionBuff, DISK_CARD_SECTION_SZIE, 1);
@@ -1031,7 +1031,7 @@ static bool Disk_Update_FreeCluster(Disk_FATFileSys_TypeDef *FATObj)
 
             for (free_index = 0; free_index < DISK_FAT_CLUSTER_ITEM_SUM; free_index++)
             {
-                cluster_tmp = LEndian2Word(&(((Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff)->table_item[free_index]));
+                cluster_tmp = LEndian2Word((const uint8_t *)&(((Disk_FAT_ItemTable_TypeDef *)Disk_Card_SectionBuff)->table_item[free_index]));
 
                 if (cluster_tmp == 0)
                 {
@@ -1655,7 +1655,7 @@ static Disk_Write_State Disk_WriteData_ToFile(Disk_FATFileSys_TypeDef *FATObj, D
     if ((FATObj == NULL) || (!FATObj->init) || (FileObj == NULL) || (p_data == NULL) || (len == 0) || (FileObj->cursor_pos > FATObj->BytePerSection))
         return Disk_Write_Error;
 
-    if (memcmp(FileObj->info.name, 0, sizeof(FileObj->info.name)) == 0)
+    if (memcmp(FileObj->info.name, "\0", sizeof(FileObj->info.name)) == 0)
         return Disk_Write_Error;
 
     if (FileObj->info.size == 0)

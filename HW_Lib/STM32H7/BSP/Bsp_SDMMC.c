@@ -297,7 +297,7 @@ void HAL_SD_ErrorCallback(SD_HandleTypeDef *hsd)
     {
         if (hsd->ErrorCode & HAL_SD_ERROR_TX_UNDERRUN)
         {
-            HAL_SD_Abort(&hsd);
+            HAL_SD_Abort(hsd);
         }
 
         if(BspSCMMC_Callback_List[BspSDMMC_1_Callback].Error_Callback)

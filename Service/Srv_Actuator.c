@@ -710,7 +710,7 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
         }
 
 #if defined STM32H743xx
-        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->tim_hdl = Actuator_Malloc(sizeof(TIM_HandleType_Size));
+        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->tim_hdl = Actuator_Malloc(TIM_HandleType_Size);
         if (To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->tim_hdl == NULL)
         {
             Actuator_Free(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->tim_hdl);
@@ -718,7 +718,7 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
             return false;
         }
 
-        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->dma_hdl = Actuator_Malloc(sizeof(TIM_DMA_HandleType_Size));
+        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->dma_hdl = Actuator_Malloc(TIM_DMA_HandleType_Size);
         if (To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->dma_hdl == NULL)
         {
             Actuator_Free(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->tim_hdl);

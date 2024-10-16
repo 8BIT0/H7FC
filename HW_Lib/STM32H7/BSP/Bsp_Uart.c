@@ -388,13 +388,11 @@ UART_HandleTypeDef *BspUart_GetObj_Handle(BspUART_Port_List index)
     if (index >= Bsp_UART_Port_Sum)
         return NULL;
 
-    return &(BspUart_Obj_List[index]->hdl);
+    return (UART_HandleTypeDef *)(BspUart_Obj_List[index]->hdl);
 }
 
 static bool BspUart_Transfer(BspUARTObj_TypeDef *obj, uint8_t *tx_buf, uint16_t size)
 {
-    uint8_t time_out = BspUart_Opr_TimeOut;
-
     if ((obj == NULL) || (tx_buf == NULL) || (size == 0))
         return false;
 
@@ -568,7 +566,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                                                     BspUart_Obj_List[index]->rx_buf,
                                                     BspUart_Obj_List[index]->rx_size);
 
-            HAL_UART_Receive_DMA(&(BspUart_Obj_List[index]->hdl), BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
+            HAL_UART_Receive_DMA((UART_HandleTypeDef *)(BspUart_Obj_List[index]->hdl), BspUart_Obj_List[index]->rx_buf, BspUart_Obj_List[index]->rx_size);
 
             BspUart_Obj_List[index]->monitor.rx_full_cnt++;
         }
@@ -577,7 +575,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
             if (BspUart_Obj_List[index]->RxCallback)
                 BspUart_Obj_List[index]->RxCallback(BspUart_Obj_List[index]->cust_data_addr, &BspUart_Obj_List[index]->rx_single_byte, 1);
 
-            HAL_UART_Receive_IT(&(BspUart_Obj_List[index]->hdl), &BspUart_Obj_List[index]->rx_single_byte, 1);
+            HAL_UART_Receive_IT((UART_HandleTypeDef *)(BspUart_Obj_List[index]->hdl), &BspUart_Obj_List[index]->rx_single_byte, 1);
         }
     }
 }
@@ -655,7 +653,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
                 BspUart_Obj_List[index]->monitor.ore_cnt ++;
 
                 uint8_t temp = huart->Instance->RDR;
-                HAL_UART_Receive_IT(&(BspUart_Obj_List[index]->hdl), &BspUart_Obj_List[index]->rx_single_byte, 1);
+                HAL_UART_Receive_IT((UART_HandleTypeDef *)(BspUart_Obj_List[index]->hdl), &BspUart_Obj_List[index]->rx_single_byte, 1);
             }
         }
     }

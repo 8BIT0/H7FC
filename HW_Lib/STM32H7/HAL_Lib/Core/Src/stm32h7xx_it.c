@@ -5,6 +5,7 @@
 #include "stm32h7xx_hal_gpio.h"
 #include "HW_Def.h"
 #include "debug_util.h"
+#include "../../../../FCHW_Config.h"
 #include "DIskIO.h"
 #include "DataPipe.h"
 #include "Bsp_DMA.h"
@@ -13,7 +14,9 @@
 #include "Bsp_Timer.h"
 
 extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+#if (SD_CARD == ON)
 extern DevCard_Obj_TypeDef DevTFCard_Obj;
+#endif
 extern DMA_HandleTypeDef DataPipe_DMA;
 extern TIM_HandleTypeDef htim17;
 extern TIM_HandleTypeDef htim16;
@@ -113,12 +116,16 @@ void EXTI15_10_IRQHandler(void)
 
 void SDMMC1_IRQHandler(void)
 {
+#if (SD_CARD == ON)
   HAL_SD_IRQHandler(&DevTFCard_Obj.SDMMC_Obj.hdl);
+#endif
 }
 
 void MDMA_IRQHandler(void)
 {
+#if (SD_CARD == ON)
   HAL_MDMA_IRQHandler(&DevTFCard_Obj.SDMMC_Obj.mdma);
+#endif
 }
 
 void DMA2_Stream7_IRQHandler(void)

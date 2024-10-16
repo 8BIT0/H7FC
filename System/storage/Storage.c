@@ -1681,8 +1681,6 @@ static bool Storage_Frimware_Read(uint32_t addr_offset, uint8_t *p_data, uint16_
 static bool Storage_Firmware_Write(Storage_MediumType_List medium, uint32_t addr_offset, uint8_t *p_data, uint16_t size)
 {
     uint32_t write_addr = 0;
-    uint32_t section_addr = 0;
-    uint32_t write_size = 0;
     StorageDevObj_TypeDef *dev = NULL;
 
     if ((p_data == NULL) || (size == 0))

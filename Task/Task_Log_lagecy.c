@@ -108,7 +108,7 @@ void TaskLog_Init(uint32_t period)
 
     IMU_Log_DataPipe.data_addr = (uint32_t)&LogIMU_Data;
     IMU_Log_DataPipe.data_size = sizeof(LogIMU_Data);
-    IMU_Log_DataPipe.trans_finish_cb = TaskLog_PipeTransFinish_Callback;
+    IMU_Log_DataPipe.trans_finish_cb = (Pipe_TransFinish_Callback *)TaskLog_PipeTransFinish_Callback;
 
     LogObj_Set_Reg.reg_val = 0;
     LogObj_Logging_Reg.reg_val = 0;

@@ -343,60 +343,59 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     __HAL_TIM_SET_PRESCALER(To_TIM_Handle_Ptr(obj->tim_hdl), prescale);
     __HAL_TIM_SET_AUTORELOAD(To_TIM_Handle_Ptr(obj->tim_hdl), auto_reload);
 
-    #warning "timer bug"
-    // To_TIM_Handle_Ptr(obj->tim_hdl)->Instance = (TIM_HandleTypeDef *)instance;
-    // To_TIM_Handle_Ptr(obj->tim_hdl)->Init.Prescaler = 0;
-    // To_TIM_Handle_Ptr(obj->tim_hdl)->Init.CounterMode = TIM_COUNTERMODE_UP;
-    // To_TIM_Handle_Ptr(obj->tim_hdl)->Init.Period = 0;
-    // To_TIM_Handle_Ptr(obj->tim_hdl)->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-    // To_TIM_Handle_Ptr(obj->tim_hdl)->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Instance = (TIM_TypeDef *)instance;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Init.Prescaler = 0;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Init.CounterMode = TIM_COUNTERMODE_UP;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Init.Period = 0;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+    To_TIM_Handle_Ptr(obj->tim_hdl)->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 
-    // /* dma init */
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Instance = BspDMA.get_instance(dma, stream);
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Request = BspTimer_Get_DMA_Request(instance, ch);
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Direction = DMA_MEMORY_TO_PERIPH;
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.PeriphInc = DMA_PINC_DISABLE;
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.MemInc = DMA_MINC_ENABLE;
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.MemDataAlignment = DMA_PDATAALIGN_WORD;
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Mode = DMA_NORMAL;
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Priority = DMA_PRIORITY_HIGH;
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.FIFOMode = DMA_FIFOMODE_ENABLE;
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.FIFOThreshold = DMA_FIFO_THRESHOLD_1QUARTERFULL;
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.MemBurst = DMA_MBURST_SINGLE;
-    // To_TIM_DMA_Ptr(obj->dma_hdl)->Init.PeriphBurst = DMA_PBURST_SINGLE;
+    /* dma init */
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Instance = BspDMA.get_instance(dma, stream);
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Request = BspTimer_Get_DMA_Request(instance, ch);
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Direction = DMA_MEMORY_TO_PERIPH;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.PeriphInc = DMA_PINC_DISABLE;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.MemInc = DMA_MINC_ENABLE;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.MemDataAlignment = DMA_PDATAALIGN_WORD;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Mode = DMA_NORMAL;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.Priority = DMA_PRIORITY_HIGH;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.FIFOMode = DMA_FIFOMODE_ENABLE;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.FIFOThreshold = DMA_FIFO_THRESHOLD_1QUARTERFULL;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.MemBurst = DMA_MBURST_SINGLE;
+    To_TIM_DMA_Ptr(obj->dma_hdl)->Init.PeriphBurst = DMA_PBURST_SINGLE;
 
-    // if (HAL_DMA_Init(To_TIM_DMA_Ptr(obj->dma_hdl)) != HAL_OK)
-    //     return false;
+    if (HAL_DMA_Init(To_TIM_DMA_Ptr(obj->dma_hdl)) != HAL_OK)
+        return false;
 
-    // __HAL_LINKDMA(To_TIM_Handle_Ptr(obj->tim_hdl), hdma[obj->tim_dma_id_cc], *To_TIM_DMA_Ptr(obj->dma_hdl));
+    __HAL_LINKDMA(To_TIM_Handle_Ptr(obj->tim_hdl), hdma[obj->tim_dma_id_cc], *To_TIM_DMA_Ptr(obj->dma_hdl));
 
-    // if (HAL_TIM_PWM_Init(To_TIM_Handle_Ptr(obj->tim_hdl)) != HAL_OK)
-    //     return false;
+    if (HAL_TIM_PWM_Init(To_TIM_Handle_Ptr(obj->tim_hdl)) != HAL_OK)
+        return false;
 
-    // sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-    // sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
 
-    // if (HAL_TIMEx_MasterConfigSynchronization(To_TIM_Handle_Ptr(obj->tim_hdl), &sMasterConfig) != HAL_OK)
-    //     return false;
+    if (HAL_TIMEx_MasterConfigSynchronization(To_TIM_Handle_Ptr(obj->tim_hdl), &sMasterConfig) != HAL_OK)
+        return false;
 
-    // sConfigOC.OCMode = TIM_OCMODE_PWM1;
-    // sConfigOC.Pulse = 0;
-    // sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-    // sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    sConfigOC.Pulse = 0;
+    sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
 
-    // if (HAL_TIM_PWM_ConfigChannel(To_TIM_Handle_Ptr(obj->tim_hdl), &sConfigOC, ch) != HAL_OK)
-    //     return false;
+    if (HAL_TIM_PWM_ConfigChannel(To_TIM_Handle_Ptr(obj->tim_hdl), &sConfigOC, ch) != HAL_OK)
+        return false;
 
-    // obj->tim_channel = ch;
+    obj->tim_channel = ch;
 
-    // /* pin init */
-    // BspGPIO.alt_init(pin, GPIO_MODE_AF_PP);
+    /* pin init */
+    BspGPIO.alt_init(pin, GPIO_MODE_AF_PP);
 
-    // /* dma regist */
-    // if (BspDMA.regist(dma, stream, obj->dma_hdl))
-    //     /* init DMA IRQ */
-    //     BspDMA.enable_irq(dma, stream, 5, 0, 0, NULL);
+    /* dma regist */
+    if (BspDMA.regist(dma, stream, obj->dma_hdl))
+        /* init DMA IRQ */
+        BspDMA.enable_irq(dma, stream, 5, 0, 0, NULL);
 
     return true;
 }
@@ -524,27 +523,5 @@ static bool BspTimer_Tick_Init(BspTimerTickObj_TypeDef *obj, uint32_t perscale, 
     }
 
     return true;
-}
-
-/* Enable Timer IRQ */
-static bool BspTimer_Tick_Start(BspTimerTickObj_TypeDef *obj)
-{
-    if(obj)
-    {
-
-    }
-
-    return false;
-}
-
-/* DIsable Timer IRQ */
-static bool BspTImer_Tick_Stop(BspTimerTickObj_TypeDef *obj)
-{
-    if(obj)
-    {
-
-    }
-
-    return false;
 }
 
