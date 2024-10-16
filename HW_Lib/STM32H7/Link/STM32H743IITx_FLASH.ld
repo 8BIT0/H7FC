@@ -55,8 +55,8 @@ ENTRY(Reset_Handler)
 /* Highest address of the user mode stack */
 _estack = 0x20020000;    /* end of RAM */
 /* Generate a link error if heap and stack don't fit into RAM */
-_Min_Heap_Size = 0x800;      /* required amount of heap  */
-_Min_Stack_Size = 0x400; /* required amount of stack */
+_Min_Heap_Size = 0x2000;      /* required amount of heap  */
+_Min_Stack_Size = 0x2000; /* required amount of stack */
 
 FLASH_SIZE = 2048K;
 BOOT_SIZE = 0K;
@@ -95,11 +95,11 @@ SECTIONS
     . = ALIGN(4);
     OsHeap_s = .;
     *(.OsHeap_Section)
+    KEEP(*(.OsHeap_Section))
     *(.OsHeap_Section*)
 
-    . = ALIGN(4);
     OsHeap_e = .;
-
+    . = ALIGN(4);
   } >RAM_D1_OsHeap_Part AT>FLASH
 
   .Perph_Section :
@@ -109,8 +109,8 @@ SECTIONS
     *(.Perph_Section)
     *(.Perph_Section*)
     
-    . = ALIGN(4);
     Perph_e = .;
+    . = ALIGN(4);
   } >RAM_D1_Perph_Part AT>FLASH
 
   /* The program code and other data goes into FLASH */
@@ -136,7 +136,8 @@ SECTIONS
     . = ALIGN(4);
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-
+    . = ALIGN(4); 
+    
     . = ALIGN(4);
     _shell_command_start = .;
     KEEP (*(shellCommand))

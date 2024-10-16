@@ -76,7 +76,9 @@ const uint8_t default_sig_serial[Actuator_PWM_SigSUM] = {
 DataPipe_CreateDataObj(SrvActuatorPipeData_TypeDef, Actuator);
 SrvActuatorObj_TypeDef SrvActuator_Obj;
 SrcActuatorCTL_Obj_TypeDef SrvActuator_ControlStream;
+#if defined AT32F435_437
 osSemaphoreId SrvActuator_Sem = NULL;
+#endif
 
 /* internal function */
 static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg);
@@ -327,6 +329,7 @@ static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg)
             case Actuator_DevType_DShot150:
             case Actuator_DevType_DShot300:
             case Actuator_DevType_DShot600:
+                To_DShotObj_Ptr(SrvActuator_Obj.drive_module.obj_list[i].drv_obj)->type = cfg.esc_type;
                 DevDshot.init(To_DShotObj_Ptr(SrvActuator_Obj.drive_module.obj_list[i].drv_obj), \
                                 periph_ptr->tim_base, periph_ptr->tim_channel, (void *)&(periph_ptr->pin), \
                                 periph_ptr->dma, periph_ptr->dma_channel);
@@ -670,10 +673,14 @@ bool DShot_Port_DeInit(void *obj)
 
 void DShot_Port_Trans(void *obj)
 {
-    if (obj && SrvActuator_Sem)
+    if (obj)
     {
         BspTimer_PWM.dma_trans(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj));
-        osSemaphoreWait(SrvActuator_Sem, 1);
+
+#if defined AT32F435_437
+        if (SrvActuator_Sem)
+            osSemaphoreWait(SrvActuator_Sem, 1);
+#endif
     }
 }
 
@@ -682,22 +689,18 @@ uint32_t DShot_Get_Timer_CLKFreq(void *obj)
     return BspTimer_PWM.get_clock_freq(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj));
 }
 
+#if defined AT32F435_437
 void DShot_Tran_Finish(void)
 {
     if (SrvActuator_Sem)
         osSemaphoreRelease(SrvActuator_Sem);
 }
+#endif
 
 bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t time_ch, void *pin, uint8_t dma, uint8_t stream)
 {
     if (obj && time_ins && pin)
     {
-        if (SrvActuator_Sem == NULL)
-        {
-            osSemaphoreDef(DShot_Sem);
-            SrvActuator_Sem = osSemaphoreCreate(osSemaphore(DShot_Sem), 1);
-        }
-
         /* malloc timer dma pwm object */
         To_DShotObj_Ptr(obj)->p_timr_obj = Actuator_Malloc(sizeof(BspTimerPWMObj_TypeDef));
         if (To_DShotObj_Ptr(obj)->p_timr_obj == NULL)
@@ -724,9 +727,17 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
             return false;
         }
 #elif defined AT32F435_437
+        if (SrvActuator_Sem == NULL)
+        {
+            osSemaphoreDef(DShot_Sem);
+            SrvActuator_Sem = osSemaphoreCreate(osSemaphore(DShot_Sem), 1);
+        }
+
         To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->dma_callback_obj = Actuator_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
         if (To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->dma_callback_obj == NULL)
             return false;
+        
+        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->send_callback = DShot_Tran_Finish;
 #endif
 
         if (!BspTimer_PWM.init(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj), \
@@ -736,7 +747,6 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
                                (uint32_t)(To_DShotObj_Ptr(obj)->ctl_buf), DSHOT_DMA_BUFFER_SIZE))
             return false;
 
-        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->send_callback = DShot_Tran_Finish;
         BspTimer_PWM.set_dma_pwm((To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)));
         return true;
     }

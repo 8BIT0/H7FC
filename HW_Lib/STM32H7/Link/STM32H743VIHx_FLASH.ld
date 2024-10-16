@@ -46,9 +46,8 @@ SECTIONS
     *(.OsHeap_Section)
     *(.OsHeap_Section*)
 
-    . = ALIGN(4);
     OsHeap_e = .;
-
+    . = ALIGN(4);
   } >RAM_D1_OsHeap_Part AT>FLASH
 
   .Perph_Section :
@@ -58,8 +57,8 @@ SECTIONS
     *(.Perph_Section)
     *(.Perph_Section*)
     
-    . = ALIGN(4);
     Perph_e = .;
+    . = ALIGN(4);
   } >RAM_D1_Perph_Part AT>FLASH
 
   /* The program code and other data goes into FLASH */
