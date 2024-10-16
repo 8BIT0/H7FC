@@ -192,7 +192,7 @@ static bool BspTimer_PWM_InitMonit(TIM_TypeDef *tim)
     if (!monitor.monitor_init)
     {
         monitor.init_cnt = 0;
-        memset(monitor.list, NULL, sizeof(monitor.list) / sizeof(monitor.list[0]));
+        memset(monitor.list, 0, sizeof(monitor.list) / sizeof(monitor.list[0]));
         monitor.monitor_init = true;
     }
 

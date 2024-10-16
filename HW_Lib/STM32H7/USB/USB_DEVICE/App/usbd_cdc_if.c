@@ -342,6 +342,7 @@ static int8_t CDC_SOF_FS(void)
 {
   if (cdc_connect_callback)
     cdc_connect_callback();
+  return 0;
 }
 
 void usb_setrec_callback(rec_callback callback)
