@@ -23,7 +23,7 @@ static bool BspTimer_Clk_Enable(TIM_TypeDef *tim);
 
 /* external function */
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
-                              TIM_TypeDef *instance,
+                              void *instance,
                               uint32_t ch,
                               uint32_t auto_reload,
                               uint32_t prescale,
@@ -289,7 +289,7 @@ static uint32_t BspTimer_Get_DMA_Request(TIM_TypeDef *instance, uint32_t ch)
 }
 
 static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
-                              TIM_TypeDef *instance,
+                              void *instance,
                               uint32_t ch,
                               uint32_t auto_reload,
                               uint32_t prescale,
@@ -344,7 +344,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     __HAL_TIM_SET_AUTORELOAD(To_TIM_Handle_Ptr(obj->tim_hdl), auto_reload);
 
     #warning "timer bug"
-    // To_TIM_Handle_Ptr(obj->tim_hdl)->Instance = instance;
+    // To_TIM_Handle_Ptr(obj->tim_hdl)->Instance = (TIM_HandleTypeDef *)instance;
     // To_TIM_Handle_Ptr(obj->tim_hdl)->Init.Prescaler = 0;
     // To_TIM_Handle_Ptr(obj->tim_hdl)->Init.CounterMode = TIM_COUNTERMODE_UP;
     // To_TIM_Handle_Ptr(obj->tim_hdl)->Init.Period = 0;
