@@ -84,7 +84,9 @@ extern uint32_t __boot_e;
 #define SD_CARD             SD_CARD_ENABLE_STATE
 #define FLASH_CHIP_STATE    FLASH_CHIP_ENABLE_STATE
 #define RADIO_UART_NUM      RADIO_NUM
+#if (SDRAM_EN == ON)
 #define FC_SDRAM_Size       SDRAM_BASE_ADDR
 #define FC_SDRAM_Base_Addr  SDRAN_MEM_SIZE
+#endif
 
 #endif
