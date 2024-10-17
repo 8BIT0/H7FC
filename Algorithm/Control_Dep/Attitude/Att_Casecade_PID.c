@@ -57,19 +57,19 @@ static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void)
     para.Roll_Para.gI_Min       = -10;
     para.Roll_Para.gD           = 0.5;
 
-    para.GyroX_Para.base_diff   = 50;
-    para.GyroX_Para.gP          = 0.8;
-    para.GyroX_Para.gI          = 0.4;
+    para.GyroX_Para.base_diff   = 200;
+    para.GyroX_Para.gP          = 3;
+    para.GyroX_Para.gI          = 1.6;
     para.GyroX_Para.gI_Max      = 50;
     para.GyroX_Para.gI_Min      = -50;
-    para.GyroX_Para.gD          = 0.6;
+    para.GyroX_Para.gD          = 1.0;
 
-    para.GyroY_Para.base_diff   = 50;
-    para.GyroY_Para.gP          = 0.8;
-    para.GyroY_Para.gI          = 0.4;
+    para.GyroY_Para.base_diff   = 200;
+    para.GyroY_Para.gP          = 3;
+    para.GyroY_Para.gI          = 1.6;
     para.GyroY_Para.gI_Max      = 50;
     para.GyroY_Para.gI_Min      = -50;
-    para.GyroY_Para.gD          = 0.6;
+    para.GyroY_Para.gD          = 1.0;
 
     para.GyroZ_Para.base_diff   = 50;
     para.GyroZ_Para.gP          = 0.8;
