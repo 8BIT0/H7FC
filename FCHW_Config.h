@@ -16,12 +16,13 @@
 
 #if defined MATEKH743_V1_5
 
-#define IMU_CNT 2
-#define BARO_CNT 1
-#define MAG_CNT 0
-#define SD_CARD_ENABLE_STATE ON
+#define IMU_CNT                 2
+#define BARO_CNT                1
+#define MAG_CNT                 0
+#define SD_CARD_ENABLE_STATE    ON
+#define SDRAM_ENABLE_STATE      OFF
 #define FLASH_CHIP_ENABLE_STATE OFF
-#define RADIO_NUM 1
+#define RADIO_NUM               1
 
 #define Flash_MaxRWSize (0 Kb)
 #define Flash_Storage_TabSize (0 Kb)
@@ -29,12 +30,18 @@
 
 #elif defined NEURE 
 
-#define IMU_CNT 2
-#define BARO_CNT 1
-#define MAG_CNT 1
-#define SD_CARD_ENABLE_STATE OFF
+#define IMU_CNT                 2
+#define BARO_CNT                1
+#define MAG_CNT                 1
+#define SD_CARD_ENABLE_STATE    OFF
+#define SDRAM_ENABLE_STATE      ON
 #define FLASH_CHIP_ENABLE_STATE OFF
-#define RADIO_NUM 1
+#define RADIO_NUM               1
+
+#if (SDRAM_ENABLE_STATE == ON)
+#define SDRAM_BASE_ADDR         (32 Mb)   
+#define SDRAN_MEM_SIZE          ((uint32_t)0xC0000000)
+#endif
 
 #define Flash_MaxRWSize (2 Kb)
 #define Flash_Storage_TabSize (4 Kb)
@@ -42,12 +49,13 @@
 
 #elif defined BATEAT32F435_AIO || defined CCRC_AT32_20 || defined CAIFPV_AIO
 
-#define IMU_CNT 1
-#define BARO_CNT 1
-#define MAG_CNT 0
-#define SD_CARD_ENABLE_STATE OFF
+#define IMU_CNT                 1
+#define BARO_CNT                1
+#define MAG_CNT                 0
+#define SD_CARD_ENABLE_STATE    OFF
+#define SDRAM_ENABLE_STATE      OFF
 #define FLASH_CHIP_ENABLE_STATE ON
-#define RADIO_NUM 1
+#define RADIO_NUM               1
 
 #define Flash_MaxRWSize (2 Kb)
 #define Flash_Storage_TabSize (4 Kb)
@@ -69,11 +77,14 @@ extern uint32_t __boot_e;
 #define App_Address_Base    ((uint32_t)&__boot_e)
 #define App_Section_Size    ((uint32_t)&__rom_e - App_Address_Base)
 
-#define IMU_SUM IMU_CNT
-#define BARO_SUM BARO_CNT
-#define MAG_SUM MAG_CNT
-#define SD_CARD SD_CARD_ENABLE_STATE
-#define FLASH_CHIP_STATE FLASH_CHIP_ENABLE_STATE
-#define RADIO_UART_NUM RADIO_NUM
+#define IMU_SUM             IMU_CNT
+#define BARO_SUM            BARO_CNT
+#define MAG_SUM             MAG_CNT
+#define SDRAM_EN            SDRAM_ENABLE_STATE
+#define SD_CARD             SD_CARD_ENABLE_STATE
+#define FLASH_CHIP_STATE    FLASH_CHIP_ENABLE_STATE
+#define RADIO_UART_NUM      RADIO_NUM
+#define FC_SDRAM_Size       SDRAM_BASE_ADDR
+#define FC_SDRAM_Base_Addr  SDRAN_MEM_SIZE
 
 #endif

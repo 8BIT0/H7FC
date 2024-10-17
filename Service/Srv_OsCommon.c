@@ -1,5 +1,10 @@
+#include "../FCHW_Config.h"
 #include "Srv_OsCommon.h"
 #include "kernel.h"
+#include "HW_Def.h"
+#if (SDRAM_EN == ON)
+#include "Bsp_SDRAM.h"
+#endif
 #include "cmsis_gcc.h"
 #include "shell_port.h"
 
@@ -13,6 +18,10 @@ typedef struct
     uint32_t malloc_failed_cnt;
     uint32_t free_cnt;
     uint32_t free_faile_cnt;
+
+    bool sdram_state;
+    uint32_t sdram_size;
+    uint32_t sdram_base_addr;
 }SrvOsCommon_HeapMonitor_TypeDef;
 
 /* internal vriable */
@@ -27,8 +36,10 @@ static void* SrvOsCommon_Malloc(uint32_t size);
 static void SrvOsCommon_Free(void *ptr);
 static void SrvOsCommon_Delay(uint32_t ms);
 static void SrvOsCommon_DelayUntil(uint32_t *prev_time, uint32_t ms);
+static bool SrvOsCommon_Init(void);
 
 SrvOsCommon_TypeDef SrvOsCommon = {
+    .init = SrvOsCommon_Init,
     .get_os_ms = osKernelSysTick,
     .delay_ms = SrvOsCommon_Delay,
     .precise_delay = SrvOsCommon_DelayUntil,
@@ -48,6 +59,51 @@ SrvOsCommon_TypeDef SrvOsCommon = {
     .enable_all_irq = __enable_irq,
     .reboot = Kernel_reboot,
 };
+
+static bool SrvOsCommon_Init(void)
+{
+#if (SDRAM_EN == ON)
+    bool state = false;
+    BspSDRAMObj_TypeDef sdram_obj;
+
+    OsHeap_Monitor.sdram_state = false;
+    sdram_obj.hdl = SrvOsCommon_Malloc(SDRAM_HandleType_Size);
+    if (sdram_obj.hdl)
+    {
+        sdram_obj.mem_size      = FC_SDRAM_Size;
+        sdram_obj.base_addr     = FC_SDRAM_Base_Addr;
+        sdram_obj.bank_num      = BspSDRAM_BankNum_4;
+        sdram_obj.bank_area     = BspSDRAM_Bank_1;
+        sdram_obj.bus_width     = BspSDRAM_BusWidth_16;
+        sdram_obj.column_bits   = BspSDRAM_Column_9Bits;
+        sdram_obj.row_bits      = BspSDRAM_Row_13Bits;
+
+        /* init sdram if have */
+        if (BspSDRAM_Init(&sdram_obj))
+        {
+            /* sdram test */
+            OsHeap_Monitor.sdram_state = true;
+            OsHeap_Monitor.sdram_size = FC_SDRAM_Size;
+            OsHeap_Monitor.sdram_base_addr = FC_SDRAM_Base_Addr;
+
+            for (uint16_t i = 0; i < 10; i++)
+            {
+                *(volatile uint16_t *)(OsHeap_Monitor.sdram_base_addr + i * sizeof(uint16_t)) = i;
+                if (*(volatile uint16_t *)(OsHeap_Monitor.sdram_base_addr + i * sizeof(uint16_t)) != i)
+                {
+                    state = false;
+                    OsHeap_Monitor.sdram_state = false;
+                    break;
+                }
+            }
+        }
+    }
+
+    return state;
+#else
+    return true;
+#endif
+}
 
 static void* SrvOsCommon_Malloc(uint32_t size)
 {

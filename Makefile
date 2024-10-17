@@ -141,6 +141,7 @@ HW_Lib/STM32H7/BSP/Bsp_USB.c \
 HW_Lib/STM32H7/BSP/Bsp_Flash.c \
 HW_Lib/STM32H7/BSP/Bsp_DMA.c \
 HW_Lib/STM32H7/BSP/Bsp_Timer.c \
+HW_Lib/STM32H7/BSP/Bsp_SDRAM.c \
 HW_Lib/STM32H7/BSP/stm32h743/Bsp_IIC.c \
 HW_Lib/STM32H7/USB/USB_DEVICE/App/usb_device.c \
 HW_Lib/STM32H7/USB/USB_DEVICE/App/usbd_desc.c \
@@ -178,6 +179,7 @@ HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_pcd_ex.c \
 HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sd.c \
 HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_sdmmc.c \
 HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_fmc.c \
+HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_sdram.c \
 HW_Lib/STM32H7/HAL_Lib/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_usb.c
 # System/diskio/DiskIO.c
 # Task/Task_Log.c

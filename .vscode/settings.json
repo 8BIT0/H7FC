@@ -207,7 +207,10 @@
                 "tuple": "c",
                 "dev_brushmoto.h": "c",
                 "storage_def.h": "c",
-                "storage_bus_port.h": "c"
+                "storage_bus_port.h": "c",
+                "cmsis_gcc.h": "c",
+                "bsp_sdram.h": "c",
+                "bsp_sdram_def.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

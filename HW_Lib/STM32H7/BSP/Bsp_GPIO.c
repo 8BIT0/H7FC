@@ -243,7 +243,7 @@ static bool BspGPIO_Output_Init(BspGPIO_Obj_TypeDef IO_Obj)
     cfg_structure.Pin = IO_Obj.pin;
     cfg_structure.Mode = GPIO_MODE_OUTPUT_PP;
     cfg_structure.Pull = GPIO_PULLUP;
-    cfg_structure.Speed = GPIO_SPEED_FREQ_LOW;
+    cfg_structure.Speed = GPIO_SPEED_FREQ_HIGH;
 
     HAL_GPIO_WritePin(IO_Obj.port, IO_Obj.pin, IO_Obj.init_state);
     HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
