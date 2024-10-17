@@ -21,25 +21,29 @@ bool Kernel_TickTimer_Init = false;
 static bool KernelClock_Init(void);
 bool HAL_BaseTick_Init(void);
 bool Kernel_BaseTick_Init(void);
+#if (SDRAM_EN == ON)
 void Kernel_MPU_Config(void);
+#endif
 
 bool Kernel_Init(void)
 {
+#if (SDRAM_EN == ON)
     Kernel_MPU_Config();
     SCB_EnableICache();
 	  SCB_EnableDCache();
+#endif
 
     HAL_Init();
 
     return HAL_BaseTick_Init() && KernelClock_Init() && Kernel_BaseTick_Init();
 }
 
+#if (SDRAM_EN == ON)
 void Kernel_MPU_Config(void)
 {
-	MPU_Region_InitTypeDef MPU_InitStruct;
+	MPU_Region_InitTypeDef MPU_InitStruct = {0};
 
-	HAL_MPU_Disable();		// 先禁止MPU
-
+	HAL_MPU_Disable();
 	MPU_InitStruct.Enable           = MPU_REGION_ENABLE;
 	MPU_InitStruct.BaseAddress      = FC_SDRAM_Base_Addr;
 	MPU_InitStruct.Size             = MPU_REGION_SIZE_32MB;
@@ -53,9 +57,9 @@ void Kernel_MPU_Config(void)
 	MPU_InitStruct.DisableExec      = MPU_INSTRUCTION_ACCESS_ENABLE;
 
 	HAL_MPU_ConfigRegion(&MPU_InitStruct);
-
-	HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);	// 使能MPU
+	HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
 }
+#endif
 
 /*
  * clock init
