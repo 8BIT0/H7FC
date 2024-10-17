@@ -336,6 +336,12 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
                                              NULL, NULL, NULL, NULL,
                                              &TaskControl_Monitor.flip_over);
 
+        att_ctl_mea.pitch  = TaskControl_Monitor.pitch;
+        att_ctl_mea.roll   = TaskControl_Monitor.roll;
+        att_ctl_mea.gyro_x = TaskControl_Monitor.gyr[Axis_X];
+        att_ctl_mea.gyro_y = TaskControl_Monitor.gyr[Axis_Y];
+        att_ctl_mea.gyro_z = TaskControl_Monitor.gyr[Axis_Z];
+
         TaskControl_disarm_check(arm_state, TaskControl_Monitor.pitch, TaskControl_Monitor.roll);
 
         /* if armed or usb attached then lock moto */

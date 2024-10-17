@@ -29,11 +29,57 @@ static ProcessParam_TypeDef ProcessPara = {
 /* external function */
 static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para);
 static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out);
+static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void);
 
 AttCasecadePID_TypeDef Att_CasecadePID_Controller = {
     .init = Att_CheckParam_Validation,
     .process = Att_Casecade_PID,
+    .default_param = Att_Casecade_PID_DefaultPara,
 };
+
+static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void)
+{
+    AttCaseCadePID_Param_TypeDef para;
+
+    memset(&para, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+
+    para.Pitch_Para.base_diff   = 25;
+    para.Pitch_Para.gP          = 1.2;
+    para.Pitch_Para.gI          = 0.2;
+    para.Pitch_Para.gI_Max      = 10;
+    para.Pitch_Para.gI_Min      = -10;
+    para.Pitch_Para.gD          = 0.5;
+
+    para.Roll_Para.base_diff    = 25;
+    para.Roll_Para.gP           = 1.2;
+    para.Roll_Para.gI           = 0.2;
+    para.Roll_Para.gI_Max       = 10;
+    para.Roll_Para.gI_Min       = -10;
+    para.Roll_Para.gD           = 0.5;
+
+    para.GyroX_Para.base_diff   = 50;
+    para.GyroX_Para.gP          = 0.8;
+    para.GyroX_Para.gI          = 0.4;
+    para.GyroX_Para.gI_Max      = 50;
+    para.GyroX_Para.gI_Min      = -50;
+    para.GyroX_Para.gD          = 0.6;
+
+    para.GyroY_Para.base_diff   = 50;
+    para.GyroY_Para.gP          = 0.8;
+    para.GyroY_Para.gI          = 0.4;
+    para.GyroY_Para.gI_Max      = 50;
+    para.GyroY_Para.gI_Min      = -50;
+    para.GyroY_Para.gD          = 0.6;
+
+    para.GyroZ_Para.base_diff   = 50;
+    para.GyroZ_Para.gP          = 0.8;
+    para.GyroZ_Para.gI          = 0.6;
+    para.GyroZ_Para.gI_Max      = 50;
+    para.GyroZ_Para.gI_Min      = -50;
+    para.GyroZ_Para.gD          = 0.2;
+
+    return para;
+}
 
 static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
 {
@@ -130,8 +176,6 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
 
 static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out)
 {
-    bool state = false;
-
     if (ctl_out == NULL)
         return false;
 
@@ -139,11 +183,11 @@ static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_T
     {
         /* attitude loop */
         /* Pitch PID update */
-        state = PID_Update(&ProcessPara.pitch, sys_ms, mea.pitch, exp.pitch);
+        PID_Update(&ProcessPara.pitch, sys_ms, mea.pitch, exp.pitch);
         exp.gyro_y = ProcessPara.pitch.fout;
 
         /* Roll PID update */
-        state &= PID_Update(&ProcessPara.roll, sys_ms, mea.roll, exp.roll);
+        PID_Update(&ProcessPara.roll, sys_ms, mea.roll, exp.roll);
         exp.gyro_x = ProcessPara.roll.fout;
     }
     else
@@ -157,18 +201,18 @@ static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_T
 
     /* angular speed loop */
     /* Gyro X PID update */
-    state &= PID_Update(&ProcessPara.g_x, sys_ms, mea.gyro_x, exp.gyro_x);
+    PID_Update(&ProcessPara.g_x, sys_ms, mea.gyro_x, exp.gyro_x);
 
     /* Gyro Y PID update */
-    state &= PID_Update(&ProcessPara.g_y, sys_ms, mea.gyro_y, exp.gyro_y);
+    PID_Update(&ProcessPara.g_y, sys_ms, mea.gyro_y, exp.gyro_y);
 
     /* Gyro Z PID update */
-    state &= PID_Update(&ProcessPara.g_z, sys_ms, mea.gyro_z, exp.gyro_z);
+    PID_Update(&ProcessPara.g_z, sys_ms, mea.gyro_z, exp.gyro_z);
 
     ctl_out->gyro_x = ProcessPara.g_x.fout;
     ctl_out->gyro_y = ProcessPara.g_y.fout;
     ctl_out->gyro_z = ProcessPara.g_z.fout;
 
-    return state;
+    return true;
 }
 
