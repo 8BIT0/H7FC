@@ -83,7 +83,7 @@ extern uint32_t __boot_e;
 extern uint32_t __sdram_s1_s;
 extern uint32_t __sdram_s1_e;
 
-#define FC_SDRAM_Size       ((uint32_t)&__sdram_s1_e - (uint32_t)&__sdram_s1_s);
+#define FC_SDRAM_Size       (8 Mb)
 #define FC_SDRAM_Base_Addr  ((uint32_t)(&__sdram_s1_s))
 #endif
 

@@ -36,15 +36,18 @@ static void SrvOsCommon_Delay(uint32_t ms);
 static void SrvOsCommon_DelayUntil(uint32_t *prev_time, uint32_t ms);
 static bool SrvOsCommon_Init(void);
 
-#if (SDRAM_EN == ON)
-/* define heap_5 region */
-HeapRegion_t xHeapRegions [] = {
-    {NULL, 0},
-    {NULL, 0}
-};
-#else
 /* external vriable */
 uint8_t ucHeap[ configTOTAL_HEAP_SIZE ] __attribute__((section(".OsHeap_Section")));
+
+#if (SDRAM_EN == ON)
+extern uint32_t __sdram_s1_s;
+extern uint32_t __sdram_s1_e;
+
+/* define heap_5 region */
+const HeapRegion_t xHeapRegions[] = {
+    {ucHeap, configTOTAL_HEAP_SIZE},
+    {(uint8_t *)((uint32_t)&__sdram_s1_s), FC_SDRAM_Size}
+};
 #endif
 
 SrvOsCommon_TypeDef SrvOsCommon = {
@@ -75,8 +78,10 @@ static bool SrvOsCommon_Init(void)
     bool state = false;
     BspSDRAMObj_TypeDef sdram_obj;
 
+    vPortDefineHeapRegions(xHeapRegions);
+
     OsHeap_Monitor.sdram_state = false;
-    sdram_obj.hdl = SrvOsCommon_Malloc(SDRAM_HandleType_Size);
+    sdram_obj.hdl = malloc(SDRAM_HandleType_Size);
     if (sdram_obj.hdl)
     {
         sdram_obj.mem_size      = FC_SDRAM_Size;
@@ -104,6 +109,9 @@ static bool SrvOsCommon_Init(void)
                     OsHeap_Monitor.sdram_state = false;
                     break;
                 }
+
+                /* reset value */
+                *(volatile uint16_t *)(OsHeap_Monitor.sdram_base_addr + i * sizeof(uint16_t)) = 0;
             }
         }
     }
