@@ -22,6 +22,7 @@ typedef struct
     bool sdram_state;
     uint32_t sdram_size;
     uint32_t sdram_base_addr;
+    uint32_t ext_mem_size;
 }SrvOsCommon_HeapMonitor_TypeDef;
 
 /* internal vriable */
@@ -36,7 +37,7 @@ static void* SrvOsCommon_Malloc(uint32_t size);
 static void SrvOsCommon_Free(void *ptr);
 static void SrvOsCommon_Delay(uint32_t ms);
 static void SrvOsCommon_DelayUntil(uint32_t *prev_time, uint32_t ms);
-static bool SrvOsCommon_Init(void);
+static bool SrvOsCommon_Init(uint32_t ext_mem_size);
 
 SrvOsCommon_TypeDef SrvOsCommon = {
     .init = SrvOsCommon_Init,
@@ -60,7 +61,7 @@ SrvOsCommon_TypeDef SrvOsCommon = {
     .reboot = Kernel_reboot,
 };
 
-static bool SrvOsCommon_Init(void)
+static bool SrvOsCommon_Init(uint32_t ext_mem_size)
 {
 #if (SDRAM_EN == ON)
     bool state = false;
@@ -96,6 +97,10 @@ static bool SrvOsCommon_Init(void)
                     break;
                 }
             }
+
+            OsHeap_Monitor.ext_mem_size = ext_mem_size;
+            if (ext_mem_size > FC_SDRAM_Size)
+                OsHeap_Monitor.ext_mem_size = 0;
         }
     }
 
