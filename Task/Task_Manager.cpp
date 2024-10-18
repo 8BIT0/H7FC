@@ -78,7 +78,7 @@ void Task_Manager_CreateTask(void const *arg)
     SYS_INFO("Hardware Version %d.%d.%d\r\n", HWVer[0], HWVer[1], HWVer[2]);
     
     /* must init in task */
-    SrvOsCommon.init(8 Mb);
+    SrvOsCommon.init();
 
 #if (FLASH_CHIP_STATE == ON)
     storage_ExtFlashObj = (StorageDevObj_TypeDef *)SrvOsCommon.malloc(sizeof(StorageDevObj_TypeDef));
