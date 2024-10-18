@@ -38,11 +38,6 @@
 #define FLASH_CHIP_ENABLE_STATE OFF
 #define RADIO_NUM               1
 
-#if (SDRAM_ENABLE_STATE == ON)
-#define SDRAM_BASE_ADDR         (32 Mb)   
-#define SDRAN_MEM_SIZE          ((uint32_t)0xC0000000)
-#endif
-
 #define Flash_MaxRWSize (2 Kb)
 #define Flash_Storage_TabSize (4 Kb)
 #define Flash_Storage_InfoPageSize (1 Kb)
@@ -85,8 +80,11 @@ extern uint32_t __boot_e;
 #define FLASH_CHIP_STATE    FLASH_CHIP_ENABLE_STATE
 #define RADIO_UART_NUM      RADIO_NUM
 #if (SDRAM_EN == ON)
-#define FC_SDRAM_Size       SDRAM_BASE_ADDR
-#define FC_SDRAM_Base_Addr  SDRAN_MEM_SIZE
+extern uint32_t __sdram_s;
+extern uint32_t __sdram_e;
+
+#define FC_SDRAM_Size       ((uint32_t)&__sdram_e - (uint32_t)&__sdram_s);
+#define FC_SDRAM_Base_Addr  ((uint32_t)(&__sdram_s))
 #endif
 
 #endif
