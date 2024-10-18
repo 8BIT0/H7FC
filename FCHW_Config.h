@@ -80,11 +80,11 @@ extern uint32_t __boot_e;
 #define FLASH_CHIP_STATE    FLASH_CHIP_ENABLE_STATE
 #define RADIO_UART_NUM      RADIO_NUM
 #if (SDRAM_EN == ON)
-extern uint32_t __sdram_s;
-extern uint32_t __sdram_e;
+extern uint32_t __sdram_s1_s;
+extern uint32_t __sdram_s1_e;
 
-#define FC_SDRAM_Size       ((uint32_t)&__sdram_e - (uint32_t)&__sdram_s);
-#define FC_SDRAM_Base_Addr  ((uint32_t)(&__sdram_s))
+#define FC_SDRAM_Size       ((uint32_t)&__sdram_s1_e - (uint32_t)&__sdram_s1_s);
+#define FC_SDRAM_Base_Addr  ((uint32_t)(&__sdram_s1_s))
 #endif
 
 #endif

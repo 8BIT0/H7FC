@@ -60,7 +60,8 @@ _Min_Stack_Size = 0x2000; /* required amount of stack */
 
 FLASH_SIZE = 2M;
 BOOT_SIZE = 0K;
-SDRAM_SIZE = 8M;
+SDRAM_8M = 8M;
+SDRAM_16M = 16M;
 
 /* Specify the memory areas */
 MEMORY
@@ -69,15 +70,21 @@ DTCMRAM (xrw)           : ORIGIN = 0x20000000, LENGTH = 128K
 RAM_D1 (xrw)            : ORIGIN = 0x24000000, LENGTH = 320K
 RAM_D1_OsHeap_Part(xrw) : ORIGIN = 0x24050000, LENGTH = 128K
 RAM_D1_Perph_Part(xrw)  : ORIGIN = 0x24070000, LENGTH = 64K
-SDRAM_SEC1 (xrw)        : ORIGIN = 0xC0000000, LENGTH = SDRAM_SIZE
-RAM_D2 (xrw)            : ORIGIN = 0x30000000, LENGTH = 288K
+SDRAM_SEC1 (xrw)        : ORIGIN = 0xC0000000, LENGTH = SDRAM_8M
+SDRAM_SEC2 (xrw)        : ORIGIN = 0xC8000000, LENGTH = SDRAM_8M
+SDRAM_SEC3 (xrw)        : ORIGIN = 0xD0000000, LENGTH = SDRAM_16M
+RAM_D2 (xrw)            : ORIGIN = 0x30000000, LENGTH = 288K   
 RAM_D3 (xrw)            : ORIGIN = 0x38000000, LENGTH = 64K
 ITCMRAM (xrw)           : ORIGIN = 0x00000000, LENGTH = 64K
 FLASH (rx)              : ORIGIN = 0x8000000, LENGTH = FLASH_SIZE
 }
 
-__sdram_s = ORIGIN(SDRAM_SEC1);
-__sdram_e = __sdram_s + SDRAM_SIZE;
+__sdram_s1_s = ORIGIN(SDRAM_SEC1);
+__sdram_s1_e = __sdram_s1_s + SDRAM_8M;
+__sdram_s2_s = ORIGIN(SDRAM_SEC2);
+__sdram_s2_e = __sdram_s2_s + SDRAM_8M;
+__sdram_s3_s = ORIGIN(SDRAM_SEC3);
+__sdram_s3_e = __sdram_s3_s + SDRAM_8M;
 __rom_s = ORIGIN(FLASH);
 __rom_e = __rom_s + FLASH_SIZE;
 __boot_s = __rom_s;
@@ -98,6 +105,7 @@ SECTIONS
   {
     . = ALIGN(4);
     OsHeap_s = .;
+
     *(.OsHeap_Section)
     KEEP(*(.OsHeap_Section))
     *(.OsHeap_Section*)
@@ -105,6 +113,19 @@ SECTIONS
     OsHeap_e = .;
     . = ALIGN(4);
   } >RAM_D1_OsHeap_Part AT>FLASH
+
+  .ExtRam_Section :
+  {
+    . = ALIGN(4);
+    ExtRam_s = .;
+
+    *(.ExtRam_Section)
+    KEEP(*(.ExtRam_Section))
+    *(.ExtRam_Section*)
+    
+    ExtRam_e = .;
+    . = ALIGN(4);
+  } >SDRAM_SEC1 AT>FLASH
 
   .Perph_Section :
   {
