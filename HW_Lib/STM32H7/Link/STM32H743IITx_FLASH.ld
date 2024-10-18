@@ -58,7 +58,7 @@ _estack = 0x20020000;    /* end of RAM */
 _Min_Heap_Size = 0x2000;      /* required amount of heap  */
 _Min_Stack_Size = 0x2000; /* required amount of stack */
 
-FLASH_SIZE = 2048K;
+FLASH_SIZE = 2M;
 BOOT_SIZE = 0K;
 SDRAM_SIZE = 8M
 
