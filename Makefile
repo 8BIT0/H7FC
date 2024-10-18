@@ -60,7 +60,7 @@ Task/Task_Manager.cpp \
 Task/Task_Navi.cpp
 
 # C sources
-C_SOURCES =  \
+C_SOURCES = \
 main.c \
 Algorithm/Navi_Dep/MadgwickAHRS.c \
 Algorithm/Filter_Dep/filter.c \
@@ -121,8 +121,15 @@ System/FreeRTOS/queue.c \
 System/FreeRTOS/stream_buffer.c \
 System/FreeRTOS/tasks.c \
 System/FreeRTOS/timers.c \
-System/FreeRTOS/CMSIS_RTOS/cmsis_os.c \
-System/FreeRTOS/portable/MemMang/heap_4.c \
+System/FreeRTOS/CMSIS_RTOS/cmsis_os.c
+ifeq ($(HARDWARE), $(HW_NEURE))
+C_SOURCES += \
+System/FreeRTOS/portable/MemMang/heap_5.c
+else
+C_SOURCES += \
+System/FreeRTOS/portable/MemMang/heap_4.c
+endif
+C_SOURCES += \
 System/FreeRTOS/portable/GCC/ARM_CM4F/port.c \
 System/shell/shell_cmd_list.c \
 System/shell/shell_companion.c \
