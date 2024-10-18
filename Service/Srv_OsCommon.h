@@ -15,7 +15,7 @@ typedef HeapStats_t SrvOs_HeapStatus_TypeDef;
 
 typedef struct
 {
-    bool (*init)(uint32_t ext_mem_size);
+    bool (*init)(void);
     uint32_t (*get_os_ms)(void);
     void (*delay_ms)(uint32_t ms);
     void (*precise_delay)(uint32_t *p_time, uint32_t ms);
