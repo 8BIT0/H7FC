@@ -114,7 +114,8 @@ void Task_Manager_CreateTask(void const *arg)
             TaskTelemetry_Init(TaskTelemetry_Period_def);
             TaskControl_Init(TaskControl_Period_Def);
 #if (SD_CARD_ENABLE_STATE == ON)
-            TaskLog_Init(TaslLog_Period_Def);
+            /* lagecy */
+            // TaskLog_Init(TaslLog_Period_Def);
 #else
             TaskBlackBox_Init();
 #endif
