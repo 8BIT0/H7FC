@@ -52,8 +52,6 @@
   #include <stdint.h>
   #if !defined AT32F435_437
   extern uint32_t SystemCoreClock;
-  #elif defined AT32F435_437
-  // static uint32_t systemcoreclock = 288000000;
   #endif
   void xPortSysTickHandler(void);
 #endif
