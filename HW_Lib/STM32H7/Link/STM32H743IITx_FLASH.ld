@@ -60,7 +60,7 @@ _Min_Stack_Size = 0x2000; /* required amount of stack */
 
 FLASH_SIZE = 2M;
 BOOT_SIZE = 0K;
-SDRAM_SIZE = 8M
+SDRAM_SIZE = 8M;
 
 /* Specify the memory areas */
 MEMORY
@@ -76,8 +76,8 @@ ITCMRAM (xrw)           : ORIGIN = 0x00000000, LENGTH = 64K
 FLASH (rx)              : ORIGIN = 0x8000000, LENGTH = FLASH_SIZE
 }
 
-__sdram_s = ORIGIN(SDRAM_SEC1)
-__sdram_e = __sdram_s + SDRAM_SIZE
+__sdram_s = ORIGIN(SDRAM_SEC1);
+__sdram_e = __sdram_s + SDRAM_SIZE;
 __rom_s = ORIGIN(FLASH);
 __rom_e = __rom_s + FLASH_SIZE;
 __boot_s = __rom_s;
