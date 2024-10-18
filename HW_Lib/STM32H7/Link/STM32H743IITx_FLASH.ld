@@ -60,20 +60,24 @@ _Min_Stack_Size = 0x2000; /* required amount of stack */
 
 FLASH_SIZE = 2048K;
 BOOT_SIZE = 0K;
+SDRAM_SIZE = 8M
 
 /* Specify the memory areas */
 MEMORY
 {
-DTCMRAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 128K
-RAM_D1 (xrw)      : ORIGIN = 0x24000000, LENGTH = 320K
+DTCMRAM (xrw)           : ORIGIN = 0x20000000, LENGTH = 128K
+RAM_D1 (xrw)            : ORIGIN = 0x24000000, LENGTH = 320K
 RAM_D1_OsHeap_Part(xrw) : ORIGIN = 0x24050000, LENGTH = 128K
 RAM_D1_Perph_Part(xrw)  : ORIGIN = 0x24070000, LENGTH = 64K
-RAM_D2 (xrw)      : ORIGIN = 0x30000000, LENGTH = 288K
-RAM_D3 (xrw)      : ORIGIN = 0x38000000, LENGTH = 64K
-ITCMRAM (xrw)      : ORIGIN = 0x00000000, LENGTH = 64K
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = FLASH_SIZE
+SDRAM_SEC1 (xrw)        : ORIGIN = 0xC0000000, LENGTH = SDRAM_SIZE
+RAM_D2 (xrw)            : ORIGIN = 0x30000000, LENGTH = 288K
+RAM_D3 (xrw)            : ORIGIN = 0x38000000, LENGTH = 64K
+ITCMRAM (xrw)           : ORIGIN = 0x00000000, LENGTH = 64K
+FLASH (rx)              : ORIGIN = 0x8000000, LENGTH = FLASH_SIZE
 }
 
+__sdram_s = ORIGIN(SDRAM_SEC1)
+__sdram_e = __sdram_s + SDRAM_SIZE
 __rom_s = ORIGIN(FLASH);
 __rom_e = __rom_s + FLASH_SIZE;
 __boot_s = __rom_s;
