@@ -1,0 +1,1655 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"cdc_class.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.class_ept0_tx_handler,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	class_ept0_tx_handler:
+  26              	.LVL0:
+  27              	.LFB139:
+  28              		.file 1 "HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c"
+   1:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+   2:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   **************************************************************************
+   3:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @file     cdc_class.c
+   4:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @version  v2.0.8
+   5:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @date     2022-04-25
+   6:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief    usb cdc class type
+   7:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   **************************************************************************
+   8:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   *                       Copyright notice & Disclaimer
+   9:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   *
+  10:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * The software Board Support Package (BSP) that is made available to
+  11:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * download from Artery official website is the copyrighted work of Artery.
+  12:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * Artery authorizes customers to use, copy, and distribute the BSP
+  13:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * software and its related documentation for the purpose of design and
+  14:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * development in conjunction with Artery microcontrollers. Use of the
+  15:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * software is governed by this copyright notice and the following disclaimer.
+  16:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   *
+  17:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
+  18:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * GUARANTEES OR REPRESENTATIONS OF ANY KIND. ARTERY EXPRESSLY DISCLAIMS,
+  19:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * TO THE FULLEST EXTENT PERMITTED BY LAW, ALL EXPRESS, IMPLIED OR
+  20:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * STATUTORY OR OTHER WARRANTIES, GUARANTEES OR REPRESENTATIONS,
+  21:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+  22:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+  23:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   *
+  24:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   **************************************************************************
+  25:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+  26:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** #include "usbd_core.h"
+  27:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** #include "cdc_class.h"
+  28:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** #include "cdc_desc.h"
+  29:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+  30:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** USB_CDC_Rec_Callback_Func usb_cdc_rec_cb;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 2
+
+
+  31:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** USB_CDC_Trans_Callback_Func usb_cdc_trans_cb;
+  32:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** USB_CDC_Connect_Callback_Func usb_cdc_cnt_cb;
+  33:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+  34:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /** @addtogroup AT32F435_437_middlewares_usbd_class
+  35:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @{
+  36:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+  37:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+  38:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /** @defgroup USB_cdc_class
+  39:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief usb device class cdc demo
+  40:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @{
+  41:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+  42:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+  43:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /** @defgroup USB_cdc_class_private_functions
+  44:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @{
+  45:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+  46:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+  47:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_init_handler(void *udev);
+  48:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_clear_handler(void *udev);
+  49:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_setup_handler(void *udev, usb_setup_type *setup);
+  50:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_ept0_tx_handler(void *udev);
+  51:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_ept0_rx_handler(void *udev);
+  52:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_in_handler(void *udev, uint8_t ept_num);
+  53:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_out_handler(void *udev, uint8_t ept_num);
+  54:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_sof_handler(void *udev);
+  55:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_event_handler(void *udev, usbd_event_type event);
+  56:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+  57:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type cdc_struct_init(cdc_struct_type *pcdc);
+  58:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** extern void usb_usart_config( linecoding_type linecoding);
+  59:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static void usb_vcp_cmd_process(void *udev, uint8_t cmd, uint8_t *buff, uint16_t len);
+  60:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+  61:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** linecoding_type linecoding =
+  62:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+  63:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   115200,
+  64:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   0,
+  65:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   0,
+  66:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   8
+  67:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** };
+  68:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+  69:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /* cdc data struct */
+  70:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** cdc_struct_type cdc_struct;
+  71:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+  72:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /* usb device class handler */
+  73:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** usbd_class_handler cdc_class_handler =
+  74:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+  75:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   class_init_handler,
+  76:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   class_clear_handler,
+  77:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   class_setup_handler,
+  78:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   class_ept0_tx_handler,
+  79:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   class_ept0_rx_handler,
+  80:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   class_in_handler,
+  81:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   class_out_handler,
+  82:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   class_sof_handler,
+  83:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   class_event_handler,
+  84:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   &cdc_struct
+  85:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** };
+  86:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+  87:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  initialize usb custom hid endpoint
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 3
+
+
+  88:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: to the structure of usbd_core_type
+  89:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval status of usb_sts_type
+  90:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+  91:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_init_handler(void *udev)
+  92:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+  93:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+  94:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+  95:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+  96:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+  97:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* init cdc struct */
+  98:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_init(pcdc);
+  99:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 100:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* open in endpoint */
+ 101:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_ept_open(pudev, USBD_CDC_INT_EPT, EPT_INT_TYPE, USBD_CDC_CMD_MAXPACKET_SIZE);
+ 102:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 103:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* open in endpoint */
+ 104:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_ept_open(pudev, USBD_CDC_BULK_IN_EPT, EPT_BULK_TYPE, USBD_CDC_IN_MAXPACKET_SIZE);
+ 105:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 106:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* open out endpoint */
+ 107:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_ept_open(pudev, USBD_CDC_BULK_OUT_EPT, EPT_BULK_TYPE, USBD_CDC_OUT_MAXPACKET_SIZE);
+ 108:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 109:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* set out endpoint to receive status */
+ 110:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_ept_recv(pudev, USBD_CDC_BULK_OUT_EPT, pcdc->g_rx_buff, USBD_CDC_OUT_MAXPACKET_SIZE);
+ 111:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 112:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return status;
+ 113:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 114:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 115:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 116:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  clear endpoint or other state
+ 117:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: to the structure of usbd_core_type
+ 118:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval status of usb_sts_type
+ 119:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 120:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_clear_handler(void *udev)
+ 121:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+ 122:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 123:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 124:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 125:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* close in endpoint */
+ 126:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_ept_close(pudev, USBD_CDC_INT_EPT);
+ 127:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 128:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* close in endpoint */
+ 129:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_ept_close(pudev, USBD_CDC_BULK_IN_EPT);
+ 130:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 131:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* close out endpoint */
+ 132:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_ept_close(pudev, USBD_CDC_BULK_OUT_EPT);
+ 133:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 134:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return status;
+ 135:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 136:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 137:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 138:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  usb device class setup request handler
+ 139:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: to the structure of usbd_core_type
+ 140:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  setup: setup packet
+ 141:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval status of usb_sts_type
+ 142:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 143:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_setup_handler(void *udev, usb_setup_type *setup)
+ 144:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 4
+
+
+ 145:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 146:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 147:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 148:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 149:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   switch(setup->bmRequestType & USB_REQ_TYPE_RESERVED)
+ 150:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 151:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     /* class request */
+ 152:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     case USB_REQ_TYPE_CLASS:
+ 153:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       if(setup->wLength)
+ 154:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       {
+ 155:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         if(setup->bmRequestType & USB_REQ_DIR_DTH)
+ 156:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         {
+ 157:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usb_vcp_cmd_process(udev, setup->bRequest, pcdc->g_cmd, setup->wLength);
+ 158:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usbd_ctrl_send(pudev, pcdc->g_cmd, setup->wLength);
+ 159:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         }
+ 160:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         else
+ 161:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         {
+ 162:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           pcdc->g_req = setup->bRequest;
+ 163:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           pcdc->g_len = setup->wLength;
+ 164:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usbd_ctrl_recv(pudev, pcdc->g_cmd, pcdc->g_len);
+ 165:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 166:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         }
+ 167:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       }
+ 168:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 169:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     /* standard request */
+ 170:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     case USB_REQ_TYPE_STANDARD:
+ 171:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       switch(setup->bRequest)
+ 172:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       {
+ 173:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         case USB_STD_REQ_GET_DESCRIPTOR:
+ 174:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usbd_ctrl_unsupport(pudev);
+ 175:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           break;
+ 176:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         case USB_STD_REQ_GET_INTERFACE:
+ 177:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usbd_ctrl_send(pudev, (uint8_t *)&pcdc->alt_setting, 1);
+ 178:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           break;
+ 179:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         case USB_STD_REQ_SET_INTERFACE:
+ 180:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           pcdc->alt_setting = setup->wValue;
+ 181:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           break;
+ 182:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         default:
+ 183:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           break;
+ 184:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       }
+ 185:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 186:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     default:
+ 187:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       usbd_ctrl_unsupport(pudev);
+ 188:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 189:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 190:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return status;
+ 191:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 192:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 193:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 194:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  usb device endpoint 0 in status stage complete
+ 195:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: to the structure of usbd_core_type
+ 196:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval status of usb_sts_type
+ 197:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 198:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_ept0_tx_handler(void *udev)
+ 199:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+  29              		.loc 1 199 1 view -0
+  30              		.cfi_startproc
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 5
+
+
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+ 200:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+  34              		.loc 1 200 3 view .LVU1
+ 201:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 202:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* ...user code... */
+ 203:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 204:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return status;
+  35              		.loc 1 204 3 view .LVU2
+ 205:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+  36              		.loc 1 205 1 is_stmt 0 view .LVU3
+  37 0000 0020     		movs	r0, #0
+  38              	.LVL1:
+  39              		.loc 1 205 1 view .LVU4
+  40 0002 7047     		bx	lr
+  41              		.cfi_endproc
+  42              	.LFE139:
+  44              		.section	.text.class_sof_handler,"ax",%progbits
+  45              		.align	1
+  46              		.syntax unified
+  47              		.thumb
+  48              		.thumb_func
+  50              	class_sof_handler:
+  51              	.LVL2:
+  52              	.LFB143:
+ 206:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 207:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 208:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  usb device endpoint 0 out status stage complete
+ 209:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: usb device core handler type
+ 210:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval status of usb_sts_type
+ 211:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 212:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_ept0_rx_handler(void *udev)
+ 213:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+ 214:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 215:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 216:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 217:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   uint32_t recv_len = usbd_get_recv_len(pudev, 0);
+ 218:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* ...user code... */
+ 219:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   if( pcdc->g_req == SET_LINE_CODING)
+ 220:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 221:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     /* class process */
+ 222:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usb_vcp_cmd_process(udev, pcdc->g_req, pcdc->g_cmd, recv_len);
+ 223:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 224:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 225:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return status;
+ 226:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 227:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 228:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 229:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  usb device transmision complete handler
+ 230:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: to the structure of usbd_core_type
+ 231:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  ept_num: endpoint number
+ 232:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval status of usb_sts_type
+ 233:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 234:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_in_handler(void *udev, uint8_t ept_num)
+ 235:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+ 236:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 6
+
+
+ 237:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 238:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 239:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 240:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* ...user code...
+ 241:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     trans next packet data
+ 242:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 243:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_flush_tx_fifo(pudev, ept_num);
+ 244:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->g_tx_completed = 1;
+ 245:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 246:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   if (usb_cdc_trans_cb)
+ 247:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usb_cdc_trans_cb();
+ 248:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 249:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return status;
+ 250:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 251:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 252:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 253:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  usb device endpoint receive data
+ 254:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: to the structure of usbd_core_type
+ 255:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  ept_num: endpoint number
+ 256:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval status of usb_sts_type
+ 257:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 258:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_out_handler(void *udev, uint8_t ept_num)
+ 259:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+ 260:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 261:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 262:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 263:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 264:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* get endpoint receive data length  */
+ 265:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->g_rxlen = usbd_get_recv_len(pudev, ept_num);
+ 266:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 267:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /*set recv flag*/
+ 268:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->g_rx_completed = 1;
+ 269:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 270:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   if (usb_cdc_rec_cb)
+ 271:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usb_cdc_rec_cb();
+ 272:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 273:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return status;
+ 274:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 275:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 276:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 277:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  usb device sof handler
+ 278:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: to the structure of usbd_core_type
+ 279:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval status of usb_sts_type
+ 280:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 281:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_sof_handler(void *udev)
+ 282:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+  53              		.loc 1 282 1 is_stmt 1 view -0
+  54              		.cfi_startproc
+  55              		@ args = 0, pretend = 0, frame = 0
+  56              		@ frame_needed = 0, uses_anonymous_args = 0
+  57              		.loc 1 282 1 is_stmt 0 view .LVU6
+  58 0000 08B5     		push	{r3, lr}
+  59              	.LCFI0:
+  60              		.cfi_def_cfa_offset 8
+  61              		.cfi_offset 3, -8
+  62              		.cfi_offset 14, -4
+ 283:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 7
+
+
+  63              		.loc 1 283 3 is_stmt 1 view .LVU7
+  64              	.LVL3:
+ 284:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 285:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* ...user code... */
+ 286:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* usb connect detect */
+ 287:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   if (usb_cdc_cnt_cb)
+  65              		.loc 1 287 3 view .LVU8
+  66              		.loc 1 287 7 is_stmt 0 view .LVU9
+  67 0002 034B     		ldr	r3, .L5
+  68 0004 1B68     		ldr	r3, [r3]
+  69              		.loc 1 287 6 view .LVU10
+  70 0006 03B1     		cbz	r3, .L3
+ 288:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usb_cdc_cnt_cb();
+  71              		.loc 1 288 5 is_stmt 1 view .LVU11
+  72 0008 9847     		blx	r3
+  73              	.LVL4:
+  74              	.L3:
+ 289:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 290:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return status;
+  75              		.loc 1 290 3 view .LVU12
+ 291:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+  76              		.loc 1 291 1 is_stmt 0 view .LVU13
+  77 000a 0020     		movs	r0, #0
+  78 000c 08BD     		pop	{r3, pc}
+  79              	.L6:
+  80 000e 00BF     		.align	2
+  81              	.L5:
+  82 0010 00000000 		.word	.LANCHOR0
+  83              		.cfi_endproc
+  84              	.LFE143:
+  86              		.section	.text.class_event_handler,"ax",%progbits
+  87              		.align	1
+  88              		.syntax unified
+  89              		.thumb
+  90              		.thumb_func
+  92              	class_event_handler:
+  93              	.LVL5:
+  94              	.LFB144:
+ 292:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 293:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 294:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  usb device event handler
+ 295:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: to the structure of usbd_core_type
+ 296:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  event: usb device event
+ 297:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval status of usb_sts_type
+ 298:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 299:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type class_event_handler(void *udev, usbd_event_type event)
+ 300:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+  95              		.loc 1 300 1 is_stmt 1 view -0
+  96              		.cfi_startproc
+  97              		@ args = 0, pretend = 0, frame = 0
+  98              		@ frame_needed = 0, uses_anonymous_args = 0
+  99              		@ link register save eliminated.
+ 301:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 100              		.loc 1 301 3 view .LVU15
+ 302:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   switch(event)
+ 101              		.loc 1 302 3 view .LVU16
+ 303:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 8
+
+
+ 304:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     case USBD_RESET_EVENT:
+ 305:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 306:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       /* ...user code... */
+ 307:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 308:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 309:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     case USBD_SUSPEND_EVENT:
+ 310:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 311:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       /* ...user code... */
+ 312:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 313:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 314:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     case USBD_WAKEUP_EVENT:
+ 315:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       /* ...user code... */
+ 316:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 317:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 318:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     case USBD_INISOINCOM_EVENT:
+ 319:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 320:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     case USBD_OUTISOINCOM_EVENT:
+ 321:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 322:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 323:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     default:
+ 324:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 325:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 326:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return status;
+ 102              		.loc 1 326 3 view .LVU17
+ 327:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 103              		.loc 1 327 1 is_stmt 0 view .LVU18
+ 104 0000 0020     		movs	r0, #0
+ 105              	.LVL6:
+ 106              		.loc 1 327 1 view .LVU19
+ 107 0002 7047     		bx	lr
+ 108              		.cfi_endproc
+ 109              	.LFE144:
+ 111              		.section	.text.cdc_struct_init,"ax",%progbits
+ 112              		.align	1
+ 113              		.syntax unified
+ 114              		.thumb
+ 115              		.thumb_func
+ 117              	cdc_struct_init:
+ 118              	.LVL7:
+ 119              	.LFB145:
+ 328:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 329:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 330:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  usb device cdc init
+ 331:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  pcdc: to the structure of cdc_struct
+ 332:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval status of usb_sts_type
+ 333:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 334:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static usb_sts_type cdc_struct_init(cdc_struct_type *pcdc)
+ 335:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+ 120              		.loc 1 335 1 is_stmt 1 view -0
+ 121              		.cfi_startproc
+ 122              		@ args = 0, pretend = 0, frame = 0
+ 123              		@ frame_needed = 0, uses_anonymous_args = 0
+ 124              		@ link register save eliminated.
+ 125              		.loc 1 335 1 is_stmt 0 view .LVU21
+ 126 0000 0346     		mov	r3, r0
+ 336:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->g_tx_completed = 1;
+ 127              		.loc 1 336 3 is_stmt 1 view .LVU22
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 9
+
+
+ 128              		.loc 1 336 24 is_stmt 0 view .LVU23
+ 129 0002 0122     		movs	r2, #1
+ 130 0004 80F85220 		strb	r2, [r0, #82]
+ 337:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->g_rx_completed = 0;
+ 131              		.loc 1 337 3 is_stmt 1 view .LVU24
+ 132              		.loc 1 337 24 is_stmt 0 view .LVU25
+ 133 0008 0020     		movs	r0, #0
+ 134              	.LVL8:
+ 135              		.loc 1 337 24 view .LVU26
+ 136 000a 83F85300 		strb	r0, [r3, #83]
+ 338:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->alt_setting = 0;
+ 137              		.loc 1 338 3 is_stmt 1 view .LVU27
+ 138              		.loc 1 338 21 is_stmt 0 view .LVU28
+ 139 000e 1860     		str	r0, [r3]
+ 339:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->linecoding.bitrate = linecoding.bitrate;
+ 140              		.loc 1 339 3 is_stmt 1 view .LVU29
+ 141              		.loc 1 339 40 is_stmt 0 view .LVU30
+ 142 0010 064A     		ldr	r2, .L9
+ 143 0012 1168     		ldr	r1, [r2]
+ 144              		.loc 1 339 28 view .LVU31
+ 145 0014 5965     		str	r1, [r3, #84]
+ 340:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->linecoding.data = linecoding.data;
+ 146              		.loc 1 340 3 is_stmt 1 view .LVU32
+ 147              		.loc 1 340 37 is_stmt 0 view .LVU33
+ 148 0016 9179     		ldrb	r1, [r2, #6]	@ zero_extendqisi2
+ 149              		.loc 1 340 25 view .LVU34
+ 150 0018 83F85A10 		strb	r1, [r3, #90]
+ 341:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->linecoding.format = linecoding.format;
+ 151              		.loc 1 341 3 is_stmt 1 view .LVU35
+ 152              		.loc 1 341 39 is_stmt 0 view .LVU36
+ 153 001c 1179     		ldrb	r1, [r2, #4]	@ zero_extendqisi2
+ 154              		.loc 1 341 27 view .LVU37
+ 155 001e 83F85810 		strb	r1, [r3, #88]
+ 342:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->linecoding.parity = linecoding.parity;
+ 156              		.loc 1 342 3 is_stmt 1 view .LVU38
+ 157              		.loc 1 342 39 is_stmt 0 view .LVU39
+ 158 0022 5279     		ldrb	r2, [r2, #5]	@ zero_extendqisi2
+ 159              		.loc 1 342 27 view .LVU40
+ 160 0024 83F85920 		strb	r2, [r3, #89]
+ 343:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return USB_OK;
+ 161              		.loc 1 343 3 is_stmt 1 view .LVU41
+ 344:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 162              		.loc 1 344 1 is_stmt 0 view .LVU42
+ 163 0028 7047     		bx	lr
+ 164              	.L10:
+ 165 002a 00BF     		.align	2
+ 166              	.L9:
+ 167 002c 00000000 		.word	.LANCHOR1
+ 168              		.cfi_endproc
+ 169              	.LFE145:
+ 171              		.section	.text.usb_vcp_cmd_process,"ax",%progbits
+ 172              		.align	1
+ 173              		.syntax unified
+ 174              		.thumb
+ 175              		.thumb_func
+ 177              	usb_vcp_cmd_process:
+ 178              	.LVL9:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 10
+
+
+ 179              	.LFB148:
+ 345:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 346:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 347:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  usb device class rx data process
+ 348:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: to the structure of usbd_core_type
+ 349:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  recv_data: receive buffer
+ 350:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval receive data len
+ 351:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 352:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** uint16_t usb_vcp_get_rxdata(void *udev, uint8_t *recv_data)
+ 353:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+ 354:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   uint16_t i_index = 0;
+ 355:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   uint16_t tmp_len = 0;
+ 356:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 357:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 358:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 359:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   if(pcdc->g_rx_completed == 0)
+ 360:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 361:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     return 0;
+ 362:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 363:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->g_rx_completed = 0;
+ 364:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   tmp_len = pcdc->g_rxlen;
+ 365:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   for(i_index = 0; i_index < pcdc->g_rxlen; i_index ++)
+ 366:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 367:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     recv_data[i_index] = pcdc->g_rx_buff[i_index];
+ 368:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 369:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 370:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_ept_recv(pudev, USBD_CDC_BULK_OUT_EPT, pcdc->g_rx_buff, USBD_CDC_OUT_MAXPACKET_SIZE);
+ 371:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 372:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return tmp_len;
+ 373:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 374:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 375:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 376:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  usb device class send data
+ 377:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: to the structure of usbd_core_type
+ 378:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  send_data: send data buffer
+ 379:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  len: send length
+ 380:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval error status
+ 381:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 382:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** error_status usb_vcp_send_data(void *udev, uint8_t *send_data, uint16_t len)
+ 383:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+ 384:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   error_status status = SUCCESS;
+ 385:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 386:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 387:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   if(pcdc->g_tx_completed)
+ 388:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 389:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     pcdc->g_tx_completed = 0;
+ 390:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usbd_ept_send(pudev, USBD_CDC_BULK_IN_EPT, send_data, len);
+ 391:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 392:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   else
+ 393:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 394:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     status = ERROR;
+ 395:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 396:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   return status;
+ 397:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 398:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 399:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** /**
+ 400:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @brief  usb device function
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 11
+
+
+ 401:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  udev: to the structure of usbd_core_type
+ 402:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  cmd: request number
+ 403:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  buff: request buffer
+ 404:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @param  len: buffer length
+ 405:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   * @retval none
+ 406:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   */
+ 407:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** static void usb_vcp_cmd_process(void *udev, uint8_t cmd, uint8_t *buff, uint16_t len)
+ 408:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** {
+ 180              		.loc 1 408 1 is_stmt 1 view -0
+ 181              		.cfi_startproc
+ 182              		@ args = 0, pretend = 0, frame = 0
+ 183              		@ frame_needed = 0, uses_anonymous_args = 0
+ 184              		@ link register save eliminated.
+ 409:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 185              		.loc 1 409 3 view .LVU44
+ 410:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 186              		.loc 1 410 3 view .LVU45
+ 187              		.loc 1 410 51 is_stmt 0 view .LVU46
+ 188 0000 4368     		ldr	r3, [r0, #4]
+ 189              	.LVL10:
+ 190              		.loc 1 410 20 view .LVU47
+ 191 0002 5B6A     		ldr	r3, [r3, #36]
+ 192              	.LVL11:
+ 411:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   switch(cmd)
+ 193              		.loc 1 411 3 is_stmt 1 view .LVU48
+ 194 0004 2029     		cmp	r1, #32
+ 195 0006 02D0     		beq	.L12
+ 196 0008 2129     		cmp	r1, #33
+ 197 000a 15D0     		beq	.L13
+ 198 000c 7047     		bx	lr
+ 199              	.L12:
+ 412:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 413:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     case SET_LINE_CODING:
+ 414:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       pcdc->linecoding.bitrate = (uint32_t)(buff[0] | (buff[1] << 8) | (buff[2] << 16) | (buff[3] <
+ 200              		.loc 1 414 7 view .LVU49
+ 201              		.loc 1 414 49 is_stmt 0 view .LVU50
+ 202 000e 1178     		ldrb	r1, [r2]	@ zero_extendqisi2
+ 203              	.LVL12:
+ 204              		.loc 1 414 60 view .LVU51
+ 205 0010 5078     		ldrb	r0, [r2, #1]	@ zero_extendqisi2
+ 206              	.LVL13:
+ 207              		.loc 1 414 53 view .LVU52
+ 208 0012 41EA0021 		orr	r1, r1, r0, lsl #8
+ 209              		.loc 1 414 77 view .LVU53
+ 210 0016 9078     		ldrb	r0, [r2, #2]	@ zero_extendqisi2
+ 211              		.loc 1 414 70 view .LVU54
+ 212 0018 41EA0041 		orr	r1, r1, r0, lsl #16
+ 213              		.loc 1 414 95 view .LVU55
+ 214 001c D078     		ldrb	r0, [r2, #3]	@ zero_extendqisi2
+ 215              		.loc 1 414 88 view .LVU56
+ 216 001e 41EA0061 		orr	r1, r1, r0, lsl #24
+ 217              		.loc 1 414 32 view .LVU57
+ 218 0022 5965     		str	r1, [r3, #84]
+ 415:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       pcdc->linecoding.format = buff[4];
+ 219              		.loc 1 415 7 is_stmt 1 view .LVU58
+ 220              		.loc 1 415 31 is_stmt 0 view .LVU59
+ 221 0024 1179     		ldrb	r1, [r2, #4]	@ zero_extendqisi2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 12
+
+
+ 222 0026 83F85810 		strb	r1, [r3, #88]
+ 416:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       pcdc->linecoding.parity = buff[5];
+ 223              		.loc 1 416 7 is_stmt 1 view .LVU60
+ 224              		.loc 1 416 31 is_stmt 0 view .LVU61
+ 225 002a 5179     		ldrb	r1, [r2, #5]	@ zero_extendqisi2
+ 226 002c 83F85910 		strb	r1, [r3, #89]
+ 417:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       pcdc->linecoding.data = buff[6];
+ 227              		.loc 1 417 7 is_stmt 1 view .LVU62
+ 228              		.loc 1 417 29 is_stmt 0 view .LVU63
+ 229 0030 9279     		ldrb	r2, [r2, #6]	@ zero_extendqisi2
+ 230              	.LVL14:
+ 231              		.loc 1 417 29 view .LVU64
+ 232 0032 83F85A20 		strb	r2, [r3, #90]
+ 418:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** #ifdef USB_VIRTUAL_COMPORT
+ 419:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       /* set hardware usart */
+ 420:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       usb_usart_config(pcdc->linecoding);
+ 421:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** #endif
+ 422:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 233              		.loc 1 422 7 is_stmt 1 view .LVU65
+ 234 0036 7047     		bx	lr
+ 235              	.LVL15:
+ 236              	.L13:
+ 423:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 424:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     case GET_LINE_CODING:
+ 425:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       buff[0] = (uint8_t)pcdc->linecoding.bitrate;
+ 237              		.loc 1 425 7 view .LVU66
+ 238              		.loc 1 425 17 is_stmt 0 view .LVU67
+ 239 0038 93F85410 		ldrb	r1, [r3, #84]	@ zero_extendqisi2
+ 240              	.LVL16:
+ 241              		.loc 1 425 15 view .LVU68
+ 242 003c 1170     		strb	r1, [r2]
+ 426:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       buff[1] = (uint8_t)(pcdc->linecoding.bitrate >> 8);
+ 243              		.loc 1 426 7 is_stmt 1 view .LVU69
+ 244              		.loc 1 426 17 is_stmt 0 view .LVU70
+ 245 003e 93F85510 		ldrb	r1, [r3, #85]	@ zero_extendqisi2
+ 246              		.loc 1 426 15 view .LVU71
+ 247 0042 5170     		strb	r1, [r2, #1]
+ 427:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       buff[2] = (uint8_t)(pcdc->linecoding.bitrate >> 16);
+ 248              		.loc 1 427 7 is_stmt 1 view .LVU72
+ 249              		.loc 1 427 17 is_stmt 0 view .LVU73
+ 250 0044 93F85610 		ldrb	r1, [r3, #86]	@ zero_extendqisi2
+ 251              		.loc 1 427 15 view .LVU74
+ 252 0048 9170     		strb	r1, [r2, #2]
+ 428:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       buff[3] = (uint8_t)(pcdc->linecoding.bitrate >> 24);
+ 253              		.loc 1 428 7 is_stmt 1 view .LVU75
+ 254              		.loc 1 428 17 is_stmt 0 view .LVU76
+ 255 004a 93F85710 		ldrb	r1, [r3, #87]	@ zero_extendqisi2
+ 256              		.loc 1 428 15 view .LVU77
+ 257 004e D170     		strb	r1, [r2, #3]
+ 429:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       buff[4] = (uint8_t)(pcdc->linecoding.format);
+ 258              		.loc 1 429 7 is_stmt 1 view .LVU78
+ 259              		.loc 1 429 43 is_stmt 0 view .LVU79
+ 260 0050 93F85810 		ldrb	r1, [r3, #88]	@ zero_extendqisi2
+ 261              		.loc 1 429 15 view .LVU80
+ 262 0054 1171     		strb	r1, [r2, #4]
+ 430:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       buff[5] = (uint8_t)(pcdc->linecoding.parity);
+ 263              		.loc 1 430 7 is_stmt 1 view .LVU81
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 13
+
+
+ 264              		.loc 1 430 43 is_stmt 0 view .LVU82
+ 265 0056 93F85910 		ldrb	r1, [r3, #89]	@ zero_extendqisi2
+ 266              		.loc 1 430 15 view .LVU83
+ 267 005a 5171     		strb	r1, [r2, #5]
+ 431:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       buff[6] = (uint8_t)(pcdc->linecoding.data);
+ 268              		.loc 1 431 7 is_stmt 1 view .LVU84
+ 269              		.loc 1 431 43 is_stmt 0 view .LVU85
+ 270 005c 93F85A30 		ldrb	r3, [r3, #90]	@ zero_extendqisi2
+ 271              	.LVL17:
+ 272              		.loc 1 431 15 view .LVU86
+ 273 0060 9371     		strb	r3, [r2, #6]
+ 432:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 274              		.loc 1 432 7 is_stmt 1 view .LVU87
+ 433:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 434:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     default:
+ 435:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 436:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 437:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 275              		.loc 1 437 1 is_stmt 0 view .LVU88
+ 276 0062 7047     		bx	lr
+ 277              		.cfi_endproc
+ 278              	.LFE148:
+ 280              		.section	.text.class_out_handler,"ax",%progbits
+ 281              		.align	1
+ 282              		.syntax unified
+ 283              		.thumb
+ 284              		.thumb_func
+ 286              	class_out_handler:
+ 287              	.LVL18:
+ 288              	.LFB142:
+ 259:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 289              		.loc 1 259 1 is_stmt 1 view -0
+ 290              		.cfi_startproc
+ 291              		@ args = 0, pretend = 0, frame = 0
+ 292              		@ frame_needed = 0, uses_anonymous_args = 0
+ 259:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 293              		.loc 1 259 1 is_stmt 0 view .LVU90
+ 294 0000 10B5     		push	{r4, lr}
+ 295              	.LCFI1:
+ 296              		.cfi_def_cfa_offset 8
+ 297              		.cfi_offset 4, -8
+ 298              		.cfi_offset 14, -4
+ 260:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 299              		.loc 1 260 3 is_stmt 1 view .LVU91
+ 300              	.LVL19:
+ 261:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 301              		.loc 1 261 3 view .LVU92
+ 262:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 302              		.loc 1 262 3 view .LVU93
+ 262:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 303              		.loc 1 262 51 is_stmt 0 view .LVU94
+ 304 0002 4368     		ldr	r3, [r0, #4]
+ 262:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 305              		.loc 1 262 20 view .LVU95
+ 306 0004 5C6A     		ldr	r4, [r3, #36]
+ 307              	.LVL20:
+ 265:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 14
+
+
+ 308              		.loc 1 265 3 is_stmt 1 view .LVU96
+ 265:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 309              		.loc 1 265 19 is_stmt 0 view .LVU97
+ 310 0006 FFF7FEFF 		bl	usbd_get_recv_len
+ 311              	.LVL21:
+ 265:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 312              		.loc 1 265 17 view .LVU98
+ 313 000a A4F85000 		strh	r0, [r4, #80]	@ movhi
+ 268:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 314              		.loc 1 268 3 is_stmt 1 view .LVU99
+ 268:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 315              		.loc 1 268 24 is_stmt 0 view .LVU100
+ 316 000e 0123     		movs	r3, #1
+ 317 0010 84F85330 		strb	r3, [r4, #83]
+ 270:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usb_cdc_rec_cb();
+ 318              		.loc 1 270 3 is_stmt 1 view .LVU101
+ 270:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usb_cdc_rec_cb();
+ 319              		.loc 1 270 7 is_stmt 0 view .LVU102
+ 320 0014 024B     		ldr	r3, .L18
+ 321 0016 1B68     		ldr	r3, [r3]
+ 270:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usb_cdc_rec_cb();
+ 322              		.loc 1 270 6 view .LVU103
+ 323 0018 03B1     		cbz	r3, .L16
+ 271:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 324              		.loc 1 271 5 is_stmt 1 view .LVU104
+ 325 001a 9847     		blx	r3
+ 326              	.LVL22:
+ 327              	.L16:
+ 273:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 328              		.loc 1 273 3 view .LVU105
+ 274:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 329              		.loc 1 274 1 is_stmt 0 view .LVU106
+ 330 001c 0020     		movs	r0, #0
+ 331 001e 10BD     		pop	{r4, pc}
+ 332              	.LVL23:
+ 333              	.L19:
+ 274:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 334              		.loc 1 274 1 view .LVU107
+ 335              		.align	2
+ 336              	.L18:
+ 337 0020 00000000 		.word	.LANCHOR2
+ 338              		.cfi_endproc
+ 339              	.LFE142:
+ 341              		.section	.text.class_ept0_rx_handler,"ax",%progbits
+ 342              		.align	1
+ 343              		.syntax unified
+ 344              		.thumb
+ 345              		.thumb_func
+ 347              	class_ept0_rx_handler:
+ 348              	.LVL24:
+ 349              	.LFB140:
+ 213:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 350              		.loc 1 213 1 is_stmt 1 view -0
+ 351              		.cfi_startproc
+ 352              		@ args = 0, pretend = 0, frame = 0
+ 353              		@ frame_needed = 0, uses_anonymous_args = 0
+ 213:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 15
+
+
+ 354              		.loc 1 213 1 is_stmt 0 view .LVU109
+ 355 0000 38B5     		push	{r3, r4, r5, lr}
+ 356              	.LCFI2:
+ 357              		.cfi_def_cfa_offset 16
+ 358              		.cfi_offset 3, -16
+ 359              		.cfi_offset 4, -12
+ 360              		.cfi_offset 5, -8
+ 361              		.cfi_offset 14, -4
+ 362 0002 0446     		mov	r4, r0
+ 214:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 363              		.loc 1 214 3 is_stmt 1 view .LVU110
+ 364              	.LVL25:
+ 215:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 365              		.loc 1 215 3 view .LVU111
+ 216:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   uint32_t recv_len = usbd_get_recv_len(pudev, 0);
+ 366              		.loc 1 216 3 view .LVU112
+ 216:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   uint32_t recv_len = usbd_get_recv_len(pudev, 0);
+ 367              		.loc 1 216 51 is_stmt 0 view .LVU113
+ 368 0004 4368     		ldr	r3, [r0, #4]
+ 216:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   uint32_t recv_len = usbd_get_recv_len(pudev, 0);
+ 369              		.loc 1 216 20 view .LVU114
+ 370 0006 5D6A     		ldr	r5, [r3, #36]
+ 371              	.LVL26:
+ 217:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* ...user code... */
+ 372              		.loc 1 217 3 is_stmt 1 view .LVU115
+ 217:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   /* ...user code... */
+ 373              		.loc 1 217 23 is_stmt 0 view .LVU116
+ 374 0008 0021     		movs	r1, #0
+ 375 000a FFF7FEFF 		bl	usbd_get_recv_len
+ 376              	.LVL27:
+ 219:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 377              		.loc 1 219 3 is_stmt 1 view .LVU117
+ 219:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 378              		.loc 1 219 11 is_stmt 0 view .LVU118
+ 379 000e 95F84C10 		ldrb	r1, [r5, #76]	@ zero_extendqisi2
+ 219:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 380              		.loc 1 219 5 view .LVU119
+ 381 0012 2029     		cmp	r1, #32
+ 382 0014 01D0     		beq	.L23
+ 383              	.LVL28:
+ 384              	.L21:
+ 225:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 385              		.loc 1 225 3 is_stmt 1 view .LVU120
+ 226:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 386              		.loc 1 226 1 is_stmt 0 view .LVU121
+ 387 0016 0020     		movs	r0, #0
+ 388 0018 38BD     		pop	{r3, r4, r5, pc}
+ 389              	.LVL29:
+ 390              	.L23:
+ 222:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 391              		.loc 1 222 5 is_stmt 1 view .LVU122
+ 392 001a 83B2     		uxth	r3, r0
+ 393 001c 05F14402 		add	r2, r5, #68
+ 394 0020 2046     		mov	r0, r4
+ 395              	.LVL30:
+ 222:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 396              		.loc 1 222 5 is_stmt 0 view .LVU123
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 16
+
+
+ 397 0022 FFF7FEFF 		bl	usb_vcp_cmd_process
+ 398              	.LVL31:
+ 399 0026 F6E7     		b	.L21
+ 400              		.cfi_endproc
+ 401              	.LFE140:
+ 403              		.section	.text.class_in_handler,"ax",%progbits
+ 404              		.align	1
+ 405              		.syntax unified
+ 406              		.thumb
+ 407              		.thumb_func
+ 409              	class_in_handler:
+ 410              	.LVL32:
+ 411              	.LFB141:
+ 235:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 412              		.loc 1 235 1 is_stmt 1 view -0
+ 413              		.cfi_startproc
+ 414              		@ args = 0, pretend = 0, frame = 0
+ 415              		@ frame_needed = 0, uses_anonymous_args = 0
+ 235:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 416              		.loc 1 235 1 is_stmt 0 view .LVU125
+ 417 0000 10B5     		push	{r4, lr}
+ 418              	.LCFI3:
+ 419              		.cfi_def_cfa_offset 8
+ 420              		.cfi_offset 4, -8
+ 421              		.cfi_offset 14, -4
+ 236:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 422              		.loc 1 236 3 is_stmt 1 view .LVU126
+ 423              	.LVL33:
+ 237:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 424              		.loc 1 237 3 view .LVU127
+ 237:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 425              		.loc 1 237 51 is_stmt 0 view .LVU128
+ 426 0002 4368     		ldr	r3, [r0, #4]
+ 237:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 427              		.loc 1 237 20 view .LVU129
+ 428 0004 5C6A     		ldr	r4, [r3, #36]
+ 429              	.LVL34:
+ 238:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 430              		.loc 1 238 3 is_stmt 1 view .LVU130
+ 243:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   pcdc->g_tx_completed = 1;
+ 431              		.loc 1 243 3 view .LVU131
+ 432 0006 FFF7FEFF 		bl	usbd_flush_tx_fifo
+ 433              	.LVL35:
+ 244:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 434              		.loc 1 244 3 view .LVU132
+ 244:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 435              		.loc 1 244 24 is_stmt 0 view .LVU133
+ 436 000a 0123     		movs	r3, #1
+ 437 000c 84F85230 		strb	r3, [r4, #82]
+ 246:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usb_cdc_trans_cb();
+ 438              		.loc 1 246 3 is_stmt 1 view .LVU134
+ 246:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usb_cdc_trans_cb();
+ 439              		.loc 1 246 7 is_stmt 0 view .LVU135
+ 440 0010 024B     		ldr	r3, .L27
+ 441 0012 1B68     		ldr	r3, [r3]
+ 246:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usb_cdc_trans_cb();
+ 442              		.loc 1 246 6 view .LVU136
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 17
+
+
+ 443 0014 03B1     		cbz	r3, .L25
+ 247:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 444              		.loc 1 247 5 is_stmt 1 view .LVU137
+ 445 0016 9847     		blx	r3
+ 446              	.LVL36:
+ 447              	.L25:
+ 249:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 448              		.loc 1 249 3 view .LVU138
+ 250:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 449              		.loc 1 250 1 is_stmt 0 view .LVU139
+ 450 0018 0020     		movs	r0, #0
+ 451 001a 10BD     		pop	{r4, pc}
+ 452              	.LVL37:
+ 453              	.L28:
+ 250:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 454              		.loc 1 250 1 view .LVU140
+ 455              		.align	2
+ 456              	.L27:
+ 457 001c 00000000 		.word	.LANCHOR3
+ 458              		.cfi_endproc
+ 459              	.LFE141:
+ 461              		.section	.text.class_setup_handler,"ax",%progbits
+ 462              		.align	1
+ 463              		.syntax unified
+ 464              		.thumb
+ 465              		.thumb_func
+ 467              	class_setup_handler:
+ 468              	.LVL38:
+ 469              	.LFB138:
+ 144:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 470              		.loc 1 144 1 is_stmt 1 view -0
+ 471              		.cfi_startproc
+ 472              		@ args = 0, pretend = 0, frame = 0
+ 473              		@ frame_needed = 0, uses_anonymous_args = 0
+ 144:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 474              		.loc 1 144 1 is_stmt 0 view .LVU142
+ 475 0000 70B5     		push	{r4, r5, r6, lr}
+ 476              	.LCFI4:
+ 477              		.cfi_def_cfa_offset 16
+ 478              		.cfi_offset 4, -16
+ 479              		.cfi_offset 5, -12
+ 480              		.cfi_offset 6, -8
+ 481              		.cfi_offset 14, -4
+ 482 0002 0546     		mov	r5, r0
+ 483 0004 0C46     		mov	r4, r1
+ 145:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 484              		.loc 1 145 3 is_stmt 1 view .LVU143
+ 485              	.LVL39:
+ 146:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 486              		.loc 1 146 3 view .LVU144
+ 147:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 487              		.loc 1 147 3 view .LVU145
+ 147:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 488              		.loc 1 147 51 is_stmt 0 view .LVU146
+ 489 0006 4368     		ldr	r3, [r0, #4]
+ 147:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 490              		.loc 1 147 20 view .LVU147
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 18
+
+
+ 491 0008 596A     		ldr	r1, [r3, #36]
+ 492              	.LVL40:
+ 149:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 493              		.loc 1 149 3 is_stmt 1 view .LVU148
+ 149:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 494              		.loc 1 149 15 is_stmt 0 view .LVU149
+ 495 000a 94F800C0 		ldrb	ip, [r4]	@ zero_extendqisi2
+ 149:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 496              		.loc 1 149 3 view .LVU150
+ 497 000e 1CF06003 		ands	r3, ip, #96
+ 498 0012 1CD0     		beq	.L30
+ 499 0014 202B     		cmp	r3, #32
+ 500 0016 2BD1     		bne	.L31
+ 153:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       {
+ 501              		.loc 1 153 7 is_stmt 1 view .LVU151
+ 153:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       {
+ 502              		.loc 1 153 15 is_stmt 0 view .LVU152
+ 503 0018 E388     		ldrh	r3, [r4, #6]
+ 153:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       {
+ 504              		.loc 1 153 9 view .LVU153
+ 505 001a 5BB3     		cbz	r3, .L32
+ 155:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         {
+ 506              		.loc 1 155 9 is_stmt 1 view .LVU154
+ 155:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         {
+ 507              		.loc 1 155 11 is_stmt 0 view .LVU155
+ 508 001c 1CF0800F 		tst	ip, #128
+ 509 0020 09D1     		bne	.L37
+ 162:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           pcdc->g_len = setup->wLength;
+ 510              		.loc 1 162 11 is_stmt 1 view .LVU156
+ 162:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           pcdc->g_len = setup->wLength;
+ 511              		.loc 1 162 30 is_stmt 0 view .LVU157
+ 512 0022 6378     		ldrb	r3, [r4, #1]	@ zero_extendqisi2
+ 162:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           pcdc->g_len = setup->wLength;
+ 513              		.loc 1 162 23 view .LVU158
+ 514 0024 81F84C30 		strb	r3, [r1, #76]
+ 163:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usbd_ctrl_recv(pudev, pcdc->g_cmd, pcdc->g_len);
+ 515              		.loc 1 163 11 is_stmt 1 view .LVU159
+ 163:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usbd_ctrl_recv(pudev, pcdc->g_cmd, pcdc->g_len);
+ 516              		.loc 1 163 30 is_stmt 0 view .LVU160
+ 517 0028 E288     		ldrh	r2, [r4, #6]
+ 163:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usbd_ctrl_recv(pudev, pcdc->g_cmd, pcdc->g_len);
+ 518              		.loc 1 163 23 view .LVU161
+ 519 002a A1F84E20 		strh	r2, [r1, #78]	@ movhi
+ 164:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 520              		.loc 1 164 11 is_stmt 1 view .LVU162
+ 521 002e 4431     		adds	r1, r1, #68
+ 522              	.LVL41:
+ 164:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 523              		.loc 1 164 11 is_stmt 0 view .LVU163
+ 524 0030 FFF7FEFF 		bl	usbd_ctrl_recv
+ 525              	.LVL42:
+ 164:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 526              		.loc 1 164 11 view .LVU164
+ 527 0034 1EE0     		b	.L32
+ 528              	.LVL43:
+ 529              	.L37:
+ 157:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usbd_ctrl_send(pudev, pcdc->g_cmd, setup->wLength);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 19
+
+
+ 530              		.loc 1 157 11 is_stmt 1 view .LVU165
+ 157:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usbd_ctrl_send(pudev, pcdc->g_cmd, setup->wLength);
+ 531              		.loc 1 157 58 is_stmt 0 view .LVU166
+ 532 0036 01F14406 		add	r6, r1, #68
+ 157:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usbd_ctrl_send(pudev, pcdc->g_cmd, setup->wLength);
+ 533              		.loc 1 157 11 view .LVU167
+ 534 003a 3246     		mov	r2, r6
+ 535 003c 6178     		ldrb	r1, [r4, #1]	@ zero_extendqisi2
+ 536              	.LVL44:
+ 157:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           usbd_ctrl_send(pudev, pcdc->g_cmd, setup->wLength);
+ 537              		.loc 1 157 11 view .LVU168
+ 538 003e FFF7FEFF 		bl	usb_vcp_cmd_process
+ 539              	.LVL45:
+ 158:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         }
+ 540              		.loc 1 158 11 is_stmt 1 view .LVU169
+ 541 0042 E288     		ldrh	r2, [r4, #6]
+ 542 0044 3146     		mov	r1, r6
+ 543 0046 2846     		mov	r0, r5
+ 544 0048 FFF7FEFF 		bl	usbd_ctrl_send
+ 545              	.LVL46:
+ 546 004c 12E0     		b	.L32
+ 547              	.LVL47:
+ 548              	.L30:
+ 171:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       {
+ 549              		.loc 1 171 7 view .LVU170
+ 171:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       {
+ 550              		.loc 1 171 19 is_stmt 0 view .LVU171
+ 551 004e 6378     		ldrb	r3, [r4, #1]	@ zero_extendqisi2
+ 552 0050 0A2B     		cmp	r3, #10
+ 553 0052 06D0     		beq	.L34
+ 554 0054 0B2B     		cmp	r3, #11
+ 555 0056 08D0     		beq	.L35
+ 556 0058 062B     		cmp	r3, #6
+ 557 005a 0BD1     		bne	.L32
+ 174:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           break;
+ 558              		.loc 1 174 11 is_stmt 1 view .LVU172
+ 559 005c FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 560              	.LVL48:
+ 175:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         case USB_STD_REQ_GET_INTERFACE:
+ 561              		.loc 1 175 11 view .LVU173
+ 562 0060 08E0     		b	.L32
+ 563              	.LVL49:
+ 564              	.L34:
+ 177:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           break;
+ 565              		.loc 1 177 11 view .LVU174
+ 566 0062 0122     		movs	r2, #1
+ 567 0064 FFF7FEFF 		bl	usbd_ctrl_send
+ 568              	.LVL50:
+ 178:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         case USB_STD_REQ_SET_INTERFACE:
+ 569              		.loc 1 178 11 view .LVU175
+ 570 0068 04E0     		b	.L32
+ 571              	.LVL51:
+ 572              	.L35:
+ 180:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           break;
+ 573              		.loc 1 180 11 view .LVU176
+ 180:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           break;
+ 574              		.loc 1 180 36 is_stmt 0 view .LVU177
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 20
+
+
+ 575 006a 6388     		ldrh	r3, [r4, #2]
+ 180:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****           break;
+ 576              		.loc 1 180 29 view .LVU178
+ 577 006c 0B60     		str	r3, [r1]
+ 181:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****         default:
+ 578              		.loc 1 181 11 is_stmt 1 view .LVU179
+ 579 006e 01E0     		b	.L32
+ 580              	.L31:
+ 187:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****       break;
+ 581              		.loc 1 187 7 view .LVU180
+ 582 0070 FFF7FEFF 		bl	usbd_ctrl_unsupport
+ 583              	.LVL52:
+ 188:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 584              		.loc 1 188 7 view .LVU181
+ 585              	.L32:
+ 190:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 586              		.loc 1 190 3 view .LVU182
+ 191:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 587              		.loc 1 191 1 is_stmt 0 view .LVU183
+ 588 0074 0020     		movs	r0, #0
+ 589 0076 70BD     		pop	{r4, r5, r6, pc}
+ 191:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 590              		.loc 1 191 1 view .LVU184
+ 591              		.cfi_endproc
+ 592              	.LFE138:
+ 594              		.section	.text.class_clear_handler,"ax",%progbits
+ 595              		.align	1
+ 596              		.syntax unified
+ 597              		.thumb
+ 598              		.thumb_func
+ 600              	class_clear_handler:
+ 601              	.LVL53:
+ 602              	.LFB137:
+ 121:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 603              		.loc 1 121 1 is_stmt 1 view -0
+ 604              		.cfi_startproc
+ 605              		@ args = 0, pretend = 0, frame = 0
+ 606              		@ frame_needed = 0, uses_anonymous_args = 0
+ 121:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 607              		.loc 1 121 1 is_stmt 0 view .LVU186
+ 608 0000 10B5     		push	{r4, lr}
+ 609              	.LCFI5:
+ 610              		.cfi_def_cfa_offset 8
+ 611              		.cfi_offset 4, -8
+ 612              		.cfi_offset 14, -4
+ 613 0002 0446     		mov	r4, r0
+ 122:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 614              		.loc 1 122 3 is_stmt 1 view .LVU187
+ 615              	.LVL54:
+ 123:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 616              		.loc 1 123 3 view .LVU188
+ 126:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 617              		.loc 1 126 3 view .LVU189
+ 618 0004 8221     		movs	r1, #130
+ 619 0006 FFF7FEFF 		bl	usbd_ept_close
+ 620              	.LVL55:
+ 129:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 21
+
+
+ 621              		.loc 1 129 3 view .LVU190
+ 622 000a 8121     		movs	r1, #129
+ 623 000c 2046     		mov	r0, r4
+ 624 000e FFF7FEFF 		bl	usbd_ept_close
+ 625              	.LVL56:
+ 132:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 626              		.loc 1 132 3 view .LVU191
+ 627 0012 0121     		movs	r1, #1
+ 628 0014 2046     		mov	r0, r4
+ 629 0016 FFF7FEFF 		bl	usbd_ept_close
+ 630              	.LVL57:
+ 134:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 631              		.loc 1 134 3 view .LVU192
+ 135:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 632              		.loc 1 135 1 is_stmt 0 view .LVU193
+ 633 001a 0020     		movs	r0, #0
+ 634 001c 10BD     		pop	{r4, pc}
+ 135:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 635              		.loc 1 135 1 view .LVU194
+ 636              		.cfi_endproc
+ 637              	.LFE137:
+ 639              		.section	.text.class_init_handler,"ax",%progbits
+ 640              		.align	1
+ 641              		.syntax unified
+ 642              		.thumb
+ 643              		.thumb_func
+ 645              	class_init_handler:
+ 646              	.LVL58:
+ 647              	.LFB136:
+  92:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 648              		.loc 1 92 1 is_stmt 1 view -0
+ 649              		.cfi_startproc
+ 650              		@ args = 0, pretend = 0, frame = 0
+ 651              		@ frame_needed = 0, uses_anonymous_args = 0
+  92:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usb_sts_type status = USB_OK;
+ 652              		.loc 1 92 1 is_stmt 0 view .LVU196
+ 653 0000 38B5     		push	{r3, r4, r5, lr}
+ 654              	.LCFI6:
+ 655              		.cfi_def_cfa_offset 16
+ 656              		.cfi_offset 3, -16
+ 657              		.cfi_offset 4, -12
+ 658              		.cfi_offset 5, -8
+ 659              		.cfi_offset 14, -4
+ 660 0002 0446     		mov	r4, r0
+  93:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 661              		.loc 1 93 3 is_stmt 1 view .LVU197
+ 662              	.LVL59:
+  94:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 663              		.loc 1 94 3 view .LVU198
+  95:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 664              		.loc 1 95 3 view .LVU199
+  95:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 665              		.loc 1 95 51 is_stmt 0 view .LVU200
+ 666 0004 4368     		ldr	r3, [r0, #4]
+  95:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 667              		.loc 1 95 20 view .LVU201
+ 668 0006 5D6A     		ldr	r5, [r3, #36]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 22
+
+
+ 669              	.LVL60:
+  98:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 670              		.loc 1 98 3 is_stmt 1 view .LVU202
+ 671 0008 2846     		mov	r0, r5
+ 672              	.LVL61:
+  98:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 673              		.loc 1 98 3 is_stmt 0 view .LVU203
+ 674 000a FFF7FEFF 		bl	cdc_struct_init
+ 675              	.LVL62:
+ 101:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 676              		.loc 1 101 3 is_stmt 1 view .LVU204
+ 677 000e 0823     		movs	r3, #8
+ 678 0010 0322     		movs	r2, #3
+ 679 0012 8221     		movs	r1, #130
+ 680 0014 2046     		mov	r0, r4
+ 681 0016 FFF7FEFF 		bl	usbd_ept_open
+ 682              	.LVL63:
+ 104:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 683              		.loc 1 104 3 view .LVU205
+ 684 001a 4023     		movs	r3, #64
+ 685 001c 0222     		movs	r2, #2
+ 686 001e 8121     		movs	r1, #129
+ 687 0020 2046     		mov	r0, r4
+ 688 0022 FFF7FEFF 		bl	usbd_ept_open
+ 689              	.LVL64:
+ 107:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 690              		.loc 1 107 3 view .LVU206
+ 691 0026 4023     		movs	r3, #64
+ 692 0028 0222     		movs	r2, #2
+ 693 002a 0121     		movs	r1, #1
+ 694 002c 2046     		mov	r0, r4
+ 695 002e FFF7FEFF 		bl	usbd_ept_open
+ 696              	.LVL65:
+ 110:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 697              		.loc 1 110 3 view .LVU207
+ 698 0032 4023     		movs	r3, #64
+ 699 0034 2A1D     		adds	r2, r5, #4
+ 700 0036 0121     		movs	r1, #1
+ 701 0038 2046     		mov	r0, r4
+ 702 003a FFF7FEFF 		bl	usbd_ept_recv
+ 703              	.LVL66:
+ 112:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 704              		.loc 1 112 3 view .LVU208
+ 113:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 705              		.loc 1 113 1 is_stmt 0 view .LVU209
+ 706 003e 0020     		movs	r0, #0
+ 707 0040 38BD     		pop	{r3, r4, r5, pc}
+ 113:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 708              		.loc 1 113 1 view .LVU210
+ 709              		.cfi_endproc
+ 710              	.LFE136:
+ 712              		.section	.text.usb_vcp_get_rxdata,"ax",%progbits
+ 713              		.align	1
+ 714              		.global	usb_vcp_get_rxdata
+ 715              		.syntax unified
+ 716              		.thumb
+ 717              		.thumb_func
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 23
+
+
+ 719              	usb_vcp_get_rxdata:
+ 720              	.LVL67:
+ 721              	.LFB146:
+ 353:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   uint16_t i_index = 0;
+ 722              		.loc 1 353 1 is_stmt 1 view -0
+ 723              		.cfi_startproc
+ 724              		@ args = 0, pretend = 0, frame = 0
+ 725              		@ frame_needed = 0, uses_anonymous_args = 0
+ 353:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   uint16_t i_index = 0;
+ 726              		.loc 1 353 1 is_stmt 0 view .LVU212
+ 727 0000 10B5     		push	{r4, lr}
+ 728              	.LCFI7:
+ 729              		.cfi_def_cfa_offset 8
+ 730              		.cfi_offset 4, -8
+ 731              		.cfi_offset 14, -4
+ 354:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   uint16_t tmp_len = 0;
+ 732              		.loc 1 354 3 is_stmt 1 view .LVU213
+ 733              	.LVL68:
+ 355:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 734              		.loc 1 355 3 view .LVU214
+ 356:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 735              		.loc 1 356 3 view .LVU215
+ 357:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 736              		.loc 1 357 3 view .LVU216
+ 357:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 737              		.loc 1 357 51 is_stmt 0 view .LVU217
+ 738 0002 4368     		ldr	r3, [r0, #4]
+ 357:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 739              		.loc 1 357 20 view .LVU218
+ 740 0004 5A6A     		ldr	r2, [r3, #36]
+ 741              	.LVL69:
+ 359:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 742              		.loc 1 359 3 is_stmt 1 view .LVU219
+ 359:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 743              		.loc 1 359 10 is_stmt 0 view .LVU220
+ 744 0006 92F85330 		ldrb	r3, [r2, #83]	@ zero_extendqisi2
+ 359:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 745              		.loc 1 359 5 view .LVU221
+ 746 000a C3B1     		cbz	r3, .L46
+ 363:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   tmp_len = pcdc->g_rxlen;
+ 747              		.loc 1 363 3 is_stmt 1 view .LVU222
+ 363:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   tmp_len = pcdc->g_rxlen;
+ 748              		.loc 1 363 24 is_stmt 0 view .LVU223
+ 749 000c 0023     		movs	r3, #0
+ 750 000e 82F85330 		strb	r3, [r2, #83]
+ 364:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   for(i_index = 0; i_index < pcdc->g_rxlen; i_index ++)
+ 751              		.loc 1 364 3 is_stmt 1 view .LVU224
+ 364:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   for(i_index = 0; i_index < pcdc->g_rxlen; i_index ++)
+ 752              		.loc 1 364 11 is_stmt 0 view .LVU225
+ 753 0012 B2F85040 		ldrh	r4, [r2, #80]
+ 754              	.LVL70:
+ 365:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 755              		.loc 1 365 3 is_stmt 1 view .LVU226
+ 365:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 756              		.loc 1 365 3 is_stmt 0 view .LVU227
+ 757 0016 07E0     		b	.L44
+ 758              	.LVL71:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 24
+
+
+ 759              	.L45:
+ 367:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 760              		.loc 1 367 5 is_stmt 1 discriminator 3 view .LVU228
+ 367:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 761              		.loc 1 367 41 is_stmt 0 discriminator 3 view .LVU229
+ 762 0018 02EB030C 		add	ip, r2, r3
+ 763 001c 9CF804C0 		ldrb	ip, [ip, #4]	@ zero_extendqisi2
+ 367:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 764              		.loc 1 367 24 discriminator 3 view .LVU230
+ 765 0020 01F803C0 		strb	ip, [r1, r3]
+ 365:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 766              		.loc 1 365 45 is_stmt 1 discriminator 3 view .LVU231
+ 365:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 767              		.loc 1 365 53 is_stmt 0 discriminator 3 view .LVU232
+ 768 0024 0133     		adds	r3, r3, #1
+ 769              	.LVL72:
+ 365:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 770              		.loc 1 365 53 discriminator 3 view .LVU233
+ 771 0026 9BB2     		uxth	r3, r3
+ 772              	.LVL73:
+ 773              	.L44:
+ 365:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 774              		.loc 1 365 20 is_stmt 1 discriminator 1 view .LVU234
+ 365:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 775              		.loc 1 365 34 is_stmt 0 discriminator 1 view .LVU235
+ 776 0028 B2F850C0 		ldrh	ip, [r2, #80]
+ 365:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 777              		.loc 1 365 3 discriminator 1 view .LVU236
+ 778 002c 9C45     		cmp	ip, r3
+ 779 002e F3D8     		bhi	.L45
+ 370:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 780              		.loc 1 370 3 is_stmt 1 view .LVU237
+ 781 0030 4023     		movs	r3, #64
+ 782              	.LVL74:
+ 370:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 783              		.loc 1 370 3 is_stmt 0 view .LVU238
+ 784 0032 0432     		adds	r2, r2, #4
+ 785              	.LVL75:
+ 370:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 786              		.loc 1 370 3 view .LVU239
+ 787 0034 0121     		movs	r1, #1
+ 788              	.LVL76:
+ 370:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 789              		.loc 1 370 3 view .LVU240
+ 790 0036 FFF7FEFF 		bl	usbd_ept_recv
+ 791              	.LVL77:
+ 372:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 792              		.loc 1 372 3 is_stmt 1 view .LVU241
+ 793              	.L43:
+ 373:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ 794              		.loc 1 373 1 is_stmt 0 view .LVU242
+ 795 003a 2046     		mov	r0, r4
+ 796 003c 10BD     		pop	{r4, pc}
+ 797              	.LVL78:
+ 798              	.L46:
+ 361:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 799              		.loc 1 361 12 view .LVU243
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 25
+
+
+ 800 003e 0024     		movs	r4, #0
+ 801 0040 FBE7     		b	.L43
+ 802              		.cfi_endproc
+ 803              	.LFE146:
+ 805              		.section	.text.usb_vcp_send_data,"ax",%progbits
+ 806              		.align	1
+ 807              		.global	usb_vcp_send_data
+ 808              		.syntax unified
+ 809              		.thumb
+ 810              		.thumb_func
+ 812              	usb_vcp_send_data:
+ 813              	.LVL79:
+ 814              	.LFB147:
+ 383:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   error_status status = SUCCESS;
+ 815              		.loc 1 383 1 is_stmt 1 view -0
+ 816              		.cfi_startproc
+ 817              		@ args = 0, pretend = 0, frame = 0
+ 818              		@ frame_needed = 0, uses_anonymous_args = 0
+ 383:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   error_status status = SUCCESS;
+ 819              		.loc 1 383 1 is_stmt 0 view .LVU245
+ 820 0000 10B5     		push	{r4, lr}
+ 821              	.LCFI8:
+ 822              		.cfi_def_cfa_offset 8
+ 823              		.cfi_offset 4, -8
+ 824              		.cfi_offset 14, -4
+ 825 0002 8446     		mov	ip, r0
+ 384:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 826              		.loc 1 384 3 is_stmt 1 view .LVU246
+ 827              	.LVL80:
+ 385:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   cdc_struct_type *pcdc = (cdc_struct_type *)pudev->class_handler->pdata;
+ 828              		.loc 1 385 3 view .LVU247
+ 386:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   if(pcdc->g_tx_completed)
+ 829              		.loc 1 386 3 view .LVU248
+ 386:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   if(pcdc->g_tx_completed)
+ 830              		.loc 1 386 51 is_stmt 0 view .LVU249
+ 831 0004 4368     		ldr	r3, [r0, #4]
+ 386:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   if(pcdc->g_tx_completed)
+ 832              		.loc 1 386 20 view .LVU250
+ 833 0006 5C6A     		ldr	r4, [r3, #36]
+ 834              	.LVL81:
+ 387:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 835              		.loc 1 387 3 is_stmt 1 view .LVU251
+ 387:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 836              		.loc 1 387 10 is_stmt 0 view .LVU252
+ 837 0008 94F85230 		ldrb	r3, [r4, #82]	@ zero_extendqisi2
+ 387:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 838              		.loc 1 387 5 view .LVU253
+ 839 000c 03F0FF00 		and	r0, r3, #255
+ 840              	.LVL82:
+ 387:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   {
+ 841              		.loc 1 387 5 view .LVU254
+ 842 0010 03B9     		cbnz	r3, .L51
+ 843              	.LVL83:
+ 844              	.L49:
+ 396:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** }
+ 845              		.loc 1 396 3 is_stmt 1 view .LVU255
+ 397:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 26
+
+
+ 846              		.loc 1 397 1 is_stmt 0 view .LVU256
+ 847 0012 10BD     		pop	{r4, pc}
+ 848              	.LVL84:
+ 849              	.L51:
+ 389:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usbd_ept_send(pudev, USBD_CDC_BULK_IN_EPT, send_data, len);
+ 850              		.loc 1 389 5 is_stmt 1 view .LVU257
+ 389:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****     usbd_ept_send(pudev, USBD_CDC_BULK_IN_EPT, send_data, len);
+ 851              		.loc 1 389 26 is_stmt 0 view .LVU258
+ 852 0014 0023     		movs	r3, #0
+ 853 0016 84F85230 		strb	r3, [r4, #82]
+ 390:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 854              		.loc 1 390 5 is_stmt 1 view .LVU259
+ 855 001a 1346     		mov	r3, r2
+ 856 001c 0A46     		mov	r2, r1
+ 857              	.LVL85:
+ 390:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 858              		.loc 1 390 5 is_stmt 0 view .LVU260
+ 859 001e 8121     		movs	r1, #129
+ 860              	.LVL86:
+ 390:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   }
+ 861              		.loc 1 390 5 view .LVU261
+ 862 0020 6046     		mov	r0, ip
+ 863 0022 FFF7FEFF 		bl	usbd_ept_send
+ 864              	.LVL87:
+ 384:HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.c ****   usbd_core_type *pudev = (usbd_core_type *)udev;
+ 865              		.loc 1 384 16 view .LVU262
+ 866 0026 0120     		movs	r0, #1
+ 867 0028 F3E7     		b	.L49
+ 868              		.cfi_endproc
+ 869              	.LFE147:
+ 871              		.global	cdc_class_handler
+ 872              		.global	cdc_struct
+ 873              		.global	linecoding
+ 874              		.global	usb_cdc_cnt_cb
+ 875              		.global	usb_cdc_trans_cb
+ 876              		.global	usb_cdc_rec_cb
+ 877              		.section	.bss.cdc_struct,"aw",%nobits
+ 878              		.align	2
+ 881              	cdc_struct:
+ 882 0000 00000000 		.space	92
+ 882      00000000 
+ 882      00000000 
+ 882      00000000 
+ 882      00000000 
+ 883              		.section	.bss.usb_cdc_cnt_cb,"aw",%nobits
+ 884              		.align	2
+ 885              		.set	.LANCHOR0,. + 0
+ 888              	usb_cdc_cnt_cb:
+ 889 0000 00000000 		.space	4
+ 890              		.section	.bss.usb_cdc_rec_cb,"aw",%nobits
+ 891              		.align	2
+ 892              		.set	.LANCHOR2,. + 0
+ 895              	usb_cdc_rec_cb:
+ 896 0000 00000000 		.space	4
+ 897              		.section	.bss.usb_cdc_trans_cb,"aw",%nobits
+ 898              		.align	2
+ 899              		.set	.LANCHOR3,. + 0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 27
+
+
+ 902              	usb_cdc_trans_cb:
+ 903 0000 00000000 		.space	4
+ 904              		.section	.data.cdc_class_handler,"aw"
+ 905              		.align	2
+ 908              	cdc_class_handler:
+ 909 0000 00000000 		.word	class_init_handler
+ 910 0004 00000000 		.word	class_clear_handler
+ 911 0008 00000000 		.word	class_setup_handler
+ 912 000c 00000000 		.word	class_ept0_tx_handler
+ 913 0010 00000000 		.word	class_ept0_rx_handler
+ 914 0014 00000000 		.word	class_in_handler
+ 915 0018 00000000 		.word	class_out_handler
+ 916 001c 00000000 		.word	class_sof_handler
+ 917 0020 00000000 		.word	class_event_handler
+ 918 0024 00000000 		.word	cdc_struct
+ 919              		.section	.data.linecoding,"aw"
+ 920              		.align	2
+ 921              		.set	.LANCHOR1,. + 0
+ 924              	linecoding:
+ 925 0000 00C20100 		.word	115200
+ 926 0004 00       		.byte	0
+ 927 0005 00       		.byte	0
+ 928 0006 08       		.byte	8
+ 929 0007 00       		.space	1
+ 930              		.text
+ 931              	.Letext0:
+ 932              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 933              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 934              		.file 4 "HW_Lib/AT32F435/device_support/at32f435_437.h"
+ 935              		.file 5 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 936              		.file 6 "HW_Lib/AT32F435/drivers/inc/at32f435_437_usb.h"
+ 937              		.file 7 "HW_Lib/AT32F435/USB/usb_drivers/inc/usb_std.h"
+ 938              		.file 8 "HW_Lib/AT32F435/USB/usb_drivers/inc/usbd_core.h"
+ 939              		.file 9 "HW_Lib/AT32F435/USB/usbd_class/cdc/cdc_class.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s 			page 28
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 cdc_class.c
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:20     .text.class_ept0_tx_handler:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:25     .text.class_ept0_tx_handler:00000000 class_ept0_tx_handler
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:45     .text.class_sof_handler:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:50     .text.class_sof_handler:00000000 class_sof_handler
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:82     .text.class_sof_handler:00000010 $d
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:87     .text.class_event_handler:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:92     .text.class_event_handler:00000000 class_event_handler
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:112    .text.cdc_struct_init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:117    .text.cdc_struct_init:00000000 cdc_struct_init
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:167    .text.cdc_struct_init:0000002c $d
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:172    .text.usb_vcp_cmd_process:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:177    .text.usb_vcp_cmd_process:00000000 usb_vcp_cmd_process
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:281    .text.class_out_handler:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:286    .text.class_out_handler:00000000 class_out_handler
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:337    .text.class_out_handler:00000020 $d
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:342    .text.class_ept0_rx_handler:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:347    .text.class_ept0_rx_handler:00000000 class_ept0_rx_handler
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:404    .text.class_in_handler:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:409    .text.class_in_handler:00000000 class_in_handler
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:457    .text.class_in_handler:0000001c $d
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:462    .text.class_setup_handler:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:467    .text.class_setup_handler:00000000 class_setup_handler
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:595    .text.class_clear_handler:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:600    .text.class_clear_handler:00000000 class_clear_handler
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:640    .text.class_init_handler:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:645    .text.class_init_handler:00000000 class_init_handler
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:713    .text.usb_vcp_get_rxdata:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:719    .text.usb_vcp_get_rxdata:00000000 usb_vcp_get_rxdata
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:806    .text.usb_vcp_send_data:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:812    .text.usb_vcp_send_data:00000000 usb_vcp_send_data
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:908    .data.cdc_class_handler:00000000 cdc_class_handler
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:881    .bss.cdc_struct:00000000 cdc_struct
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:924    .data.linecoding:00000000 linecoding
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:888    .bss.usb_cdc_cnt_cb:00000000 usb_cdc_cnt_cb
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:902    .bss.usb_cdc_trans_cb:00000000 usb_cdc_trans_cb
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:895    .bss.usb_cdc_rec_cb:00000000 usb_cdc_rec_cb
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:878    .bss.cdc_struct:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:884    .bss.usb_cdc_cnt_cb:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:891    .bss.usb_cdc_rec_cb:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:898    .bss.usb_cdc_trans_cb:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:905    .data.cdc_class_handler:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccCMaUuv.s:920    .data.linecoding:00000000 $d
+
+UNDEFINED SYMBOLS
+usbd_get_recv_len
+usbd_flush_tx_fifo
+usbd_ctrl_recv
+usbd_ctrl_send
+usbd_ctrl_unsupport
+usbd_ept_close
+usbd_ept_open
+usbd_ept_recv
+usbd_ept_send

@@ -258,7 +258,7 @@ static float TaskControl_Convert_CtlData(uint8_t gimbal_percent, float range, fl
 {
     float exp = 0.0f;
 
-    exp = (gimbal_percent - 50.0f) / 100.0f;
+    exp = (gimbal_percent - 50.0f) / 50.0f;
     if (exp >= 0)
     {
         exp *= range;
@@ -289,8 +289,8 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
         {
             att_ctl_exp.pitch  = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.pitch_range, TaskControl_Monitor.ctl_para.att_rate);
             att_ctl_exp.roll   = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.roll_range,  TaskControl_Monitor.ctl_para.att_rate);
-            att_ctl_exp.gyro_x = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.gx_range,    TaskControl_Monitor.ctl_para.gx_rate);
-            att_ctl_exp.gyro_y = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.gy_range,    TaskControl_Monitor.ctl_para.gy_rate);
+            att_ctl_exp.gyro_x = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent, TaskControl_Monitor.ctl_para.gx_range,    TaskControl_Monitor.ctl_para.gx_rate);
+            att_ctl_exp.gyro_y = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent,  TaskControl_Monitor.ctl_para.gy_range,    TaskControl_Monitor.ctl_para.gy_rate);
             att_ctl_exp.gyro_z = TaskControl_Convert_CtlData(exp_ctl_val->yaw_percent,   TaskControl_Monitor.ctl_para.gz_range,    TaskControl_Monitor.ctl_para.gz_rate);
 
             if (exp_ctl_val->control_mode == AngularSpeed_Control)

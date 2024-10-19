@@ -1,0 +1,3261 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"at32f435_437_crm.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.crm_reset,"ax",%progbits
+  20              		.align	1
+  21              		.global	crm_reset
+  22              		.syntax unified
+  23              		.thumb
+  24              		.thumb_func
+  26              	crm_reset:
+  27              	.LFB133:
+  28              		.file 1 "HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c"
+   1:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+   2:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   **************************************************************************
+   3:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @file     at32f435_437_crm.c
+   4:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @version  v2.1.0
+   5:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @date     2022-08-16
+   6:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief    contains all the functions for the crm firmware library
+   7:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   **************************************************************************
+   8:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                       Copyright notice & Disclaimer
+   9:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *
+  10:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * The software Board Support Package (BSP) that is made available to
+  11:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * download from Artery official website is the copyrighted work of Artery.
+  12:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * Artery authorizes customers to use, copy, and distribute the BSP
+  13:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * software and its related documentation for the purpose of design and
+  14:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * development in conjunction with Artery microcontrollers. Use of the
+  15:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * software is governed by this copyright notice and the following disclaimer.
+  16:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *
+  17:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
+  18:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * GUARANTEES OR REPRESENTATIONS OF ANY KIND. ARTERY EXPRESSLY DISCLAIMS,
+  19:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * TO THE FULLEST EXTENT PERMITTED BY LAW, ALL EXPRESS, IMPLIED OR
+  20:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * STATUTORY OR OTHER WARRANTIES, GUARANTEES OR REPRESENTATIONS,
+  21:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+  22:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+  23:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *
+  24:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   **************************************************************************
+  25:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+  26:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  27:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** #include "at32f435_437_conf.h"
+  28:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  29:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /** @addtogroup AT32F435_437_periph_driver
+  30:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @{
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 2
+
+
+  31:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+  32:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  33:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /** @defgroup CRM
+  34:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief CRM driver modules
+  35:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @{
+  36:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+  37:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  38:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** #ifdef CRM_MODULE_ENABLED
+  39:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  40:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /** @defgroup CRM_private_functions
+  41:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @{
+  42:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+  43:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  44:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+  45:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  reset the crm register
+  46:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  none
+  47:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+  48:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+  49:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_reset(void)
+  50:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+  29              		.loc 1 50 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  51:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* reset the crm clock configuration to the default reset state(for debug purpose) */
+  52:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* set hicken bit */
+  53:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->ctrl_bit.hicken = TRUE;
+  34              		.loc 1 53 3 view .LVU1
+  35              		.loc 1 53 24 is_stmt 0 view .LVU2
+  36 0000 124A     		ldr	r2, .L4
+  37 0002 1368     		ldr	r3, [r2]
+  38 0004 43F00103 		orr	r3, r3, #1
+  39 0008 1360     		str	r3, [r2]
+  54:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  55:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* wait hick stable */
+  56:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   while(CRM->ctrl_bit.hickstbl != SET);
+  40              		.loc 1 56 3 is_stmt 1 view .LVU3
+  41              	.L2:
+  42              		.loc 1 56 39 discriminator 1 view .LVU4
+  43              		.loc 1 56 8 discriminator 1 view .LVU5
+  44              		.loc 1 56 22 is_stmt 0 discriminator 1 view .LVU6
+  45 000a 104B     		ldr	r3, .L4
+  46 000c 1B68     		ldr	r3, [r3]
+  47              		.loc 1 56 8 discriminator 1 view .LVU7
+  48 000e 13F0020F 		tst	r3, #2
+  49 0012 FAD0     		beq	.L2
+  57:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  58:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* hick used as system clock */
+  59:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->cfg_bit.sclksel = CRM_SCLK_HICK;
+  50              		.loc 1 59 3 is_stmt 1 view .LVU8
+  51              		.loc 1 59 24 is_stmt 0 view .LVU9
+  52 0014 0D4B     		ldr	r3, .L4
+  53 0016 9A68     		ldr	r2, [r3, #8]
+  54 0018 6FF30102 		bfc	r2, #0, #2
+  55 001c 9A60     		str	r2, [r3, #8]
+  60:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 3
+
+
+  61:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* wait sclk switch status */
+  62:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   while(CRM->cfg_bit.sclksts != CRM_SCLK_HICK);
+  56              		.loc 1 62 3 is_stmt 1 view .LVU10
+  57              	.L3:
+  58              		.loc 1 62 47 discriminator 1 view .LVU11
+  59              		.loc 1 62 8 discriminator 1 view .LVU12
+  60              		.loc 1 62 21 is_stmt 0 discriminator 1 view .LVU13
+  61 001e 0B4B     		ldr	r3, .L4
+  62 0020 9B68     		ldr	r3, [r3, #8]
+  63              		.loc 1 62 8 discriminator 1 view .LVU14
+  64 0022 13F00C0F 		tst	r3, #12
+  65 0026 FAD1     		bne	.L3
+  63:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  64:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* reset hexten, hextbyps, cfden and pllen bits */
+  65:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->ctrl &= ~(0x010D0000U);
+  66              		.loc 1 65 3 is_stmt 1 view .LVU15
+  67              		.loc 1 65 13 is_stmt 0 view .LVU16
+  68 0028 084B     		ldr	r3, .L4
+  69 002a 1A68     		ldr	r2, [r3]
+  70 002c 22F08672 		bic	r2, r2, #17563648
+  71 0030 22F48032 		bic	r2, r2, #65536
+  72 0034 1A60     		str	r2, [r3]
+  66:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  67:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* reset cfg register, include sclk switch, ahbdiv, apb1div, apb2div, adcdiv, clkout bits */
+  68:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->cfg = 0;
+  73              		.loc 1 68 3 is_stmt 1 view .LVU17
+  74              		.loc 1 68 12 is_stmt 0 view .LVU18
+  75 0036 0022     		movs	r2, #0
+  76 0038 9A60     		str	r2, [r3, #8]
+  69:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  70:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* reset pllms pllns pllfr pllrcs bits */
+  71:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->pllcfg = 0x00033002U;
+  77              		.loc 1 71 3 is_stmt 1 view .LVU19
+  78              		.loc 1 71 15 is_stmt 0 view .LVU20
+  79 003a 0549     		ldr	r1, .L4+4
+  80 003c 5960     		str	r1, [r3, #4]
+  72:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  73:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* reset clkout[3], usbbufs, hickdiv, clkoutdiv */
+  74:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->misc1 = 0;
+  81              		.loc 1 74 3 is_stmt 1 view .LVU21
+  82              		.loc 1 74 14 is_stmt 0 view .LVU22
+  83 003e C3F8A020 		str	r2, [r3, #160]
+  75:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  76:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* disable all interrupts enable and clear pending bits  */
+  77:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->clkint = 0x009F0000U;
+  84              		.loc 1 77 3 is_stmt 1 view .LVU23
+  85              		.loc 1 77 15 is_stmt 0 view .LVU24
+  86 0042 4FF41F02 		mov	r2, #10420224
+  87 0046 DA60     		str	r2, [r3, #12]
+  78:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+  88              		.loc 1 78 1 view .LVU25
+  89 0048 7047     		bx	lr
+  90              	.L5:
+  91 004a 00BF     		.align	2
+  92              	.L4:
+  93 004c 00380240 		.word	1073887232
+  94 0050 02300300 		.word	208898
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 4
+
+
+  95              		.cfi_endproc
+  96              	.LFE133:
+  98              		.section	.text.crm_lext_bypass,"ax",%progbits
+  99              		.align	1
+ 100              		.global	crm_lext_bypass
+ 101              		.syntax unified
+ 102              		.thumb
+ 103              		.thumb_func
+ 105              	crm_lext_bypass:
+ 106              	.LVL0:
+ 107              	.LFB134:
+  79:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  80:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+  81:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  enable or disable crm low speed external crystal bypass
+  82:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+  83:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+  84:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+  85:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_lext_bypass(confirm_state new_state)
+  86:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 108              		.loc 1 86 1 is_stmt 1 view -0
+ 109              		.cfi_startproc
+ 110              		@ args = 0, pretend = 0, frame = 0
+ 111              		@ frame_needed = 0, uses_anonymous_args = 0
+ 112              		@ link register save eliminated.
+  87:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->bpdc_bit.lextbyps = new_state;
+ 113              		.loc 1 87 3 view .LVU27
+ 114              		.loc 1 87 26 is_stmt 0 view .LVU28
+ 115 0000 024B     		ldr	r3, .L7
+ 116 0002 1A6F     		ldr	r2, [r3, #112]
+ 117 0004 60F38202 		bfi	r2, r0, #2, #1
+ 118 0008 1A67     		str	r2, [r3, #112]
+  88:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 119              		.loc 1 88 1 view .LVU29
+ 120 000a 7047     		bx	lr
+ 121              	.L8:
+ 122              		.align	2
+ 123              	.L7:
+ 124 000c 00380240 		.word	1073887232
+ 125              		.cfi_endproc
+ 126              	.LFE134:
+ 128              		.section	.text.crm_hext_bypass,"ax",%progbits
+ 129              		.align	1
+ 130              		.global	crm_hext_bypass
+ 131              		.syntax unified
+ 132              		.thumb
+ 133              		.thumb_func
+ 135              	crm_hext_bypass:
+ 136              	.LVL1:
+ 137              	.LFB135:
+  89:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+  90:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+  91:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  enable or disable crm high speed external crystal bypass
+  92:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+  93:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+  94:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+  95:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_hext_bypass(confirm_state new_state)
+  96:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 5
+
+
+ 138              		.loc 1 96 1 is_stmt 1 view -0
+ 139              		.cfi_startproc
+ 140              		@ args = 0, pretend = 0, frame = 0
+ 141              		@ frame_needed = 0, uses_anonymous_args = 0
+ 142              		@ link register save eliminated.
+  97:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->ctrl_bit.hextbyps = new_state;
+ 143              		.loc 1 97 3 view .LVU31
+ 144              		.loc 1 97 26 is_stmt 0 view .LVU32
+ 145 0000 024B     		ldr	r3, .L10
+ 146 0002 1A68     		ldr	r2, [r3]
+ 147 0004 60F39242 		bfi	r2, r0, #18, #1
+ 148 0008 1A60     		str	r2, [r3]
+  98:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 149              		.loc 1 98 1 view .LVU33
+ 150 000a 7047     		bx	lr
+ 151              	.L11:
+ 152              		.align	2
+ 153              	.L10:
+ 154 000c 00380240 		.word	1073887232
+ 155              		.cfi_endproc
+ 156              	.LFE135:
+ 158              		.section	.text.crm_flag_get,"ax",%progbits
+ 159              		.align	1
+ 160              		.global	crm_flag_get
+ 161              		.syntax unified
+ 162              		.thumb
+ 163              		.thumb_func
+ 165              	crm_flag_get:
+ 166              	.LVL2:
+ 167              	.LFB136:
+  99:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 100:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 101:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  get crm flag status
+ 102:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  flag
+ 103:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 104:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HICK_STABLE_FLAG
+ 105:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HEXT_STABLE_FLAG
+ 106:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_STABLE_FLAG
+ 107:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_LEXT_STABLE_FLAG
+ 108:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_LICK_STABLE_FLAG
+ 109:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PIN_RESET_FLAG
+ 110:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_POR_RESET_FLAG
+ 111:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SW_RESET_FLAG
+ 112:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_WDT_RESET_FLAG
+ 113:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_WWDT_RESET_FLAG
+ 114:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_LOWPOWER_RESET_FLAG
+ 115:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         interrupt flag:
+ 116:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_LICK_READY_INT_FLAG
+ 117:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_LEXT_READY_INT_FLAG
+ 118:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HICK_READY_INT_FLAG
+ 119:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HEXT_READY_INT_FLAG
+ 120:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_READY_INT_FLAG
+ 121:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLOCK_FAILURE_INT_FLAG
+ 122:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval flag_status (SET or RESET)
+ 123:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 124:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** flag_status crm_flag_get(uint32_t flag)
+ 125:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 6
+
+
+ 168              		.loc 1 125 1 is_stmt 1 view -0
+ 169              		.cfi_startproc
+ 170              		@ args = 0, pretend = 0, frame = 0
+ 171              		@ frame_needed = 0, uses_anonymous_args = 0
+ 172              		@ link register save eliminated.
+ 126:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   flag_status status = RESET;
+ 173              		.loc 1 126 3 view .LVU35
+ 127:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   if((CRM_REG(flag) & CRM_REG_BIT(flag)) != CRM_REG_BIT(flag))
+ 174              		.loc 1 127 3 view .LVU36
+ 175              		.loc 1 127 7 is_stmt 0 view .LVU37
+ 176 0000 030C     		lsrs	r3, r0, #16
+ 177 0002 03F18043 		add	r3, r3, #1073741824
+ 178 0006 03F50E33 		add	r3, r3, #145408
+ 179 000a 1A68     		ldr	r2, [r3]
+ 180              		.loc 1 127 23 view .LVU38
+ 181 000c 00F01F00 		and	r0, r0, #31
+ 182              	.LVL3:
+ 183              		.loc 1 127 23 view .LVU39
+ 184 0010 0123     		movs	r3, #1
+ 185 0012 03FA00F0 		lsl	r0, r3, r0
+ 186              		.loc 1 127 5 view .LVU40
+ 187 0016 30EA0203 		bics	r3, r0, r2
+ 188 001a 01D0     		beq	.L14
+ 128:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 129:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     status = RESET;
+ 189              		.loc 1 129 12 view .LVU41
+ 190 001c 0020     		movs	r0, #0
+ 191 001e 7047     		bx	lr
+ 192              	.L14:
+ 130:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 131:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   else
+ 132:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 133:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     status = SET;
+ 193              		.loc 1 133 12 view .LVU42
+ 194 0020 0120     		movs	r0, #1
+ 195              	.LVL4:
+ 134:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 135:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   return status;
+ 196              		.loc 1 135 3 is_stmt 1 view .LVU43
+ 136:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 197              		.loc 1 136 1 is_stmt 0 view .LVU44
+ 198 0022 7047     		bx	lr
+ 199              		.cfi_endproc
+ 200              	.LFE136:
+ 202              		.section	.text.crm_hext_stable_wait,"ax",%progbits
+ 203              		.align	1
+ 204              		.global	crm_hext_stable_wait
+ 205              		.syntax unified
+ 206              		.thumb
+ 207              		.thumb_func
+ 209              	crm_hext_stable_wait:
+ 210              	.LFB137:
+ 137:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 138:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 139:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  wait for hext stable
+ 140:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  none
+ 141:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval error_status (ERROR or SUCCESS)
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 7
+
+
+ 142:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 143:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** error_status crm_hext_stable_wait(void)
+ 144:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 211              		.loc 1 144 1 is_stmt 1 view -0
+ 212              		.cfi_startproc
+ 213              		@ args = 0, pretend = 0, frame = 0
+ 214              		@ frame_needed = 0, uses_anonymous_args = 0
+ 215 0000 10B5     		push	{r4, lr}
+ 216              	.LCFI0:
+ 217              		.cfi_def_cfa_offset 8
+ 218              		.cfi_offset 4, -8
+ 219              		.cfi_offset 14, -4
+ 145:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   uint32_t stable_cnt = 0;
+ 220              		.loc 1 145 3 view .LVU46
+ 221              	.LVL5:
+ 146:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   error_status status = ERROR;
+ 222              		.loc 1 146 3 view .LVU47
+ 147:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 148:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   while((crm_flag_get(CRM_HEXT_STABLE_FLAG) != SET) && (stable_cnt < HEXT_STARTUP_TIMEOUT))
+ 223              		.loc 1 148 3 view .LVU48
+ 145:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   error_status status = ERROR;
+ 224              		.loc 1 145 12 is_stmt 0 view .LVU49
+ 225 0002 0024     		movs	r4, #0
+ 226              	.LVL6:
+ 227              	.L16:
+ 228              		.loc 1 148 8 is_stmt 1 view .LVU50
+ 229              		.loc 1 148 10 is_stmt 0 view .LVU51
+ 230 0004 1120     		movs	r0, #17
+ 231 0006 FFF7FEFF 		bl	crm_flag_get
+ 232              	.LVL7:
+ 233              		.loc 1 148 8 view .LVU52
+ 234 000a 0128     		cmp	r0, #1
+ 235 000c 04D0     		beq	.L17
+ 236              		.loc 1 148 53 discriminator 1 view .LVU53
+ 237 000e B4F5405F 		cmp	r4, #12288
+ 238 0012 01D2     		bcs	.L17
+ 149:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 150:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     stable_cnt ++;
+ 239              		.loc 1 150 5 is_stmt 1 view .LVU54
+ 240              		.loc 1 150 16 is_stmt 0 view .LVU55
+ 241 0014 0134     		adds	r4, r4, #1
+ 242              	.LVL8:
+ 243              		.loc 1 150 16 view .LVU56
+ 244 0016 F5E7     		b	.L16
+ 245              	.L17:
+ 151:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 152:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 153:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   if(crm_flag_get(CRM_HEXT_STABLE_FLAG) != SET)
+ 246              		.loc 1 153 3 is_stmt 1 view .LVU57
+ 247              		.loc 1 153 6 is_stmt 0 view .LVU58
+ 248 0018 1120     		movs	r0, #17
+ 249 001a FFF7FEFF 		bl	crm_flag_get
+ 250              	.LVL9:
+ 251              		.loc 1 153 5 view .LVU59
+ 252 001e 0128     		cmp	r0, #1
+ 253 0020 00D0     		beq	.L19
+ 154:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 8
+
+
+ 155:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     status = ERROR;
+ 254              		.loc 1 155 12 view .LVU60
+ 255 0022 0020     		movs	r0, #0
+ 256              	.L19:
+ 257              	.LVL10:
+ 156:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 157:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   else
+ 158:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 159:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     status = SUCCESS;
+ 160:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 161:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 162:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   return status;
+ 258              		.loc 1 162 3 is_stmt 1 view .LVU61
+ 163:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 259              		.loc 1 163 1 is_stmt 0 view .LVU62
+ 260 0024 10BD     		pop	{r4, pc}
+ 261              		.loc 1 163 1 view .LVU63
+ 262              		.cfi_endproc
+ 263              	.LFE137:
+ 265              		.section	.text.crm_hick_clock_trimming_set,"ax",%progbits
+ 266              		.align	1
+ 267              		.global	crm_hick_clock_trimming_set
+ 268              		.syntax unified
+ 269              		.thumb
+ 270              		.thumb_func
+ 272              	crm_hick_clock_trimming_set:
+ 273              	.LVL11:
+ 274              	.LFB138:
+ 164:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 165:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 166:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  set the hick trimming value
+ 167:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  trim_value (0x00~0x3F)
+ 168:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 169:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 170:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_hick_clock_trimming_set(uint8_t trim_value)
+ 171:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 275              		.loc 1 171 1 is_stmt 1 view -0
+ 276              		.cfi_startproc
+ 277              		@ args = 0, pretend = 0, frame = 0
+ 278              		@ frame_needed = 0, uses_anonymous_args = 0
+ 279              		@ link register save eliminated.
+ 172:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->ctrl_bit.hicktrim = trim_value;
+ 280              		.loc 1 172 3 view .LVU65
+ 281              		.loc 1 172 26 is_stmt 0 view .LVU66
+ 282 0000 024B     		ldr	r3, .L22
+ 283 0002 1A68     		ldr	r2, [r3]
+ 284 0004 60F38702 		bfi	r2, r0, #2, #6
+ 285 0008 1A60     		str	r2, [r3]
+ 173:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 286              		.loc 1 173 1 view .LVU67
+ 287 000a 7047     		bx	lr
+ 288              	.L23:
+ 289              		.align	2
+ 290              	.L22:
+ 291 000c 00380240 		.word	1073887232
+ 292              		.cfi_endproc
+ 293              	.LFE138:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 9
+
+
+ 295              		.section	.text.crm_hick_clock_calibration_set,"ax",%progbits
+ 296              		.align	1
+ 297              		.global	crm_hick_clock_calibration_set
+ 298              		.syntax unified
+ 299              		.thumb
+ 300              		.thumb_func
+ 302              	crm_hick_clock_calibration_set:
+ 303              	.LVL12:
+ 304              	.LFB139:
+ 174:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 175:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 176:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  set the crm calibration value
+ 177:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  cali_value (0x00~0xFF)
+ 178:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 179:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 180:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_hick_clock_calibration_set(uint8_t cali_value)
+ 181:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 305              		.loc 1 181 1 is_stmt 1 view -0
+ 306              		.cfi_startproc
+ 307              		@ args = 0, pretend = 0, frame = 0
+ 308              		@ frame_needed = 0, uses_anonymous_args = 0
+ 309              		@ link register save eliminated.
+ 182:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* enable write hick calibration */
+ 183:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->misc1_bit.hickcal_key = 0x5A;
+ 310              		.loc 1 183 3 view .LVU69
+ 311              		.loc 1 183 30 is_stmt 0 view .LVU70
+ 312 0000 094B     		ldr	r3, .L25
+ 313 0002 D3F8A020 		ldr	r2, [r3, #160]
+ 314 0006 5A21     		movs	r1, #90
+ 315 0008 61F30702 		bfi	r2, r1, #0, #8
+ 316 000c C3F8A020 		str	r2, [r3, #160]
+ 184:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 185:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* write hick calibration value */
+ 186:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->ctrl_bit.hickcal = cali_value;
+ 317              		.loc 1 186 3 is_stmt 1 view .LVU71
+ 318              		.loc 1 186 25 is_stmt 0 view .LVU72
+ 319 0010 1A68     		ldr	r2, [r3]
+ 320 0012 60F30F22 		bfi	r2, r0, #8, #8
+ 321 0016 1A60     		str	r2, [r3]
+ 187:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 188:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* disable write hick calibration */
+ 189:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->misc1_bit.hickcal_key = 0x0;
+ 322              		.loc 1 189 3 is_stmt 1 view .LVU73
+ 323              		.loc 1 189 30 is_stmt 0 view .LVU74
+ 324 0018 D3F8A020 		ldr	r2, [r3, #160]
+ 325 001c 6FF30702 		bfc	r2, #0, #8
+ 326 0020 C3F8A020 		str	r2, [r3, #160]
+ 190:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 327              		.loc 1 190 1 view .LVU75
+ 328 0024 7047     		bx	lr
+ 329              	.L26:
+ 330 0026 00BF     		.align	2
+ 331              	.L25:
+ 332 0028 00380240 		.word	1073887232
+ 333              		.cfi_endproc
+ 334              	.LFE139:
+ 336              		.section	.text.crm_periph_clock_enable,"ax",%progbits
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 10
+
+
+ 337              		.align	1
+ 338              		.global	crm_periph_clock_enable
+ 339              		.syntax unified
+ 340              		.thumb
+ 341              		.thumb_func
+ 343              	crm_periph_clock_enable:
+ 344              	.LVL13:
+ 345              	.LFB140:
+ 191:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 192:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 193:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  enable or disable the peripheral clock
+ 194:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 195:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 196:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_GPIOA_PERIPH_CLOCK        - CRM_GPIOB_PERIPH_CLOCK        - CRM_GPIOC_PERIPH_CLOC
+ 197:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_GPIOE_PERIPH_CLOCK        - CRM_GPIOF_PERIPH_CLOCK        - CRM_GPIOG_PERIPH_CLOC
+ 198:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CRC_PERIPH_CLOCK          - CRM_EDMA_PERIPH_CLOCK         - CRM_DMA1_PERIPH_CLOCK
+ 199:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_EMAC_PERIPH_CLOCK         - CRM_EMACTX_PERIPH_CLOCK       - CRM_EMACRX_PERIPH_CLO
+ 200:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_OTGFS2_PERIPH_CLOCK       - CRM_DVP_PERIPH_CLOCK          - CRM_OTGFS1_PERIPH_CLO
+ 201:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_XMC_PERIPH_CLOCK          - CRM_QSPI1_PERIPH_CLOCK        - CRM_QSPI2_PERIPH_CLOC
+ 202:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_TMR2_PERIPH_CLOCK         - CRM_TMR3_PERIPH_CLOCK         - CRM_TMR4_PERIPH_CLOCK
+ 203:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_TMR6_PERIPH_CLOCK         - CRM_TMR7_PERIPH_CLOCK         - CRM_TMR12_PERIPH_CLOC
+ 204:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_TMR14_PERIPH_CLOCK        - CRM_WWDT_PERIPH_CLOCK         - CRM_SPI2_PERIPH_CLOCK
+ 205:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USART2_PERIPH_CLOCK       - CRM_USART3_PERIPH_CLOCK       - CRM_UART4_PERIPH_CLOC
+ 206:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_I2C1_PERIPH_CLOCK         - CRM_I2C2_PERIPH_CLOCK         - CRM_I2C3_PERIPH_CLOCK
+ 207:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CAN2_PERIPH_CLOCK         - CRM_PWC_PERIPH_CLOCK          - CRM_DAC_PERIPH_CLOCK 
+ 208:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_UART8_PERIPH_CLOCK        - CRM_TMR1_PERIPH_CLOCK         - CRM_TMR8_PERIPH_CLOCK
+ 209:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USART6_PERIPH_CLOCK       - CRM_ADC1_PERIPH_CLOCK         - CRM_ADC2_PERIPH_CLOCK
+ 210:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SPI1_PERIPH_CLOCK         - CRM_SPI4_PERIPH_CLOCK         - CRM_SCFG_PERIPH_CLOCK
+ 211:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_TMR10_PERIPH_CLOCK        - CRM_TMR11_PERIPH_CLOCK        - CRM_TMR20_PERIPH_CLOC
+ 212:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+ 213:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 214:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 215:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_periph_clock_enable(crm_periph_clock_type value, confirm_state new_state)
+ 216:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 346              		.loc 1 216 1 is_stmt 1 view -0
+ 347              		.cfi_startproc
+ 348              		@ args = 0, pretend = 0, frame = 0
+ 349              		@ frame_needed = 0, uses_anonymous_args = 0
+ 350              		@ link register save eliminated.
+ 217:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* enable periph clock */
+ 218:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   if(TRUE == new_state)
+ 351              		.loc 1 218 3 view .LVU77
+ 352              		.loc 1 218 5 is_stmt 0 view .LVU78
+ 353 0000 0129     		cmp	r1, #1
+ 354 0002 0ED0     		beq	.L30
+ 219:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 220:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM_REG(value) |= CRM_REG_BIT(value);
+ 221:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 222:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* disable periph clock */
+ 223:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   else
+ 224:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 225:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM_REG(value) &= ~(CRM_REG_BIT(value));
+ 355              		.loc 1 225 5 is_stmt 1 view .LVU79
+ 356              		.loc 1 225 20 is_stmt 0 view .LVU80
+ 357 0004 030C     		lsrs	r3, r0, #16
+ 358 0006 03F18043 		add	r3, r3, #1073741824
+ 359 000a 03F50E33 		add	r3, r3, #145408
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 11
+
+
+ 360 000e 1A68     		ldr	r2, [r3]
+ 361              		.loc 1 225 25 view .LVU81
+ 362 0010 00F01F00 		and	r0, r0, #31
+ 363              	.LVL14:
+ 364              		.loc 1 225 25 view .LVU82
+ 365 0014 0121     		movs	r1, #1
+ 366              	.LVL15:
+ 367              		.loc 1 225 25 view .LVU83
+ 368 0016 01FA00F0 		lsl	r0, r1, r0
+ 369              		.loc 1 225 20 view .LVU84
+ 370 001a 22EA0000 		bic	r0, r2, r0
+ 371 001e 1860     		str	r0, [r3]
+ 226:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 227:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 372              		.loc 1 227 1 view .LVU85
+ 373 0020 7047     		bx	lr
+ 374              	.LVL16:
+ 375              	.L30:
+ 220:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 376              		.loc 1 220 5 is_stmt 1 view .LVU86
+ 220:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 377              		.loc 1 220 20 is_stmt 0 view .LVU87
+ 378 0022 030C     		lsrs	r3, r0, #16
+ 379 0024 03F18043 		add	r3, r3, #1073741824
+ 380 0028 03F50E33 		add	r3, r3, #145408
+ 381 002c 1A68     		ldr	r2, [r3]
+ 220:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 382              		.loc 1 220 23 view .LVU88
+ 383 002e 00F01F00 		and	r0, r0, #31
+ 384              	.LVL17:
+ 220:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 385              		.loc 1 220 23 view .LVU89
+ 386 0032 01FA00F0 		lsl	r0, r1, r0
+ 220:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 387              		.loc 1 220 20 view .LVU90
+ 388 0036 1043     		orrs	r0, r0, r2
+ 389 0038 1860     		str	r0, [r3]
+ 390 003a 7047     		bx	lr
+ 391              		.cfi_endproc
+ 392              	.LFE140:
+ 394              		.section	.text.crm_periph_reset,"ax",%progbits
+ 395              		.align	1
+ 396              		.global	crm_periph_reset
+ 397              		.syntax unified
+ 398              		.thumb
+ 399              		.thumb_func
+ 401              	crm_periph_reset:
+ 402              	.LVL18:
+ 403              	.LFB141:
+ 228:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 229:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 230:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  enable or disable the peripheral reset
+ 231:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 232:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 233:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_GPIOA_PERIPH_RESET        - CRM_GPIOB_PERIPH_RESET        - CRM_GPIOC_PERIPH_RESE
+ 234:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_GPIOE_PERIPH_RESET        - CRM_GPIOF_PERIPH_RESET        - CRM_GPIOG_PERIPH_RESE
+ 235:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CRC_PERIPH_RESET          - CRM_EDMA_PERIPH_RESET         - CRM_DMA1_PERIPH_RESET
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 12
+
+
+ 236:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_EMAC_PERIPH_RESET         - CRM_OTGFS2_PERIPH_RESET       - CRM_DVP_PERIPH_RESET 
+ 237:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SDIO1_PERIPH_RESET        - CRM_XMC_PERIPH_RESET          - CRM_QSPI1_PERIPH_RESE
+ 238:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SDIO2_PERIPH_RESET        - CRM_TMR2_PERIPH_RESET         - CRM_TMR3_PERIPH_RESET
+ 239:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_TMR5_PERIPH_RESET         - CRM_TMR6_PERIPH_RESET         - CRM_TMR7_PERIPH_RESET
+ 240:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_TMR13_PERIPH_RESET        - CRM_TMR14_PERIPH_RESET        - CRM_WWDT_PERIPH_RESET
+ 241:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SPI3_PERIPH_RESET         - CRM_USART2_PERIPH_RESET       - CRM_USART3_PERIPH_RES
+ 242:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_UART5_PERIPH_RESET        - CRM_I2C1_PERIPH_RESET         - CRM_I2C2_PERIPH_RESET
+ 243:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CAN1_PERIPH_RESET         - CRM_CAN2_PERIPH_RESET         - CRM_PWC_PERIPH_RESET 
+ 244:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_UART7_PERIPH_RESET        - CRM_UART8_PERIPH_RESET        - CRM_TMR1_PERIPH_RESET
+ 245:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USART1_PERIPH_RESET       - CRM_USART6_PERIPH_RESET       - CRM_ADC_PERIPH_RESET 
+ 246:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SPI4_PERIPH_RESET         - CRM_SCFG_PERIPH_RESET         - CRM_TMR9_PERIPH_RESET
+ 247:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_TMR11_PERIPH_RESET        - CRM_TMR20_PERIPH_RESET        - CRM_ACC_PERIPH_RESET
+ 248:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+ 249:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 250:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 251:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_periph_reset(crm_periph_reset_type value, confirm_state new_state)
+ 252:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 404              		.loc 1 252 1 is_stmt 1 view -0
+ 405              		.cfi_startproc
+ 406              		@ args = 0, pretend = 0, frame = 0
+ 407              		@ frame_needed = 0, uses_anonymous_args = 0
+ 408              		@ link register save eliminated.
+ 253:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* enable periph reset */
+ 254:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   if(new_state == TRUE)
+ 409              		.loc 1 254 3 view .LVU92
+ 410              		.loc 1 254 5 is_stmt 0 view .LVU93
+ 411 0000 0129     		cmp	r1, #1
+ 412 0002 0ED0     		beq	.L34
+ 255:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 256:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM_REG(value) |= (CRM_REG_BIT(value));
+ 257:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 258:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* disable periph reset */
+ 259:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   else
+ 260:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 261:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM_REG(value) &= ~(CRM_REG_BIT(value));
+ 413              		.loc 1 261 5 is_stmt 1 view .LVU94
+ 414              		.loc 1 261 20 is_stmt 0 view .LVU95
+ 415 0004 030C     		lsrs	r3, r0, #16
+ 416 0006 03F18043 		add	r3, r3, #1073741824
+ 417 000a 03F50E33 		add	r3, r3, #145408
+ 418 000e 1A68     		ldr	r2, [r3]
+ 419              		.loc 1 261 25 view .LVU96
+ 420 0010 00F01F00 		and	r0, r0, #31
+ 421              	.LVL19:
+ 422              		.loc 1 261 25 view .LVU97
+ 423 0014 0121     		movs	r1, #1
+ 424              	.LVL20:
+ 425              		.loc 1 261 25 view .LVU98
+ 426 0016 01FA00F0 		lsl	r0, r1, r0
+ 427              		.loc 1 261 20 view .LVU99
+ 428 001a 22EA0000 		bic	r0, r2, r0
+ 429 001e 1860     		str	r0, [r3]
+ 262:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 263:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 430              		.loc 1 263 1 view .LVU100
+ 431 0020 7047     		bx	lr
+ 432              	.LVL21:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 13
+
+
+ 433              	.L34:
+ 256:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 434              		.loc 1 256 5 is_stmt 1 view .LVU101
+ 256:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 435              		.loc 1 256 20 is_stmt 0 view .LVU102
+ 436 0022 030C     		lsrs	r3, r0, #16
+ 437 0024 03F18043 		add	r3, r3, #1073741824
+ 438 0028 03F50E33 		add	r3, r3, #145408
+ 439 002c 1A68     		ldr	r2, [r3]
+ 256:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 440              		.loc 1 256 24 view .LVU103
+ 441 002e 00F01F00 		and	r0, r0, #31
+ 442              	.LVL22:
+ 256:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 443              		.loc 1 256 24 view .LVU104
+ 444 0032 01FA00F0 		lsl	r0, r1, r0
+ 256:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 445              		.loc 1 256 20 view .LVU105
+ 446 0036 1043     		orrs	r0, r0, r2
+ 447 0038 1860     		str	r0, [r3]
+ 448 003a 7047     		bx	lr
+ 449              		.cfi_endproc
+ 450              	.LFE141:
+ 452              		.section	.text.crm_periph_lowpower_mode_enable,"ax",%progbits
+ 453              		.align	1
+ 454              		.global	crm_periph_lowpower_mode_enable
+ 455              		.syntax unified
+ 456              		.thumb
+ 457              		.thumb_func
+ 459              	crm_periph_lowpower_mode_enable:
+ 460              	.LVL23:
+ 461              	.LFB142:
+ 264:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 265:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 266:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  enable or disable the peripheral clock in lowpower mode
+ 267:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 268:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 269:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_GPIOA_PERIPH_LOWPOWER     - CRM_GPIOB_PERIPH_LOWPOWER     - CRM_GPIOC_PERIPH_LOWP
+ 270:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_GPIOE_PERIPH_LOWPOWER     - CRM_GPIOF_PERIPH_LOWPOWER     - CRM_GPIOG_PERIPH_LOWP
+ 271:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CRC_PERIPH_LOWPOWER       - CRM_EDMA_PERIPH_LOWPOWER      - CRM_DMA1_PERIPH_LOWPO
+ 272:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_EMAC_PERIPH_LOWPOWER      - CRM_EMACTX_PERIPH_LOWPOWER    - CRM_EMACRX_PERIPH_LOW
+ 273:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_OTGFS2_PERIPH_LOWPOWER    - CRM_DVP_PERIPH_LOWPOWER       - CRM_OTGFS1_PERIPH_LOW
+ 274:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_XMC_PERIPH_LOWPOWER       - CRM_QSPI1_PERIPH_LOWPOWER     - CRM_QSPI2_PERIPH_LOWP
+ 275:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_TMR2_PERIPH_LOWPOWER      - CRM_TMR3_PERIPH_LOWPOWER      - CRM_TMR4_PERIPH_LOWPO
+ 276:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_TMR6_PERIPH_LOWPOWER      - CRM_TMR7_PERIPH_LOWPOWER      - CRM_TMR12_PERIPH_LOWP
+ 277:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_TMR14_PERIPH_LOWPOWER     - CRM_WWDT_PERIPH_LOWPOWER      - CRM_SPI2_PERIPH_LOWPO
+ 278:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USART2_PERIPH_LOWPOWER    - CRM_USART3_PERIPH_LOWPOWER    - CRM_UART4_PERIPH_LOWP
+ 279:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_I2C1_PERIPH_LOWPOWER      - CRM_I2C2_PERIPH_LOWPOWER      - CRM_I2C3_PERIPH_LOWPO
+ 280:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CAN2_PERIPH_LOWPOWER      - CRM_PWC_PERIPH_LOWPOWER       - CRM_DAC_PERIPH_LOWPOW
+ 281:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_UART8_PERIPH_LOWPOWER     - CRM_TMR1_PERIPH_LOWPOWER      - CRM_TMR8_PERIPH_LOWPO
+ 282:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USART6_PERIPH_LOWPOWER    - CRM_ADC1_PERIPH_LOWPOWER      - CRM_ADC2_PERIPH_LOWPO
+ 283:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SPI1_PERIPH_LOWPOWER      - CRM_SPI4_PERIPH_LOWPOWER      - CRM_SCFG_PERIPH_LOWPO
+ 284:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_TMR10_PERIPH_LOWPOWER     - CRM_TMR11_PERIPH_LOWPOWER     - CRM_TMR20_PERIPH_LOWP
+ 285:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_FLASH_PERIPH_LOWPOWER     - CRM_SRAM1_PERIPH_LOWPOWER     - CRM_SRAM2_PERIPH_LOWP
+ 286:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+ 287:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 288:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 14
+
+
+ 289:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_periph_lowpower_mode_enable(crm_periph_clock_lowpower_type value, confirm_state new_state)
+ 290:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 462              		.loc 1 290 1 is_stmt 1 view -0
+ 463              		.cfi_startproc
+ 464              		@ args = 0, pretend = 0, frame = 0
+ 465              		@ frame_needed = 0, uses_anonymous_args = 0
+ 466              		@ link register save eliminated.
+ 291:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* enable periph clock in lowpower mode */
+ 292:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   if(new_state == TRUE)
+ 467              		.loc 1 292 3 view .LVU107
+ 468              		.loc 1 292 5 is_stmt 0 view .LVU108
+ 469 0000 0129     		cmp	r1, #1
+ 470 0002 0ED0     		beq	.L38
+ 293:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 294:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM_REG(value) |= (CRM_REG_BIT(value));
+ 295:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 296:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* disable periph clock in lowpower mode */
+ 297:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   else
+ 298:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 299:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM_REG(value) &= ~(CRM_REG_BIT(value));
+ 471              		.loc 1 299 5 is_stmt 1 view .LVU109
+ 472              		.loc 1 299 20 is_stmt 0 view .LVU110
+ 473 0004 030C     		lsrs	r3, r0, #16
+ 474 0006 03F18043 		add	r3, r3, #1073741824
+ 475 000a 03F50E33 		add	r3, r3, #145408
+ 476 000e 1A68     		ldr	r2, [r3]
+ 477              		.loc 1 299 25 view .LVU111
+ 478 0010 00F01F00 		and	r0, r0, #31
+ 479              	.LVL24:
+ 480              		.loc 1 299 25 view .LVU112
+ 481 0014 0121     		movs	r1, #1
+ 482              	.LVL25:
+ 483              		.loc 1 299 25 view .LVU113
+ 484 0016 01FA00F0 		lsl	r0, r1, r0
+ 485              		.loc 1 299 20 view .LVU114
+ 486 001a 22EA0000 		bic	r0, r2, r0
+ 487 001e 1860     		str	r0, [r3]
+ 300:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 301:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 488              		.loc 1 301 1 view .LVU115
+ 489 0020 7047     		bx	lr
+ 490              	.LVL26:
+ 491              	.L38:
+ 294:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 492              		.loc 1 294 5 is_stmt 1 view .LVU116
+ 294:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 493              		.loc 1 294 20 is_stmt 0 view .LVU117
+ 494 0022 030C     		lsrs	r3, r0, #16
+ 495 0024 03F18043 		add	r3, r3, #1073741824
+ 496 0028 03F50E33 		add	r3, r3, #145408
+ 497 002c 1A68     		ldr	r2, [r3]
+ 294:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 498              		.loc 1 294 24 view .LVU118
+ 499 002e 00F01F00 		and	r0, r0, #31
+ 500              	.LVL27:
+ 294:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 501              		.loc 1 294 24 view .LVU119
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 15
+
+
+ 502 0032 01FA00F0 		lsl	r0, r1, r0
+ 294:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 503              		.loc 1 294 20 view .LVU120
+ 504 0036 1043     		orrs	r0, r0, r2
+ 505 0038 1860     		str	r0, [r3]
+ 506 003a 7047     		bx	lr
+ 507              		.cfi_endproc
+ 508              	.LFE142:
+ 510              		.section	.text.crm_clock_source_enable,"ax",%progbits
+ 511              		.align	1
+ 512              		.global	crm_clock_source_enable
+ 513              		.syntax unified
+ 514              		.thumb
+ 515              		.thumb_func
+ 517              	crm_clock_source_enable:
+ 518              	.LVL28:
+ 519              	.LFB143:
+ 302:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 303:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 304:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  enable or disable the crm clock source
+ 305:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  source
+ 306:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 307:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLOCK_SOURCE_HICK
+ 308:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLOCK_SOURCE_HEXT
+ 309:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLOCK_SOURCE_PLL
+ 310:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLOCK_SOURCE_LEXT
+ 311:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLOCK_SOURCE_LICK
+ 312:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+ 313:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 314:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 315:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_clock_source_enable(crm_clock_source_type source, confirm_state new_state)
+ 316:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 520              		.loc 1 316 1 is_stmt 1 view -0
+ 521              		.cfi_startproc
+ 522              		@ args = 0, pretend = 0, frame = 0
+ 523              		@ frame_needed = 0, uses_anonymous_args = 0
+ 524              		@ link register save eliminated.
+ 317:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   switch(source)
+ 525              		.loc 1 317 3 view .LVU122
+ 526 0000 0428     		cmp	r0, #4
+ 527 0002 21D8     		bhi	.L39
+ 528 0004 DFE800F0 		tbb	[pc, r0]
+ 529              	.L42:
+ 530 0008 03       		.byte	(.L46-.L42)/2
+ 531 0009 09       		.byte	(.L45-.L42)/2
+ 532 000a 0F       		.byte	(.L44-.L42)/2
+ 533 000b 15       		.byte	(.L43-.L42)/2
+ 534 000c 1B       		.byte	(.L41-.L42)/2
+ 535 000d 00       		.p2align 1
+ 536              	.L46:
+ 318:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 319:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_CLOCK_SOURCE_HICK:
+ 320:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->ctrl_bit.hicken = new_state;
+ 537              		.loc 1 320 7 view .LVU123
+ 538              		.loc 1 320 28 is_stmt 0 view .LVU124
+ 539 000e 0F4B     		ldr	r3, .L47
+ 540 0010 1A68     		ldr	r2, [r3]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 16
+
+
+ 541 0012 61F30002 		bfi	r2, r1, #0, #1
+ 542 0016 1A60     		str	r2, [r3]
+ 321:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 543              		.loc 1 321 7 is_stmt 1 view .LVU125
+ 544 0018 7047     		bx	lr
+ 545              	.L45:
+ 322:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_CLOCK_SOURCE_HEXT:
+ 323:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->ctrl_bit.hexten = new_state;
+ 546              		.loc 1 323 7 view .LVU126
+ 547              		.loc 1 323 28 is_stmt 0 view .LVU127
+ 548 001a 0C4B     		ldr	r3, .L47
+ 549 001c 1A68     		ldr	r2, [r3]
+ 550 001e 61F31042 		bfi	r2, r1, #16, #1
+ 551 0022 1A60     		str	r2, [r3]
+ 324:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 552              		.loc 1 324 7 is_stmt 1 view .LVU128
+ 553 0024 7047     		bx	lr
+ 554              	.L44:
+ 325:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_CLOCK_SOURCE_PLL:
+ 326:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->ctrl_bit.pllen = new_state;
+ 555              		.loc 1 326 7 view .LVU129
+ 556              		.loc 1 326 27 is_stmt 0 view .LVU130
+ 557 0026 094B     		ldr	r3, .L47
+ 558 0028 1A68     		ldr	r2, [r3]
+ 559 002a 61F31862 		bfi	r2, r1, #24, #1
+ 560 002e 1A60     		str	r2, [r3]
+ 327:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 561              		.loc 1 327 7 is_stmt 1 view .LVU131
+ 562 0030 7047     		bx	lr
+ 563              	.L43:
+ 328:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_CLOCK_SOURCE_LEXT:
+ 329:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->bpdc_bit.lexten = new_state;
+ 564              		.loc 1 329 7 view .LVU132
+ 565              		.loc 1 329 28 is_stmt 0 view .LVU133
+ 566 0032 064B     		ldr	r3, .L47
+ 567 0034 1A6F     		ldr	r2, [r3, #112]
+ 568 0036 61F30002 		bfi	r2, r1, #0, #1
+ 569 003a 1A67     		str	r2, [r3, #112]
+ 330:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 570              		.loc 1 330 7 is_stmt 1 view .LVU134
+ 571 003c 7047     		bx	lr
+ 572              	.L41:
+ 331:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_CLOCK_SOURCE_LICK:
+ 332:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->ctrlsts_bit.licken = new_state;
+ 573              		.loc 1 332 7 view .LVU135
+ 574              		.loc 1 332 31 is_stmt 0 view .LVU136
+ 575 003e 034B     		ldr	r3, .L47
+ 576 0040 5A6F     		ldr	r2, [r3, #116]
+ 577 0042 61F30002 		bfi	r2, r1, #0, #1
+ 578 0046 5A67     		str	r2, [r3, #116]
+ 333:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 579              		.loc 1 333 7 is_stmt 1 view .LVU137
+ 580              	.L39:
+ 334:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     default: break;
+ 335:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 336:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 581              		.loc 1 336 1 is_stmt 0 view .LVU138
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 17
+
+
+ 582 0048 7047     		bx	lr
+ 583              	.L48:
+ 584 004a 00BF     		.align	2
+ 585              	.L47:
+ 586 004c 00380240 		.word	1073887232
+ 587              		.cfi_endproc
+ 588              	.LFE143:
+ 590              		.section	.text.crm_flag_clear,"ax",%progbits
+ 591              		.align	1
+ 592              		.global	crm_flag_clear
+ 593              		.syntax unified
+ 594              		.thumb
+ 595              		.thumb_func
+ 597              	crm_flag_clear:
+ 598              	.LVL29:
+ 599              	.LFB144:
+ 337:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 338:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 339:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  clear the crm reset flags
+ 340:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  flag
+ 341:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 342:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         reset flag:
+ 343:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PIN_RESET_FLAG
+ 344:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_POR_RESET_FLAG
+ 345:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SW_RESET_FLAG
+ 346:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_WDT_RESET_FLAG
+ 347:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_WWDT_RESET_FLAG
+ 348:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_LOWPOWER_RESET_FLAG
+ 349:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ALL_RESET_FLAG
+ 350:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         interrupt flag:
+ 351:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_LICK_READY_INT_FLAG
+ 352:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_LEXT_READY_INT_FLAG
+ 353:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HICK_READY_INT_FLAG
+ 354:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HEXT_READY_INT_FLAG
+ 355:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_READY_INT_FLAG
+ 356:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLOCK_FAILURE_INT_FLAG
+ 357:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 358:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 359:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_flag_clear(uint32_t flag)
+ 360:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 600              		.loc 1 360 1 is_stmt 1 view -0
+ 601              		.cfi_startproc
+ 602              		@ args = 0, pretend = 0, frame = 0
+ 603              		@ frame_needed = 0, uses_anonymous_args = 0
+ 604              		@ link register save eliminated.
+ 361:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   switch(flag)
+ 605              		.loc 1 361 3 view .LVU140
+ 606 0000 234B     		ldr	r3, .L61
+ 607 0002 9842     		cmp	r0, r3
+ 608 0004 0CD8     		bhi	.L50
+ 609 0006 B0F5402F 		cmp	r0, #786432
+ 610 000a 40D3     		bcc	.L49
+ 611 000c A0F54020 		sub	r0, r0, #786432
+ 612              	.LVL30:
+ 613              		.loc 1 361 3 is_stmt 0 view .LVU141
+ 614 0010 0728     		cmp	r0, #7
+ 615 0012 3CD8     		bhi	.L49
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 18
+
+
+ 616 0014 DFE800F0 		tbb	[pc, r0]
+ 617              	.L53:
+ 618 0018 18       		.byte	(.L58-.L53)/2
+ 619 0019 1E       		.byte	(.L57-.L53)/2
+ 620 001a 24       		.byte	(.L56-.L53)/2
+ 621 001b 2A       		.byte	(.L55-.L53)/2
+ 622 001c 30       		.byte	(.L54-.L53)/2
+ 623 001d 3B       		.byte	(.L49-.L53)/2
+ 624 001e 3B       		.byte	(.L49-.L53)/2
+ 625 001f 36       		.byte	(.L52-.L53)/2
+ 626              	.LVL31:
+ 627              		.p2align 1
+ 628              	.L50:
+ 629              		.loc 1 361 3 view .LVU142
+ 630 0020 1C4B     		ldr	r3, .L61+4
+ 631 0022 9842     		cmp	r0, r3
+ 632 0024 05D0     		beq	.L59
+ 633 0026 32D3     		bcc	.L49
+ 634 0028 A0F5E800 		sub	r0, r0, #7602176
+ 635              	.LVL32:
+ 636              		.loc 1 361 3 view .LVU143
+ 637 002c 1A38     		subs	r0, r0, #26
+ 638              	.LVL33:
+ 639              		.loc 1 361 3 view .LVU144
+ 640 002e 0528     		cmp	r0, #5
+ 641 0030 2DD8     		bhi	.L49
+ 642              	.LVL34:
+ 643              	.L59:
+ 362:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 363:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_NRST_RESET_FLAG:
+ 364:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_POR_RESET_FLAG:
+ 365:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_SW_RESET_FLAG:
+ 366:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_WDT_RESET_FLAG:
+ 367:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_WWDT_RESET_FLAG:
+ 368:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_LOWPOWER_RESET_FLAG:
+ 369:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_ALL_RESET_FLAG:
+ 370:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->ctrlsts_bit.rstfc = TRUE;
+ 644              		.loc 1 370 7 is_stmt 1 view .LVU145
+ 645              		.loc 1 370 30 is_stmt 0 view .LVU146
+ 646 0032 194A     		ldr	r2, .L61+8
+ 647 0034 536F     		ldr	r3, [r2, #116]
+ 648 0036 43F08073 		orr	r3, r3, #16777216
+ 649 003a 5367     		str	r3, [r2, #116]
+ 371:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       while(CRM->ctrlsts_bit.rstfc == TRUE);
+ 650              		.loc 1 371 7 is_stmt 1 view .LVU147
+ 651              	.L60:
+ 652              		.loc 1 371 44 discriminator 1 view .LVU148
+ 653              		.loc 1 371 12 discriminator 1 view .LVU149
+ 654              		.loc 1 371 29 is_stmt 0 discriminator 1 view .LVU150
+ 655 003c 164B     		ldr	r3, .L61+8
+ 656 003e 5B6F     		ldr	r3, [r3, #116]
+ 657              		.loc 1 371 12 discriminator 1 view .LVU151
+ 658 0040 13F0807F 		tst	r3, #16777216
+ 659 0044 FAD1     		bne	.L60
+ 660 0046 7047     		bx	lr
+ 661              	.LVL35:
+ 662              	.L58:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 19
+
+
+ 372:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 373:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_LICK_READY_INT_FLAG:
+ 374:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->clkint_bit.lickstblfc = TRUE;
+ 663              		.loc 1 374 7 is_stmt 1 view .LVU152
+ 664              		.loc 1 374 34 is_stmt 0 view .LVU153
+ 665 0048 134A     		ldr	r2, .L61+8
+ 666 004a D368     		ldr	r3, [r2, #12]
+ 667 004c 43F48033 		orr	r3, r3, #65536
+ 668 0050 D360     		str	r3, [r2, #12]
+ 375:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 669              		.loc 1 375 7 is_stmt 1 view .LVU154
+ 670 0052 7047     		bx	lr
+ 671              	.L57:
+ 376:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_LEXT_READY_INT_FLAG:
+ 377:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->clkint_bit.lextstblfc = TRUE;
+ 672              		.loc 1 377 7 view .LVU155
+ 673              		.loc 1 377 34 is_stmt 0 view .LVU156
+ 674 0054 104A     		ldr	r2, .L61+8
+ 675 0056 D368     		ldr	r3, [r2, #12]
+ 676 0058 43F40033 		orr	r3, r3, #131072
+ 677 005c D360     		str	r3, [r2, #12]
+ 378:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 678              		.loc 1 378 7 is_stmt 1 view .LVU157
+ 679 005e 7047     		bx	lr
+ 680              	.L56:
+ 379:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_HICK_READY_INT_FLAG:
+ 380:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->clkint_bit.hickstblfc = TRUE;
+ 681              		.loc 1 380 7 view .LVU158
+ 682              		.loc 1 380 34 is_stmt 0 view .LVU159
+ 683 0060 0D4A     		ldr	r2, .L61+8
+ 684 0062 D368     		ldr	r3, [r2, #12]
+ 685 0064 43F48023 		orr	r3, r3, #262144
+ 686 0068 D360     		str	r3, [r2, #12]
+ 381:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 687              		.loc 1 381 7 is_stmt 1 view .LVU160
+ 688 006a 7047     		bx	lr
+ 689              	.L55:
+ 382:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_HEXT_READY_INT_FLAG:
+ 383:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->clkint_bit.hextstblfc = TRUE;
+ 690              		.loc 1 383 7 view .LVU161
+ 691              		.loc 1 383 34 is_stmt 0 view .LVU162
+ 692 006c 0A4A     		ldr	r2, .L61+8
+ 693 006e D368     		ldr	r3, [r2, #12]
+ 694 0070 43F40023 		orr	r3, r3, #524288
+ 695 0074 D360     		str	r3, [r2, #12]
+ 384:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 696              		.loc 1 384 7 is_stmt 1 view .LVU163
+ 697 0076 7047     		bx	lr
+ 698              	.L54:
+ 385:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_PLL_READY_INT_FLAG:
+ 386:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->clkint_bit.pllstblfc = TRUE;
+ 699              		.loc 1 386 7 view .LVU164
+ 700              		.loc 1 386 33 is_stmt 0 view .LVU165
+ 701 0078 074A     		ldr	r2, .L61+8
+ 702 007a D368     		ldr	r3, [r2, #12]
+ 703 007c 43F48013 		orr	r3, r3, #1048576
+ 704 0080 D360     		str	r3, [r2, #12]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 20
+
+
+ 387:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 705              		.loc 1 387 7 is_stmt 1 view .LVU166
+ 706 0082 7047     		bx	lr
+ 707              	.L52:
+ 388:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_CLOCK_FAILURE_INT_FLAG:
+ 389:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       CRM->clkint_bit.cfdfc = TRUE;
+ 708              		.loc 1 389 7 view .LVU167
+ 709              		.loc 1 389 29 is_stmt 0 view .LVU168
+ 710 0084 044A     		ldr	r2, .L61+8
+ 711 0086 D368     		ldr	r3, [r2, #12]
+ 712 0088 43F40003 		orr	r3, r3, #8388608
+ 713 008c D360     		str	r3, [r2, #12]
+ 390:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 714              		.loc 1 390 7 is_stmt 1 view .LVU169
+ 715              	.LVL36:
+ 716              	.L49:
+ 391:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     default:
+ 392:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 393:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 394:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 717              		.loc 1 394 1 is_stmt 0 view .LVU170
+ 718 008e 7047     		bx	lr
+ 719              	.L62:
+ 720              		.align	2
+ 721              	.L61:
+ 722 0090 07000C00 		.word	786439
+ 723 0094 18007400 		.word	7602200
+ 724 0098 00380240 		.word	1073887232
+ 725              		.cfi_endproc
+ 726              	.LFE144:
+ 728              		.section	.text.crm_ertc_clock_select,"ax",%progbits
+ 729              		.align	1
+ 730              		.global	crm_ertc_clock_select
+ 731              		.syntax unified
+ 732              		.thumb
+ 733              		.thumb_func
+ 735              	crm_ertc_clock_select:
+ 736              	.LVL37:
+ 737              	.LFB145:
+ 395:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 396:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 397:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  select ertc clock
+ 398:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 399:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 400:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_NOCLK
+ 401:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_LEXT
+ 402:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_LICK
+ 403:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_2
+ 404:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_3
+ 405:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_4
+ 406:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_5
+ 407:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_6
+ 408:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_7
+ 409:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_8
+ 410:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_9
+ 411:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_10
+ 412:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_11
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 21
+
+
+ 413:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_12
+ 414:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_13
+ 415:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_14
+ 416:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_15
+ 417:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_16
+ 418:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_17
+ 419:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_18
+ 420:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_19
+ 421:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_20
+ 422:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_21
+ 423:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_22
+ 424:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_23
+ 425:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_24
+ 426:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_25
+ 427:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_26
+ 428:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_27
+ 429:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_28
+ 430:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_29
+ 431:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_30
+ 432:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_ERTC_CLOCK_HEXT_DIV_31
+ 433:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 434:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 435:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_ertc_clock_select(crm_ertc_clock_type value)
+ 436:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 738              		.loc 1 436 1 is_stmt 1 view -0
+ 739              		.cfi_startproc
+ 740              		@ args = 0, pretend = 0, frame = 0
+ 741              		@ frame_needed = 0, uses_anonymous_args = 0
+ 742              		@ link register save eliminated.
+ 437:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->cfg_bit.ertcdiv = ((value & 0x1F0) >> 4);
+ 743              		.loc 1 437 3 view .LVU172
+ 744              		.loc 1 437 43 is_stmt 0 view .LVU173
+ 745 0000 C0F30411 		ubfx	r1, r0, #4, #5
+ 746              		.loc 1 437 24 view .LVU174
+ 747 0004 044B     		ldr	r3, .L64
+ 748 0006 9A68     		ldr	r2, [r3, #8]
+ 749 0008 61F31442 		bfi	r2, r1, #16, #5
+ 750 000c 9A60     		str	r2, [r3, #8]
+ 438:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->bpdc_bit.ertcsel = (value & 0xF);
+ 751              		.loc 1 438 3 is_stmt 1 view .LVU175
+ 752              		.loc 1 438 25 is_stmt 0 view .LVU176
+ 753 000e 1A6F     		ldr	r2, [r3, #112]
+ 754 0010 60F30922 		bfi	r2, r0, #8, #2
+ 755 0014 1A67     		str	r2, [r3, #112]
+ 439:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 756              		.loc 1 439 1 view .LVU177
+ 757 0016 7047     		bx	lr
+ 758              	.L65:
+ 759              		.align	2
+ 760              	.L64:
+ 761 0018 00380240 		.word	1073887232
+ 762              		.cfi_endproc
+ 763              	.LFE145:
+ 765              		.section	.text.crm_ertc_clock_enable,"ax",%progbits
+ 766              		.align	1
+ 767              		.global	crm_ertc_clock_enable
+ 768              		.syntax unified
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 22
+
+
+ 769              		.thumb
+ 770              		.thumb_func
+ 772              	crm_ertc_clock_enable:
+ 773              	.LVL38:
+ 774              	.LFB146:
+ 440:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 441:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 442:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  enable or disable ertc
+ 443:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+ 444:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 445:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 446:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_ertc_clock_enable(confirm_state new_state)
+ 447:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 775              		.loc 1 447 1 is_stmt 1 view -0
+ 776              		.cfi_startproc
+ 777              		@ args = 0, pretend = 0, frame = 0
+ 778              		@ frame_needed = 0, uses_anonymous_args = 0
+ 779              		@ link register save eliminated.
+ 448:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->bpdc_bit.ertcen = new_state;
+ 780              		.loc 1 448 3 view .LVU179
+ 781              		.loc 1 448 24 is_stmt 0 view .LVU180
+ 782 0000 024B     		ldr	r3, .L67
+ 783 0002 1A6F     		ldr	r2, [r3, #112]
+ 784 0004 60F3CF32 		bfi	r2, r0, #15, #1
+ 785 0008 1A67     		str	r2, [r3, #112]
+ 449:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 786              		.loc 1 449 1 view .LVU181
+ 787 000a 7047     		bx	lr
+ 788              	.L68:
+ 789              		.align	2
+ 790              	.L67:
+ 791 000c 00380240 		.word	1073887232
+ 792              		.cfi_endproc
+ 793              	.LFE146:
+ 795              		.section	.text.crm_ahb_div_set,"ax",%progbits
+ 796              		.align	1
+ 797              		.global	crm_ahb_div_set
+ 798              		.syntax unified
+ 799              		.thumb
+ 800              		.thumb_func
+ 802              	crm_ahb_div_set:
+ 803              	.LVL39:
+ 804              	.LFB147:
+ 450:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 451:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 452:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  set crm ahb division
+ 453:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 454:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 455:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_AHB_DIV_1
+ 456:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_AHB_DIV_2
+ 457:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_AHB_DIV_4
+ 458:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_AHB_DIV_8
+ 459:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_AHB_DIV_16
+ 460:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_AHB_DIV_64
+ 461:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_AHB_DIV_128
+ 462:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_AHB_DIV_256
+ 463:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_AHB_DIV_512
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 23
+
+
+ 464:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 465:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 466:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_ahb_div_set(crm_ahb_div_type value)
+ 467:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 805              		.loc 1 467 1 is_stmt 1 view -0
+ 806              		.cfi_startproc
+ 807              		@ args = 0, pretend = 0, frame = 0
+ 808              		@ frame_needed = 0, uses_anonymous_args = 0
+ 809              		@ link register save eliminated.
+ 468:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->cfg_bit.ahbdiv = value;
+ 810              		.loc 1 468 3 view .LVU183
+ 811              		.loc 1 468 23 is_stmt 0 view .LVU184
+ 812 0000 024B     		ldr	r3, .L70
+ 813 0002 9A68     		ldr	r2, [r3, #8]
+ 814 0004 60F30712 		bfi	r2, r0, #4, #4
+ 815 0008 9A60     		str	r2, [r3, #8]
+ 469:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 816              		.loc 1 469 1 view .LVU185
+ 817 000a 7047     		bx	lr
+ 818              	.L71:
+ 819              		.align	2
+ 820              	.L70:
+ 821 000c 00380240 		.word	1073887232
+ 822              		.cfi_endproc
+ 823              	.LFE147:
+ 825              		.section	.text.crm_apb1_div_set,"ax",%progbits
+ 826              		.align	1
+ 827              		.global	crm_apb1_div_set
+ 828              		.syntax unified
+ 829              		.thumb
+ 830              		.thumb_func
+ 832              	crm_apb1_div_set:
+ 833              	.LVL40:
+ 834              	.LFB148:
+ 470:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 471:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 472:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  set crm apb1 division
+ 473:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 474:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 475:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_APB1_DIV_1
+ 476:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_APB1_DIV_2
+ 477:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_APB1_DIV_4
+ 478:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_APB1_DIV_8
+ 479:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_APB1_DIV_16
+ 480:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 481:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 482:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_apb1_div_set(crm_apb1_div_type value)
+ 483:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 835              		.loc 1 483 1 is_stmt 1 view -0
+ 836              		.cfi_startproc
+ 837              		@ args = 0, pretend = 0, frame = 0
+ 838              		@ frame_needed = 0, uses_anonymous_args = 0
+ 839              		@ link register save eliminated.
+ 484:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->cfg_bit.apb1div = value;
+ 840              		.loc 1 484 3 view .LVU187
+ 841              		.loc 1 484 24 is_stmt 0 view .LVU188
+ 842 0000 024B     		ldr	r3, .L73
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 24
+
+
+ 843 0002 9A68     		ldr	r2, [r3, #8]
+ 844 0004 60F38C22 		bfi	r2, r0, #10, #3
+ 845 0008 9A60     		str	r2, [r3, #8]
+ 485:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 846              		.loc 1 485 1 view .LVU189
+ 847 000a 7047     		bx	lr
+ 848              	.L74:
+ 849              		.align	2
+ 850              	.L73:
+ 851 000c 00380240 		.word	1073887232
+ 852              		.cfi_endproc
+ 853              	.LFE148:
+ 855              		.section	.text.crm_apb2_div_set,"ax",%progbits
+ 856              		.align	1
+ 857              		.global	crm_apb2_div_set
+ 858              		.syntax unified
+ 859              		.thumb
+ 860              		.thumb_func
+ 862              	crm_apb2_div_set:
+ 863              	.LVL41:
+ 864              	.LFB149:
+ 486:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 487:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 488:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  set crm apb2 division
+ 489:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 490:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 491:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_APB2_DIV_1
+ 492:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_APB2_DIV_2
+ 493:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_APB2_DIV_4
+ 494:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_APB2_DIV_8
+ 495:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_APB2_DIV_16
+ 496:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 497:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 498:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_apb2_div_set(crm_apb2_div_type value)
+ 499:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 865              		.loc 1 499 1 is_stmt 1 view -0
+ 866              		.cfi_startproc
+ 867              		@ args = 0, pretend = 0, frame = 0
+ 868              		@ frame_needed = 0, uses_anonymous_args = 0
+ 869              		@ link register save eliminated.
+ 500:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->cfg_bit.apb2div = value;
+ 870              		.loc 1 500 3 view .LVU191
+ 871              		.loc 1 500 24 is_stmt 0 view .LVU192
+ 872 0000 024B     		ldr	r3, .L76
+ 873 0002 9A68     		ldr	r2, [r3, #8]
+ 874 0004 60F34F32 		bfi	r2, r0, #13, #3
+ 875 0008 9A60     		str	r2, [r3, #8]
+ 501:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 876              		.loc 1 501 1 view .LVU193
+ 877 000a 7047     		bx	lr
+ 878              	.L77:
+ 879              		.align	2
+ 880              	.L76:
+ 881 000c 00380240 		.word	1073887232
+ 882              		.cfi_endproc
+ 883              	.LFE149:
+ 885              		.section	.text.crm_usb_clock_div_set,"ax",%progbits
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 25
+
+
+ 886              		.align	1
+ 887              		.global	crm_usb_clock_div_set
+ 888              		.syntax unified
+ 889              		.thumb
+ 890              		.thumb_func
+ 892              	crm_usb_clock_div_set:
+ 893              	.LVL42:
+ 894              	.LFB150:
+ 502:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 503:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 504:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  set usb division
+ 505:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 506:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 507:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_1_5
+ 508:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_1
+ 509:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_2_5
+ 510:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_2
+ 511:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_3_5
+ 512:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_3
+ 513:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_4_5
+ 514:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_4
+ 515:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_5_5
+ 516:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_5
+ 517:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_6_5
+ 518:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_6
+ 519:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_DIV_7
+ 520:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 521:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 522:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_usb_clock_div_set(crm_usb_div_type value)
+ 523:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 895              		.loc 1 523 1 is_stmt 1 view -0
+ 896              		.cfi_startproc
+ 897              		@ args = 0, pretend = 0, frame = 0
+ 898              		@ frame_needed = 0, uses_anonymous_args = 0
+ 899              		@ link register save eliminated.
+ 524:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->misc2_bit.usbdiv = value;
+ 900              		.loc 1 524 5 view .LVU195
+ 901              		.loc 1 524 27 is_stmt 0 view .LVU196
+ 902 0000 034B     		ldr	r3, .L79
+ 903 0002 D3F8A420 		ldr	r2, [r3, #164]
+ 904 0006 60F30F32 		bfi	r2, r0, #12, #4
+ 905 000a C3F8A420 		str	r2, [r3, #164]
+ 525:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 906              		.loc 1 525 1 view .LVU197
+ 907 000e 7047     		bx	lr
+ 908              	.L80:
+ 909              		.align	2
+ 910              	.L79:
+ 911 0010 00380240 		.word	1073887232
+ 912              		.cfi_endproc
+ 913              	.LFE150:
+ 915              		.section	.text.crm_clock_failure_detection_enable,"ax",%progbits
+ 916              		.align	1
+ 917              		.global	crm_clock_failure_detection_enable
+ 918              		.syntax unified
+ 919              		.thumb
+ 920              		.thumb_func
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 26
+
+
+ 922              	crm_clock_failure_detection_enable:
+ 923              	.LVL43:
+ 924              	.LFB151:
+ 526:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 527:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 528:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  enable or disable clock failure detection
+ 529:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+ 530:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 531:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 532:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_clock_failure_detection_enable(confirm_state new_state)
+ 533:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 925              		.loc 1 533 1 is_stmt 1 view -0
+ 926              		.cfi_startproc
+ 927              		@ args = 0, pretend = 0, frame = 0
+ 928              		@ frame_needed = 0, uses_anonymous_args = 0
+ 929              		@ link register save eliminated.
+ 534:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->ctrl_bit.cfden = new_state;
+ 930              		.loc 1 534 3 view .LVU199
+ 931              		.loc 1 534 23 is_stmt 0 view .LVU200
+ 932 0000 024B     		ldr	r3, .L82
+ 933 0002 1A68     		ldr	r2, [r3]
+ 934 0004 60F3D342 		bfi	r2, r0, #19, #1
+ 935 0008 1A60     		str	r2, [r3]
+ 535:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 936              		.loc 1 535 1 view .LVU201
+ 937 000a 7047     		bx	lr
+ 938              	.L83:
+ 939              		.align	2
+ 940              	.L82:
+ 941 000c 00380240 		.word	1073887232
+ 942              		.cfi_endproc
+ 943              	.LFE151:
+ 945              		.section	.text.crm_battery_powered_domain_reset,"ax",%progbits
+ 946              		.align	1
+ 947              		.global	crm_battery_powered_domain_reset
+ 948              		.syntax unified
+ 949              		.thumb
+ 950              		.thumb_func
+ 952              	crm_battery_powered_domain_reset:
+ 953              	.LVL44:
+ 954              	.LFB152:
+ 536:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 537:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 538:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  battery powered domain software reset
+ 539:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+ 540:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 541:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 542:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_battery_powered_domain_reset(confirm_state new_state)
+ 543:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 955              		.loc 1 543 1 is_stmt 1 view -0
+ 956              		.cfi_startproc
+ 957              		@ args = 0, pretend = 0, frame = 0
+ 958              		@ frame_needed = 0, uses_anonymous_args = 0
+ 959              		@ link register save eliminated.
+ 544:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->bpdc_bit.bpdrst = new_state;
+ 960              		.loc 1 544 3 view .LVU203
+ 961              		.loc 1 544 24 is_stmt 0 view .LVU204
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 27
+
+
+ 962 0000 024B     		ldr	r3, .L85
+ 963 0002 1A6F     		ldr	r2, [r3, #112]
+ 964 0004 60F31042 		bfi	r2, r0, #16, #1
+ 965 0008 1A67     		str	r2, [r3, #112]
+ 545:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 966              		.loc 1 545 1 view .LVU205
+ 967 000a 7047     		bx	lr
+ 968              	.L86:
+ 969              		.align	2
+ 970              	.L85:
+ 971 000c 00380240 		.word	1073887232
+ 972              		.cfi_endproc
+ 973              	.LFE152:
+ 975              		.section	.text.crm_auto_step_mode_enable,"ax",%progbits
+ 976              		.align	1
+ 977              		.global	crm_auto_step_mode_enable
+ 978              		.syntax unified
+ 979              		.thumb
+ 980              		.thumb_func
+ 982              	crm_auto_step_mode_enable:
+ 983              	.LVL45:
+ 984              	.LFB153:
+ 546:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 547:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 548:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  auto step clock switch enable
+ 549:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+ 550:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 551:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 552:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_auto_step_mode_enable(confirm_state new_state)
+ 553:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 985              		.loc 1 553 1 is_stmt 1 view -0
+ 986              		.cfi_startproc
+ 987              		@ args = 0, pretend = 0, frame = 0
+ 988              		@ frame_needed = 0, uses_anonymous_args = 0
+ 989              		@ link register save eliminated.
+ 554:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   if(new_state == TRUE)
+ 990              		.loc 1 554 3 view .LVU207
+ 991              		.loc 1 554 5 is_stmt 0 view .LVU208
+ 992 0000 0128     		cmp	r0, #1
+ 993 0002 07D0     		beq	.L90
+ 555:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->misc2_bit.auto_step_en = CRM_AUTO_STEP_MODE_ENABLE;
+ 556:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   else
+ 557:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->misc2_bit.auto_step_en = CRM_AUTO_STEP_MODE_DISABLE;
+ 994              		.loc 1 557 5 is_stmt 1 view .LVU209
+ 995              		.loc 1 557 33 is_stmt 0 view .LVU210
+ 996 0004 074B     		ldr	r3, .L91
+ 997 0006 D3F8A420 		ldr	r2, [r3, #164]
+ 998 000a 6FF30512 		bfc	r2, #4, #2
+ 999 000e C3F8A420 		str	r2, [r3, #164]
+ 558:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1000              		.loc 1 558 1 view .LVU211
+ 1001 0012 7047     		bx	lr
+ 1002              	.L90:
+ 555:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->misc2_bit.auto_step_en = CRM_AUTO_STEP_MODE_ENABLE;
+ 1003              		.loc 1 555 5 is_stmt 1 view .LVU212
+ 555:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->misc2_bit.auto_step_en = CRM_AUTO_STEP_MODE_ENABLE;
+ 1004              		.loc 1 555 33 is_stmt 0 view .LVU213
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 28
+
+
+ 1005 0014 034A     		ldr	r2, .L91
+ 1006 0016 D2F8A430 		ldr	r3, [r2, #164]
+ 1007 001a 43F03003 		orr	r3, r3, #48
+ 1008 001e C2F8A430 		str	r3, [r2, #164]
+ 1009 0022 7047     		bx	lr
+ 1010              	.L92:
+ 1011              		.align	2
+ 1012              	.L91:
+ 1013 0024 00380240 		.word	1073887232
+ 1014              		.cfi_endproc
+ 1015              	.LFE153:
+ 1017              		.section	.text.crm_hick_divider_select,"ax",%progbits
+ 1018              		.align	1
+ 1019              		.global	crm_hick_divider_select
+ 1020              		.syntax unified
+ 1021              		.thumb
+ 1022              		.thumb_func
+ 1024              	crm_hick_divider_select:
+ 1025              	.LVL46:
+ 1026              	.LFB154:
+ 559:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 560:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 561:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  config hick divider select
+ 562:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 563:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 564:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HICK48_DIV6
+ 565:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HICK48_NODIV
+ 566:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 567:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 568:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_hick_divider_select(crm_hick_div_6_type value)
+ 569:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1027              		.loc 1 569 1 is_stmt 1 view -0
+ 1028              		.cfi_startproc
+ 1029              		@ args = 0, pretend = 0, frame = 0
+ 1030              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1031              		@ link register save eliminated.
+ 570:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->misc1_bit.hickdiv = value;
+ 1032              		.loc 1 570 3 view .LVU215
+ 1033              		.loc 1 570 26 is_stmt 0 view .LVU216
+ 1034 0000 034B     		ldr	r3, .L94
+ 1035 0002 D3F8A020 		ldr	r2, [r3, #160]
+ 1036 0006 60F30C32 		bfi	r2, r0, #12, #1
+ 1037 000a C3F8A020 		str	r2, [r3, #160]
+ 571:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1038              		.loc 1 571 1 view .LVU217
+ 1039 000e 7047     		bx	lr
+ 1040              	.L95:
+ 1041              		.align	2
+ 1042              	.L94:
+ 1043 0010 00380240 		.word	1073887232
+ 1044              		.cfi_endproc
+ 1045              	.LFE154:
+ 1047              		.section	.text.crm_hick_sclk_frequency_select,"ax",%progbits
+ 1048              		.align	1
+ 1049              		.global	crm_hick_sclk_frequency_select
+ 1050              		.syntax unified
+ 1051              		.thumb
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 29
+
+
+ 1052              		.thumb_func
+ 1054              	crm_hick_sclk_frequency_select:
+ 1055              	.LVL47:
+ 1056              	.LFB155:
+ 572:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 573:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 574:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  hick as system clock frequency select
+ 575:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 576:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 577:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HICK_SCLK_8MHZ
+ 578:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HICK_SCLK_48MHZ
+ 579:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 580:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 581:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_hick_sclk_frequency_select(crm_hick_sclk_frequency_type value)
+ 582:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1057              		.loc 1 582 1 is_stmt 1 view -0
+ 1058              		.cfi_startproc
+ 1059              		@ args = 0, pretend = 0, frame = 0
+ 1060              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1061              		.loc 1 582 1 is_stmt 0 view .LVU219
+ 1062 0000 10B5     		push	{r4, lr}
+ 1063              	.LCFI1:
+ 1064              		.cfi_def_cfa_offset 8
+ 1065              		.cfi_offset 4, -8
+ 1066              		.cfi_offset 14, -4
+ 1067 0002 0446     		mov	r4, r0
+ 583:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   crm_hick_divider_select(CRM_HICK48_NODIV);
+ 1068              		.loc 1 583 3 is_stmt 1 view .LVU220
+ 1069 0004 0120     		movs	r0, #1
+ 1070              	.LVL48:
+ 1071              		.loc 1 583 3 is_stmt 0 view .LVU221
+ 1072 0006 FFF7FEFF 		bl	crm_hick_divider_select
+ 1073              	.LVL49:
+ 584:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->misc1_bit.hick_to_sclk = value;
+ 1074              		.loc 1 584 3 is_stmt 1 view .LVU222
+ 1075              		.loc 1 584 31 is_stmt 0 view .LVU223
+ 1076 000a 044B     		ldr	r3, .L98
+ 1077 000c D3F8A020 		ldr	r2, [r3, #160]
+ 1078 0010 64F38E32 		bfi	r2, r4, #14, #1
+ 1079 0014 C3F8A020 		str	r2, [r3, #160]
+ 585:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1080              		.loc 1 585 1 view .LVU224
+ 1081 0018 10BD     		pop	{r4, pc}
+ 1082              	.L99:
+ 1083 001a 00BF     		.align	2
+ 1084              	.L98:
+ 1085 001c 00380240 		.word	1073887232
+ 1086              		.cfi_endproc
+ 1087              	.LFE155:
+ 1089              		.section	.text.crm_usb_clock_source_select,"ax",%progbits
+ 1090              		.align	1
+ 1091              		.global	crm_usb_clock_source_select
+ 1092              		.syntax unified
+ 1093              		.thumb
+ 1094              		.thumb_func
+ 1096              	crm_usb_clock_source_select:
+ 1097              	.LVL50:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 30
+
+
+ 1098              	.LFB156:
+ 586:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 587:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 588:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  usb 48 mhz clock source select
+ 589:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 590:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 591:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_CLOCK_SOURCE_PLL
+ 592:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_USB_CLOCK_SOURCE_HICK
+ 593:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 594:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 595:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_usb_clock_source_select(crm_usb_clock_source_type value)
+ 596:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1099              		.loc 1 596 1 is_stmt 1 view -0
+ 1100              		.cfi_startproc
+ 1101              		@ args = 0, pretend = 0, frame = 0
+ 1102              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1103              		.loc 1 596 1 is_stmt 0 view .LVU226
+ 1104 0000 10B5     		push	{r4, lr}
+ 1105              	.LCFI2:
+ 1106              		.cfi_def_cfa_offset 8
+ 1107              		.cfi_offset 4, -8
+ 1108              		.cfi_offset 14, -4
+ 1109 0002 0446     		mov	r4, r0
+ 597:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   if(value == CRM_USB_CLOCK_SOURCE_HICK)
+ 1110              		.loc 1 597 3 is_stmt 1 view .LVU227
+ 1111              		.loc 1 597 5 is_stmt 0 view .LVU228
+ 1112 0004 0128     		cmp	r0, #1
+ 1113 0006 07D0     		beq	.L103
+ 1114              	.LVL51:
+ 1115              	.L101:
+ 598:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 599:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     crm_hick_sclk_frequency_select(CRM_HICK_SCLK_48MHZ);
+ 600:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 601:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->misc1_bit.hick_to_usb = value;
+ 1116              		.loc 1 601 3 is_stmt 1 view .LVU229
+ 1117              		.loc 1 601 30 is_stmt 0 view .LVU230
+ 1118 0008 054B     		ldr	r3, .L104
+ 1119 000a D3F8A020 		ldr	r2, [r3, #160]
+ 1120 000e 64F34D32 		bfi	r2, r4, #13, #1
+ 1121 0012 C3F8A020 		str	r2, [r3, #160]
+ 602:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1122              		.loc 1 602 1 view .LVU231
+ 1123 0016 10BD     		pop	{r4, pc}
+ 1124              	.LVL52:
+ 1125              	.L103:
+ 599:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 1126              		.loc 1 599 5 is_stmt 1 view .LVU232
+ 1127 0018 0120     		movs	r0, #1
+ 1128              	.LVL53:
+ 599:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 1129              		.loc 1 599 5 is_stmt 0 view .LVU233
+ 1130 001a FFF7FEFF 		bl	crm_hick_sclk_frequency_select
+ 1131              	.LVL54:
+ 1132 001e F3E7     		b	.L101
+ 1133              	.L105:
+ 1134              		.align	2
+ 1135              	.L104:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 31
+
+
+ 1136 0020 00380240 		.word	1073887232
+ 1137              		.cfi_endproc
+ 1138              	.LFE156:
+ 1140              		.section	.text.crm_clkout_to_tmr10_enable,"ax",%progbits
+ 1141              		.align	1
+ 1142              		.global	crm_clkout_to_tmr10_enable
+ 1143              		.syntax unified
+ 1144              		.thumb
+ 1145              		.thumb_func
+ 1147              	crm_clkout_to_tmr10_enable:
+ 1148              	.LVL55:
+ 1149              	.LFB157:
+ 603:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 604:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 605:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  enable or disable clkout direct to tmr10 channel 1
+ 606:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+ 607:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 608:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 609:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_clkout_to_tmr10_enable(confirm_state new_state)
+ 610:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1150              		.loc 1 610 1 is_stmt 1 view -0
+ 1151              		.cfi_startproc
+ 1152              		@ args = 0, pretend = 0, frame = 0
+ 1153              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1154              		@ link register save eliminated.
+ 611:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->misc2_bit.clk_to_tmr = new_state;
+ 1155              		.loc 1 611 3 view .LVU235
+ 1156              		.loc 1 611 29 is_stmt 0 view .LVU236
+ 1157 0000 034B     		ldr	r3, .L107
+ 1158 0002 D3F8A420 		ldr	r2, [r3, #164]
+ 1159 0006 60F30822 		bfi	r2, r0, #8, #1
+ 1160 000a C3F8A420 		str	r2, [r3, #164]
+ 612:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1161              		.loc 1 612 1 view .LVU237
+ 1162 000e 7047     		bx	lr
+ 1163              	.L108:
+ 1164              		.align	2
+ 1165              	.L107:
+ 1166 0010 00380240 		.word	1073887232
+ 1167              		.cfi_endproc
+ 1168              	.LFE157:
+ 1170              		.section	.text.crm_pll_config,"ax",%progbits
+ 1171              		.align	1
+ 1172              		.global	crm_pll_config
+ 1173              		.syntax unified
+ 1174              		.thumb
+ 1175              		.thumb_func
+ 1177              	crm_pll_config:
+ 1178              	.LVL56:
+ 1179              	.LFB158:
+ 613:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 614:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 615:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  config crm pll
+ 616:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                        pll_rcs_freq * pll_ns
+ 617:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         pll clock = --------------------------------
+ 618:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                           pll_ms * pll_fr_n
+ 619:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         attemtion:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 32
+
+
+ 620:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                  31 <= pll_ns <= 500
+ 621:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                  1  <= pll_ms <= 15
+ 622:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *
+ 623:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                       pll_rcs_freq
+ 624:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         2mhz <=  ---------------------- <= 16mhz
+ 625:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                          pll_ms
+ 626:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *
+ 627:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                       pll_rcs_freq * pll_ns
+ 628:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         500mhz <=  -------------------------------- <= 1000mhz
+ 629:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                               pll_ms
+ 630:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  clock_source
+ 631:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 632:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_SOURCE_HICK
+ 633:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_SOURCE_HEXT
+ 634:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  pll_ns (31~500)
+ 635:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  pll_ms (1~15)
+ 636:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  pll_fr
+ 637:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 638:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_FR_1
+ 639:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_FR_2
+ 640:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_FR_4
+ 641:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_FR_8
+ 642:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_FR_16
+ 643:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_FR_32
+ 644:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 645:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 646:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_pll_config(crm_pll_clock_source_type clock_source, uint16_t pll_ns, \
+ 647:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****                     uint16_t pll_ms, crm_pll_fr_type pll_fr)
+ 648:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1180              		.loc 1 648 1 is_stmt 1 view -0
+ 1181              		.cfi_startproc
+ 1182              		@ args = 0, pretend = 0, frame = 0
+ 1183              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1184              		@ link register save eliminated.
+ 1185              		.loc 1 648 1 is_stmt 0 view .LVU239
+ 1186 0000 30B4     		push	{r4, r5}
+ 1187              	.LCFI3:
+ 1188              		.cfi_def_cfa_offset 8
+ 1189              		.cfi_offset 4, -8
+ 1190              		.cfi_offset 5, -4
+ 649:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* config pll clock source */
+ 650:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->pllcfg_bit.pllrcs = clock_source;
+ 1191              		.loc 1 650 3 is_stmt 1 view .LVU240
+ 1192              		.loc 1 650 26 is_stmt 0 view .LVU241
+ 1193 0002 094C     		ldr	r4, .L111
+ 1194 0004 6568     		ldr	r5, [r4, #4]
+ 1195 0006 60F39655 		bfi	r5, r0, #22, #1
+ 1196 000a 6560     		str	r5, [r4, #4]
+ 651:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 652:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* config pll multiplication factor */
+ 653:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->pllcfg_bit.pllns = pll_ns;
+ 1197              		.loc 1 653 3 is_stmt 1 view .LVU242
+ 1198              		.loc 1 653 25 is_stmt 0 view .LVU243
+ 1199 000c 6068     		ldr	r0, [r4, #4]
+ 1200              	.LVL57:
+ 1201              		.loc 1 653 25 view .LVU244
+ 1202 000e 61F38E10 		bfi	r0, r1, #6, #9
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 33
+
+
+ 1203 0012 6060     		str	r0, [r4, #4]
+ 654:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->pllcfg_bit.pllms = pll_ms;
+ 1204              		.loc 1 654 3 is_stmt 1 view .LVU245
+ 1205              		.loc 1 654 25 is_stmt 0 view .LVU246
+ 1206 0014 6168     		ldr	r1, [r4, #4]
+ 1207              	.LVL58:
+ 1208              		.loc 1 654 25 view .LVU247
+ 1209 0016 62F30301 		bfi	r1, r2, #0, #4
+ 1210 001a 6160     		str	r1, [r4, #4]
+ 655:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->pllcfg_bit.pllfr = pll_fr;
+ 1211              		.loc 1 655 3 is_stmt 1 view .LVU248
+ 1212              		.loc 1 655 25 is_stmt 0 view .LVU249
+ 1213 001c 6268     		ldr	r2, [r4, #4]
+ 1214              	.LVL59:
+ 1215              		.loc 1 655 25 view .LVU250
+ 1216 001e 63F31242 		bfi	r2, r3, #16, #3
+ 1217 0022 6260     		str	r2, [r4, #4]
+ 656:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1218              		.loc 1 656 1 view .LVU251
+ 1219 0024 30BC     		pop	{r4, r5}
+ 1220              	.LCFI4:
+ 1221              		.cfi_restore 5
+ 1222              		.cfi_restore 4
+ 1223              		.cfi_def_cfa_offset 0
+ 1224 0026 7047     		bx	lr
+ 1225              	.L112:
+ 1226              		.align	2
+ 1227              	.L111:
+ 1228 0028 00380240 		.word	1073887232
+ 1229              		.cfi_endproc
+ 1230              	.LFE158:
+ 1232              		.section	.text.crm_sysclk_switch,"ax",%progbits
+ 1233              		.align	1
+ 1234              		.global	crm_sysclk_switch
+ 1235              		.syntax unified
+ 1236              		.thumb
+ 1237              		.thumb_func
+ 1239              	crm_sysclk_switch:
+ 1240              	.LVL60:
+ 1241              	.LFB159:
+ 657:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 658:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 659:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  select system clock source
+ 660:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  value
+ 661:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 662:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SCLK_HICK
+ 663:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SCLK_HEXT
+ 664:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SCLK_PLL
+ 665:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 666:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 667:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_sysclk_switch(crm_sclk_type value)
+ 668:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1242              		.loc 1 668 1 is_stmt 1 view -0
+ 1243              		.cfi_startproc
+ 1244              		@ args = 0, pretend = 0, frame = 0
+ 1245              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1246              		@ link register save eliminated.
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 34
+
+
+ 669:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->cfg_bit.sclksel = value;
+ 1247              		.loc 1 669 3 view .LVU253
+ 1248              		.loc 1 669 24 is_stmt 0 view .LVU254
+ 1249 0000 024B     		ldr	r3, .L114
+ 1250 0002 9A68     		ldr	r2, [r3, #8]
+ 1251 0004 60F30102 		bfi	r2, r0, #0, #2
+ 1252 0008 9A60     		str	r2, [r3, #8]
+ 670:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1253              		.loc 1 670 1 view .LVU255
+ 1254 000a 7047     		bx	lr
+ 1255              	.L115:
+ 1256              		.align	2
+ 1257              	.L114:
+ 1258 000c 00380240 		.word	1073887232
+ 1259              		.cfi_endproc
+ 1260              	.LFE159:
+ 1262              		.section	.text.crm_sysclk_switch_status_get,"ax",%progbits
+ 1263              		.align	1
+ 1264              		.global	crm_sysclk_switch_status_get
+ 1265              		.syntax unified
+ 1266              		.thumb
+ 1267              		.thumb_func
+ 1269              	crm_sysclk_switch_status_get:
+ 1270              	.LFB160:
+ 671:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 672:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 673:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  indicate which clock source is used as system clock
+ 674:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  none
+ 675:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval crm_sclk
+ 676:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this return can be one of the following values:
+ 677:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SCLK_HICK
+ 678:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SCLK_HEXT
+ 679:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_SCLK_PLL
+ 680:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 681:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** crm_sclk_type crm_sysclk_switch_status_get(void)
+ 682:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1271              		.loc 1 682 1 is_stmt 1 view -0
+ 1272              		.cfi_startproc
+ 1273              		@ args = 0, pretend = 0, frame = 0
+ 1274              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1275              		@ link register save eliminated.
+ 683:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   return (crm_sclk_type)CRM->cfg_bit.sclksts;
+ 1276              		.loc 1 683 3 view .LVU257
+ 1277              		.loc 1 683 37 is_stmt 0 view .LVU258
+ 1278 0000 024B     		ldr	r3, .L117
+ 1279 0002 9868     		ldr	r0, [r3, #8]
+ 684:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1280              		.loc 1 684 1 view .LVU259
+ 1281 0004 C0F38100 		ubfx	r0, r0, #2, #2
+ 1282 0008 7047     		bx	lr
+ 1283              	.L118:
+ 1284 000a 00BF     		.align	2
+ 1285              	.L117:
+ 1286 000c 00380240 		.word	1073887232
+ 1287              		.cfi_endproc
+ 1288              	.LFE160:
+ 1290              		.global	__aeabi_uldivmod
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 35
+
+
+ 1291              		.section	.text.crm_clocks_freq_get,"ax",%progbits
+ 1292              		.align	1
+ 1293              		.global	crm_clocks_freq_get
+ 1294              		.syntax unified
+ 1295              		.thumb
+ 1296              		.thumb_func
+ 1298              	crm_clocks_freq_get:
+ 1299              	.LVL61:
+ 1300              	.LFB161:
+ 685:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 686:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 687:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  get crm clocks freqency
+ 688:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  clocks_struct
+ 689:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - pointer to the crm_clocks_freq_type structure
+ 690:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 691:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 692:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_clocks_freq_get(crm_clocks_freq_type *clocks_struct)
+ 693:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1301              		.loc 1 693 1 is_stmt 1 view -0
+ 1302              		.cfi_startproc
+ 1303              		@ args = 0, pretend = 0, frame = 0
+ 1304              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1305              		.loc 1 693 1 is_stmt 0 view .LVU261
+ 1306 0000 38B5     		push	{r3, r4, r5, lr}
+ 1307              	.LCFI5:
+ 1308              		.cfi_def_cfa_offset 16
+ 1309              		.cfi_offset 3, -16
+ 1310              		.cfi_offset 4, -12
+ 1311              		.cfi_offset 5, -8
+ 1312              		.cfi_offset 14, -4
+ 1313 0002 0446     		mov	r4, r0
+ 694:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   uint32_t pll_ns = 0, pll_ms = 0, pll_fr = 0, pll_clock_source = 0, pllrcsfreq = 0;
+ 1314              		.loc 1 694 3 is_stmt 1 view .LVU262
+ 1315              	.LVL62:
+ 695:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   uint32_t temp = 0, div_value = 0;
+ 1316              		.loc 1 695 3 view .LVU263
+ 696:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   crm_sclk_type sclk_source;
+ 1317              		.loc 1 696 3 view .LVU264
+ 697:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 698:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   static const uint8_t sclk_ahb_div_table[16] = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 6, 7, 8, 9};
+ 1318              		.loc 1 698 3 view .LVU265
+ 699:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   static const uint8_t ahb_apb1_div_table[8] = {0, 0, 0, 0, 1, 2, 3, 4};
+ 1319              		.loc 1 699 3 view .LVU266
+ 700:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   static const uint8_t ahb_apb2_div_table[8] = {0, 0, 0, 0, 1, 2, 3, 4};
+ 1320              		.loc 1 700 3 view .LVU267
+ 701:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   static const uint8_t pll_fr_table[6] = {1, 2, 4, 8, 16, 32};
+ 1321              		.loc 1 701 3 view .LVU268
+ 702:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 703:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* get sclk source */
+ 704:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   sclk_source = crm_sysclk_switch_status_get();
+ 1322              		.loc 1 704 3 view .LVU269
+ 1323              		.loc 1 704 17 is_stmt 0 view .LVU270
+ 1324 0004 FFF7FEFF 		bl	crm_sysclk_switch_status_get
+ 1325              	.LVL63:
+ 705:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 706:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   switch(sclk_source)
+ 1326              		.loc 1 706 3 is_stmt 1 view .LVU271
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 36
+
+
+ 1327 0008 0128     		cmp	r0, #1
+ 1328 000a 17D0     		beq	.L120
+ 1329 000c 0228     		cmp	r0, #2
+ 1330 000e 30D0     		beq	.L121
+ 1331 0010 10B1     		cbz	r0, .L126
+ 707:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 708:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_SCLK_HICK:
+ 709:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       if(((CRM->misc1_bit.hick_to_sclk) != RESET) && ((CRM->misc1_bit.hickdiv) != RESET))
+ 710:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         clocks_struct->sclk_freq = HICK_VALUE * 6;
+ 711:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       else
+ 712:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         clocks_struct->sclk_freq = HICK_VALUE;
+ 713:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 714:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_SCLK_HEXT:
+ 715:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       clocks_struct->sclk_freq = HEXT_VALUE;
+ 716:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 717:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_SCLK_PLL:
+ 718:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       /* get pll clock source */
+ 719:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       pll_clock_source = CRM->pllcfg_bit.pllrcs;
+ 720:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 721:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       /* get multiplication factor */
+ 722:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       pll_ns = CRM->pllcfg_bit.pllns;
+ 723:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       pll_ms = CRM->pllcfg_bit.pllms;
+ 724:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       pll_fr = pll_fr_table[CRM->pllcfg_bit.pllfr];
+ 725:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 726:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       if (pll_clock_source == CRM_PLL_SOURCE_HICK)
+ 727:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       {
+ 728:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         /* hick selected as pll clock entry */
+ 729:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         pllrcsfreq = HICK_VALUE;
+ 730:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       }
+ 731:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       else
+ 732:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       {
+ 733:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         /* hext selected as pll clock entry */
+ 734:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         pllrcsfreq = HEXT_VALUE;
+ 735:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       }
+ 736:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 737:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       clocks_struct->sclk_freq = (uint32_t)(((uint64_t)pllrcsfreq * pll_ns) / (pll_ms * pll_fr));
+ 738:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 739:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     default:
+ 740:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       clocks_struct->sclk_freq = HICK_VALUE;
+ 1332              		.loc 1 740 7 view .LVU272
+ 1333              		.loc 1 740 32 is_stmt 0 view .LVU273
+ 1334 0012 2F4B     		ldr	r3, .L127
+ 1335 0014 2360     		str	r3, [r4]
+ 741:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 1336              		.loc 1 741 7 is_stmt 1 view .LVU274
+ 1337 0016 13E0     		b	.L124
+ 1338              	.L126:
+ 709:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         clocks_struct->sclk_freq = HICK_VALUE * 6;
+ 1339              		.loc 1 709 7 view .LVU275
+ 709:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         clocks_struct->sclk_freq = HICK_VALUE * 6;
+ 1340              		.loc 1 709 26 is_stmt 0 view .LVU276
+ 1341 0018 2E4B     		ldr	r3, .L127+4
+ 1342 001a D3F8A030 		ldr	r3, [r3, #160]
+ 709:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         clocks_struct->sclk_freq = HICK_VALUE * 6;
+ 1343              		.loc 1 709 9 view .LVU277
+ 1344 001e 13F4804F 		tst	r3, #16384
+ 1345 0022 08D0     		beq	.L123
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 37
+
+
+ 709:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         clocks_struct->sclk_freq = HICK_VALUE * 6;
+ 1346              		.loc 1 709 70 discriminator 1 view .LVU278
+ 1347 0024 2B4B     		ldr	r3, .L127+4
+ 1348 0026 D3F8A030 		ldr	r3, [r3, #160]
+ 709:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         clocks_struct->sclk_freq = HICK_VALUE * 6;
+ 1349              		.loc 1 709 51 discriminator 1 view .LVU279
+ 1350 002a 13F4805F 		tst	r3, #4096
+ 1351 002e 02D0     		beq	.L123
+ 710:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       else
+ 1352              		.loc 1 710 9 is_stmt 1 view .LVU280
+ 710:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       else
+ 1353              		.loc 1 710 34 is_stmt 0 view .LVU281
+ 1354 0030 294B     		ldr	r3, .L127+8
+ 1355 0032 2360     		str	r3, [r4]
+ 1356 0034 04E0     		b	.L124
+ 1357              	.L123:
+ 712:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 1358              		.loc 1 712 9 is_stmt 1 view .LVU282
+ 712:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 1359              		.loc 1 712 34 is_stmt 0 view .LVU283
+ 1360 0036 264B     		ldr	r3, .L127
+ 1361 0038 2360     		str	r3, [r4]
+ 1362 003a 01E0     		b	.L124
+ 1363              	.L120:
+ 715:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 1364              		.loc 1 715 7 is_stmt 1 view .LVU284
+ 715:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 1365              		.loc 1 715 32 is_stmt 0 view .LVU285
+ 1366 003c 244B     		ldr	r3, .L127
+ 1367 003e 2360     		str	r3, [r4]
+ 716:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     case CRM_SCLK_PLL:
+ 1368              		.loc 1 716 7 is_stmt 1 view .LVU286
+ 1369              	.LVL64:
+ 1370              	.L124:
+ 742:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 743:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 744:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* compute sclk, ahbclk, abp1clk and apb2clk frequencies */
+ 745:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* get ahb division */
+ 746:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   temp = CRM->cfg_bit.ahbdiv;
+ 1371              		.loc 1 746 3 view .LVU287
+ 1372              		.loc 1 746 22 is_stmt 0 view .LVU288
+ 1373 0040 244A     		ldr	r2, .L127+4
+ 1374 0042 9368     		ldr	r3, [r2, #8]
+ 1375 0044 C3F30313 		ubfx	r3, r3, #4, #4
+ 1376              	.LVL65:
+ 747:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   div_value = sclk_ahb_div_table[temp];
+ 1377              		.loc 1 747 3 is_stmt 1 view .LVU289
+ 1378              		.loc 1 747 33 is_stmt 0 view .LVU290
+ 1379 0048 2449     		ldr	r1, .L127+12
+ 1380 004a C95C     		ldrb	r1, [r1, r3]	@ zero_extendqisi2
+ 1381              	.LVL66:
+ 748:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* ahbclk frequency */
+ 749:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   clocks_struct->ahb_freq = clocks_struct->sclk_freq >> div_value;
+ 1382              		.loc 1 749 3 is_stmt 1 view .LVU291
+ 1383              		.loc 1 749 42 is_stmt 0 view .LVU292
+ 1384 004c 2368     		ldr	r3, [r4]
+ 1385              	.LVL67:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 38
+
+
+ 1386              		.loc 1 749 54 view .LVU293
+ 1387 004e CB40     		lsrs	r3, r3, r1
+ 1388              		.loc 1 749 27 view .LVU294
+ 1389 0050 6360     		str	r3, [r4, #4]
+ 750:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 751:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* get apb1 division */
+ 752:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   temp = CRM->cfg_bit.apb1div;
+ 1390              		.loc 1 752 3 is_stmt 1 view .LVU295
+ 1391              		.loc 1 752 22 is_stmt 0 view .LVU296
+ 1392 0052 9168     		ldr	r1, [r2, #8]
+ 1393              	.LVL68:
+ 1394              		.loc 1 752 22 view .LVU297
+ 1395 0054 C1F38221 		ubfx	r1, r1, #10, #3
+ 1396              	.LVL69:
+ 753:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   div_value = ahb_apb1_div_table[temp];
+ 1397              		.loc 1 753 3 is_stmt 1 view .LVU298
+ 1398              		.loc 1 753 33 is_stmt 0 view .LVU299
+ 1399 0058 2148     		ldr	r0, .L127+16
+ 1400 005a 415C     		ldrb	r1, [r0, r1]	@ zero_extendqisi2
+ 1401              	.LVL70:
+ 754:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* apb1clk frequency */
+ 755:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   clocks_struct->apb1_freq = clocks_struct->ahb_freq >> div_value;
+ 1402              		.loc 1 755 3 is_stmt 1 view .LVU300
+ 1403              		.loc 1 755 54 is_stmt 0 view .LVU301
+ 1404 005c 23FA01F1 		lsr	r1, r3, r1
+ 1405              	.LVL71:
+ 1406              		.loc 1 755 28 view .LVU302
+ 1407 0060 E160     		str	r1, [r4, #12]
+ 756:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 757:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* get apb2 division */
+ 758:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   temp = CRM->cfg_bit.apb2div;
+ 1408              		.loc 1 758 3 is_stmt 1 view .LVU303
+ 1409              		.loc 1 758 22 is_stmt 0 view .LVU304
+ 1410 0062 9268     		ldr	r2, [r2, #8]
+ 1411 0064 C2F34232 		ubfx	r2, r2, #13, #3
+ 1412              	.LVL72:
+ 759:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   div_value = ahb_apb2_div_table[temp];
+ 1413              		.loc 1 759 3 is_stmt 1 view .LVU305
+ 1414              		.loc 1 759 33 is_stmt 0 view .LVU306
+ 1415 0068 1E49     		ldr	r1, .L127+20
+ 1416 006a 8A5C     		ldrb	r2, [r1, r2]	@ zero_extendqisi2
+ 1417              	.LVL73:
+ 760:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* apb2clk frequency */
+ 761:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   clocks_struct->apb2_freq = clocks_struct->ahb_freq >> div_value;
+ 1418              		.loc 1 761 3 is_stmt 1 view .LVU307
+ 1419              		.loc 1 761 54 is_stmt 0 view .LVU308
+ 1420 006c D340     		lsrs	r3, r3, r2
+ 1421              		.loc 1 761 28 view .LVU309
+ 1422 006e A360     		str	r3, [r4, #8]
+ 762:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1423              		.loc 1 762 1 view .LVU310
+ 1424 0070 38BD     		pop	{r3, r4, r5, pc}
+ 1425              	.LVL74:
+ 1426              	.L121:
+ 719:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 1427              		.loc 1 719 7 is_stmt 1 view .LVU311
+ 719:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 39
+
+
+ 1428              		.loc 1 719 41 is_stmt 0 view .LVU312
+ 1429 0072 184B     		ldr	r3, .L127+4
+ 1430 0074 5A68     		ldr	r2, [r3, #4]
+ 1431              	.LVL75:
+ 722:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       pll_ms = CRM->pllcfg_bit.pllms;
+ 1432              		.loc 1 722 7 is_stmt 1 view .LVU313
+ 722:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       pll_ms = CRM->pllcfg_bit.pllms;
+ 1433              		.loc 1 722 31 is_stmt 0 view .LVU314
+ 1434 0076 5968     		ldr	r1, [r3, #4]
+ 1435 0078 C1F3881C 		ubfx	ip, r1, #6, #9
+ 1436              	.LVL76:
+ 723:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       pll_fr = pll_fr_table[CRM->pllcfg_bit.pllfr];
+ 1437              		.loc 1 723 7 is_stmt 1 view .LVU315
+ 723:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       pll_fr = pll_fr_table[CRM->pllcfg_bit.pllfr];
+ 1438              		.loc 1 723 31 is_stmt 0 view .LVU316
+ 1439 007c 5A68     		ldr	r2, [r3, #4]
+ 1440 007e 02F00F02 		and	r2, r2, #15
+ 1441              	.LVL77:
+ 724:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 1442              		.loc 1 724 7 is_stmt 1 view .LVU317
+ 724:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 1443              		.loc 1 724 44 is_stmt 0 view .LVU318
+ 1444 0082 5B68     		ldr	r3, [r3, #4]
+ 1445 0084 C3F30243 		ubfx	r3, r3, #16, #3
+ 724:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 1446              		.loc 1 724 28 view .LVU319
+ 1447 0088 1749     		ldr	r1, .L127+24
+ 1448              	.LVL78:
+ 724:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 1449              		.loc 1 724 28 view .LVU320
+ 1450 008a 11F803E0 		ldrb	lr, [r1, r3]	@ zero_extendqisi2
+ 1451              	.LVL79:
+ 726:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       {
+ 1452              		.loc 1 726 7 is_stmt 1 view .LVU321
+ 737:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 1453              		.loc 1 737 7 view .LVU322
+ 737:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 1454              		.loc 1 737 67 is_stmt 0 view .LVU323
+ 1455 008e 4FEA4C11 		lsl	r1, ip, #5
+ 1456 0092 B1EB0C00 		subs	r0, r1, ip
+ 1457              	.LVL80:
+ 737:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 1458              		.loc 1 737 67 view .LVU324
+ 1459 0096 65EB0505 		sbc	r5, r5, r5
+ 1460 009a AB01     		lsls	r3, r5, #6
+ 1461 009c 43EA9063 		orr	r3, r3, r0, lsr #26
+ 1462 00a0 8101     		lsls	r1, r0, #6
+ 1463 00a2 091A     		subs	r1, r1, r0
+ 1464 00a4 63EB0503 		sbc	r3, r3, r5
+ 1465 00a8 DB00     		lsls	r3, r3, #3
+ 1466 00aa 43EA5173 		orr	r3, r3, r1, lsr #29
+ 1467 00ae C900     		lsls	r1, r1, #3
+ 1468 00b0 11EB0C0C 		adds	ip, r1, ip
+ 1469 00b4 43F10003 		adc	r3, r3, #0
+ 1470 00b8 5902     		lsls	r1, r3, #9
+ 737:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 1471              		.loc 1 737 77 view .LVU325
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 40
+
+
+ 1472 00ba 0EFB02F2 		mul	r2, lr, r2
+ 1473              	.LVL81:
+ 737:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 1474              		.loc 1 737 77 view .LVU326
+ 1475 00be 0023     		movs	r3, #0
+ 1476 00c0 4FEA4C20 		lsl	r0, ip, #9
+ 1477 00c4 41EADC51 		orr	r1, r1, ip, lsr #23
+ 1478 00c8 FFF7FEFF 		bl	__aeabi_uldivmod
+ 1479              	.LVL82:
+ 737:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       break;
+ 1480              		.loc 1 737 32 view .LVU327
+ 1481 00cc 2060     		str	r0, [r4]
+ 738:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     default:
+ 1482              		.loc 1 738 7 is_stmt 1 view .LVU328
+ 1483 00ce B7E7     		b	.L124
+ 1484              	.L128:
+ 1485              		.align	2
+ 1486              	.L127:
+ 1487 00d0 00127A00 		.word	8000000
+ 1488 00d4 00380240 		.word	1073887232
+ 1489 00d8 006CDC02 		.word	48000000
+ 1490 00dc 00000000 		.word	.LANCHOR1
+ 1491 00e0 00000000 		.word	.LANCHOR2
+ 1492 00e4 00000000 		.word	.LANCHOR3
+ 1493 00e8 00000000 		.word	.LANCHOR0
+ 1494              		.cfi_endproc
+ 1495              	.LFE161:
+ 1497              		.section	.text.crm_clock_out1_set,"ax",%progbits
+ 1498              		.align	1
+ 1499              		.global	crm_clock_out1_set
+ 1500              		.syntax unified
+ 1501              		.thumb
+ 1502              		.thumb_func
+ 1504              	crm_clock_out1_set:
+ 1505              	.LVL83:
+ 1506              	.LFB162:
+ 763:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 764:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 765:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  set crm clkout1
+ 766:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  clkout
+ 767:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 768:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT1_HICK
+ 769:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT1_LEXT
+ 770:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT1_HEXT
+ 771:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT1_PLL
+ 772:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 773:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 774:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_clock_out1_set(crm_clkout1_select_type clkout)
+ 775:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1507              		.loc 1 775 1 view -0
+ 1508              		.cfi_startproc
+ 1509              		@ args = 0, pretend = 0, frame = 0
+ 1510              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1511              		@ link register save eliminated.
+ 776:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->cfg_bit.clkout1_sel = clkout;
+ 1512              		.loc 1 776 5 view .LVU330
+ 1513              		.loc 1 776 30 is_stmt 0 view .LVU331
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 41
+
+
+ 1514 0000 024B     		ldr	r3, .L130
+ 1515 0002 9A68     		ldr	r2, [r3, #8]
+ 1516 0004 60F35652 		bfi	r2, r0, #21, #2
+ 1517 0008 9A60     		str	r2, [r3, #8]
+ 777:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1518              		.loc 1 777 1 view .LVU332
+ 1519 000a 7047     		bx	lr
+ 1520              	.L131:
+ 1521              		.align	2
+ 1522              	.L130:
+ 1523 000c 00380240 		.word	1073887232
+ 1524              		.cfi_endproc
+ 1525              	.LFE162:
+ 1527              		.section	.text.crm_clock_out2_set,"ax",%progbits
+ 1528              		.align	1
+ 1529              		.global	crm_clock_out2_set
+ 1530              		.syntax unified
+ 1531              		.thumb
+ 1532              		.thumb_func
+ 1534              	crm_clock_out2_set:
+ 1535              	.LVL84:
+ 1536              	.LFB163:
+ 778:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 779:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 780:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  set crm clkout2
+ 781:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  clkout
+ 782:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 783:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT2_SCLK
+ 784:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT2_HEXT
+ 785:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT2_PLL
+ 786:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT2_USB
+ 787:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT2_ADC
+ 788:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT2_HICK
+ 789:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT2_LICK
+ 790:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT2_LEXT
+ 791:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 792:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 793:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_clock_out2_set(crm_clkout2_select_type clkout)
+ 794:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1537              		.loc 1 794 1 is_stmt 1 view -0
+ 1538              		.cfi_startproc
+ 1539              		@ args = 0, pretend = 0, frame = 0
+ 1540              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1541              		@ link register save eliminated.
+ 795:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   if(clkout < 0x10)
+ 1542              		.loc 1 795 3 view .LVU334
+ 1543              		.loc 1 795 5 is_stmt 0 view .LVU335
+ 1544 0000 0F28     		cmp	r0, #15
+ 1545 0002 05D8     		bhi	.L133
+ 796:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 797:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->cfg_bit.clkout2_sel1 = (clkout & 0x3);
+ 1546              		.loc 1 797 5 is_stmt 1 view .LVU336
+ 1547              		.loc 1 797 31 is_stmt 0 view .LVU337
+ 1548 0004 094B     		ldr	r3, .L135
+ 1549 0006 9A68     		ldr	r2, [r3, #8]
+ 1550 0008 60F39F72 		bfi	r2, r0, #30, #2
+ 1551 000c 9A60     		str	r2, [r3, #8]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 42
+
+
+ 1552 000e 7047     		bx	lr
+ 1553              	.L133:
+ 798:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 799:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   else
+ 800:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 801:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->cfg_bit.clkout2_sel1 = 0x1;
+ 1554              		.loc 1 801 5 is_stmt 1 view .LVU338
+ 1555              		.loc 1 801 31 is_stmt 0 view .LVU339
+ 1556 0010 064B     		ldr	r3, .L135
+ 1557 0012 9A68     		ldr	r2, [r3, #8]
+ 1558 0014 0121     		movs	r1, #1
+ 1559 0016 61F39F72 		bfi	r2, r1, #30, #2
+ 1560 001a 9A60     		str	r2, [r3, #8]
+ 802:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->misc1_bit.clkout2_sel2 = (clkout & 0xF);
+ 1561              		.loc 1 802 5 is_stmt 1 view .LVU340
+ 1562              		.loc 1 802 33 is_stmt 0 view .LVU341
+ 1563 001c D3F8A020 		ldr	r2, [r3, #160]
+ 1564 0020 60F31342 		bfi	r2, r0, #16, #4
+ 1565 0024 C3F8A020 		str	r2, [r3, #160]
+ 803:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 804:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1566              		.loc 1 804 1 view .LVU342
+ 1567 0028 7047     		bx	lr
+ 1568              	.L136:
+ 1569 002a 00BF     		.align	2
+ 1570              	.L135:
+ 1571 002c 00380240 		.word	1073887232
+ 1572              		.cfi_endproc
+ 1573              	.LFE163:
+ 1575              		.section	.text.crm_clkout_div_set,"ax",%progbits
+ 1576              		.align	1
+ 1577              		.global	crm_clkout_div_set
+ 1578              		.syntax unified
+ 1579              		.thumb
+ 1580              		.thumb_func
+ 1582              	crm_clkout_div_set:
+ 1583              	.LVL85:
+ 1584              	.LFB164:
+ 805:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 806:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 807:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  set crm clkout1 division1
+ 808:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  div1
+ 809:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 810:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_INDEX_1
+ 811:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_INDEX_2
+ 812:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  div1
+ 813:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 814:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV1_1
+ 815:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV1_2
+ 816:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV1_3
+ 817:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV1_4
+ 818:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV1_5
+ 819:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  div2
+ 820:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 821:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV2_1
+ 822:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV2_2
+ 823:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV2_4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 43
+
+
+ 824:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV2_8
+ 825:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV2_16
+ 826:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV2_64
+ 827:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV2_128
+ 828:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV2_256
+ 829:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_CLKOUT_DIV2_512
+ 830:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 831:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 832:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_clkout_div_set(crm_clkout_index_type index, crm_clkout_div1_type div1, crm_clkout_div2_typ
+ 833:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1585              		.loc 1 833 1 is_stmt 1 view -0
+ 1586              		.cfi_startproc
+ 1587              		@ args = 0, pretend = 0, frame = 0
+ 1588              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1589              		@ link register save eliminated.
+ 834:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   if(index == CRM_CLKOUT_INDEX_1)
+ 1590              		.loc 1 834 3 view .LVU344
+ 1591              		.loc 1 834 5 is_stmt 0 view .LVU345
+ 1592 0000 58B9     		cbnz	r0, .L138
+ 835:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 836:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->cfg_bit.clkout1div1 = div1;
+ 1593              		.loc 1 836 5 is_stmt 1 view .LVU346
+ 1594              		.loc 1 836 30 is_stmt 0 view .LVU347
+ 1595 0002 0C4B     		ldr	r3, .L140
+ 1596 0004 9868     		ldr	r0, [r3, #8]
+ 1597              	.LVL86:
+ 1598              		.loc 1 836 30 view .LVU348
+ 1599 0006 61F31A60 		bfi	r0, r1, #24, #3
+ 1600 000a 9860     		str	r0, [r3, #8]
+ 837:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->misc1_bit.clkout1div2 = div2;
+ 1601              		.loc 1 837 5 is_stmt 1 view .LVU349
+ 1602              		.loc 1 837 32 is_stmt 0 view .LVU350
+ 1603 000c D3F8A010 		ldr	r1, [r3, #160]
+ 1604              	.LVL87:
+ 1605              		.loc 1 837 32 view .LVU351
+ 1606 0010 62F31B61 		bfi	r1, r2, #24, #4
+ 1607 0014 C3F8A010 		str	r1, [r3, #160]
+ 1608 0018 7047     		bx	lr
+ 1609              	.LVL88:
+ 1610              	.L138:
+ 838:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 839:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   else
+ 840:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 841:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->cfg_bit.clkout2div1 = div1;
+ 1611              		.loc 1 841 5 is_stmt 1 view .LVU352
+ 1612              		.loc 1 841 30 is_stmt 0 view .LVU353
+ 1613 001a 064B     		ldr	r3, .L140
+ 1614 001c 9868     		ldr	r0, [r3, #8]
+ 1615              	.LVL89:
+ 1616              		.loc 1 841 30 view .LVU354
+ 1617 001e 61F3DD60 		bfi	r0, r1, #27, #3
+ 1618 0022 9860     		str	r0, [r3, #8]
+ 842:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->misc1_bit.clkout2div2 = div2;
+ 1619              		.loc 1 842 5 is_stmt 1 view .LVU355
+ 1620              		.loc 1 842 32 is_stmt 0 view .LVU356
+ 1621 0024 D3F8A010 		ldr	r1, [r3, #160]
+ 1622              	.LVL90:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 44
+
+
+ 1623              		.loc 1 842 32 view .LVU357
+ 1624 0028 62F31F71 		bfi	r1, r2, #28, #4
+ 1625 002c C3F8A010 		str	r1, [r3, #160]
+ 843:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 844:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1626              		.loc 1 844 1 view .LVU358
+ 1627 0030 7047     		bx	lr
+ 1628              	.L141:
+ 1629 0032 00BF     		.align	2
+ 1630              	.L140:
+ 1631 0034 00380240 		.word	1073887232
+ 1632              		.cfi_endproc
+ 1633              	.LFE164:
+ 1635              		.section	.text.crm_emac_output_pulse_set,"ax",%progbits
+ 1636              		.align	1
+ 1637              		.global	crm_emac_output_pulse_set
+ 1638              		.syntax unified
+ 1639              		.thumb
+ 1640              		.thumb_func
+ 1642              	crm_emac_output_pulse_set:
+ 1643              	.LVL91:
+ 1644              	.LFB165:
+ 845:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 846:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 847:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  set emac output pulse width
+ 848:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  width
+ 849:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 850:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_EMAC_PULSE_125MS
+ 851:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_EMAC_PULSE_1SCLK
+ 852:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 853:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 854:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_emac_output_pulse_set(crm_emac_output_pulse_type width)
+ 855:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1645              		.loc 1 855 1 is_stmt 1 view -0
+ 1646              		.cfi_startproc
+ 1647              		@ args = 0, pretend = 0, frame = 0
+ 1648              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1649              		@ link register save eliminated.
+ 856:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   CRM->misc2_bit.emac_pps_sel = width;
+ 1650              		.loc 1 856 3 view .LVU360
+ 1651              		.loc 1 856 31 is_stmt 0 view .LVU361
+ 1652 0000 034B     		ldr	r3, .L143
+ 1653 0002 D3F8A420 		ldr	r2, [r3, #164]
+ 1654 0006 60F34922 		bfi	r2, r0, #9, #1
+ 1655 000a C3F8A420 		str	r2, [r3, #164]
+ 857:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1656              		.loc 1 857 1 view .LVU362
+ 1657 000e 7047     		bx	lr
+ 1658              	.L144:
+ 1659              		.align	2
+ 1660              	.L143:
+ 1661 0010 00380240 		.word	1073887232
+ 1662              		.cfi_endproc
+ 1663              	.LFE165:
+ 1665              		.section	.text.crm_interrupt_enable,"ax",%progbits
+ 1666              		.align	1
+ 1667              		.global	crm_interrupt_enable
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 45
+
+
+ 1668              		.syntax unified
+ 1669              		.thumb
+ 1670              		.thumb_func
+ 1672              	crm_interrupt_enable:
+ 1673              	.LVL92:
+ 1674              	.LFB166:
+ 858:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 859:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 860:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  config crm interrupt
+ 861:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  int
+ 862:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be any combination of the following values:
+ 863:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_LICK_STABLE_INT
+ 864:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_LEXT_STABLE_INT
+ 865:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HICK_STABLE_INT
+ 866:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_HEXT_STABLE_INT
+ 867:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_STABLE_INT
+ 868:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  new_state (TRUE or FALSE)
+ 869:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval none
+ 870:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 871:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** void crm_interrupt_enable(uint32_t crm_int, confirm_state new_state)
+ 872:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1675              		.loc 1 872 1 is_stmt 1 view -0
+ 1676              		.cfi_startproc
+ 1677              		@ args = 0, pretend = 0, frame = 0
+ 1678              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1679              		@ link register save eliminated.
+ 873:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   if(TRUE == new_state)
+ 1680              		.loc 1 873 3 view .LVU364
+ 1681              		.loc 1 873 5 is_stmt 0 view .LVU365
+ 1682 0000 0129     		cmp	r1, #1
+ 1683 0002 05D0     		beq	.L148
+ 874:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->clkint |= crm_int;
+ 875:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   else
+ 876:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->clkint &= ~crm_int;
+ 1684              		.loc 1 876 5 is_stmt 1 view .LVU366
+ 1685              		.loc 1 876 17 is_stmt 0 view .LVU367
+ 1686 0004 054A     		ldr	r2, .L149
+ 1687 0006 D368     		ldr	r3, [r2, #12]
+ 1688 0008 23EA0000 		bic	r0, r3, r0
+ 1689              	.LVL93:
+ 1690              		.loc 1 876 17 view .LVU368
+ 1691 000c D060     		str	r0, [r2, #12]
+ 877:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1692              		.loc 1 877 1 view .LVU369
+ 1693 000e 7047     		bx	lr
+ 1694              	.LVL94:
+ 1695              	.L148:
+ 874:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->clkint |= crm_int;
+ 1696              		.loc 1 874 5 is_stmt 1 view .LVU370
+ 874:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->clkint |= crm_int;
+ 1697              		.loc 1 874 17 is_stmt 0 view .LVU371
+ 1698 0010 024A     		ldr	r2, .L149
+ 1699 0012 D368     		ldr	r3, [r2, #12]
+ 1700 0014 1843     		orrs	r0, r0, r3
+ 1701              	.LVL95:
+ 874:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     CRM->clkint |= crm_int;
+ 1702              		.loc 1 874 17 view .LVU372
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 46
+
+
+ 1703 0016 D060     		str	r0, [r2, #12]
+ 1704 0018 7047     		bx	lr
+ 1705              	.L150:
+ 1706 001a 00BF     		.align	2
+ 1707              	.L149:
+ 1708 001c 00380240 		.word	1073887232
+ 1709              		.cfi_endproc
+ 1710              	.LFE166:
+ 1712              		.section	.text.crm_pll_parameter_calculate,"ax",%progbits
+ 1713              		.align	1
+ 1714              		.global	crm_pll_parameter_calculate
+ 1715              		.syntax unified
+ 1716              		.thumb
+ 1717              		.thumb_func
+ 1719              	crm_pll_parameter_calculate:
+ 1720              	.LVL96:
+ 1721              	.LFB167:
+ 878:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 879:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** /**
+ 880:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @brief  calculate the pll parameters with pll reference clock and target pll output frequency.
+ 881:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                        pll_rcs_freq * pll_ns
+ 882:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         pll clock = --------------------------------
+ 883:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                           pll_ms * pll_fr_n
+ 884:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         attemtion:
+ 885:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                  31 <= pll_ns <= 500
+ 886:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                  1  <= pll_ms <= 15
+ 887:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *
+ 888:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                       pll_rcs_freq
+ 889:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         2mhz <=  ---------------------- <= 16mhz
+ 890:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                          pll_ms
+ 891:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *
+ 892:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                       pll_rcs_freq * pll_ns
+ 893:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         500mhz <=  -------------------------------- <= 1000mhz
+ 894:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *                               pll_ms
+ 895:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  pll_rcs
+ 896:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         this parameter can be one of the following values:
+ 897:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_SOURCE_HICK
+ 898:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   *         - CRM_PLL_SOURCE_HEXT
+ 899:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  target_sclk_freq: target pll output frequency, such as 200 mhz (target_sclk_freq: 20000
+ 900:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  ret_ms: pointer to ms value, return the pll_ms of pll parameters
+ 901:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  ret_ns: pointer to ns value, return the pll_ns of pll parameters
+ 902:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @param  ret_fr: pointer to fr value, return the pll_fr of pll parameters
+ 903:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   * @retval error_status (SUCCESS or ERROR)
+ 904:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   */
+ 905:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** error_status crm_pll_parameter_calculate(crm_pll_clock_source_type pll_rcs, uint32_t target_sclk_fr
+ 906:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****                                          uint16_t *ret_ms, uint16_t *ret_ns, uint16_t *ret_fr)
+ 907:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** {
+ 1722              		.loc 1 907 1 is_stmt 1 view -0
+ 1723              		.cfi_startproc
+ 1724              		@ args = 4, pretend = 0, frame = 0
+ 1725              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1726              		.loc 1 907 1 is_stmt 0 view .LVU374
+ 1727 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 1728              	.LCFI6:
+ 1729              		.cfi_def_cfa_offset 28
+ 1730              		.cfi_offset 4, -28
+ 1731              		.cfi_offset 5, -24
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 47
+
+
+ 1732              		.cfi_offset 6, -20
+ 1733              		.cfi_offset 7, -16
+ 1734              		.cfi_offset 8, -12
+ 1735              		.cfi_offset 9, -8
+ 1736              		.cfi_offset 14, -4
+ 1737 0004 1546     		mov	r5, r2
+ 1738 0006 1C46     		mov	r4, r3
+ 1739 0008 079F     		ldr	r7, [sp, #28]
+ 908:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   uint32_t pll_rcs_freq = 0, ns = 0, ms = 0, fr = 0;
+ 1740              		.loc 1 908 3 is_stmt 1 view .LVU375
+ 1741              	.LVL97:
+ 909:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   uint32_t ms_min = 0, ms_max = 0, error_min = 0xFFFFFFFF;
+ 1742              		.loc 1 909 3 view .LVU376
+ 910:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   uint32_t result = 0, absolute_value = 0;
+ 1743              		.loc 1 910 3 view .LVU377
+ 911:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 912:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* reduce calculate accuracy, target_sclk_freq accuracy with khz */
+ 913:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   target_sclk_freq = target_sclk_freq / 1000;
+ 1744              		.loc 1 913 3 view .LVU378
+ 1745              		.loc 1 913 20 is_stmt 0 view .LVU379
+ 1746 000a 2D4B     		ldr	r3, .L173
+ 1747              	.LVL98:
+ 1748              		.loc 1 913 20 view .LVU380
+ 1749 000c A3FB0131 		umull	r3, r1, r3, r1
+ 1750              	.LVL99:
+ 1751              		.loc 1 913 20 view .LVU381
+ 1752 0010 4FEA911C 		lsr	ip, r1, #6
+ 1753              	.LVL100:
+ 914:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 915:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* get pll reference clock frequency, accuracy with khz */
+ 916:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   if(pll_rcs == CRM_PLL_SOURCE_HICK)
+ 1754              		.loc 1 916 3 is_stmt 1 view .LVU382
+ 909:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   uint32_t result = 0, absolute_value = 0;
+ 1755              		.loc 1 909 24 is_stmt 0 view .LVU383
+ 1756 0014 4FF00009 		mov	r9, #0
+ 909:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   uint32_t result = 0, absolute_value = 0;
+ 1757              		.loc 1 909 12 view .LVU384
+ 1758 0018 4B46     		mov	r3, r9
+ 917:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     pll_rcs_freq = HICK_VALUE / 1000;
+ 918:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   else
+ 919:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     pll_rcs_freq = HEXT_VALUE / 1000;
+ 920:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 921:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* polling ms range, accuracy with khz */
+ 922:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   for(ms = 1; ms <= 15; ms ++)
+ 1759              		.loc 1 922 10 view .LVU385
+ 1760 001a 0121     		movs	r1, #1
+ 1761 001c 02E0     		b	.L152
+ 1762              	.LVL101:
+ 1763              	.L164:
+ 923:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 924:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     result = pll_rcs_freq / ms;
+ 925:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     if((result >= 2000U) && (result <= 16000U))
+ 926:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     {
+ 927:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       if(ms_min == 0)
+ 928:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         ms_min = ms;
+ 929:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 930:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       ms_max = ms;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 48
+
+
+ 1764              		.loc 1 930 14 view .LVU386
+ 1765 001e 8946     		mov	r9, r1
+ 1766              	.LVL102:
+ 928:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 1767              		.loc 1 928 16 view .LVU387
+ 1768 0020 0B46     		mov	r3, r1
+ 1769              	.LVL103:
+ 1770              	.L153:
+ 922:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 1771              		.loc 1 922 25 is_stmt 1 discriminator 2 view .LVU388
+ 922:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 1772              		.loc 1 922 28 is_stmt 0 discriminator 2 view .LVU389
+ 1773 0022 0131     		adds	r1, r1, #1
+ 1774              	.LVL104:
+ 1775              	.L152:
+ 922:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 1776              		.loc 1 922 15 is_stmt 1 discriminator 1 view .LVU390
+ 922:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 1777              		.loc 1 922 3 is_stmt 0 discriminator 1 view .LVU391
+ 1778 0024 0F29     		cmp	r1, #15
+ 1779 0026 0DD8     		bhi	.L168
+ 924:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     if((result >= 2000U) && (result <= 16000U))
+ 1780              		.loc 1 924 5 is_stmt 1 view .LVU392
+ 924:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     if((result >= 2000U) && (result <= 16000U))
+ 1781              		.loc 1 924 12 is_stmt 0 view .LVU393
+ 1782 0028 4FF4FA52 		mov	r2, #8000
+ 1783 002c B2FBF1F2 		udiv	r2, r2, r1
+ 1784              	.LVL105:
+ 925:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     {
+ 1785              		.loc 1 925 5 is_stmt 1 view .LVU394
+ 925:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     {
+ 1786              		.loc 1 925 26 is_stmt 0 view .LVU395
+ 1787 0030 A2F5FA62 		sub	r2, r2, #2000
+ 1788              	.LVL106:
+ 925:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     {
+ 1789              		.loc 1 925 7 view .LVU396
+ 1790 0034 43F2B060 		movw	r0, #14000
+ 1791 0038 8242     		cmp	r2, r0
+ 1792 003a F2D8     		bhi	.L153
+ 927:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         ms_min = ms;
+ 1793              		.loc 1 927 7 is_stmt 1 view .LVU397
+ 927:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         ms_min = ms;
+ 1794              		.loc 1 927 9 is_stmt 0 view .LVU398
+ 1795 003c 002B     		cmp	r3, #0
+ 1796 003e EED0     		beq	.L164
+ 1797              		.loc 1 930 14 view .LVU399
+ 1798 0040 8946     		mov	r9, r1
+ 1799              	.LVL107:
+ 1800              		.loc 1 930 14 view .LVU400
+ 1801 0042 EEE7     		b	.L153
+ 1802              	.LVL108:
+ 1803              	.L168:
+ 909:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   uint32_t result = 0, absolute_value = 0;
+ 1804              		.loc 1 909 36 view .LVU401
+ 1805 0044 4FF0FF32 		mov	r2, #-1
+ 1806              	.LVL109:
+ 1807              	.L155:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 49
+
+
+ 931:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     }
+ 932:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 933:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** 
+ 934:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* polling pll parameters */
+ 935:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   for(ms = ms_min; ms <= ms_max; ms ++)
+ 1808              		.loc 1 935 20 is_stmt 1 discriminator 1 view .LVU402
+ 1809              		.loc 1 935 3 is_stmt 0 discriminator 1 view .LVU403
+ 1810 0048 4B45     		cmp	r3, r9
+ 1811 004a 36D8     		bhi	.L169
+ 936:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 937:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     for(fr = 0; fr <= 5; fr ++)
+ 1812              		.loc 1 937 12 view .LVU404
+ 1813 004c 4FF0000E 		mov	lr, #0
+ 1814              	.L163:
+ 1815              	.LVL110:
+ 1816              		.loc 1 937 17 is_stmt 1 discriminator 1 view .LVU405
+ 1817              		.loc 1 937 5 is_stmt 0 discriminator 1 view .LVU406
+ 1818 0050 BEF1050F 		cmp	lr, #5
+ 1819 0054 2FD8     		bhi	.L170
+ 938:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     {
+ 939:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       for(ns = 31; ns <= 500; ns ++)
+ 1820              		.loc 1 939 14 view .LVU407
+ 1821 0056 1F20     		movs	r0, #31
+ 1822 0058 0AE0     		b	.L162
+ 1823              	.LVL111:
+ 1824              	.L172:
+ 940:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       {
+ 941:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         result = (pll_rcs_freq * ns) / (ms);
+ 942:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         /* check vco frequency range, accuracy with khz */
+ 943:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         if((result < 500000U) || (result > 1000000U))
+ 944:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         {
+ 945:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           continue;
+ 946:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         }
+ 947:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         /* calculate pll output frequency */
+ 948:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         result = result / (0x1 << fr);
+ 949:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         /* check frequency */
+ 950:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         if(target_sclk_freq == result)
+ 951:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         {
+ 952:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_ms = ms;
+ 1825              		.loc 1 952 11 is_stmt 1 view .LVU408
+ 1826              		.loc 1 952 19 is_stmt 0 view .LVU409
+ 1827 005a 2B80     		strh	r3, [r5]	@ movhi
+ 953:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_ns = ns;
+ 1828              		.loc 1 953 11 is_stmt 1 view .LVU410
+ 1829              		.loc 1 953 19 is_stmt 0 view .LVU411
+ 1830 005c 2080     		strh	r0, [r4]	@ movhi
+ 954:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_fr = fr;
+ 1831              		.loc 1 954 11 is_stmt 1 view .LVU412
+ 1832              		.loc 1 954 19 is_stmt 0 view .LVU413
+ 1833 005e A7F800E0 		strh	lr, [r7]	@ movhi
+ 955:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           /* the pll parameters that is equal to target_sclk_freq */
+ 956:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           return SUCCESS;
+ 1834              		.loc 1 956 11 is_stmt 1 view .LVU414
+ 1835              		.loc 1 956 18 is_stmt 0 view .LVU415
+ 1836 0062 0120     		movs	r0, #1
+ 1837              	.LVL112:
+ 1838              	.L158:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 50
+
+
+ 957:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         }
+ 958:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         /* calculate error range, accuracy with khz */
+ 959:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         absolute_value = (result > target_sclk_freq) ? (result - target_sclk_freq) : (target_sclk_f
+ 960:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         if(absolute_value < error_min)
+ 961:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         {
+ 962:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           error_min = absolute_value;
+ 963:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_ms = ms;
+ 964:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_ns = ns;
+ 965:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_fr = fr;
+ 966:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         }
+ 967:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       }
+ 968:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     }
+ 969:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   }
+ 970:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   /* the pll parameters that is the closest approach to target_sclk_freq */
+ 971:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   return ERROR;
+ 972:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1839              		.loc 1 972 1 view .LVU416
+ 1840 0064 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 1841              	.LVL113:
+ 1842              	.L159:
+ 959:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         if(absolute_value < error_min)
+ 1843              		.loc 1 959 84 discriminator 2 view .LVU417
+ 1844 0068 ACEB0101 		sub	r1, ip, r1
+ 1845              	.LVL114:
+ 959:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         if(absolute_value < error_min)
+ 1846              		.loc 1 959 84 discriminator 2 view .LVU418
+ 1847 006c 18E0     		b	.L160
+ 1848              	.LVL115:
+ 1849              	.L156:
+ 939:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       {
+ 1850              		.loc 1 939 31 is_stmt 1 discriminator 2 view .LVU419
+ 939:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       {
+ 1851              		.loc 1 939 34 is_stmt 0 discriminator 2 view .LVU420
+ 1852 006e 0130     		adds	r0, r0, #1
+ 1853              	.LVL116:
+ 1854              	.L162:
+ 939:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       {
+ 1855              		.loc 1 939 20 is_stmt 1 discriminator 1 view .LVU421
+ 939:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****       {
+ 1856              		.loc 1 939 7 is_stmt 0 discriminator 1 view .LVU422
+ 1857 0070 B0F5FA7F 		cmp	r0, #500
+ 1858 0074 1CD8     		bhi	.L171
+ 941:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         /* check vco frequency range, accuracy with khz */
+ 1859              		.loc 1 941 9 is_stmt 1 view .LVU423
+ 941:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         /* check vco frequency range, accuracy with khz */
+ 1860              		.loc 1 941 32 is_stmt 0 view .LVU424
+ 1861 0076 4FF4FA51 		mov	r1, #8000
+ 1862 007a 00FB01F1 		mul	r1, r0, r1
+ 941:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         /* check vco frequency range, accuracy with khz */
+ 1863              		.loc 1 941 16 view .LVU425
+ 1864 007e B1FBF3F1 		udiv	r1, r1, r3
+ 1865              	.LVL117:
+ 943:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         {
+ 1866              		.loc 1 943 9 is_stmt 1 view .LVU426
+ 943:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         {
+ 1867              		.loc 1 943 31 is_stmt 0 view .LVU427
+ 1868 0082 A1F5F428 		sub	r8, r1, #499712
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 51
+
+
+ 1869 0086 A8F59078 		sub	r8, r8, #288
+ 943:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         {
+ 1870              		.loc 1 943 11 view .LVU428
+ 1871 008a 0E4E     		ldr	r6, .L173+4
+ 1872 008c B045     		cmp	r8, r6
+ 1873 008e EED8     		bhi	.L156
+ 948:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         /* check frequency */
+ 1874              		.loc 1 948 9 is_stmt 1 view .LVU429
+ 948:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         /* check frequency */
+ 1875              		.loc 1 948 16 is_stmt 0 view .LVU430
+ 1876 0090 21FA0EF1 		lsr	r1, r1, lr
+ 1877              	.LVL118:
+ 950:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         {
+ 1878              		.loc 1 950 9 is_stmt 1 view .LVU431
+ 950:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         {
+ 1879              		.loc 1 950 11 is_stmt 0 view .LVU432
+ 1880 0094 8C45     		cmp	ip, r1
+ 1881 0096 E0D0     		beq	.L172
+ 959:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         if(absolute_value < error_min)
+ 1882              		.loc 1 959 9 is_stmt 1 view .LVU433
+ 959:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         if(absolute_value < error_min)
+ 1883              		.loc 1 959 84 is_stmt 0 view .LVU434
+ 1884 0098 8C45     		cmp	ip, r1
+ 1885 009a E5D2     		bcs	.L159
+ 959:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         if(absolute_value < error_min)
+ 1886              		.loc 1 959 84 discriminator 1 view .LVU435
+ 1887 009c A1EB0C01 		sub	r1, r1, ip
+ 1888              	.LVL119:
+ 1889              	.L160:
+ 960:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         {
+ 1890              		.loc 1 960 9 is_stmt 1 discriminator 4 view .LVU436
+ 960:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         {
+ 1891              		.loc 1 960 11 is_stmt 0 discriminator 4 view .LVU437
+ 1892 00a0 8A42     		cmp	r2, r1
+ 1893 00a2 E4D9     		bls	.L156
+ 962:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_ms = ms;
+ 1894              		.loc 1 962 11 is_stmt 1 view .LVU438
+ 1895              	.LVL120:
+ 963:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_ns = ns;
+ 1896              		.loc 1 963 11 view .LVU439
+ 963:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_ns = ns;
+ 1897              		.loc 1 963 19 is_stmt 0 view .LVU440
+ 1898 00a4 2B80     		strh	r3, [r5]	@ movhi
+ 964:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_fr = fr;
+ 1899              		.loc 1 964 11 is_stmt 1 view .LVU441
+ 964:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_fr = fr;
+ 1900              		.loc 1 964 19 is_stmt 0 view .LVU442
+ 1901 00a6 2080     		strh	r0, [r4]	@ movhi
+ 965:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         }
+ 1902              		.loc 1 965 11 is_stmt 1 view .LVU443
+ 965:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****         }
+ 1903              		.loc 1 965 19 is_stmt 0 view .LVU444
+ 1904 00a8 A7F800E0 		strh	lr, [r7]	@ movhi
+ 962:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****           *ret_ms = ms;
+ 1905              		.loc 1 962 21 view .LVU445
+ 1906 00ac 0A46     		mov	r2, r1
+ 1907 00ae DEE7     		b	.L156
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 52
+
+
+ 1908              	.LVL121:
+ 1909              	.L171:
+ 937:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     {
+ 1910              		.loc 1 937 26 is_stmt 1 discriminator 2 view .LVU446
+ 937:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     {
+ 1911              		.loc 1 937 29 is_stmt 0 discriminator 2 view .LVU447
+ 1912 00b0 0EF1010E 		add	lr, lr, #1
+ 1913              	.LVL122:
+ 937:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****     {
+ 1914              		.loc 1 937 29 discriminator 2 view .LVU448
+ 1915 00b4 CCE7     		b	.L163
+ 1916              	.LVL123:
+ 1917              	.L170:
+ 935:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 1918              		.loc 1 935 34 is_stmt 1 discriminator 2 view .LVU449
+ 935:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 1919              		.loc 1 935 37 is_stmt 0 discriminator 2 view .LVU450
+ 1920 00b6 0133     		adds	r3, r3, #1
+ 1921              	.LVL124:
+ 935:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c ****   {
+ 1922              		.loc 1 935 37 discriminator 2 view .LVU451
+ 1923 00b8 C6E7     		b	.L155
+ 1924              	.LVL125:
+ 1925              	.L169:
+ 971:HW_Lib/AT32F435/drivers/src/at32f435_437_crm.c **** }
+ 1926              		.loc 1 971 10 view .LVU452
+ 1927 00ba 0020     		movs	r0, #0
+ 1928 00bc D2E7     		b	.L158
+ 1929              	.L174:
+ 1930 00be 00BF     		.align	2
+ 1931              	.L173:
+ 1932 00c0 D34D6210 		.word	274877907
+ 1933 00c4 20A10700 		.word	500000
+ 1934              		.cfi_endproc
+ 1935              	.LFE167:
+ 1937              		.section	.rodata.ahb_apb1_div_table.1,"a"
+ 1938              		.align	2
+ 1939              		.set	.LANCHOR2,. + 0
+ 1942              	ahb_apb1_div_table.1:
+ 1943 0000 00000000 		.ascii	"\000\000\000\000\001\002\003\004"
+ 1943      01020304 
+ 1944              		.section	.rodata.ahb_apb2_div_table.0,"a"
+ 1945              		.align	2
+ 1946              		.set	.LANCHOR3,. + 0
+ 1949              	ahb_apb2_div_table.0:
+ 1950 0000 00000000 		.ascii	"\000\000\000\000\001\002\003\004"
+ 1950      01020304 
+ 1951              		.section	.rodata.pll_fr_table.3,"a"
+ 1952              		.align	2
+ 1953              		.set	.LANCHOR0,. + 0
+ 1956              	pll_fr_table.3:
+ 1957 0000 01020408 		.ascii	"\001\002\004\010\020 "
+ 1957      1020
+ 1958              		.section	.rodata.sclk_ahb_div_table.2,"a"
+ 1959              		.align	2
+ 1960              		.set	.LANCHOR1,. + 0
+ 1963              	sclk_ahb_div_table.2:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 53
+
+
+ 1964 0000 00000000 		.ascii	"\000\000\000\000\000\000\000\000\001\002\003\004\006"
+ 1964      00000000 
+ 1964      01020304 
+ 1964      06
+ 1965 000d 070809   		.ascii	"\007\010\011"
+ 1966              		.text
+ 1967              	.Letext0:
+ 1968              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1969              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1970              		.file 4 "HW_Lib/AT32F435/device_support/at32f435_437.h"
+ 1971              		.file 5 "HW_Lib/AT32F435/drivers/inc/at32f435_437_crm.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 54
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 at32f435_437_crm.c
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:20     .text.crm_reset:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:26     .text.crm_reset:00000000 crm_reset
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:93     .text.crm_reset:0000004c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:99     .text.crm_lext_bypass:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:105    .text.crm_lext_bypass:00000000 crm_lext_bypass
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:124    .text.crm_lext_bypass:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:129    .text.crm_hext_bypass:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:135    .text.crm_hext_bypass:00000000 crm_hext_bypass
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:154    .text.crm_hext_bypass:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:159    .text.crm_flag_get:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:165    .text.crm_flag_get:00000000 crm_flag_get
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:203    .text.crm_hext_stable_wait:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:209    .text.crm_hext_stable_wait:00000000 crm_hext_stable_wait
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:266    .text.crm_hick_clock_trimming_set:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:272    .text.crm_hick_clock_trimming_set:00000000 crm_hick_clock_trimming_set
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:291    .text.crm_hick_clock_trimming_set:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:296    .text.crm_hick_clock_calibration_set:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:302    .text.crm_hick_clock_calibration_set:00000000 crm_hick_clock_calibration_set
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:332    .text.crm_hick_clock_calibration_set:00000028 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:337    .text.crm_periph_clock_enable:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:343    .text.crm_periph_clock_enable:00000000 crm_periph_clock_enable
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:395    .text.crm_periph_reset:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:401    .text.crm_periph_reset:00000000 crm_periph_reset
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:453    .text.crm_periph_lowpower_mode_enable:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:459    .text.crm_periph_lowpower_mode_enable:00000000 crm_periph_lowpower_mode_enable
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:511    .text.crm_clock_source_enable:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:517    .text.crm_clock_source_enable:00000000 crm_clock_source_enable
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:530    .text.crm_clock_source_enable:00000008 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:586    .text.crm_clock_source_enable:0000004c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:591    .text.crm_flag_clear:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:597    .text.crm_flag_clear:00000000 crm_flag_clear
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:618    .text.crm_flag_clear:00000018 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:627    .text.crm_flag_clear:00000020 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:722    .text.crm_flag_clear:00000090 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:729    .text.crm_ertc_clock_select:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:735    .text.crm_ertc_clock_select:00000000 crm_ertc_clock_select
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:761    .text.crm_ertc_clock_select:00000018 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:766    .text.crm_ertc_clock_enable:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:772    .text.crm_ertc_clock_enable:00000000 crm_ertc_clock_enable
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:791    .text.crm_ertc_clock_enable:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:796    .text.crm_ahb_div_set:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:802    .text.crm_ahb_div_set:00000000 crm_ahb_div_set
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:821    .text.crm_ahb_div_set:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:826    .text.crm_apb1_div_set:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:832    .text.crm_apb1_div_set:00000000 crm_apb1_div_set
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:851    .text.crm_apb1_div_set:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:856    .text.crm_apb2_div_set:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:862    .text.crm_apb2_div_set:00000000 crm_apb2_div_set
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:881    .text.crm_apb2_div_set:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:886    .text.crm_usb_clock_div_set:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:892    .text.crm_usb_clock_div_set:00000000 crm_usb_clock_div_set
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:911    .text.crm_usb_clock_div_set:00000010 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:916    .text.crm_clock_failure_detection_enable:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:922    .text.crm_clock_failure_detection_enable:00000000 crm_clock_failure_detection_enable
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:941    .text.crm_clock_failure_detection_enable:0000000c $d
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 55
+
+
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:946    .text.crm_battery_powered_domain_reset:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:952    .text.crm_battery_powered_domain_reset:00000000 crm_battery_powered_domain_reset
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:971    .text.crm_battery_powered_domain_reset:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:976    .text.crm_auto_step_mode_enable:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:982    .text.crm_auto_step_mode_enable:00000000 crm_auto_step_mode_enable
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1013   .text.crm_auto_step_mode_enable:00000024 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1018   .text.crm_hick_divider_select:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1024   .text.crm_hick_divider_select:00000000 crm_hick_divider_select
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1043   .text.crm_hick_divider_select:00000010 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1048   .text.crm_hick_sclk_frequency_select:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1054   .text.crm_hick_sclk_frequency_select:00000000 crm_hick_sclk_frequency_select
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1085   .text.crm_hick_sclk_frequency_select:0000001c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1090   .text.crm_usb_clock_source_select:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1096   .text.crm_usb_clock_source_select:00000000 crm_usb_clock_source_select
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1136   .text.crm_usb_clock_source_select:00000020 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1141   .text.crm_clkout_to_tmr10_enable:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1147   .text.crm_clkout_to_tmr10_enable:00000000 crm_clkout_to_tmr10_enable
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1166   .text.crm_clkout_to_tmr10_enable:00000010 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1171   .text.crm_pll_config:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1177   .text.crm_pll_config:00000000 crm_pll_config
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1228   .text.crm_pll_config:00000028 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1233   .text.crm_sysclk_switch:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1239   .text.crm_sysclk_switch:00000000 crm_sysclk_switch
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1258   .text.crm_sysclk_switch:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1263   .text.crm_sysclk_switch_status_get:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1269   .text.crm_sysclk_switch_status_get:00000000 crm_sysclk_switch_status_get
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1286   .text.crm_sysclk_switch_status_get:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1292   .text.crm_clocks_freq_get:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1298   .text.crm_clocks_freq_get:00000000 crm_clocks_freq_get
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1487   .text.crm_clocks_freq_get:000000d0 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1498   .text.crm_clock_out1_set:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1504   .text.crm_clock_out1_set:00000000 crm_clock_out1_set
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1523   .text.crm_clock_out1_set:0000000c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1528   .text.crm_clock_out2_set:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1534   .text.crm_clock_out2_set:00000000 crm_clock_out2_set
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1571   .text.crm_clock_out2_set:0000002c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1576   .text.crm_clkout_div_set:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1582   .text.crm_clkout_div_set:00000000 crm_clkout_div_set
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1631   .text.crm_clkout_div_set:00000034 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1636   .text.crm_emac_output_pulse_set:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1642   .text.crm_emac_output_pulse_set:00000000 crm_emac_output_pulse_set
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1661   .text.crm_emac_output_pulse_set:00000010 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1666   .text.crm_interrupt_enable:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1672   .text.crm_interrupt_enable:00000000 crm_interrupt_enable
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1708   .text.crm_interrupt_enable:0000001c $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1713   .text.crm_pll_parameter_calculate:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1719   .text.crm_pll_parameter_calculate:00000000 crm_pll_parameter_calculate
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1932   .text.crm_pll_parameter_calculate:000000c0 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1938   .rodata.ahb_apb1_div_table.1:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1942   .rodata.ahb_apb1_div_table.1:00000000 ahb_apb1_div_table.1
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1945   .rodata.ahb_apb2_div_table.0:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1949   .rodata.ahb_apb2_div_table.0:00000000 ahb_apb2_div_table.0
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1952   .rodata.pll_fr_table.3:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1956   .rodata.pll_fr_table.3:00000000 pll_fr_table.3
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1959   .rodata.sclk_ahb_div_table.2:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:1963   .rodata.sclk_ahb_div_table.2:00000000 sclk_ahb_div_table.2
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:535    .text.crm_clock_source_enable:0000000d $d
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s 			page 56
+
+
+C:\Users\8bit\AppData\Local\Temp\ccMeJ9Tg.s:535    .text.crm_clock_source_enable:0000000e $t
+
+UNDEFINED SYMBOLS
+__aeabi_uldivmod

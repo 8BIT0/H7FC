@@ -1,0 +1,791 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"trace_analysiser.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.trace_get_sp,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	trace_get_sp:
+  26              	.LFB139:
+  27              		.file 1 "debug/trace_analysiser.c"
+   1:debug/trace_analysiser.c **** /*
+   2:debug/trace_analysiser.c ****  * Auther: 8_B!T0
+   3:debug/trace_analysiser.c ****  * Reference by CmBacktrace
+   4:debug/trace_analysiser.c ****  * github link : https://github.com/armink/CmBacktrace
+   5:debug/trace_analysiser.c ****  */
+   6:debug/trace_analysiser.c **** #include "trace_analysiser.h"
+   7:debug/trace_analysiser.c **** #include "FreeRTOS.h"
+   8:debug/trace_analysiser.c **** #include "task.h"
+   9:debug/trace_analysiser.c **** #include "debug_util.h"
+  10:debug/trace_analysiser.c **** #include "HW_Def.h"
+  11:debug/trace_analysiser.c **** #include "Srv_Actuator.h"
+  12:debug/trace_analysiser.c **** 
+  13:debug/trace_analysiser.c **** extern uint32_t _sstack;
+  14:debug/trace_analysiser.c **** extern uint32_t _estack;
+  15:debug/trace_analysiser.c **** 
+  16:debug/trace_analysiser.c **** static uint32_t trace_get_sp(void)
+  17:debug/trace_analysiser.c **** {
+  28              		.loc 1 17 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  18:debug/trace_analysiser.c ****     register uint32_t result;
+  33              		.loc 1 18 5 view .LVU1
+  19:debug/trace_analysiser.c ****     __asm volatile ("MOV %0, sp\n" : "=r" (result) );
+  34              		.loc 1 19 5 view .LVU2
+  35              		.syntax unified
+  36              	@ 19 "debug/trace_analysiser.c" 1
+  37 0000 6846     		MOV r0, sp
+  38              	
+  39              	@ 0 "" 2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 2
+
+
+  40              	.LVL0:
+  20:debug/trace_analysiser.c ****     return(result);
+  41              		.loc 1 20 5 view .LVU3
+  21:debug/trace_analysiser.c **** }
+  42              		.loc 1 21 1 is_stmt 0 view .LVU4
+  43              		.thumb
+  44              		.syntax unified
+  45 0002 7047     		bx	lr
+  46              		.cfi_endproc
+  47              	.LFE139:
+  49              		.section	.text.trace_get_psp,"ax",%progbits
+  50              		.align	1
+  51              		.syntax unified
+  52              		.thumb
+  53              		.thumb_func
+  55              	trace_get_psp:
+  56              	.LFB140:
+  22:debug/trace_analysiser.c **** 
+  23:debug/trace_analysiser.c **** static uint32_t trace_get_psp(void)
+  24:debug/trace_analysiser.c **** {
+  57              		.loc 1 24 1 is_stmt 1 view -0
+  58              		.cfi_startproc
+  59              		@ args = 0, pretend = 0, frame = 0
+  60              		@ frame_needed = 0, uses_anonymous_args = 0
+  61              		@ link register save eliminated.
+  25:debug/trace_analysiser.c ****     register uint32_t result;
+  62              		.loc 1 25 5 view .LVU6
+  26:debug/trace_analysiser.c ****     __asm volatile ("MRS %0, psp\n" : "=r" (result) );
+  63              		.loc 1 26 5 view .LVU7
+  64              		.syntax unified
+  65              	@ 26 "debug/trace_analysiser.c" 1
+  66 0000 EFF30980 		MRS r0, psp
+  67              	
+  68              	@ 0 "" 2
+  69              	.LVL1:
+  27:debug/trace_analysiser.c ****     return(result);
+  70              		.loc 1 27 5 view .LVU8
+  28:debug/trace_analysiser.c **** }
+  71              		.loc 1 28 1 is_stmt 0 view .LVU9
+  72              		.thumb
+  73              		.syntax unified
+  74 0004 7047     		bx	lr
+  75              		.cfi_endproc
+  76              	.LFE140:
+  78              		.section	.text.trace_get_msp,"ax",%progbits
+  79              		.align	1
+  80              		.syntax unified
+  81              		.thumb
+  82              		.thumb_func
+  84              	trace_get_msp:
+  85              	.LFB141:
+  29:debug/trace_analysiser.c **** 
+  30:debug/trace_analysiser.c **** static uint32_t trace_get_msp(void)
+  31:debug/trace_analysiser.c **** {
+  86              		.loc 1 31 1 is_stmt 1 view -0
+  87              		.cfi_startproc
+  88              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 3
+
+
+  89              		@ frame_needed = 0, uses_anonymous_args = 0
+  90              		@ link register save eliminated.
+  32:debug/trace_analysiser.c ****     register uint32_t result;
+  91              		.loc 1 32 5 view .LVU11
+  33:debug/trace_analysiser.c ****     __asm volatile ("MRS %0, msp\n" : "=r" (result) );
+  92              		.loc 1 33 5 view .LVU12
+  93              		.syntax unified
+  94              	@ 33 "debug/trace_analysiser.c" 1
+  95 0000 EFF30880 		MRS r0, msp
+  96              	
+  97              	@ 0 "" 2
+  98              	.LVL2:
+  34:debug/trace_analysiser.c ****     return(result);
+  99              		.loc 1 34 5 view .LVU13
+  35:debug/trace_analysiser.c **** }
+ 100              		.loc 1 35 1 is_stmt 0 view .LVU14
+ 101              		.thumb
+ 102              		.syntax unified
+ 103 0004 7047     		bx	lr
+ 104              		.cfi_endproc
+ 105              	.LFE141:
+ 107              		.section	.rodata.trace_overflow.str1.4,"aMS",%progbits,1
+ 108              		.align	2
+ 109              	.LC0:
+ 110 0000 73746163 		.ascii	"stack_addr : %08X\015\012\000"
+ 110      6B5F6164 
+ 110      6472203A 
+ 110      20253038 
+ 110      580D0A00 
+ 111              		.align	2
+ 112              	.LC1:
+ 113 0014 5B204445 		.ascii	"[ DEBUG INFO ] \000"
+ 113      42554720 
+ 113      494E464F 
+ 113      205D2000 
+ 114              		.align	2
+ 115              	.LC2:
+ 116 0024 73746163 		.ascii	"stack_start: %08X\015\012\000"
+ 116      6B5F7374 
+ 116      6172743A 
+ 116      20253038 
+ 116      580D0A00 
+ 117              		.align	2
+ 118              	.LC3:
+ 119 0038 73746163 		.ascii	"stack_end  : %08x\015\012\000"
+ 119      6B5F656E 
+ 119      6420203A 
+ 119      20253038 
+ 119      780D0A00 
+ 120              		.align	2
+ 121              	.LC4:
+ 122 004c 73746163 		.ascii	"stack_depth: %d\015\012\000"
+ 122      6B5F6465 
+ 122      7074683A 
+ 122      2025640D 
+ 122      0A00
+ 123 005e 0000     		.align	2
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 4
+
+
+ 124              	.LC5:
+ 125 0060 53746163 		.ascii	"Stack Overflow\015\012\000"
+ 125      6B204F76 
+ 125      6572666C 
+ 125      6F770D0A 
+ 125      00
+ 126              		.section	.text.trace_overflow,"ax",%progbits
+ 127              		.align	1
+ 128              		.syntax unified
+ 129              		.thumb
+ 130              		.thumb_func
+ 132              	trace_overflow:
+ 133              	.LVL3:
+ 134              	.LFB142:
+  36:debug/trace_analysiser.c **** 
+  37:debug/trace_analysiser.c **** static bool trace_overflow(uint32_t p_stack, uint32_t stack_s_addr, uint32_t stack_depth)
+  38:debug/trace_analysiser.c **** {
+ 135              		.loc 1 38 1 is_stmt 1 view -0
+ 136              		.cfi_startproc
+ 137              		@ args = 0, pretend = 0, frame = 0
+ 138              		@ frame_needed = 0, uses_anonymous_args = 0
+ 139              		.loc 1 38 1 is_stmt 0 view .LVU16
+ 140 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 141              	.LCFI0:
+ 142              		.cfi_def_cfa_offset 32
+ 143              		.cfi_offset 3, -32
+ 144              		.cfi_offset 4, -28
+ 145              		.cfi_offset 5, -24
+ 146              		.cfi_offset 6, -20
+ 147              		.cfi_offset 7, -16
+ 148              		.cfi_offset 8, -12
+ 149              		.cfi_offset 9, -8
+ 150              		.cfi_offset 14, -4
+ 151 0004 0446     		mov	r4, r0
+ 152 0006 0D46     		mov	r5, r1
+ 153 0008 9046     		mov	r8, r2
+  39:debug/trace_analysiser.c ****     DEBUG_INFO("stack_addr : %08X\r\n", p_stack);
+ 154              		.loc 1 39 5 is_stmt 1 view .LVU17
+ 155 000a 154F     		ldr	r7, .L9
+ 156 000c 154E     		ldr	r6, .L9+4
+ 157 000e 0346     		mov	r3, r0
+ 158 0010 154A     		ldr	r2, .L9+8
+ 159              	.LVL4:
+ 160              		.loc 1 39 5 is_stmt 0 view .LVU18
+ 161 0012 3946     		mov	r1, r7
+ 162              	.LVL5:
+ 163              		.loc 1 39 5 view .LVU19
+ 164 0014 3046     		mov	r0, r6
+ 165              	.LVL6:
+ 166              		.loc 1 39 5 view .LVU20
+ 167 0016 FFF7FEFF 		bl	Debug_Print
+ 168              	.LVL7:
+  40:debug/trace_analysiser.c ****     DEBUG_INFO("stack_start: %08X\r\n", stack_s_addr);
+ 169              		.loc 1 40 5 is_stmt 1 view .LVU21
+ 170 001a 2B46     		mov	r3, r5
+ 171 001c 134A     		ldr	r2, .L9+12
+ 172 001e 3946     		mov	r1, r7
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 5
+
+
+ 173 0020 3046     		mov	r0, r6
+ 174 0022 FFF7FEFF 		bl	Debug_Print
+ 175              	.LVL8:
+  41:debug/trace_analysiser.c ****     DEBUG_INFO("stack_end  : %08x\r\n", stack_depth + stack_s_addr);
+ 176              		.loc 1 41 5 view .LVU22
+ 177 0026 05EB0809 		add	r9, r5, r8
+ 178 002a 4B46     		mov	r3, r9
+ 179 002c 104A     		ldr	r2, .L9+16
+ 180 002e 3946     		mov	r1, r7
+ 181 0030 3046     		mov	r0, r6
+ 182 0032 FFF7FEFF 		bl	Debug_Print
+ 183              	.LVL9:
+  42:debug/trace_analysiser.c ****     DEBUG_INFO("stack_depth: %d\r\n", stack_depth);
+ 184              		.loc 1 42 5 view .LVU23
+ 185 0036 4346     		mov	r3, r8
+ 186 0038 0E4A     		ldr	r2, .L9+20
+ 187 003a 3946     		mov	r1, r7
+ 188 003c 3046     		mov	r0, r6
+ 189 003e FFF7FEFF 		bl	Debug_Print
+ 190              	.LVL10:
+  43:debug/trace_analysiser.c **** 
+  44:debug/trace_analysiser.c ****     p_stack += sizeof(size_t) * 8;
+ 191              		.loc 1 44 5 view .LVU24
+ 192              		.loc 1 44 13 is_stmt 0 view .LVU25
+ 193 0042 2034     		adds	r4, r4, #32
+ 194              	.LVL11:
+  45:debug/trace_analysiser.c **** 
+  46:debug/trace_analysiser.c ****     if ((p_stack < stack_s_addr) || \
+ 195              		.loc 1 46 5 is_stmt 1 view .LVU26
+ 196              		.loc 1 46 8 is_stmt 0 view .LVU27
+ 197 0044 A542     		cmp	r5, r4
+ 198 0046 04D8     		bhi	.L5
+ 199              		.loc 1 46 34 discriminator 1 view .LVU28
+ 200 0048 A145     		cmp	r9, r4
+ 201 004a 02D3     		bcc	.L5
+  47:debug/trace_analysiser.c ****         (p_stack > (stack_depth + stack_s_addr)))
+  48:debug/trace_analysiser.c ****     {
+  49:debug/trace_analysiser.c ****         DEBUG_INFO("Stack Overflow\r\n");
+  50:debug/trace_analysiser.c ****         return true;
+  51:debug/trace_analysiser.c ****     }
+  52:debug/trace_analysiser.c **** 
+  53:debug/trace_analysiser.c ****     return false;
+ 202              		.loc 1 53 12 view .LVU29
+ 203 004c 0020     		movs	r0, #0
+ 204              	.L6:
+  54:debug/trace_analysiser.c **** }
+ 205              		.loc 1 54 1 view .LVU30
+ 206 004e BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 207              	.LVL12:
+ 208              	.L5:
+  49:debug/trace_analysiser.c ****         return true;
+ 209              		.loc 1 49 9 is_stmt 1 view .LVU31
+ 210 0052 094A     		ldr	r2, .L9+24
+ 211 0054 0249     		ldr	r1, .L9
+ 212 0056 0348     		ldr	r0, .L9+4
+ 213 0058 FFF7FEFF 		bl	Debug_Print
+ 214              	.LVL13:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 6
+
+
+  50:debug/trace_analysiser.c ****     }
+ 215              		.loc 1 50 9 view .LVU32
+  50:debug/trace_analysiser.c ****     }
+ 216              		.loc 1 50 16 is_stmt 0 view .LVU33
+ 217 005c 0120     		movs	r0, #1
+ 218 005e F6E7     		b	.L6
+ 219              	.L10:
+ 220              		.align	2
+ 221              	.L9:
+ 222 0060 14000000 		.word	.LC1
+ 223 0064 00000000 		.word	DebugPort
+ 224 0068 00000000 		.word	.LC0
+ 225 006c 24000000 		.word	.LC2
+ 226 0070 38000000 		.word	.LC3
+ 227 0074 4C000000 		.word	.LC4
+ 228 0078 60000000 		.word	.LC5
+ 229              		.cfi_endproc
+ 230              	.LFE142:
+ 232              		.section	.rodata.trace_analysiser.str1.4,"aMS",%progbits,1
+ 233              		.align	2
+ 234              	.LC6:
+ 235 0000 48415244 		.ascii	"HARD FAULT\015\012\000"
+ 235      20464155 
+ 235      4C540D0A 
+ 235      00
+ 236 000d 000000   		.align	2
+ 237              	.LC7:
+ 238 0010 54485245 		.ascii	"THREAD MODE\015\012\000"
+ 238      4144204D 
+ 238      4F44450D 
+ 238      0A00
+ 239 001e 0000     		.align	2
+ 240              	.LC8:
+ 241 0020 54687265 		.ascii	"Thread Name: %s\015\012\000"
+ 241      6164204E 
+ 241      616D653A 
+ 241      2025730D 
+ 241      0A00
+ 242 0032 0000     		.align	2
+ 243              	.LC9:
+ 244 0034 4D41494E 		.ascii	"MAIN STACK\015\012\000"
+ 244      20535441 
+ 244      434B0D0A 
+ 244      00
+ 245 0041 000000   		.align	2
+ 246              	.LC10:
+ 247 0044 73702020 		.ascii	"sp      : %08x\015\012\000"
+ 247      20202020 
+ 247      3A202530 
+ 247      38780D0A 
+ 247      00
+ 248 0055 000000   		.align	2
+ 249              	.LC11:
+ 250 0058 6375725F 		.ascii	"cur_sp  : %08x\015\012\000"
+ 250      73702020 
+ 250      3A202530 
+ 250      38780D0A 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 7
+
+
+ 250      00
+ 251 0069 000000   		.align	2
+ 252              	.LC12:
+ 253 006c 70737020 		.ascii	"psp     : %08x\015\012\000"
+ 253      20202020 
+ 253      3A202530 
+ 253      38780D0A 
+ 253      00
+ 254 007d 000000   		.align	2
+ 255              	.LC13:
+ 256 0080 6D737020 		.ascii	"msp     : %08x\015\012\000"
+ 256      20202020 
+ 256      3A202530 
+ 256      38780D0A 
+ 256      00
+ 257 0091 000000   		.align	2
+ 258              	.LC14:
+ 259 0094 72302020 		.ascii	"r0  : %08x\015\012\000"
+ 259      3A202530 
+ 259      38780D0A 
+ 259      00
+ 260 00a1 000000   		.align	2
+ 261              	.LC15:
+ 262 00a4 72312020 		.ascii	"r1  : %08x\015\012\000"
+ 262      3A202530 
+ 262      38780D0A 
+ 262      00
+ 263 00b1 000000   		.align	2
+ 264              	.LC16:
+ 265 00b4 72322020 		.ascii	"r2  : %08x\015\012\000"
+ 265      3A202530 
+ 265      38780D0A 
+ 265      00
+ 266 00c1 000000   		.align	2
+ 267              	.LC17:
+ 268 00c4 72332020 		.ascii	"r3  : %08x\015\012\000"
+ 268      3A202530 
+ 268      38780D0A 
+ 268      00
+ 269 00d1 000000   		.align	2
+ 270              	.LC18:
+ 271 00d4 72313220 		.ascii	"r12 : %08x\015\012\000"
+ 271      3A202530 
+ 271      38780D0A 
+ 271      00
+ 272 00e1 000000   		.align	2
+ 273              	.LC19:
+ 274 00e4 6C722020 		.ascii	"lr  : %08x\015\012\000"
+ 274      3A202530 
+ 274      38780D0A 
+ 274      00
+ 275 00f1 000000   		.align	2
+ 276              	.LC20:
+ 277 00f4 70632020 		.ascii	"pc  : %08x\015\012\000"
+ 277      3A202530 
+ 277      38780D0A 
+ 277      00
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 8
+
+
+ 278 0101 000000   		.align	2
+ 279              	.LC21:
+ 280 0104 70737220 		.ascii	"psr : %08x\015\012\000"
+ 280      3A202530 
+ 280      38780D0A 
+ 280      00
+ 281              		.section	.text.trace_analysiser,"ax",%progbits
+ 282              		.align	1
+ 283              		.global	trace_analysiser
+ 284              		.syntax unified
+ 285              		.thumb
+ 286              		.thumb_func
+ 288              	trace_analysiser:
+ 289              	.LVL14:
+ 290              	.LFB143:
+  55:debug/trace_analysiser.c **** 
+  56:debug/trace_analysiser.c **** void trace_analysiser(uint32_t lr, uint32_t sp)
+  57:debug/trace_analysiser.c **** {
+ 291              		.loc 1 57 1 is_stmt 1 view -0
+ 292              		.cfi_startproc
+ 293              		@ Volatile: function does not return.
+ 294              		@ args = 0, pretend = 0, frame = 24
+ 295              		@ frame_needed = 0, uses_anonymous_args = 0
+ 296              		.loc 1 57 1 is_stmt 0 view .LVU35
+ 297 0000 00B5     		push	{lr}
+ 298              	.LCFI1:
+ 299              		.cfi_def_cfa_offset 4
+ 300              		.cfi_offset 14, -4
+ 301 0002 87B0     		sub	sp, sp, #28
+ 302              	.LCFI2:
+ 303              		.cfi_def_cfa_offset 32
+ 304 0004 0446     		mov	r4, r0
+ 305 0006 0E46     		mov	r6, r1
+  58:debug/trace_analysiser.c ****     DEBUG_INFO("HARD FAULT\r\n");
+ 306              		.loc 1 58 5 is_stmt 1 view .LVU36
+ 307 0008 4C4A     		ldr	r2, .L16
+ 308 000a 4D49     		ldr	r1, .L16+4
+ 309              	.LVL15:
+ 310              		.loc 1 58 5 is_stmt 0 view .LVU37
+ 311 000c 4D48     		ldr	r0, .L16+8
+ 312              	.LVL16:
+ 313              		.loc 1 58 5 view .LVU38
+ 314 000e FFF7FEFF 		bl	Debug_Print
+ 315              	.LVL17:
+  59:debug/trace_analysiser.c ****     volatile TaskHandle_t p_CurTCB = 0;
+ 316              		.loc 1 59 5 is_stmt 1 view .LVU39
+ 317              		.loc 1 59 27 is_stmt 0 view .LVU40
+ 318 0012 0023     		movs	r3, #0
+ 319 0014 0593     		str	r3, [sp, #20]
+  60:debug/trace_analysiser.c ****     volatile uint32_t err_stack = sp;
+ 320              		.loc 1 60 5 is_stmt 1 view .LVU41
+ 321              		.loc 1 60 23 is_stmt 0 view .LVU42
+ 322 0016 0496     		str	r6, [sp, #16]
+  61:debug/trace_analysiser.c ****     volatile uint32_t cur_sp = trace_get_sp();
+ 323              		.loc 1 61 5 is_stmt 1 view .LVU43
+ 324              		.loc 1 61 32 is_stmt 0 view .LVU44
+ 325 0018 FFF7FEFF 		bl	trace_get_sp
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 9
+
+
+ 326              	.LVL18:
+ 327              		.loc 1 61 23 view .LVU45
+ 328 001c 0390     		str	r0, [sp, #12]
+  62:debug/trace_analysiser.c ****     volatile uint32_t msp = trace_get_msp();
+ 329              		.loc 1 62 5 is_stmt 1 view .LVU46
+ 330              		.loc 1 62 29 is_stmt 0 view .LVU47
+ 331 001e FFF7FEFF 		bl	trace_get_msp
+ 332              	.LVL19:
+ 333              		.loc 1 62 23 view .LVU48
+ 334 0022 0290     		str	r0, [sp, #8]
+  63:debug/trace_analysiser.c ****     volatile uint32_t psp = trace_get_psp();
+ 335              		.loc 1 63 5 is_stmt 1 view .LVU49
+ 336              		.loc 1 63 29 is_stmt 0 view .LVU50
+ 337 0024 FFF7FEFF 		bl	trace_get_psp
+ 338              	.LVL20:
+ 339              		.loc 1 63 23 view .LVU51
+ 340 0028 0190     		str	r0, [sp, #4]
+  64:debug/trace_analysiser.c **** 
+  65:debug/trace_analysiser.c ****     /* check mode */
+  66:debug/trace_analysiser.c ****     if (lr & (1 << 2))
+ 341              		.loc 1 66 5 is_stmt 1 view .LVU52
+ 342              		.loc 1 66 8 is_stmt 0 view .LVU53
+ 343 002a 14F0040F 		tst	r4, #4
+ 344 002e 77D0     		beq	.L12
+  67:debug/trace_analysiser.c ****     {
+  68:debug/trace_analysiser.c ****         DEBUG_INFO("THREAD MODE\r\n");
+ 345              		.loc 1 68 9 is_stmt 1 view .LVU54
+ 346 0030 434D     		ldr	r5, .L16+4
+ 347 0032 444C     		ldr	r4, .L16+8
+ 348              	.LVL21:
+ 349              		.loc 1 68 9 is_stmt 0 view .LVU55
+ 350 0034 444A     		ldr	r2, .L16+12
+ 351 0036 2946     		mov	r1, r5
+ 352 0038 2046     		mov	r0, r4
+ 353 003a FFF7FEFF 		bl	Debug_Print
+ 354              	.LVL22:
+  69:debug/trace_analysiser.c **** 
+  70:debug/trace_analysiser.c ****         p_CurTCB = xTaskGetCurrentTaskHandle();
+ 355              		.loc 1 70 9 is_stmt 1 view .LVU56
+ 356              		.loc 1 70 20 is_stmt 0 view .LVU57
+ 357 003e FFF7FEFF 		bl	xTaskGetCurrentTaskHandle
+ 358              	.LVL23:
+ 359              		.loc 1 70 18 view .LVU58
+ 360 0042 0590     		str	r0, [sp, #20]
+  71:debug/trace_analysiser.c **** 
+  72:debug/trace_analysiser.c ****         /* check thread name */
+  73:debug/trace_analysiser.c ****         DEBUG_INFO("Thread Name: %s\r\n", pcTaskGetName(p_CurTCB));
+ 361              		.loc 1 73 9 is_stmt 1 view .LVU59
+ 362 0044 0598     		ldr	r0, [sp, #20]
+ 363 0046 FFF7FEFF 		bl	pcTaskGetName
+ 364              	.LVL24:
+ 365 004a 0346     		mov	r3, r0
+ 366 004c 3F4A     		ldr	r2, .L16+16
+ 367 004e 2946     		mov	r1, r5
+ 368 0050 2046     		mov	r0, r4
+ 369 0052 FFF7FEFF 		bl	Debug_Print
+ 370              	.LVL25:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 10
+
+
+  74:debug/trace_analysiser.c ****         err_stack = psp;
+ 371              		.loc 1 74 9 view .LVU60
+ 372              		.loc 1 74 19 is_stmt 0 view .LVU61
+ 373 0056 019B     		ldr	r3, [sp, #4]
+ 374 0058 0493     		str	r3, [sp, #16]
+  75:debug/trace_analysiser.c ****         trace_overflow(err_stack, (uint32_t)xTaskGetCurrentTaskStack(p_CurTCB), xTaskGetCurrentTask
+ 375              		.loc 1 75 9 is_stmt 1 view .LVU62
+ 376 005a 049D     		ldr	r5, [sp, #16]
+ 377              		.loc 1 75 45 is_stmt 0 view .LVU63
+ 378 005c 0598     		ldr	r0, [sp, #20]
+ 379 005e FFF7FEFF 		bl	xTaskGetCurrentTaskStack
+ 380              	.LVL26:
+ 381 0062 0446     		mov	r4, r0
+ 382              		.loc 1 75 9 view .LVU64
+ 383 0064 0598     		ldr	r0, [sp, #20]
+ 384 0066 FFF7FEFF 		bl	xTaskGetCurrentTaskStackDeph
+ 385              	.LVL27:
+ 386 006a 0246     		mov	r2, r0
+ 387 006c 2146     		mov	r1, r4
+ 388 006e 2846     		mov	r0, r5
+ 389 0070 FFF7FEFF 		bl	trace_overflow
+ 390              	.LVL28:
+ 391              	.L13:
+  76:debug/trace_analysiser.c ****     }
+  77:debug/trace_analysiser.c ****     else
+  78:debug/trace_analysiser.c ****     {
+  79:debug/trace_analysiser.c ****         DEBUG_INFO("MAIN STACK\r\n");
+  80:debug/trace_analysiser.c ****         trace_overflow(err_stack, _sstack, _estack);
+  81:debug/trace_analysiser.c ****     }
+  82:debug/trace_analysiser.c **** 
+  83:debug/trace_analysiser.c ****     DEBUG_INFO("sp      : %08x\r\n", sp);
+ 392              		.loc 1 83 5 is_stmt 1 view .LVU65
+ 393 0074 324D     		ldr	r5, .L16+4
+ 394 0076 334C     		ldr	r4, .L16+8
+ 395 0078 3346     		mov	r3, r6
+ 396 007a 354A     		ldr	r2, .L16+20
+ 397 007c 2946     		mov	r1, r5
+ 398 007e 2046     		mov	r0, r4
+ 399 0080 FFF7FEFF 		bl	Debug_Print
+ 400              	.LVL29:
+  84:debug/trace_analysiser.c ****     DEBUG_INFO("cur_sp  : %08x\r\n", cur_sp);
+ 401              		.loc 1 84 5 view .LVU66
+ 402 0084 039B     		ldr	r3, [sp, #12]
+ 403 0086 334A     		ldr	r2, .L16+24
+ 404 0088 2946     		mov	r1, r5
+ 405 008a 2046     		mov	r0, r4
+ 406 008c FFF7FEFF 		bl	Debug_Print
+ 407              	.LVL30:
+  85:debug/trace_analysiser.c ****     DEBUG_INFO("psp     : %08x\r\n", psp);
+ 408              		.loc 1 85 5 view .LVU67
+ 409 0090 019B     		ldr	r3, [sp, #4]
+ 410 0092 314A     		ldr	r2, .L16+28
+ 411 0094 2946     		mov	r1, r5
+ 412 0096 2046     		mov	r0, r4
+ 413 0098 FFF7FEFF 		bl	Debug_Print
+ 414              	.LVL31:
+  86:debug/trace_analysiser.c ****     DEBUG_INFO("msp     : %08x\r\n", msp);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 11
+
+
+ 415              		.loc 1 86 5 view .LVU68
+ 416 009c 029B     		ldr	r3, [sp, #8]
+ 417 009e 2F4A     		ldr	r2, .L16+32
+ 418 00a0 2946     		mov	r1, r5
+ 419 00a2 2046     		mov	r0, r4
+ 420 00a4 FFF7FEFF 		bl	Debug_Print
+ 421              	.LVL32:
+  87:debug/trace_analysiser.c **** 
+  88:debug/trace_analysiser.c ****     /* dump regular register r0 r1 r2 r3 r12 lr pc psr */
+  89:debug/trace_analysiser.c ****     DEBUG_INFO("r0  : %08x\r\n", ((uint32_t *)err_stack)[0]);
+ 422              		.loc 1 89 5 view .LVU69
+ 423 00a8 049B     		ldr	r3, [sp, #16]
+ 424 00aa 1B68     		ldr	r3, [r3]
+ 425 00ac 2C4A     		ldr	r2, .L16+36
+ 426 00ae 2946     		mov	r1, r5
+ 427 00b0 2046     		mov	r0, r4
+ 428 00b2 FFF7FEFF 		bl	Debug_Print
+ 429              	.LVL33:
+  90:debug/trace_analysiser.c ****     DEBUG_INFO("r1  : %08x\r\n", ((uint32_t *)err_stack)[1]);
+ 430              		.loc 1 90 5 view .LVU70
+ 431 00b6 049B     		ldr	r3, [sp, #16]
+ 432 00b8 5B68     		ldr	r3, [r3, #4]
+ 433 00ba 2A4A     		ldr	r2, .L16+40
+ 434 00bc 2946     		mov	r1, r5
+ 435 00be 2046     		mov	r0, r4
+ 436 00c0 FFF7FEFF 		bl	Debug_Print
+ 437              	.LVL34:
+  91:debug/trace_analysiser.c ****     DEBUG_INFO("r2  : %08x\r\n", ((uint32_t *)err_stack)[2]);
+ 438              		.loc 1 91 5 view .LVU71
+ 439 00c4 049B     		ldr	r3, [sp, #16]
+ 440 00c6 9B68     		ldr	r3, [r3, #8]
+ 441 00c8 274A     		ldr	r2, .L16+44
+ 442 00ca 2946     		mov	r1, r5
+ 443 00cc 2046     		mov	r0, r4
+ 444 00ce FFF7FEFF 		bl	Debug_Print
+ 445              	.LVL35:
+  92:debug/trace_analysiser.c ****     DEBUG_INFO("r3  : %08x\r\n", ((uint32_t *)err_stack)[3]);
+ 446              		.loc 1 92 5 view .LVU72
+ 447 00d2 049B     		ldr	r3, [sp, #16]
+ 448 00d4 DB68     		ldr	r3, [r3, #12]
+ 449 00d6 254A     		ldr	r2, .L16+48
+ 450 00d8 2946     		mov	r1, r5
+ 451 00da 2046     		mov	r0, r4
+ 452 00dc FFF7FEFF 		bl	Debug_Print
+ 453              	.LVL36:
+  93:debug/trace_analysiser.c ****     DEBUG_INFO("r12 : %08x\r\n", ((uint32_t *)err_stack)[4]);
+ 454              		.loc 1 93 5 view .LVU73
+ 455 00e0 049B     		ldr	r3, [sp, #16]
+ 456 00e2 1B69     		ldr	r3, [r3, #16]
+ 457 00e4 224A     		ldr	r2, .L16+52
+ 458 00e6 2946     		mov	r1, r5
+ 459 00e8 2046     		mov	r0, r4
+ 460 00ea FFF7FEFF 		bl	Debug_Print
+ 461              	.LVL37:
+  94:debug/trace_analysiser.c ****         
+  95:debug/trace_analysiser.c ****     DEBUG_INFO("lr  : %08x\r\n", ((uint32_t *)err_stack)[5]);
+ 462              		.loc 1 95 5 view .LVU74
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 12
+
+
+ 463 00ee 049B     		ldr	r3, [sp, #16]
+ 464 00f0 5B69     		ldr	r3, [r3, #20]
+ 465 00f2 204A     		ldr	r2, .L16+56
+ 466 00f4 2946     		mov	r1, r5
+ 467 00f6 2046     		mov	r0, r4
+ 468 00f8 FFF7FEFF 		bl	Debug_Print
+ 469              	.LVL38:
+  96:debug/trace_analysiser.c ****     DEBUG_INFO("pc  : %08x\r\n", ((uint32_t *)err_stack)[6]);
+ 470              		.loc 1 96 5 view .LVU75
+ 471 00fc 049B     		ldr	r3, [sp, #16]
+ 472 00fe 9B69     		ldr	r3, [r3, #24]
+ 473 0100 1D4A     		ldr	r2, .L16+60
+ 474 0102 2946     		mov	r1, r5
+ 475 0104 2046     		mov	r0, r4
+ 476 0106 FFF7FEFF 		bl	Debug_Print
+ 477              	.LVL39:
+  97:debug/trace_analysiser.c ****     DEBUG_INFO("psr : %08x\r\n", ((uint32_t *)err_stack)[7]);
+ 478              		.loc 1 97 5 view .LVU76
+ 479 010a 049B     		ldr	r3, [sp, #16]
+ 480 010c DB69     		ldr	r3, [r3, #28]
+ 481 010e 1B4A     		ldr	r2, .L16+64
+ 482 0110 2946     		mov	r1, r5
+ 483 0112 2046     		mov	r0, r4
+ 484 0114 FFF7FEFF 		bl	Debug_Print
+ 485              	.LVL40:
+  98:debug/trace_analysiser.c **** 
+  99:debug/trace_analysiser.c ****     /* lock all moto */
+ 100:debug/trace_analysiser.c ****     SrvActuator.lock();
+ 486              		.loc 1 100 5 view .LVU77
+ 487              		.loc 1 100 16 is_stmt 0 view .LVU78
+ 488 0118 194B     		ldr	r3, .L16+68
+ 489 011a DB68     		ldr	r3, [r3, #12]
+ 490              		.loc 1 100 5 view .LVU79
+ 491 011c 9847     		blx	r3
+ 492              	.LVL41:
+ 493              	.L14:
+ 101:debug/trace_analysiser.c **** 
+ 102:debug/trace_analysiser.c ****     while (1);
+ 494              		.loc 1 102 5 is_stmt 1 discriminator 1 view .LVU80
+ 495              		.loc 1 102 14 discriminator 1 view .LVU81
+ 496              		.loc 1 102 11 discriminator 1 view .LVU82
+ 497 011e FEE7     		b	.L14
+ 498              	.LVL42:
+ 499              	.L12:
+  79:debug/trace_analysiser.c ****         trace_overflow(err_stack, _sstack, _estack);
+ 500              		.loc 1 79 9 view .LVU83
+ 501 0120 184A     		ldr	r2, .L16+72
+ 502 0122 0749     		ldr	r1, .L16+4
+ 503 0124 0748     		ldr	r0, .L16+8
+ 504 0126 FFF7FEFF 		bl	Debug_Print
+ 505              	.LVL43:
+  80:debug/trace_analysiser.c ****     }
+ 506              		.loc 1 80 9 view .LVU84
+ 507 012a 0498     		ldr	r0, [sp, #16]
+ 508 012c 164B     		ldr	r3, .L16+76
+ 509 012e 1A68     		ldr	r2, [r3]
+ 510 0130 164B     		ldr	r3, .L16+80
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 13
+
+
+ 511 0132 1968     		ldr	r1, [r3]
+ 512 0134 FFF7FEFF 		bl	trace_overflow
+ 513              	.LVL44:
+ 514 0138 9CE7     		b	.L13
+ 515              	.L17:
+ 516 013a 00BF     		.align	2
+ 517              	.L16:
+ 518 013c 00000000 		.word	.LC6
+ 519 0140 14000000 		.word	.LC1
+ 520 0144 00000000 		.word	DebugPort
+ 521 0148 10000000 		.word	.LC7
+ 522 014c 20000000 		.word	.LC8
+ 523 0150 44000000 		.word	.LC10
+ 524 0154 58000000 		.word	.LC11
+ 525 0158 6C000000 		.word	.LC12
+ 526 015c 80000000 		.word	.LC13
+ 527 0160 94000000 		.word	.LC14
+ 528 0164 A4000000 		.word	.LC15
+ 529 0168 B4000000 		.word	.LC16
+ 530 016c C4000000 		.word	.LC17
+ 531 0170 D4000000 		.word	.LC18
+ 532 0174 E4000000 		.word	.LC19
+ 533 0178 F4000000 		.word	.LC20
+ 534 017c 04010000 		.word	.LC21
+ 535 0180 00000000 		.word	SrvActuator
+ 536 0184 34000000 		.word	.LC9
+ 537 0188 00000000 		.word	_estack
+ 538 018c 00000000 		.word	_sstack
+ 539              		.cfi_endproc
+ 540              	.LFE143:
+ 542              		.text
+ 543              	.Letext0:
+ 544              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 545              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 546              		.file 4 "System/FreeRTOS/include/task.h"
+ 547              		.file 5 "debug/debug_util.h"
+ 548              		.file 6 "Service/Srv_Actuator.h"
+ 549              		.file 7 "HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s 			page 14
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 trace_analysiser.c
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:20     .text.trace_get_sp:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:25     .text.trace_get_sp:00000000 trace_get_sp
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:50     .text.trace_get_psp:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:55     .text.trace_get_psp:00000000 trace_get_psp
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:79     .text.trace_get_msp:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:84     .text.trace_get_msp:00000000 trace_get_msp
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:108    .rodata.trace_overflow.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:127    .text.trace_overflow:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:132    .text.trace_overflow:00000000 trace_overflow
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:222    .text.trace_overflow:00000060 $d
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:233    .rodata.trace_analysiser.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:282    .text.trace_analysiser:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:288    .text.trace_analysiser:00000000 trace_analysiser
+C:\Users\8bit\AppData\Local\Temp\ccMwVsuW.s:518    .text.trace_analysiser:0000013c $d
+
+UNDEFINED SYMBOLS
+Debug_Print
+DebugPort
+xTaskGetCurrentTaskHandle
+pcTaskGetName
+xTaskGetCurrentTaskStack
+xTaskGetCurrentTaskStackDeph
+SrvActuator
+_estack
+_sstack

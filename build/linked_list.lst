@@ -1,0 +1,1871 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"linked_list.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.Item_SwapLRData,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	Item_SwapLRData:
+  26              	.LVL0:
+  27              	.LFB1:
+  28              		.file 1 "DataStructure/linked_list.c"
+   1:DataStructure/linked_list.c **** #include "linked_list.h"
+   2:DataStructure/linked_list.c **** #include <string.h>
+   3:DataStructure/linked_list.c **** 
+   4:DataStructure/linked_list.c **** void List_Init(list_obj *list, item_obj *first_item, list_arrangement_mode mode, item_compare_callb
+   5:DataStructure/linked_list.c **** {
+   6:DataStructure/linked_list.c ****     // if ((first_item != NULL) && (first_item->data != NULL))
+   7:DataStructure/linked_list.c ****     // {
+   8:DataStructure/linked_list.c ****     list->data = first_item->data;
+   9:DataStructure/linked_list.c ****     list->nxt = first_item->nxt;
+  10:DataStructure/linked_list.c **** 
+  11:DataStructure/linked_list.c ****     first_item->compare_callback = callback;
+  12:DataStructure/linked_list.c ****     first_item->mode = mode;
+  13:DataStructure/linked_list.c ****     // }
+  14:DataStructure/linked_list.c ****     // else
+  15:DataStructure/linked_list.c ****     //     list->nxt = NULL;
+  16:DataStructure/linked_list.c **** 
+  17:DataStructure/linked_list.c ****     list->mode = mode;
+  18:DataStructure/linked_list.c ****     list->compare_callback = callback;
+  19:DataStructure/linked_list.c **** 
+  20:DataStructure/linked_list.c ****     list->prv = NULL;
+  21:DataStructure/linked_list.c **** }
+  22:DataStructure/linked_list.c **** 
+  23:DataStructure/linked_list.c **** static void Item_SwapLRData(item_obj *item_L, item_obj *item_R)
+  24:DataStructure/linked_list.c **** {
+  29              		.loc 1 24 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  25:DataStructure/linked_list.c ****     void *data_tmp;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 2
+
+
+  34              		.loc 1 25 5 view .LVU1
+  26:DataStructure/linked_list.c **** 
+  27:DataStructure/linked_list.c ****     data_tmp = item_L->data;
+  35              		.loc 1 27 5 view .LVU2
+  36              		.loc 1 27 14 is_stmt 0 view .LVU3
+  37 0000 0369     		ldr	r3, [r0, #16]
+  38              	.LVL1:
+  28:DataStructure/linked_list.c ****     item_L->data = item_R->data;
+  39              		.loc 1 28 5 is_stmt 1 view .LVU4
+  40              		.loc 1 28 26 is_stmt 0 view .LVU5
+  41 0002 0A69     		ldr	r2, [r1, #16]
+  42              		.loc 1 28 18 view .LVU6
+  43 0004 0261     		str	r2, [r0, #16]
+  29:DataStructure/linked_list.c ****     item_R->data = data_tmp;
+  44              		.loc 1 29 5 is_stmt 1 view .LVU7
+  45              		.loc 1 29 18 is_stmt 0 view .LVU8
+  46 0006 0B61     		str	r3, [r1, #16]
+  30:DataStructure/linked_list.c **** }
+  47              		.loc 1 30 1 view .LVU9
+  48 0008 7047     		bx	lr
+  49              		.cfi_endproc
+  50              	.LFE1:
+  52              		.section	.text.List_Init,"ax",%progbits
+  53              		.align	1
+  54              		.global	List_Init
+  55              		.syntax unified
+  56              		.thumb
+  57              		.thumb_func
+  59              	List_Init:
+  60              	.LVL2:
+  61              	.LFB0:
+   5:DataStructure/linked_list.c ****     // if ((first_item != NULL) && (first_item->data != NULL))
+  62              		.loc 1 5 1 is_stmt 1 view -0
+  63              		.cfi_startproc
+  64              		@ args = 0, pretend = 0, frame = 0
+  65              		@ frame_needed = 0, uses_anonymous_args = 0
+  66              		@ link register save eliminated.
+   5:DataStructure/linked_list.c ****     // if ((first_item != NULL) && (first_item->data != NULL))
+  67              		.loc 1 5 1 is_stmt 0 view .LVU11
+  68 0000 10B4     		push	{r4}
+  69              	.LCFI0:
+  70              		.cfi_def_cfa_offset 4
+  71              		.cfi_offset 4, -4
+   8:DataStructure/linked_list.c ****     list->nxt = first_item->nxt;
+  72              		.loc 1 8 5 is_stmt 1 view .LVU12
+   8:DataStructure/linked_list.c ****     list->nxt = first_item->nxt;
+  73              		.loc 1 8 16 is_stmt 0 view .LVU13
+  74 0002 0C69     		ldr	r4, [r1, #16]
+  75 0004 0461     		str	r4, [r0, #16]
+   9:DataStructure/linked_list.c **** 
+  76              		.loc 1 9 5 is_stmt 1 view .LVU14
+   9:DataStructure/linked_list.c **** 
+  77              		.loc 1 9 15 is_stmt 0 view .LVU15
+  78 0006 CC68     		ldr	r4, [r1, #12]
+  79 0008 C460     		str	r4, [r0, #12]
+  11:DataStructure/linked_list.c ****     first_item->mode = mode;
+  80              		.loc 1 11 5 is_stmt 1 view .LVU16
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 3
+
+
+  11:DataStructure/linked_list.c ****     first_item->mode = mode;
+  81              		.loc 1 11 34 is_stmt 0 view .LVU17
+  82 000a 4B60     		str	r3, [r1, #4]
+  12:DataStructure/linked_list.c ****     // }
+  83              		.loc 1 12 5 is_stmt 1 view .LVU18
+  12:DataStructure/linked_list.c ****     // }
+  84              		.loc 1 12 22 is_stmt 0 view .LVU19
+  85 000c 0A70     		strb	r2, [r1]
+  17:DataStructure/linked_list.c ****     list->compare_callback = callback;
+  86              		.loc 1 17 5 is_stmt 1 view .LVU20
+  17:DataStructure/linked_list.c ****     list->compare_callback = callback;
+  87              		.loc 1 17 16 is_stmt 0 view .LVU21
+  88 000e 0270     		strb	r2, [r0]
+  18:DataStructure/linked_list.c **** 
+  89              		.loc 1 18 5 is_stmt 1 view .LVU22
+  18:DataStructure/linked_list.c **** 
+  90              		.loc 1 18 28 is_stmt 0 view .LVU23
+  91 0010 4360     		str	r3, [r0, #4]
+  20:DataStructure/linked_list.c **** }
+  92              		.loc 1 20 5 is_stmt 1 view .LVU24
+  20:DataStructure/linked_list.c **** }
+  93              		.loc 1 20 15 is_stmt 0 view .LVU25
+  94 0012 0023     		movs	r3, #0
+  95              	.LVL3:
+  20:DataStructure/linked_list.c **** }
+  96              		.loc 1 20 15 view .LVU26
+  97 0014 8360     		str	r3, [r0, #8]
+  21:DataStructure/linked_list.c **** 
+  98              		.loc 1 21 1 view .LVU27
+  99 0016 5DF8044B 		ldr	r4, [sp], #4
+ 100              	.LCFI1:
+ 101              		.cfi_restore 4
+ 102              		.cfi_def_cfa_offset 0
+ 103 001a 7047     		bx	lr
+ 104              		.cfi_endproc
+ 105              	.LFE0:
+ 107              		.section	.text.List_CheckAt,"ax",%progbits
+ 108              		.align	1
+ 109              		.global	List_CheckAt
+ 110              		.syntax unified
+ 111              		.thumb
+ 112              		.thumb_func
+ 114              	List_CheckAt:
+ 115              	.LVL4:
+ 116              	.LFB3:
+  31:DataStructure/linked_list.c **** 
+  32:DataStructure/linked_list.c **** static void List_ItemSwapLRItem(item_obj *item)
+  33:DataStructure/linked_list.c **** {
+  34:DataStructure/linked_list.c ****     item_obj *item_tmp = NULL;
+  35:DataStructure/linked_list.c **** 
+  36:DataStructure/linked_list.c ****     if (item != NULL)
+  37:DataStructure/linked_list.c ****     {
+  38:DataStructure/linked_list.c ****         item_tmp = item->prv;
+  39:DataStructure/linked_list.c **** 
+  40:DataStructure/linked_list.c ****         item->prv = item->nxt;
+  41:DataStructure/linked_list.c ****         item->nxt = item_tmp;
+  42:DataStructure/linked_list.c ****     }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 4
+
+
+  43:DataStructure/linked_list.c **** }
+  44:DataStructure/linked_list.c **** 
+  45:DataStructure/linked_list.c **** // minimun check pos is 1
+  46:DataStructure/linked_list.c **** item_obj *List_CheckAt(list_obj *list, uint16_t layer)
+  47:DataStructure/linked_list.c **** {
+ 117              		.loc 1 47 1 is_stmt 1 view -0
+ 118              		.cfi_startproc
+ 119              		@ args = 0, pretend = 0, frame = 0
+ 120              		@ frame_needed = 0, uses_anonymous_args = 0
+  48:DataStructure/linked_list.c ****     item_obj *item_tmp = NULL;
+ 121              		.loc 1 48 5 view .LVU29
+  49:DataStructure/linked_list.c **** 
+  50:DataStructure/linked_list.c ****     if (layer == 1)
+ 122              		.loc 1 50 5 view .LVU30
+ 123              		.loc 1 50 8 is_stmt 0 view .LVU31
+ 124 0000 0129     		cmp	r1, #1
+ 125 0002 07D0     		beq	.L9
+  51:DataStructure/linked_list.c ****     {
+  52:DataStructure/linked_list.c ****         return list;
+  53:DataStructure/linked_list.c ****     }
+  54:DataStructure/linked_list.c **** 
+  55:DataStructure/linked_list.c ****     if (layer < MINIMUN_SEARCH_POS)
+ 126              		.loc 1 55 5 is_stmt 1 view .LVU32
+ 127              		.loc 1 55 8 is_stmt 0 view .LVU33
+ 128 0004 21B1     		cbz	r1, .L7
+  47:DataStructure/linked_list.c ****     item_obj *item_tmp = NULL;
+ 129              		.loc 1 47 1 view .LVU34
+ 130 0006 08B5     		push	{r3, lr}
+ 131              	.LCFI2:
+ 132              		.cfi_def_cfa_offset 8
+ 133              		.cfi_offset 3, -8
+ 134              		.cfi_offset 14, -4
+  56:DataStructure/linked_list.c ****     {
+  57:DataStructure/linked_list.c ****         return NULL;
+  58:DataStructure/linked_list.c ****     }
+  59:DataStructure/linked_list.c ****     else
+  60:DataStructure/linked_list.c ****     {
+  61:DataStructure/linked_list.c ****         item_tmp = (item_obj *)List_CheckAt(list->nxt, layer--);
+ 135              		.loc 1 61 9 is_stmt 1 view .LVU35
+ 136              	.LVL5:
+ 137              		.loc 1 61 20 is_stmt 0 view .LVU36
+ 138 0008 C068     		ldr	r0, [r0, #12]
+ 139              	.LVL6:
+ 140              		.loc 1 61 20 view .LVU37
+ 141 000a FFF7FEFF 		bl	List_CheckAt
+ 142              	.LVL7:
+  62:DataStructure/linked_list.c ****     }
+  63:DataStructure/linked_list.c **** 
+  64:DataStructure/linked_list.c ****     return item_tmp;
+ 143              		.loc 1 64 5 is_stmt 1 view .LVU38
+  65:DataStructure/linked_list.c **** }
+ 144              		.loc 1 65 1 is_stmt 0 view .LVU39
+ 145 000e 08BD     		pop	{r3, pc}
+ 146              	.LVL8:
+ 147              	.L7:
+ 148              	.LCFI3:
+ 149              		.cfi_def_cfa_offset 0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 5
+
+
+ 150              		.cfi_restore 3
+ 151              		.cfi_restore 14
+  57:DataStructure/linked_list.c ****     }
+ 152              		.loc 1 57 16 view .LVU40
+ 153 0010 0020     		movs	r0, #0
+ 154              	.LVL9:
+  57:DataStructure/linked_list.c ****     }
+ 155              		.loc 1 57 16 view .LVU41
+ 156 0012 7047     		bx	lr
+ 157              	.LVL10:
+ 158              	.L9:
+ 159              		.loc 1 65 1 view .LVU42
+ 160 0014 7047     		bx	lr
+ 161              		.cfi_endproc
+ 162              	.LFE3:
+ 164              		.section	.text.List_Chk_FirstItem,"ax",%progbits
+ 165              		.align	1
+ 166              		.global	List_Chk_FirstItem
+ 167              		.syntax unified
+ 168              		.thumb
+ 169              		.thumb_func
+ 171              	List_Chk_FirstItem:
+ 172              	.LVL11:
+ 173              	.LFB4:
+  66:DataStructure/linked_list.c **** 
+  67:DataStructure/linked_list.c **** item_obj *List_Chk_FirstItem(list_obj *list)
+  68:DataStructure/linked_list.c **** {
+ 174              		.loc 1 68 1 is_stmt 1 view -0
+ 175              		.cfi_startproc
+ 176              		@ args = 0, pretend = 0, frame = 0
+ 177              		@ frame_needed = 0, uses_anonymous_args = 0
+ 178              		.loc 1 68 1 is_stmt 0 view .LVU44
+ 179 0000 08B5     		push	{r3, lr}
+ 180              	.LCFI4:
+ 181              		.cfi_def_cfa_offset 8
+ 182              		.cfi_offset 3, -8
+ 183              		.cfi_offset 14, -4
+  69:DataStructure/linked_list.c ****     if (list != NULL)
+ 184              		.loc 1 69 5 is_stmt 1 view .LVU45
+ 185              		.loc 1 69 8 is_stmt 0 view .LVU46
+ 186 0002 0346     		mov	r3, r0
+ 187 0004 20B1     		cbz	r0, .L13
+  70:DataStructure/linked_list.c ****     {
+  71:DataStructure/linked_list.c ****         if (list->prv == NULL)
+ 188              		.loc 1 71 9 is_stmt 1 view .LVU47
+ 189              		.loc 1 71 17 is_stmt 0 view .LVU48
+ 190 0006 8068     		ldr	r0, [r0, #8]
+ 191              	.LVL12:
+ 192              		.loc 1 71 12 view .LVU49
+ 193 0008 10B1     		cbz	r0, .L13
+  72:DataStructure/linked_list.c ****         {
+  73:DataStructure/linked_list.c ****             return list;
+  74:DataStructure/linked_list.c ****         }
+  75:DataStructure/linked_list.c ****         else
+  76:DataStructure/linked_list.c ****             return List_Chk_FirstItem(list->prv);
+ 194              		.loc 1 76 13 is_stmt 1 view .LVU50
+ 195              		.loc 1 76 20 is_stmt 0 view .LVU51
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 6
+
+
+ 196 000a FFF7FEFF 		bl	List_Chk_FirstItem
+ 197              	.LVL13:
+ 198              		.loc 1 76 20 view .LVU52
+ 199 000e 0346     		mov	r3, r0
+ 200              	.L13:
+  77:DataStructure/linked_list.c ****     }
+  78:DataStructure/linked_list.c **** 
+  79:DataStructure/linked_list.c ****     return NULL;
+  80:DataStructure/linked_list.c **** }
+ 201              		.loc 1 80 1 view .LVU53
+ 202 0010 1846     		mov	r0, r3
+ 203 0012 08BD     		pop	{r3, pc}
+ 204              		.cfi_endproc
+ 205              	.LFE4:
+ 207              		.section	.text.List_Chk_LastItem,"ax",%progbits
+ 208              		.align	1
+ 209              		.global	List_Chk_LastItem
+ 210              		.syntax unified
+ 211              		.thumb
+ 212              		.thumb_func
+ 214              	List_Chk_LastItem:
+ 215              	.LVL14:
+ 216              	.LFB5:
+  81:DataStructure/linked_list.c **** 
+  82:DataStructure/linked_list.c **** item_obj *List_Chk_LastItem(list_obj *list)
+  83:DataStructure/linked_list.c **** {
+ 217              		.loc 1 83 1 is_stmt 1 view -0
+ 218              		.cfi_startproc
+ 219              		@ args = 0, pretend = 0, frame = 0
+ 220              		@ frame_needed = 0, uses_anonymous_args = 0
+ 221              		.loc 1 83 1 is_stmt 0 view .LVU55
+ 222 0000 08B5     		push	{r3, lr}
+ 223              	.LCFI5:
+ 224              		.cfi_def_cfa_offset 8
+ 225              		.cfi_offset 3, -8
+ 226              		.cfi_offset 14, -4
+  84:DataStructure/linked_list.c ****     if (list != NULL)
+ 227              		.loc 1 84 5 is_stmt 1 view .LVU56
+ 228              		.loc 1 84 8 is_stmt 0 view .LVU57
+ 229 0002 0346     		mov	r3, r0
+ 230 0004 20B1     		cbz	r0, .L16
+  85:DataStructure/linked_list.c ****     {
+  86:DataStructure/linked_list.c ****         if (list->nxt == NULL)
+ 231              		.loc 1 86 9 is_stmt 1 view .LVU58
+ 232              		.loc 1 86 17 is_stmt 0 view .LVU59
+ 233 0006 C068     		ldr	r0, [r0, #12]
+ 234              	.LVL15:
+ 235              		.loc 1 86 12 view .LVU60
+ 236 0008 10B1     		cbz	r0, .L16
+  87:DataStructure/linked_list.c ****         {
+  88:DataStructure/linked_list.c ****             return list;
+  89:DataStructure/linked_list.c ****         }
+  90:DataStructure/linked_list.c ****         else
+  91:DataStructure/linked_list.c ****             return List_Chk_LastItem(list->nxt);
+ 237              		.loc 1 91 13 is_stmt 1 view .LVU61
+ 238              		.loc 1 91 20 is_stmt 0 view .LVU62
+ 239 000a FFF7FEFF 		bl	List_Chk_LastItem
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 7
+
+
+ 240              	.LVL16:
+ 241              		.loc 1 91 20 view .LVU63
+ 242 000e 0346     		mov	r3, r0
+ 243              	.L16:
+  92:DataStructure/linked_list.c ****     }
+  93:DataStructure/linked_list.c **** 
+  94:DataStructure/linked_list.c ****     return NULL;
+  95:DataStructure/linked_list.c **** }
+ 244              		.loc 1 95 1 view .LVU64
+ 245 0010 1846     		mov	r0, r3
+ 246 0012 08BD     		pop	{r3, pc}
+ 247              		.cfi_endproc
+ 248              	.LFE5:
+ 250              		.section	.text.List_ItemClear,"ax",%progbits
+ 251              		.align	1
+ 252              		.global	List_ItemClear
+ 253              		.syntax unified
+ 254              		.thumb
+ 255              		.thumb_func
+ 257              	List_ItemClear:
+ 258              	.LVL17:
+ 259              	.LFB6:
+  96:DataStructure/linked_list.c **** 
+  97:DataStructure/linked_list.c **** list_error_code List_ItemClear(item_obj *item)
+  98:DataStructure/linked_list.c **** {
+ 260              		.loc 1 98 1 is_stmt 1 view -0
+ 261              		.cfi_startproc
+ 262              		@ args = 0, pretend = 0, frame = 0
+ 263              		@ frame_needed = 0, uses_anonymous_args = 0
+ 264              		@ link register save eliminated.
+  99:DataStructure/linked_list.c ****     if (item != NULL)
+ 265              		.loc 1 99 5 view .LVU66
+ 266              		.loc 1 99 8 is_stmt 0 view .LVU67
+ 267 0000 0346     		mov	r3, r0
+ 268 0002 20B1     		cbz	r0, .L20
+ 100:DataStructure/linked_list.c ****     {
+ 101:DataStructure/linked_list.c ****         item->data = NULL;
+ 269              		.loc 1 101 9 is_stmt 1 view .LVU68
+ 270              		.loc 1 101 20 is_stmt 0 view .LVU69
+ 271 0004 0020     		movs	r0, #0
+ 272              	.LVL18:
+ 273              		.loc 1 101 20 view .LVU70
+ 274 0006 1861     		str	r0, [r3, #16]
+ 102:DataStructure/linked_list.c ****         item->prv = NULL;
+ 275              		.loc 1 102 9 is_stmt 1 view .LVU71
+ 276              		.loc 1 102 19 is_stmt 0 view .LVU72
+ 277 0008 9860     		str	r0, [r3, #8]
+ 103:DataStructure/linked_list.c ****         item->nxt = NULL;
+ 278              		.loc 1 103 9 is_stmt 1 view .LVU73
+ 279              		.loc 1 103 19 is_stmt 0 view .LVU74
+ 280 000a D860     		str	r0, [r3, #12]
+ 104:DataStructure/linked_list.c **** 
+ 105:DataStructure/linked_list.c ****         return list_no_error;
+ 281              		.loc 1 105 9 is_stmt 1 view .LVU75
+ 282              		.loc 1 105 16 is_stmt 0 view .LVU76
+ 283 000c 7047     		bx	lr
+ 284              	.LVL19:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 8
+
+
+ 285              	.L20:
+ 106:DataStructure/linked_list.c ****     }
+ 107:DataStructure/linked_list.c **** 
+ 108:DataStructure/linked_list.c ****     return list_obj_error;
+ 286              		.loc 1 108 12 view .LVU77
+ 287 000e 6FF00100 		mvn	r0, #1
+ 288              	.LVL20:
+ 109:DataStructure/linked_list.c **** }
+ 289              		.loc 1 109 1 view .LVU78
+ 290 0012 7047     		bx	lr
+ 291              		.cfi_endproc
+ 292              	.LFE6:
+ 294              		.section	.text.List_ItemInit,"ax",%progbits
+ 295              		.align	1
+ 296              		.global	List_ItemInit
+ 297              		.syntax unified
+ 298              		.thumb
+ 299              		.thumb_func
+ 301              	List_ItemInit:
+ 302              	.LVL21:
+ 303              	.LFB7:
+ 110:DataStructure/linked_list.c **** 
+ 111:DataStructure/linked_list.c **** void List_ItemInit(item_obj *obj, void *arg)
+ 112:DataStructure/linked_list.c **** {
+ 304              		.loc 1 112 1 is_stmt 1 view -0
+ 305              		.cfi_startproc
+ 306              		@ args = 0, pretend = 0, frame = 0
+ 307              		@ frame_needed = 0, uses_anonymous_args = 0
+ 308              		.loc 1 112 1 is_stmt 0 view .LVU80
+ 309 0000 38B5     		push	{r3, r4, r5, lr}
+ 310              	.LCFI6:
+ 311              		.cfi_def_cfa_offset 16
+ 312              		.cfi_offset 3, -16
+ 313              		.cfi_offset 4, -12
+ 314              		.cfi_offset 5, -8
+ 315              		.cfi_offset 14, -4
+ 316 0002 0446     		mov	r4, r0
+ 317 0004 0D46     		mov	r5, r1
+ 113:DataStructure/linked_list.c ****     if (List_ItemClear(obj) == list_no_error)
+ 318              		.loc 1 113 5 is_stmt 1 view .LVU81
+ 319              		.loc 1 113 9 is_stmt 0 view .LVU82
+ 320 0006 FFF7FEFF 		bl	List_ItemClear
+ 321              	.LVL22:
+ 322              		.loc 1 113 8 view .LVU83
+ 323 000a 00B9     		cbnz	r0, .L21
+ 114:DataStructure/linked_list.c ****     {
+ 115:DataStructure/linked_list.c ****         obj->data = arg;
+ 324              		.loc 1 115 9 is_stmt 1 view .LVU84
+ 325              		.loc 1 115 19 is_stmt 0 view .LVU85
+ 326 000c 2561     		str	r5, [r4, #16]
+ 327              	.L21:
+ 116:DataStructure/linked_list.c ****     }
+ 117:DataStructure/linked_list.c **** }
+ 328              		.loc 1 117 1 view .LVU86
+ 329 000e 38BD     		pop	{r3, r4, r5, pc}
+ 330              		.loc 1 117 1 view .LVU87
+ 331              		.cfi_endproc
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 9
+
+
+ 332              	.LFE7:
+ 334              		.section	.text.List_InsertToPrv,"ax",%progbits
+ 335              		.align	1
+ 336              		.global	List_InsertToPrv
+ 337              		.syntax unified
+ 338              		.thumb
+ 339              		.thumb_func
+ 341              	List_InsertToPrv:
+ 342              	.LVL23:
+ 343              	.LFB8:
+ 118:DataStructure/linked_list.c **** 
+ 119:DataStructure/linked_list.c **** void List_InsertToPrv(list_obj *list, item_obj *item)
+ 120:DataStructure/linked_list.c **** {
+ 344              		.loc 1 120 1 is_stmt 1 view -0
+ 345              		.cfi_startproc
+ 346              		@ args = 0, pretend = 0, frame = 0
+ 347              		@ frame_needed = 0, uses_anonymous_args = 0
+ 348              		.loc 1 120 1 is_stmt 0 view .LVU89
+ 349 0000 08B5     		push	{r3, lr}
+ 350              	.LCFI7:
+ 351              		.cfi_def_cfa_offset 8
+ 352              		.cfi_offset 3, -8
+ 353              		.cfi_offset 14, -4
+ 121:DataStructure/linked_list.c ****     if (list->nxt != NULL)
+ 354              		.loc 1 121 5 is_stmt 1 view .LVU90
+ 355              		.loc 1 121 13 is_stmt 0 view .LVU91
+ 356 0002 C368     		ldr	r3, [r0, #12]
+ 357              		.loc 1 121 8 view .LVU92
+ 358 0004 1BB1     		cbz	r3, .L25
+ 122:DataStructure/linked_list.c ****     {
+ 123:DataStructure/linked_list.c ****         List_InsertToPrv(list->prv, item);
+ 359              		.loc 1 123 9 is_stmt 1 view .LVU93
+ 360 0006 8068     		ldr	r0, [r0, #8]
+ 361              	.LVL24:
+ 362              		.loc 1 123 9 is_stmt 0 view .LVU94
+ 363 0008 FFF7FEFF 		bl	List_InsertToPrv
+ 364              	.LVL25:
+ 365              	.L24:
+ 124:DataStructure/linked_list.c ****     }
+ 125:DataStructure/linked_list.c ****     else
+ 126:DataStructure/linked_list.c ****     {
+ 127:DataStructure/linked_list.c ****         list->prv = item;
+ 128:DataStructure/linked_list.c ****         item->nxt = list;
+ 129:DataStructure/linked_list.c ****     }
+ 130:DataStructure/linked_list.c **** }
+ 366              		.loc 1 130 1 view .LVU95
+ 367 000c 08BD     		pop	{r3, pc}
+ 368              	.LVL26:
+ 369              	.L25:
+ 127:DataStructure/linked_list.c ****         item->nxt = list;
+ 370              		.loc 1 127 9 is_stmt 1 view .LVU96
+ 127:DataStructure/linked_list.c ****         item->nxt = list;
+ 371              		.loc 1 127 19 is_stmt 0 view .LVU97
+ 372 000e 8160     		str	r1, [r0, #8]
+ 128:DataStructure/linked_list.c ****     }
+ 373              		.loc 1 128 9 is_stmt 1 view .LVU98
+ 128:DataStructure/linked_list.c ****     }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 10
+
+
+ 374              		.loc 1 128 19 is_stmt 0 view .LVU99
+ 375 0010 C860     		str	r0, [r1, #12]
+ 376              		.loc 1 130 1 view .LVU100
+ 377 0012 FBE7     		b	.L24
+ 378              		.cfi_endproc
+ 379              	.LFE8:
+ 381              		.section	.text.List_InsertByOrder,"ax",%progbits
+ 382              		.align	1
+ 383              		.global	List_InsertByOrder
+ 384              		.syntax unified
+ 385              		.thumb
+ 386              		.thumb_func
+ 388              	List_InsertByOrder:
+ 389              	.LVL27:
+ 390              	.LFB9:
+ 131:DataStructure/linked_list.c **** 
+ 132:DataStructure/linked_list.c **** void List_InsertByOrder(list_obj *list, item_obj *item)
+ 133:DataStructure/linked_list.c **** {
+ 391              		.loc 1 133 1 is_stmt 1 view -0
+ 392              		.cfi_startproc
+ 393              		@ args = 0, pretend = 0, frame = 0
+ 394              		@ frame_needed = 0, uses_anonymous_args = 0
+ 395              		.loc 1 133 1 is_stmt 0 view .LVU102
+ 396 0000 08B5     		push	{r3, lr}
+ 397              	.LCFI8:
+ 398              		.cfi_def_cfa_offset 8
+ 399              		.cfi_offset 3, -8
+ 400              		.cfi_offset 14, -4
+ 401 0002 0346     		mov	r3, r0
+ 134:DataStructure/linked_list.c ****     if (list->nxt != NULL)
+ 402              		.loc 1 134 5 is_stmt 1 view .LVU103
+ 403              		.loc 1 134 13 is_stmt 0 view .LVU104
+ 404 0004 C068     		ldr	r0, [r0, #12]
+ 405              	.LVL28:
+ 406              		.loc 1 134 8 view .LVU105
+ 407 0006 10B1     		cbz	r0, .L29
+ 135:DataStructure/linked_list.c ****     {
+ 136:DataStructure/linked_list.c ****         List_InsertByOrder(list->nxt, item);
+ 408              		.loc 1 136 9 is_stmt 1 view .LVU106
+ 409 0008 FFF7FEFF 		bl	List_InsertByOrder
+ 410              	.LVL29:
+ 411              	.L28:
+ 137:DataStructure/linked_list.c ****     }
+ 138:DataStructure/linked_list.c ****     else
+ 139:DataStructure/linked_list.c ****     {
+ 140:DataStructure/linked_list.c ****         list->nxt = item;
+ 141:DataStructure/linked_list.c ****         item->prv = list;
+ 142:DataStructure/linked_list.c ****     }
+ 143:DataStructure/linked_list.c **** }
+ 412              		.loc 1 143 1 is_stmt 0 view .LVU107
+ 413 000c 08BD     		pop	{r3, pc}
+ 414              	.LVL30:
+ 415              	.L29:
+ 140:DataStructure/linked_list.c ****         item->prv = list;
+ 416              		.loc 1 140 9 is_stmt 1 view .LVU108
+ 140:DataStructure/linked_list.c ****         item->prv = list;
+ 417              		.loc 1 140 19 is_stmt 0 view .LVU109
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 11
+
+
+ 418 000e D960     		str	r1, [r3, #12]
+ 141:DataStructure/linked_list.c ****     }
+ 419              		.loc 1 141 9 is_stmt 1 view .LVU110
+ 141:DataStructure/linked_list.c ****     }
+ 420              		.loc 1 141 19 is_stmt 0 view .LVU111
+ 421 0010 8B60     		str	r3, [r1, #8]
+ 422              		.loc 1 143 1 view .LVU112
+ 423 0012 FBE7     		b	.L28
+ 424              		.cfi_endproc
+ 425              	.LFE9:
+ 427              		.section	.text.List_InsertByCondition,"ax",%progbits
+ 428              		.align	1
+ 429              		.global	List_InsertByCondition
+ 430              		.syntax unified
+ 431              		.thumb
+ 432              		.thumb_func
+ 434              	List_InsertByCondition:
+ 435              	.LVL31:
+ 436              	.LFB10:
+ 144:DataStructure/linked_list.c **** 
+ 145:DataStructure/linked_list.c **** void List_InsertByCondition(list_obj *list, item_obj *item)
+ 146:DataStructure/linked_list.c **** {
+ 437              		.loc 1 146 1 is_stmt 1 view -0
+ 438              		.cfi_startproc
+ 439              		@ args = 0, pretend = 0, frame = 0
+ 440              		@ frame_needed = 0, uses_anonymous_args = 0
+ 441              		.loc 1 146 1 is_stmt 0 view .LVU114
+ 442 0000 38B5     		push	{r3, r4, r5, lr}
+ 443              	.LCFI9:
+ 444              		.cfi_def_cfa_offset 16
+ 445              		.cfi_offset 3, -16
+ 446              		.cfi_offset 4, -12
+ 447              		.cfi_offset 5, -8
+ 448              		.cfi_offset 14, -4
+ 147:DataStructure/linked_list.c ****     if ((list->compare_callback != NULL) && (list->data != NULL) && (item->data != NULL))
+ 449              		.loc 1 147 5 is_stmt 1 view .LVU115
+ 450              		.loc 1 147 14 is_stmt 0 view .LVU116
+ 451 0002 4368     		ldr	r3, [r0, #4]
+ 452              		.loc 1 147 8 view .LVU117
+ 453 0004 7BB1     		cbz	r3, .L32
+ 454 0006 0446     		mov	r4, r0
+ 455 0008 0D46     		mov	r5, r1
+ 456              		.loc 1 147 50 discriminator 1 view .LVU118
+ 457 000a 0069     		ldr	r0, [r0, #16]
+ 458              	.LVL32:
+ 459              		.loc 1 147 42 discriminator 1 view .LVU119
+ 460 000c 58B1     		cbz	r0, .L32
+ 461              		.loc 1 147 74 discriminator 2 view .LVU120
+ 462 000e 0969     		ldr	r1, [r1, #16]
+ 463              	.LVL33:
+ 464              		.loc 1 147 66 discriminator 2 view .LVU121
+ 465 0010 49B1     		cbz	r1, .L32
+ 466              	.LBB2:
+ 148:DataStructure/linked_list.c ****     {
+ 149:DataStructure/linked_list.c ****         volatile void *cmp_out = list->compare_callback(list->data, item->data);
+ 467              		.loc 1 149 9 is_stmt 1 view .LVU122
+ 468              		.loc 1 149 34 is_stmt 0 view .LVU123
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 12
+
+
+ 469 0012 9847     		blx	r3
+ 470              	.LVL34:
+ 150:DataStructure/linked_list.c **** 
+ 151:DataStructure/linked_list.c ****         if (cmp_out == NULL)
+ 471              		.loc 1 151 9 is_stmt 1 view .LVU124
+ 472              		.loc 1 151 12 is_stmt 0 view .LVU125
+ 473 0014 38B1     		cbz	r0, .L32
+ 152:DataStructure/linked_list.c ****         {
+ 153:DataStructure/linked_list.c ****             return;
+ 154:DataStructure/linked_list.c ****         }
+ 155:DataStructure/linked_list.c **** 
+ 156:DataStructure/linked_list.c ****         if (cmp_out == item->data)
+ 474              		.loc 1 156 9 is_stmt 1 view .LVU126
+ 475              		.loc 1 156 28 is_stmt 0 view .LVU127
+ 476 0016 2A69     		ldr	r2, [r5, #16]
+ 477              		.loc 1 156 12 view .LVU128
+ 478 0018 8242     		cmp	r2, r0
+ 479 001a 05D0     		beq	.L37
+ 480              	.LVL35:
+ 481              	.L34:
+ 482              		.loc 1 156 12 view .LVU129
+ 483              	.LBE2:
+ 157:DataStructure/linked_list.c ****         {
+ 158:DataStructure/linked_list.c ****             Item_SwapLRData(list, item);
+ 159:DataStructure/linked_list.c ****         }
+ 160:DataStructure/linked_list.c ****     }
+ 161:DataStructure/linked_list.c ****     else
+ 162:DataStructure/linked_list.c ****         return;
+ 163:DataStructure/linked_list.c **** 
+ 164:DataStructure/linked_list.c ****     if (list->nxt != NULL)
+ 484              		.loc 1 164 5 is_stmt 1 view .LVU130
+ 485              		.loc 1 164 13 is_stmt 0 view .LVU131
+ 486 001c E068     		ldr	r0, [r4, #12]
+ 487              		.loc 1 164 8 view .LVU132
+ 488 001e 40B1     		cbz	r0, .L35
+ 165:DataStructure/linked_list.c ****     {
+ 166:DataStructure/linked_list.c ****         List_InsertByCondition(list->nxt, item);
+ 489              		.loc 1 166 9 is_stmt 1 view .LVU133
+ 490 0020 2946     		mov	r1, r5
+ 491 0022 FFF7FEFF 		bl	List_InsertByCondition
+ 492              	.LVL36:
+ 493              	.L32:
+ 167:DataStructure/linked_list.c ****     }
+ 168:DataStructure/linked_list.c ****     else
+ 169:DataStructure/linked_list.c ****     {
+ 170:DataStructure/linked_list.c ****         list->nxt = item;
+ 171:DataStructure/linked_list.c ****         item->prv = list;
+ 172:DataStructure/linked_list.c ****         item->nxt = NULL;
+ 173:DataStructure/linked_list.c ****     }
+ 174:DataStructure/linked_list.c **** }
+ 494              		.loc 1 174 1 is_stmt 0 view .LVU134
+ 495 0026 38BD     		pop	{r3, r4, r5, pc}
+ 496              	.LVL37:
+ 497              	.L37:
+ 498              	.LBB3:
+ 158:DataStructure/linked_list.c ****         }
+ 499              		.loc 1 158 13 is_stmt 1 view .LVU135
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 13
+
+
+ 500 0028 2946     		mov	r1, r5
+ 501 002a 2046     		mov	r0, r4
+ 502              	.LVL38:
+ 158:DataStructure/linked_list.c ****         }
+ 503              		.loc 1 158 13 is_stmt 0 view .LVU136
+ 504 002c FFF7FEFF 		bl	Item_SwapLRData
+ 505              	.LVL39:
+ 506 0030 F4E7     		b	.L34
+ 507              	.L35:
+ 158:DataStructure/linked_list.c ****         }
+ 508              		.loc 1 158 13 view .LVU137
+ 509              	.LBE3:
+ 170:DataStructure/linked_list.c ****         item->prv = list;
+ 510              		.loc 1 170 9 is_stmt 1 view .LVU138
+ 170:DataStructure/linked_list.c ****         item->prv = list;
+ 511              		.loc 1 170 19 is_stmt 0 view .LVU139
+ 512 0032 E560     		str	r5, [r4, #12]
+ 171:DataStructure/linked_list.c ****         item->nxt = NULL;
+ 513              		.loc 1 171 9 is_stmt 1 view .LVU140
+ 171:DataStructure/linked_list.c ****         item->nxt = NULL;
+ 514              		.loc 1 171 19 is_stmt 0 view .LVU141
+ 515 0034 AC60     		str	r4, [r5, #8]
+ 172:DataStructure/linked_list.c ****     }
+ 516              		.loc 1 172 9 is_stmt 1 view .LVU142
+ 172:DataStructure/linked_list.c ****     }
+ 517              		.loc 1 172 19 is_stmt 0 view .LVU143
+ 518 0036 0023     		movs	r3, #0
+ 519 0038 EB60     		str	r3, [r5, #12]
+ 520 003a F4E7     		b	.L32
+ 521              		.cfi_endproc
+ 522              	.LFE10:
+ 524              		.section	.text.List_Insert_Item,"ax",%progbits
+ 525              		.align	1
+ 526              		.global	List_Insert_Item
+ 527              		.syntax unified
+ 528              		.thumb
+ 529              		.thumb_func
+ 531              	List_Insert_Item:
+ 532              	.LVL40:
+ 533              	.LFB11:
+ 175:DataStructure/linked_list.c **** 
+ 176:DataStructure/linked_list.c **** void List_Insert_Item(list_obj *list, item_obj *item)
+ 177:DataStructure/linked_list.c **** {
+ 534              		.loc 1 177 1 is_stmt 1 view -0
+ 535              		.cfi_startproc
+ 536              		@ args = 0, pretend = 0, frame = 0
+ 537              		@ frame_needed = 0, uses_anonymous_args = 0
+ 178:DataStructure/linked_list.c ****     if ((list != NULL) && (item != NULL))
+ 538              		.loc 1 178 5 view .LVU145
+ 539              		.loc 1 178 8 is_stmt 0 view .LVU146
+ 540 0000 A0B1     		cbz	r0, .L43
+ 541              		.loc 1 178 24 discriminator 1 view .LVU147
+ 542 0002 99B1     		cbz	r1, .L43
+ 177:DataStructure/linked_list.c ****     if ((list != NULL) && (item != NULL))
+ 543              		.loc 1 177 1 view .LVU148
+ 544 0004 08B5     		push	{r3, lr}
+ 545              	.LCFI10:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 14
+
+
+ 546              		.cfi_def_cfa_offset 8
+ 547              		.cfi_offset 3, -8
+ 548              		.cfi_offset 14, -4
+ 179:DataStructure/linked_list.c ****     {
+ 180:DataStructure/linked_list.c ****         item->compare_callback = list->compare_callback;
+ 549              		.loc 1 180 9 is_stmt 1 view .LVU149
+ 550              		.loc 1 180 38 is_stmt 0 view .LVU150
+ 551 0006 4368     		ldr	r3, [r0, #4]
+ 552              		.loc 1 180 32 view .LVU151
+ 553 0008 4B60     		str	r3, [r1, #4]
+ 181:DataStructure/linked_list.c ****         item->mode = list->mode;
+ 554              		.loc 1 181 9 is_stmt 1 view .LVU152
+ 555              		.loc 1 181 26 is_stmt 0 view .LVU153
+ 556 000a 0378     		ldrb	r3, [r0]	@ zero_extendqisi2
+ 557              		.loc 1 181 20 view .LVU154
+ 558 000c 0B70     		strb	r3, [r1]
+ 182:DataStructure/linked_list.c **** 
+ 183:DataStructure/linked_list.c ****         switch (list->mode)
+ 559              		.loc 1 183 9 is_stmt 1 view .LVU155
+ 560 000e 012B     		cmp	r3, #1
+ 561 0010 06D0     		beq	.L40
+ 562 0012 022B     		cmp	r3, #2
+ 563 0014 07D0     		beq	.L41
+ 564 0016 03B1     		cbz	r3, .L46
+ 565              	.LVL41:
+ 566              	.L38:
+ 184:DataStructure/linked_list.c ****         {
+ 185:DataStructure/linked_list.c ****         case to_front:
+ 186:DataStructure/linked_list.c ****             List_InsertToPrv(list, item);
+ 187:DataStructure/linked_list.c ****             break;
+ 188:DataStructure/linked_list.c **** 
+ 189:DataStructure/linked_list.c ****         case by_order:
+ 190:DataStructure/linked_list.c ****             List_InsertByOrder(list, item);
+ 191:DataStructure/linked_list.c ****             break;
+ 192:DataStructure/linked_list.c **** 
+ 193:DataStructure/linked_list.c ****         case by_condition:
+ 194:DataStructure/linked_list.c ****             List_InsertByCondition(list, item);
+ 195:DataStructure/linked_list.c ****             break;
+ 196:DataStructure/linked_list.c **** 
+ 197:DataStructure/linked_list.c ****         default:
+ 198:DataStructure/linked_list.c ****             return;
+ 199:DataStructure/linked_list.c ****             break;
+ 200:DataStructure/linked_list.c ****         }
+ 201:DataStructure/linked_list.c ****     }
+ 202:DataStructure/linked_list.c ****     else if ((list == NULL) && (item != NULL))
+ 203:DataStructure/linked_list.c ****     {
+ 204:DataStructure/linked_list.c ****         list = item;
+ 205:DataStructure/linked_list.c ****     }
+ 206:DataStructure/linked_list.c **** }
+ 567              		.loc 1 206 1 is_stmt 0 view .LVU156
+ 568 0018 08BD     		pop	{r3, pc}
+ 569              	.LVL42:
+ 570              	.L46:
+ 186:DataStructure/linked_list.c ****             break;
+ 571              		.loc 1 186 13 is_stmt 1 view .LVU157
+ 572 001a FFF7FEFF 		bl	List_InsertToPrv
+ 573              	.LVL43:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 15
+
+
+ 187:DataStructure/linked_list.c **** 
+ 574              		.loc 1 187 13 view .LVU158
+ 575 001e FBE7     		b	.L38
+ 576              	.LVL44:
+ 577              	.L40:
+ 190:DataStructure/linked_list.c ****             break;
+ 578              		.loc 1 190 13 view .LVU159
+ 579 0020 FFF7FEFF 		bl	List_InsertByOrder
+ 580              	.LVL45:
+ 191:DataStructure/linked_list.c **** 
+ 581              		.loc 1 191 13 view .LVU160
+ 582 0024 F8E7     		b	.L38
+ 583              	.LVL46:
+ 584              	.L41:
+ 194:DataStructure/linked_list.c ****             break;
+ 585              		.loc 1 194 13 view .LVU161
+ 586 0026 FFF7FEFF 		bl	List_InsertByCondition
+ 587              	.LVL47:
+ 195:DataStructure/linked_list.c **** 
+ 588              		.loc 1 195 13 view .LVU162
+ 195:DataStructure/linked_list.c **** 
+ 589              		.loc 1 195 13 is_stmt 0 view .LVU163
+ 590 002a F5E7     		b	.L38
+ 591              	.LVL48:
+ 592              	.L43:
+ 593              	.LCFI11:
+ 594              		.cfi_def_cfa_offset 0
+ 595              		.cfi_restore 3
+ 596              		.cfi_restore 14
+ 195:DataStructure/linked_list.c **** 
+ 597              		.loc 1 195 13 view .LVU164
+ 598 002c 7047     		bx	lr
+ 599              		.cfi_endproc
+ 600              	.LFE11:
+ 602              		.section	.text.List_traverse,"ax",%progbits
+ 603              		.align	1
+ 604              		.global	List_traverse
+ 605              		.syntax unified
+ 606              		.thumb
+ 607              		.thumb_func
+ 609              	List_traverse:
+ 610              	.LVL49:
+ 611              	.LFB13:
+ 207:DataStructure/linked_list.c **** 
+ 208:DataStructure/linked_list.c **** list_error_code List_traverse_HaltByCondition(list_obj *list, list_traverse_callback callback, void
+ 209:DataStructure/linked_list.c **** {
+ 210:DataStructure/linked_list.c ****     if (list != NULL)
+ 211:DataStructure/linked_list.c ****     {
+ 212:DataStructure/linked_list.c ****         if ((callback != NULL) && (cb_serial == pre_callback))
+ 213:DataStructure/linked_list.c ****         {
+ 214:DataStructure/linked_list.c ****             if (condition == callback(list, list->data, arg))
+ 215:DataStructure/linked_list.c ****                 return list_no_error;
+ 216:DataStructure/linked_list.c ****         }
+ 217:DataStructure/linked_list.c **** 
+ 218:DataStructure/linked_list.c ****         if (list->nxt != NULL)
+ 219:DataStructure/linked_list.c ****         {
+ 220:DataStructure/linked_list.c ****             List_traverse(list->nxt, callback, arg, cb_serial);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 16
+
+
+ 221:DataStructure/linked_list.c ****         }
+ 222:DataStructure/linked_list.c **** 
+ 223:DataStructure/linked_list.c ****         if ((callback != NULL) && (cb_serial == sub_callback))
+ 224:DataStructure/linked_list.c ****         {
+ 225:DataStructure/linked_list.c ****             if (condition == callback(list, list->data, arg))
+ 226:DataStructure/linked_list.c ****                 return list_no_error;
+ 227:DataStructure/linked_list.c ****         }
+ 228:DataStructure/linked_list.c ****     }
+ 229:DataStructure/linked_list.c ****     else
+ 230:DataStructure/linked_list.c ****         return list_obj_error;
+ 231:DataStructure/linked_list.c **** 
+ 232:DataStructure/linked_list.c ****     return list_no_error;
+ 233:DataStructure/linked_list.c **** }
+ 234:DataStructure/linked_list.c **** 
+ 235:DataStructure/linked_list.c **** list_error_code List_traverse(list_obj *list, list_traverse_callback callback, void *arg, listtrv_c
+ 236:DataStructure/linked_list.c **** {
+ 612              		.loc 1 236 1 is_stmt 1 view -0
+ 613              		.cfi_startproc
+ 614              		@ args = 0, pretend = 0, frame = 0
+ 615              		@ frame_needed = 0, uses_anonymous_args = 0
+ 237:DataStructure/linked_list.c ****     if (list != NULL)
+ 616              		.loc 1 237 5 view .LVU166
+ 617              		.loc 1 237 8 is_stmt 0 view .LVU167
+ 618 0000 D0B1     		cbz	r0, .L51
+ 236:DataStructure/linked_list.c ****     if (list != NULL)
+ 619              		.loc 1 236 1 view .LVU168
+ 620 0002 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 621              	.LCFI12:
+ 622              		.cfi_def_cfa_offset 24
+ 623              		.cfi_offset 3, -24
+ 624              		.cfi_offset 4, -20
+ 625              		.cfi_offset 5, -16
+ 626              		.cfi_offset 6, -12
+ 627              		.cfi_offset 7, -8
+ 628              		.cfi_offset 14, -4
+ 629 0004 0C46     		mov	r4, r1
+ 630 0006 1646     		mov	r6, r2
+ 631 0008 1D46     		mov	r5, r3
+ 632 000a 0746     		mov	r7, r0
+ 238:DataStructure/linked_list.c ****     {
+ 239:DataStructure/linked_list.c ****         if ((callback != NULL) && (cb_serial == pre_callback))
+ 633              		.loc 1 239 9 is_stmt 1 view .LVU169
+ 634              		.loc 1 239 12 is_stmt 0 view .LVU170
+ 635 000c 11B1     		cbz	r1, .L49
+ 636              		.loc 1 239 32 discriminator 1 view .LVU171
+ 637 000e 0BB9     		cbnz	r3, .L49
+ 240:DataStructure/linked_list.c ****         {
+ 241:DataStructure/linked_list.c ****             callback(list, list->data, arg);
+ 638              		.loc 1 241 13 is_stmt 1 view .LVU172
+ 639 0010 0169     		ldr	r1, [r0, #16]
+ 640              	.LVL50:
+ 641              		.loc 1 241 13 is_stmt 0 view .LVU173
+ 642 0012 A047     		blx	r4
+ 643              	.LVL51:
+ 644              	.L49:
+ 242:DataStructure/linked_list.c ****         }
+ 243:DataStructure/linked_list.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 17
+
+
+ 244:DataStructure/linked_list.c ****         if (list->nxt != NULL)
+ 645              		.loc 1 244 9 is_stmt 1 view .LVU174
+ 646              		.loc 1 244 17 is_stmt 0 view .LVU175
+ 647 0014 F868     		ldr	r0, [r7, #12]
+ 648              		.loc 1 244 12 view .LVU176
+ 649 0016 20B1     		cbz	r0, .L50
+ 245:DataStructure/linked_list.c ****         {
+ 246:DataStructure/linked_list.c ****             List_traverse(list->nxt, callback, arg, cb_serial);
+ 650              		.loc 1 246 13 is_stmt 1 view .LVU177
+ 651 0018 2B46     		mov	r3, r5
+ 652 001a 3246     		mov	r2, r6
+ 653 001c 2146     		mov	r1, r4
+ 654 001e FFF7FEFF 		bl	List_traverse
+ 655              	.LVL52:
+ 656              	.L50:
+ 247:DataStructure/linked_list.c ****         }
+ 248:DataStructure/linked_list.c **** 
+ 249:DataStructure/linked_list.c ****         if ((callback != NULL) && (cb_serial == sub_callback))
+ 657              		.loc 1 249 9 view .LVU178
+ 658              		.loc 1 249 12 is_stmt 0 view .LVU179
+ 659 0022 64B1     		cbz	r4, .L52
+ 660              		.loc 1 249 32 discriminator 1 view .LVU180
+ 661 0024 012D     		cmp	r5, #1
+ 662 0026 01D0     		beq	.L58
+ 250:DataStructure/linked_list.c ****         {
+ 251:DataStructure/linked_list.c ****             callback(list, list->data, arg);
+ 252:DataStructure/linked_list.c ****         }
+ 253:DataStructure/linked_list.c ****     }
+ 254:DataStructure/linked_list.c ****     else
+ 255:DataStructure/linked_list.c ****         return list_obj_error;
+ 256:DataStructure/linked_list.c **** 
+ 257:DataStructure/linked_list.c ****     return list_no_error;
+ 663              		.loc 1 257 12 view .LVU181
+ 664 0028 0020     		movs	r0, #0
+ 665              	.L48:
+ 258:DataStructure/linked_list.c **** }
+ 666              		.loc 1 258 1 view .LVU182
+ 667 002a F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 668              	.LVL53:
+ 669              	.L58:
+ 251:DataStructure/linked_list.c ****         }
+ 670              		.loc 1 251 13 is_stmt 1 view .LVU183
+ 671 002c 3246     		mov	r2, r6
+ 672 002e 3969     		ldr	r1, [r7, #16]
+ 673 0030 3846     		mov	r0, r7
+ 674 0032 A047     		blx	r4
+ 675              	.LVL54:
+ 257:DataStructure/linked_list.c **** }
+ 676              		.loc 1 257 12 is_stmt 0 view .LVU184
+ 677 0034 0020     		movs	r0, #0
+ 678 0036 F8E7     		b	.L48
+ 679              	.LVL55:
+ 680              	.L51:
+ 681              	.LCFI13:
+ 682              		.cfi_def_cfa_offset 0
+ 683              		.cfi_restore 3
+ 684              		.cfi_restore 4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 18
+
+
+ 685              		.cfi_restore 5
+ 686              		.cfi_restore 6
+ 687              		.cfi_restore 7
+ 688              		.cfi_restore 14
+ 255:DataStructure/linked_list.c **** 
+ 689              		.loc 1 255 16 view .LVU185
+ 690 0038 6FF00100 		mvn	r0, #1
+ 691              	.LVL56:
+ 692              		.loc 1 258 1 view .LVU186
+ 693 003c 7047     		bx	lr
+ 694              	.LVL57:
+ 695              	.L52:
+ 696              	.LCFI14:
+ 697              		.cfi_def_cfa_offset 24
+ 698              		.cfi_offset 3, -24
+ 699              		.cfi_offset 4, -20
+ 700              		.cfi_offset 5, -16
+ 701              		.cfi_offset 6, -12
+ 702              		.cfi_offset 7, -8
+ 703              		.cfi_offset 14, -4
+ 257:DataStructure/linked_list.c **** }
+ 704              		.loc 1 257 12 view .LVU187
+ 705 003e 0020     		movs	r0, #0
+ 706 0040 F3E7     		b	.L48
+ 707              		.cfi_endproc
+ 708              	.LFE13:
+ 710              		.section	.text.List_traverse_HaltByCondition,"ax",%progbits
+ 711              		.align	1
+ 712              		.global	List_traverse_HaltByCondition
+ 713              		.syntax unified
+ 714              		.thumb
+ 715              		.thumb_func
+ 717              	List_traverse_HaltByCondition:
+ 718              	.LVL58:
+ 719              	.LFB12:
+ 209:DataStructure/linked_list.c ****     if (list != NULL)
+ 720              		.loc 1 209 1 is_stmt 1 view -0
+ 721              		.cfi_startproc
+ 722              		@ args = 4, pretend = 0, frame = 0
+ 723              		@ frame_needed = 0, uses_anonymous_args = 0
+ 210:DataStructure/linked_list.c ****     {
+ 724              		.loc 1 210 5 view .LVU189
+ 210:DataStructure/linked_list.c ****     {
+ 725              		.loc 1 210 8 is_stmt 0 view .LVU190
+ 726 0000 E8B1     		cbz	r0, .L63
+ 209:DataStructure/linked_list.c ****     if (list != NULL)
+ 727              		.loc 1 209 1 view .LVU191
+ 728 0002 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 729              	.LCFI15:
+ 730              		.cfi_def_cfa_offset 24
+ 731              		.cfi_offset 3, -24
+ 732              		.cfi_offset 4, -20
+ 733              		.cfi_offset 5, -16
+ 734              		.cfi_offset 6, -12
+ 735              		.cfi_offset 7, -8
+ 736              		.cfi_offset 14, -4
+ 737 0004 0C46     		mov	r4, r1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 19
+
+
+ 738 0006 1646     		mov	r6, r2
+ 739 0008 1D46     		mov	r5, r3
+ 740 000a 0746     		mov	r7, r0
+ 212:DataStructure/linked_list.c ****         {
+ 741              		.loc 1 212 9 is_stmt 1 view .LVU192
+ 212:DataStructure/linked_list.c ****         {
+ 742              		.loc 1 212 12 is_stmt 0 view .LVU193
+ 743 000c 29B1     		cbz	r1, .L61
+ 212:DataStructure/linked_list.c ****         {
+ 744              		.loc 1 212 32 discriminator 1 view .LVU194
+ 745 000e 23B9     		cbnz	r3, .L61
+ 214:DataStructure/linked_list.c ****                 return list_no_error;
+ 746              		.loc 1 214 13 is_stmt 1 view .LVU195
+ 214:DataStructure/linked_list.c ****                 return list_no_error;
+ 747              		.loc 1 214 30 is_stmt 0 view .LVU196
+ 748 0010 0169     		ldr	r1, [r0, #16]
+ 749              	.LVL59:
+ 214:DataStructure/linked_list.c ****                 return list_no_error;
+ 750              		.loc 1 214 30 view .LVU197
+ 751 0012 A047     		blx	r4
+ 752              	.LVL60:
+ 214:DataStructure/linked_list.c ****                 return list_no_error;
+ 753              		.loc 1 214 16 view .LVU198
+ 754 0014 069B     		ldr	r3, [sp, #24]
+ 755 0016 9842     		cmp	r0, r3
+ 756 0018 14D0     		beq	.L64
+ 757              	.L61:
+ 218:DataStructure/linked_list.c ****         {
+ 758              		.loc 1 218 9 is_stmt 1 view .LVU199
+ 218:DataStructure/linked_list.c ****         {
+ 759              		.loc 1 218 17 is_stmt 0 view .LVU200
+ 760 001a F868     		ldr	r0, [r7, #12]
+ 218:DataStructure/linked_list.c ****         {
+ 761              		.loc 1 218 12 view .LVU201
+ 762 001c 20B1     		cbz	r0, .L62
+ 220:DataStructure/linked_list.c ****         }
+ 763              		.loc 1 220 13 is_stmt 1 view .LVU202
+ 764 001e 2B46     		mov	r3, r5
+ 765 0020 3246     		mov	r2, r6
+ 766 0022 2146     		mov	r1, r4
+ 767 0024 FFF7FEFF 		bl	List_traverse
+ 768              	.LVL61:
+ 769              	.L62:
+ 223:DataStructure/linked_list.c ****         {
+ 770              		.loc 1 223 9 view .LVU203
+ 223:DataStructure/linked_list.c ****         {
+ 771              		.loc 1 223 12 is_stmt 0 view .LVU204
+ 772 0028 74B1     		cbz	r4, .L65
+ 223:DataStructure/linked_list.c ****         {
+ 773              		.loc 1 223 32 discriminator 1 view .LVU205
+ 774 002a 012D     		cmp	r5, #1
+ 775 002c 01D0     		beq	.L71
+ 232:DataStructure/linked_list.c **** }
+ 776              		.loc 1 232 12 view .LVU206
+ 777 002e 0020     		movs	r0, #0
+ 778              	.L60:
+ 233:DataStructure/linked_list.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 20
+
+
+ 779              		.loc 1 233 1 view .LVU207
+ 780 0030 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 781              	.LVL62:
+ 782              	.L71:
+ 225:DataStructure/linked_list.c ****                 return list_no_error;
+ 783              		.loc 1 225 13 is_stmt 1 view .LVU208
+ 225:DataStructure/linked_list.c ****                 return list_no_error;
+ 784              		.loc 1 225 30 is_stmt 0 view .LVU209
+ 785 0032 3246     		mov	r2, r6
+ 786 0034 3969     		ldr	r1, [r7, #16]
+ 787 0036 3846     		mov	r0, r7
+ 788 0038 A047     		blx	r4
+ 789              	.LVL63:
+ 232:DataStructure/linked_list.c **** }
+ 790              		.loc 1 232 12 view .LVU210
+ 791 003a 0020     		movs	r0, #0
+ 792 003c F8E7     		b	.L60
+ 793              	.LVL64:
+ 794              	.L63:
+ 795              	.LCFI16:
+ 796              		.cfi_def_cfa_offset 0
+ 797              		.cfi_restore 3
+ 798              		.cfi_restore 4
+ 799              		.cfi_restore 5
+ 800              		.cfi_restore 6
+ 801              		.cfi_restore 7
+ 802              		.cfi_restore 14
+ 230:DataStructure/linked_list.c **** 
+ 803              		.loc 1 230 16 view .LVU211
+ 804 003e 6FF00100 		mvn	r0, #1
+ 805              	.LVL65:
+ 233:DataStructure/linked_list.c **** 
+ 806              		.loc 1 233 1 view .LVU212
+ 807 0042 7047     		bx	lr
+ 808              	.LVL66:
+ 809              	.L64:
+ 810              	.LCFI17:
+ 811              		.cfi_def_cfa_offset 24
+ 812              		.cfi_offset 3, -24
+ 813              		.cfi_offset 4, -20
+ 814              		.cfi_offset 5, -16
+ 815              		.cfi_offset 6, -12
+ 816              		.cfi_offset 7, -8
+ 817              		.cfi_offset 14, -4
+ 215:DataStructure/linked_list.c ****         }
+ 818              		.loc 1 215 24 view .LVU213
+ 819 0044 0020     		movs	r0, #0
+ 820 0046 F3E7     		b	.L60
+ 821              	.L65:
+ 232:DataStructure/linked_list.c **** }
+ 822              		.loc 1 232 12 view .LVU214
+ 823 0048 0020     		movs	r0, #0
+ 824 004a F1E7     		b	.L60
+ 825              		.cfi_endproc
+ 826              	.LFE12:
+ 828              		.section	.text.List_DecBelowID,"ax",%progbits
+ 829              		.align	1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 21
+
+
+ 830              		.global	List_DecBelowID
+ 831              		.syntax unified
+ 832              		.thumb
+ 833              		.thumb_func
+ 835              	List_DecBelowID:
+ 836              	.LVL67:
+ 837              	.LFB14:
+ 259:DataStructure/linked_list.c **** 
+ 260:DataStructure/linked_list.c **** list_error_code List_DecBelowID(item_obj *obj)
+ 261:DataStructure/linked_list.c **** {
+ 838              		.loc 1 261 1 is_stmt 1 view -0
+ 839              		.cfi_startproc
+ 840              		@ args = 0, pretend = 0, frame = 0
+ 841              		@ frame_needed = 0, uses_anonymous_args = 0
+ 262:DataStructure/linked_list.c ****     if (obj != NULL)
+ 842              		.loc 1 262 5 view .LVU216
+ 843              		.loc 1 262 8 is_stmt 0 view .LVU217
+ 844 0000 28B1     		cbz	r0, .L74
+ 261:DataStructure/linked_list.c ****     if (obj != NULL)
+ 845              		.loc 1 261 1 view .LVU218
+ 846 0002 08B5     		push	{r3, lr}
+ 847              	.LCFI18:
+ 848              		.cfi_def_cfa_offset 8
+ 849              		.cfi_offset 3, -8
+ 850              		.cfi_offset 14, -4
+ 263:DataStructure/linked_list.c ****     {
+ 264:DataStructure/linked_list.c ****         List_DecBelowID(obj->nxt);
+ 851              		.loc 1 264 9 is_stmt 1 view .LVU219
+ 852 0004 C068     		ldr	r0, [r0, #12]
+ 853              	.LVL68:
+ 854              		.loc 1 264 9 is_stmt 0 view .LVU220
+ 855 0006 FFF7FEFF 		bl	List_DecBelowID
+ 856              	.LVL69:
+ 265:DataStructure/linked_list.c **** 
+ 266:DataStructure/linked_list.c ****         return item_no_error;
+ 857              		.loc 1 266 9 is_stmt 1 view .LVU221
+ 858              		.loc 1 266 16 is_stmt 0 view .LVU222
+ 859 000a 0020     		movs	r0, #0
+ 267:DataStructure/linked_list.c ****     }
+ 268:DataStructure/linked_list.c **** 
+ 269:DataStructure/linked_list.c ****     return item_obj_error;
+ 270:DataStructure/linked_list.c **** }
+ 860              		.loc 1 270 1 view .LVU223
+ 861 000c 08BD     		pop	{r3, pc}
+ 862              	.LVL70:
+ 863              	.L74:
+ 864              	.LCFI19:
+ 865              		.cfi_def_cfa_offset 0
+ 866              		.cfi_restore 3
+ 867              		.cfi_restore 14
+ 269:DataStructure/linked_list.c **** }
+ 868              		.loc 1 269 12 view .LVU224
+ 869 000e 4FF0FF30 		mov	r0, #-1
+ 870              	.LVL71:
+ 871              		.loc 1 270 1 view .LVU225
+ 872 0012 7047     		bx	lr
+ 873              		.cfi_endproc
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 22
+
+
+ 874              	.LFE14:
+ 876              		.section	.text.List_Delete_Item,"ax",%progbits
+ 877              		.align	1
+ 878              		.global	List_Delete_Item
+ 879              		.syntax unified
+ 880              		.thumb
+ 881              		.thumb_func
+ 883              	List_Delete_Item:
+ 884              	.LVL72:
+ 885              	.LFB15:
+ 271:DataStructure/linked_list.c **** 
+ 272:DataStructure/linked_list.c **** list_error_code List_Delete_Item(item_obj *item, item_datareset_callback callback)
+ 273:DataStructure/linked_list.c **** {
+ 886              		.loc 1 273 1 is_stmt 1 view -0
+ 887              		.cfi_startproc
+ 888              		@ args = 0, pretend = 0, frame = 0
+ 889              		@ frame_needed = 0, uses_anonymous_args = 0
+ 274:DataStructure/linked_list.c ****     if (item != NULL)
+ 890              		.loc 1 274 5 view .LVU227
+ 891              		.loc 1 274 8 is_stmt 0 view .LVU228
+ 892 0000 10B3     		cbz	r0, .L86
+ 273:DataStructure/linked_list.c ****     if (item != NULL)
+ 893              		.loc 1 273 1 view .LVU229
+ 894 0002 10B5     		push	{r4, lr}
+ 895              	.LCFI20:
+ 896              		.cfi_def_cfa_offset 8
+ 897              		.cfi_offset 4, -8
+ 898              		.cfi_offset 14, -4
+ 899 0004 0446     		mov	r4, r0
+ 275:DataStructure/linked_list.c ****     {
+ 276:DataStructure/linked_list.c ****         if (callback != NULL)
+ 900              		.loc 1 276 9 is_stmt 1 view .LVU230
+ 901              		.loc 1 276 12 is_stmt 0 view .LVU231
+ 902 0006 01B1     		cbz	r1, .L81
+ 277:DataStructure/linked_list.c ****         {
+ 278:DataStructure/linked_list.c ****             callback(item);
+ 903              		.loc 1 278 13 is_stmt 1 view .LVU232
+ 904 0008 8847     		blx	r1
+ 905              	.LVL73:
+ 906              	.L81:
+ 279:DataStructure/linked_list.c ****         }
+ 280:DataStructure/linked_list.c **** 
+ 281:DataStructure/linked_list.c ****         if ((item->prv != NULL) && (item->nxt != NULL))
+ 907              		.loc 1 281 9 view .LVU233
+ 908              		.loc 1 281 18 is_stmt 0 view .LVU234
+ 909 000a A368     		ldr	r3, [r4, #8]
+ 910              		.loc 1 281 12 view .LVU235
+ 911 000c 4BB1     		cbz	r3, .L82
+ 912              		.loc 1 281 41 discriminator 1 view .LVU236
+ 913 000e E268     		ldr	r2, [r4, #12]
+ 914              		.loc 1 281 33 discriminator 1 view .LVU237
+ 915 0010 3AB1     		cbz	r2, .L82
+ 282:DataStructure/linked_list.c ****         {
+ 283:DataStructure/linked_list.c ****             item->prv->nxt = item->nxt;
+ 916              		.loc 1 283 13 is_stmt 1 view .LVU238
+ 917              		.loc 1 283 28 is_stmt 0 view .LVU239
+ 918 0012 DA60     		str	r2, [r3, #12]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 23
+
+
+ 284:DataStructure/linked_list.c ****             item->nxt->prv = item->prv;
+ 919              		.loc 1 284 13 is_stmt 1 view .LVU240
+ 920              		.loc 1 284 34 is_stmt 0 view .LVU241
+ 921 0014 A368     		ldr	r3, [r4, #8]
+ 922              		.loc 1 284 28 view .LVU242
+ 923 0016 9360     		str	r3, [r2, #8]
+ 285:DataStructure/linked_list.c ****             item->prv = NULL;
+ 924              		.loc 1 285 13 is_stmt 1 view .LVU243
+ 925              		.loc 1 285 23 is_stmt 0 view .LVU244
+ 926 0018 0023     		movs	r3, #0
+ 927 001a A360     		str	r3, [r4, #8]
+ 286:DataStructure/linked_list.c ****             item->nxt = NULL;
+ 928              		.loc 1 286 13 is_stmt 1 view .LVU245
+ 929              		.loc 1 286 23 is_stmt 0 view .LVU246
+ 930 001c E360     		str	r3, [r4, #12]
+ 931              	.LVL74:
+ 932              	.L83:
+ 287:DataStructure/linked_list.c ****         }
+ 288:DataStructure/linked_list.c ****         else if ((item->prv != NULL) && (item->nxt == NULL))
+ 289:DataStructure/linked_list.c ****         {
+ 290:DataStructure/linked_list.c ****             item->prv->nxt = NULL;
+ 291:DataStructure/linked_list.c ****             item->prv = NULL;
+ 292:DataStructure/linked_list.c ****             item->nxt = NULL;
+ 293:DataStructure/linked_list.c ****         }
+ 294:DataStructure/linked_list.c ****         else if ((item->prv == NULL) && (item->nxt != NULL))
+ 295:DataStructure/linked_list.c ****         {
+ 296:DataStructure/linked_list.c ****             item = item->nxt;
+ 297:DataStructure/linked_list.c ****         }
+ 298:DataStructure/linked_list.c ****         else if ((item->prv == NULL) && (item->nxt == NULL))
+ 299:DataStructure/linked_list.c ****         {
+ 300:DataStructure/linked_list.c ****             item->data = NULL;
+ 301:DataStructure/linked_list.c ****             item = NULL;
+ 302:DataStructure/linked_list.c ****         }
+ 303:DataStructure/linked_list.c **** 
+ 304:DataStructure/linked_list.c ****         return list_no_error;
+ 933              		.loc 1 304 9 is_stmt 1 view .LVU247
+ 934              		.loc 1 304 16 is_stmt 0 view .LVU248
+ 935 001e 0020     		movs	r0, #0
+ 305:DataStructure/linked_list.c ****     }
+ 306:DataStructure/linked_list.c **** 
+ 307:DataStructure/linked_list.c ****     return list_obj_error;
+ 308:DataStructure/linked_list.c **** }
+ 936              		.loc 1 308 1 view .LVU249
+ 937 0020 10BD     		pop	{r4, pc}
+ 938              	.LVL75:
+ 939              	.L82:
+ 288:DataStructure/linked_list.c ****         {
+ 940              		.loc 1 288 14 is_stmt 1 view .LVU250
+ 288:DataStructure/linked_list.c ****         {
+ 941              		.loc 1 288 17 is_stmt 0 view .LVU251
+ 942 0022 0BB1     		cbz	r3, .L84
+ 288:DataStructure/linked_list.c ****         {
+ 943              		.loc 1 288 46 discriminator 1 view .LVU252
+ 944 0024 E268     		ldr	r2, [r4, #12]
+ 288:DataStructure/linked_list.c ****         {
+ 945              		.loc 1 288 38 discriminator 1 view .LVU253
+ 946 0026 3AB1     		cbz	r2, .L91
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 24
+
+
+ 947              	.L84:
+ 294:DataStructure/linked_list.c ****         {
+ 948              		.loc 1 294 14 is_stmt 1 view .LVU254
+ 294:DataStructure/linked_list.c ****         {
+ 949              		.loc 1 294 17 is_stmt 0 view .LVU255
+ 950 0028 53B1     		cbz	r3, .L92
+ 951              	.L85:
+ 298:DataStructure/linked_list.c ****         {
+ 952              		.loc 1 298 14 is_stmt 1 view .LVU256
+ 298:DataStructure/linked_list.c ****         {
+ 953              		.loc 1 298 17 is_stmt 0 view .LVU257
+ 954 002a 002B     		cmp	r3, #0
+ 955 002c F7D1     		bne	.L83
+ 298:DataStructure/linked_list.c ****         {
+ 956              		.loc 1 298 46 discriminator 1 view .LVU258
+ 957 002e E368     		ldr	r3, [r4, #12]
+ 298:DataStructure/linked_list.c ****         {
+ 958              		.loc 1 298 38 discriminator 1 view .LVU259
+ 959 0030 002B     		cmp	r3, #0
+ 960 0032 F4D1     		bne	.L83
+ 300:DataStructure/linked_list.c ****             item = NULL;
+ 961              		.loc 1 300 13 is_stmt 1 view .LVU260
+ 300:DataStructure/linked_list.c ****             item = NULL;
+ 962              		.loc 1 300 24 is_stmt 0 view .LVU261
+ 963 0034 2361     		str	r3, [r4, #16]
+ 301:DataStructure/linked_list.c ****         }
+ 964              		.loc 1 301 13 is_stmt 1 view .LVU262
+ 965              	.LVL76:
+ 301:DataStructure/linked_list.c ****         }
+ 966              		.loc 1 301 13 is_stmt 0 view .LVU263
+ 967 0036 F2E7     		b	.L83
+ 968              	.LVL77:
+ 969              	.L91:
+ 290:DataStructure/linked_list.c ****             item->prv = NULL;
+ 970              		.loc 1 290 13 is_stmt 1 view .LVU264
+ 290:DataStructure/linked_list.c ****             item->prv = NULL;
+ 971              		.loc 1 290 28 is_stmt 0 view .LVU265
+ 972 0038 DA60     		str	r2, [r3, #12]
+ 291:DataStructure/linked_list.c ****             item->nxt = NULL;
+ 973              		.loc 1 291 13 is_stmt 1 view .LVU266
+ 291:DataStructure/linked_list.c ****             item->nxt = NULL;
+ 974              		.loc 1 291 23 is_stmt 0 view .LVU267
+ 975 003a A260     		str	r2, [r4, #8]
+ 292:DataStructure/linked_list.c ****         }
+ 976              		.loc 1 292 13 is_stmt 1 view .LVU268
+ 292:DataStructure/linked_list.c ****         }
+ 977              		.loc 1 292 23 is_stmt 0 view .LVU269
+ 978 003c E260     		str	r2, [r4, #12]
+ 979 003e EEE7     		b	.L83
+ 980              	.L92:
+ 294:DataStructure/linked_list.c ****         {
+ 981              		.loc 1 294 46 discriminator 1 view .LVU270
+ 982 0040 E268     		ldr	r2, [r4, #12]
+ 294:DataStructure/linked_list.c ****         {
+ 983              		.loc 1 294 38 discriminator 1 view .LVU271
+ 984 0042 002A     		cmp	r2, #0
+ 985 0044 EBD1     		bne	.L83
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 25
+
+
+ 986 0046 F0E7     		b	.L85
+ 987              	.LVL78:
+ 988              	.L86:
+ 989              	.LCFI21:
+ 990              		.cfi_def_cfa_offset 0
+ 991              		.cfi_restore 4
+ 992              		.cfi_restore 14
+ 307:DataStructure/linked_list.c **** }
+ 993              		.loc 1 307 12 view .LVU272
+ 994 0048 6FF00100 		mvn	r0, #1
+ 995              	.LVL79:
+ 996              		.loc 1 308 1 view .LVU273
+ 997 004c 7047     		bx	lr
+ 998              		.cfi_endproc
+ 999              	.LFE15:
+ 1001              		.section	.text.List_PopFirst,"ax",%progbits
+ 1002              		.align	1
+ 1003              		.global	List_PopFirst
+ 1004              		.syntax unified
+ 1005              		.thumb
+ 1006              		.thumb_func
+ 1008              	List_PopFirst:
+ 1009              	.LVL80:
+ 1010              	.LFB16:
+ 309:DataStructure/linked_list.c **** 
+ 310:DataStructure/linked_list.c **** item_obj *List_PopFirst(list_obj *list)
+ 311:DataStructure/linked_list.c **** {
+ 1011              		.loc 1 311 1 is_stmt 1 view -0
+ 1012              		.cfi_startproc
+ 1013              		@ args = 0, pretend = 0, frame = 0
+ 1014              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1015              		.loc 1 311 1 is_stmt 0 view .LVU275
+ 1016 0000 08B5     		push	{r3, lr}
+ 1017              	.LCFI22:
+ 1018              		.cfi_def_cfa_offset 8
+ 1019              		.cfi_offset 3, -8
+ 1020              		.cfi_offset 14, -4
+ 312:DataStructure/linked_list.c ****     item_obj *item_tmp = NULL;
+ 1021              		.loc 1 312 5 is_stmt 1 view .LVU276
+ 1022              	.LVL81:
+ 313:DataStructure/linked_list.c **** 
+ 314:DataStructure/linked_list.c ****     if (list != NULL)
+ 1023              		.loc 1 314 5 view .LVU277
+ 1024              		.loc 1 314 8 is_stmt 0 view .LVU278
+ 1025 0002 0346     		mov	r3, r0
+ 1026 0004 28B1     		cbz	r0, .L93
+ 315:DataStructure/linked_list.c ****     {
+ 316:DataStructure/linked_list.c ****         if (list->prv != NULL)
+ 1027              		.loc 1 316 9 is_stmt 1 view .LVU279
+ 1028              		.loc 1 316 17 is_stmt 0 view .LVU280
+ 1029 0006 8068     		ldr	r0, [r0, #8]
+ 1030              	.LVL82:
+ 1031              		.loc 1 316 12 view .LVU281
+ 1032 0008 20B9     		cbnz	r0, .L98
+ 317:DataStructure/linked_list.c ****         {
+ 318:DataStructure/linked_list.c ****             List_PopFirst(list->prv);
+ 319:DataStructure/linked_list.c ****         }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 26
+
+
+ 320:DataStructure/linked_list.c ****         else
+ 321:DataStructure/linked_list.c ****         {
+ 322:DataStructure/linked_list.c ****             item_tmp = list;
+ 1033              		.loc 1 322 13 is_stmt 1 view .LVU282
+ 1034              	.LVL83:
+ 323:DataStructure/linked_list.c ****             item_tmp->nxt = NULL;
+ 1035              		.loc 1 323 13 view .LVU283
+ 1036              		.loc 1 323 27 is_stmt 0 view .LVU284
+ 1037 000a 0022     		movs	r2, #0
+ 1038 000c DA60     		str	r2, [r3, #12]
+ 324:DataStructure/linked_list.c **** 
+ 325:DataStructure/linked_list.c ****             list = list->nxt;
+ 1039              		.loc 1 325 13 is_stmt 1 view .LVU285
+ 1040              	.LVL84:
+ 326:DataStructure/linked_list.c ****             list->prv = NULL;
+ 1041              		.loc 1 326 13 view .LVU286
+ 1042              		.loc 1 326 23 is_stmt 0 view .LVU287
+ 1043 000e 9260     		str	r2, [r2, #8]
+ 322:DataStructure/linked_list.c ****             item_tmp->nxt = NULL;
+ 1044              		.loc 1 322 22 view .LVU288
+ 1045 0010 1846     		mov	r0, r3
+ 1046              	.LVL85:
+ 1047              	.L93:
+ 327:DataStructure/linked_list.c ****         }
+ 328:DataStructure/linked_list.c ****     }
+ 329:DataStructure/linked_list.c **** 
+ 330:DataStructure/linked_list.c ****     return item_tmp;
+ 331:DataStructure/linked_list.c **** }
+ 1048              		.loc 1 331 1 view .LVU289
+ 1049 0012 08BD     		pop	{r3, pc}
+ 1050              	.LVL86:
+ 1051              	.L98:
+ 318:DataStructure/linked_list.c ****         }
+ 1052              		.loc 1 318 13 is_stmt 1 view .LVU290
+ 1053 0014 FFF7FEFF 		bl	List_PopFirst
+ 1054              	.LVL87:
+ 312:DataStructure/linked_list.c **** 
+ 1055              		.loc 1 312 15 is_stmt 0 view .LVU291
+ 1056 0018 0020     		movs	r0, #0
+ 1057 001a FAE7     		b	.L93
+ 1058              		.cfi_endproc
+ 1059              	.LFE16:
+ 1061              		.section	.text.List_GetFront_Len,"ax",%progbits
+ 1062              		.align	1
+ 1063              		.global	List_GetFront_Len
+ 1064              		.syntax unified
+ 1065              		.thumb
+ 1066              		.thumb_func
+ 1068              	List_GetFront_Len:
+ 1069              	.LVL88:
+ 1070              	.LFB17:
+ 332:DataStructure/linked_list.c **** 
+ 333:DataStructure/linked_list.c **** int16_t List_GetFront_Len(item_obj *list)
+ 334:DataStructure/linked_list.c **** {
+ 1071              		.loc 1 334 1 is_stmt 1 view -0
+ 1072              		.cfi_startproc
+ 1073              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 27
+
+
+ 1074              		@ frame_needed = 0, uses_anonymous_args = 0
+ 335:DataStructure/linked_list.c ****     int16_t fnt_len = 0;
+ 1075              		.loc 1 335 5 view .LVU293
+ 336:DataStructure/linked_list.c **** 
+ 337:DataStructure/linked_list.c ****     if (list != NULL)
+ 1076              		.loc 1 337 5 view .LVU294
+ 1077              		.loc 1 337 8 is_stmt 0 view .LVU295
+ 1078 0000 38B1     		cbz	r0, .L101
+ 334:DataStructure/linked_list.c ****     int16_t fnt_len = 0;
+ 1079              		.loc 1 334 1 view .LVU296
+ 1080 0002 08B5     		push	{r3, lr}
+ 1081              	.LCFI23:
+ 1082              		.cfi_def_cfa_offset 8
+ 1083              		.cfi_offset 3, -8
+ 1084              		.cfi_offset 14, -4
+ 338:DataStructure/linked_list.c ****     {
+ 339:DataStructure/linked_list.c ****         if (list->prv == NULL)
+ 1085              		.loc 1 339 9 is_stmt 1 view .LVU297
+ 1086              		.loc 1 339 17 is_stmt 0 view .LVU298
+ 1087 0004 8068     		ldr	r0, [r0, #8]
+ 1088              	.LVL89:
+ 1089              		.loc 1 339 12 view .LVU299
+ 1090 0006 38B1     		cbz	r0, .L102
+ 340:DataStructure/linked_list.c ****         {
+ 341:DataStructure/linked_list.c ****             return 0;
+ 342:DataStructure/linked_list.c ****         }
+ 343:DataStructure/linked_list.c ****         else
+ 344:DataStructure/linked_list.c ****         {
+ 345:DataStructure/linked_list.c ****             fnt_len = List_GetFront_Len(list->prv);
+ 1091              		.loc 1 345 13 is_stmt 1 view .LVU300
+ 1092              		.loc 1 345 23 is_stmt 0 view .LVU301
+ 1093 0008 FFF7FEFF 		bl	List_GetFront_Len
+ 1094              	.LVL90:
+ 346:DataStructure/linked_list.c ****             fnt_len++;
+ 1095              		.loc 1 346 13 is_stmt 1 view .LVU302
+ 1096              		.loc 1 346 20 is_stmt 0 view .LVU303
+ 1097 000c 0130     		adds	r0, r0, #1
+ 1098              	.LVL91:
+ 1099              		.loc 1 346 20 view .LVU304
+ 1100 000e 00B2     		sxth	r0, r0
+ 1101              	.LVL92:
+ 347:DataStructure/linked_list.c ****         }
+ 348:DataStructure/linked_list.c ****     }
+ 349:DataStructure/linked_list.c ****     else
+ 350:DataStructure/linked_list.c ****         return list_obj_error;
+ 351:DataStructure/linked_list.c **** 
+ 352:DataStructure/linked_list.c ****     return fnt_len;
+ 1102              		.loc 1 352 5 is_stmt 1 view .LVU305
+ 1103              	.L100:
+ 353:DataStructure/linked_list.c **** }
+ 1104              		.loc 1 353 1 is_stmt 0 view .LVU306
+ 1105 0010 08BD     		pop	{r3, pc}
+ 1106              	.LVL93:
+ 1107              	.L101:
+ 1108              	.LCFI24:
+ 1109              		.cfi_def_cfa_offset 0
+ 1110              		.cfi_restore 3
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 28
+
+
+ 1111              		.cfi_restore 14
+ 350:DataStructure/linked_list.c **** 
+ 1112              		.loc 1 350 16 view .LVU307
+ 1113 0012 6FF00100 		mvn	r0, #1
+ 1114              	.LVL94:
+ 1115              		.loc 1 353 1 view .LVU308
+ 1116 0016 7047     		bx	lr
+ 1117              	.L102:
+ 1118              	.LCFI25:
+ 1119              		.cfi_def_cfa_offset 8
+ 1120              		.cfi_offset 3, -8
+ 1121              		.cfi_offset 14, -4
+ 341:DataStructure/linked_list.c ****         }
+ 1122              		.loc 1 341 20 view .LVU309
+ 1123 0018 0020     		movs	r0, #0
+ 1124 001a F9E7     		b	.L100
+ 1125              		.cfi_endproc
+ 1126              	.LFE17:
+ 1128              		.section	.text.List_GetBack_Len,"ax",%progbits
+ 1129              		.align	1
+ 1130              		.global	List_GetBack_Len
+ 1131              		.syntax unified
+ 1132              		.thumb
+ 1133              		.thumb_func
+ 1135              	List_GetBack_Len:
+ 1136              	.LVL95:
+ 1137              	.LFB18:
+ 354:DataStructure/linked_list.c **** 
+ 355:DataStructure/linked_list.c **** int16_t List_GetBack_Len(item_obj *list)
+ 356:DataStructure/linked_list.c **** {
+ 1138              		.loc 1 356 1 is_stmt 1 view -0
+ 1139              		.cfi_startproc
+ 1140              		@ args = 0, pretend = 0, frame = 0
+ 1141              		@ frame_needed = 0, uses_anonymous_args = 0
+ 357:DataStructure/linked_list.c ****     uint16_t bck_len = 0;
+ 1142              		.loc 1 357 5 view .LVU311
+ 358:DataStructure/linked_list.c **** 
+ 359:DataStructure/linked_list.c ****     if (list != NULL)
+ 1143              		.loc 1 359 5 view .LVU312
+ 1144              		.loc 1 359 8 is_stmt 0 view .LVU313
+ 1145 0000 40B1     		cbz	r0, .L109
+ 356:DataStructure/linked_list.c ****     uint16_t bck_len = 0;
+ 1146              		.loc 1 356 1 view .LVU314
+ 1147 0002 08B5     		push	{r3, lr}
+ 1148              	.LCFI26:
+ 1149              		.cfi_def_cfa_offset 8
+ 1150              		.cfi_offset 3, -8
+ 1151              		.cfi_offset 14, -4
+ 360:DataStructure/linked_list.c ****     {
+ 361:DataStructure/linked_list.c ****         if (list->nxt == NULL)
+ 1152              		.loc 1 361 9 is_stmt 1 view .LVU315
+ 1153              		.loc 1 361 17 is_stmt 0 view .LVU316
+ 1154 0004 C068     		ldr	r0, [r0, #12]
+ 1155              	.LVL96:
+ 1156              		.loc 1 361 12 view .LVU317
+ 1157 0006 40B1     		cbz	r0, .L110
+ 362:DataStructure/linked_list.c ****         {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 29
+
+
+ 363:DataStructure/linked_list.c ****             return 0;
+ 364:DataStructure/linked_list.c ****         }
+ 365:DataStructure/linked_list.c ****         else
+ 366:DataStructure/linked_list.c ****         {
+ 367:DataStructure/linked_list.c ****             bck_len = List_GetBack_Len(list->nxt);
+ 1158              		.loc 1 367 13 is_stmt 1 view .LVU318
+ 1159              		.loc 1 367 23 is_stmt 0 view .LVU319
+ 1160 0008 FFF7FEFF 		bl	List_GetBack_Len
+ 1161              	.LVL97:
+ 1162              		.loc 1 367 21 view .LVU320
+ 1163 000c 80B2     		uxth	r0, r0
+ 1164              	.LVL98:
+ 368:DataStructure/linked_list.c ****             bck_len++;
+ 1165              		.loc 1 368 13 is_stmt 1 view .LVU321
+ 1166              		.loc 1 368 20 is_stmt 0 view .LVU322
+ 1167 000e 0130     		adds	r0, r0, #1
+ 1168              	.LVL99:
+ 369:DataStructure/linked_list.c ****         }
+ 370:DataStructure/linked_list.c ****     }
+ 371:DataStructure/linked_list.c ****     else
+ 372:DataStructure/linked_list.c ****         return list_obj_error;
+ 373:DataStructure/linked_list.c **** 
+ 374:DataStructure/linked_list.c ****     return bck_len;
+ 1169              		.loc 1 374 5 is_stmt 1 view .LVU323
+ 1170              		.loc 1 374 12 is_stmt 0 view .LVU324
+ 1171 0010 00B2     		sxth	r0, r0
+ 1172              	.LVL100:
+ 1173              	.L108:
+ 375:DataStructure/linked_list.c **** }
+ 1174              		.loc 1 375 1 view .LVU325
+ 1175 0012 08BD     		pop	{r3, pc}
+ 1176              	.LVL101:
+ 1177              	.L109:
+ 1178              	.LCFI27:
+ 1179              		.cfi_def_cfa_offset 0
+ 1180              		.cfi_restore 3
+ 1181              		.cfi_restore 14
+ 372:DataStructure/linked_list.c **** 
+ 1182              		.loc 1 372 16 view .LVU326
+ 1183 0014 6FF00100 		mvn	r0, #1
+ 1184              	.LVL102:
+ 1185              		.loc 1 375 1 view .LVU327
+ 1186 0018 7047     		bx	lr
+ 1187              	.L110:
+ 1188              	.LCFI28:
+ 1189              		.cfi_def_cfa_offset 8
+ 1190              		.cfi_offset 3, -8
+ 1191              		.cfi_offset 14, -4
+ 363:DataStructure/linked_list.c ****         }
+ 1192              		.loc 1 363 20 view .LVU328
+ 1193 001a 0020     		movs	r0, #0
+ 1194 001c F9E7     		b	.L108
+ 1195              		.cfi_endproc
+ 1196              	.LFE18:
+ 1198              		.section	.text.List_GetLen,"ax",%progbits
+ 1199              		.align	1
+ 1200              		.global	List_GetLen
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 30
+
+
+ 1201              		.syntax unified
+ 1202              		.thumb
+ 1203              		.thumb_func
+ 1205              	List_GetLen:
+ 1206              	.LVL103:
+ 1207              	.LFB19:
+ 376:DataStructure/linked_list.c **** 
+ 377:DataStructure/linked_list.c **** int16_t List_GetLen(list_obj *list)
+ 378:DataStructure/linked_list.c **** {
+ 1208              		.loc 1 378 1 is_stmt 1 view -0
+ 1209              		.cfi_startproc
+ 1210              		@ args = 0, pretend = 0, frame = 0
+ 1211              		@ frame_needed = 0, uses_anonymous_args = 0
+ 379:DataStructure/linked_list.c ****     uint16_t len = 0;
+ 1212              		.loc 1 379 5 view .LVU330
+ 380:DataStructure/linked_list.c **** 
+ 381:DataStructure/linked_list.c ****     if (list != NULL)
+ 1213              		.loc 1 381 5 view .LVU331
+ 1214              		.loc 1 381 8 is_stmt 0 view .LVU332
+ 1215 0000 58B1     		cbz	r0, .L117
+ 378:DataStructure/linked_list.c ****     uint16_t len = 0;
+ 1216              		.loc 1 378 1 view .LVU333
+ 1217 0002 38B5     		push	{r3, r4, r5, lr}
+ 1218              	.LCFI29:
+ 1219              		.cfi_def_cfa_offset 16
+ 1220              		.cfi_offset 3, -16
+ 1221              		.cfi_offset 4, -12
+ 1222              		.cfi_offset 5, -8
+ 1223              		.cfi_offset 14, -4
+ 1224 0004 0546     		mov	r5, r0
+ 382:DataStructure/linked_list.c ****     {
+ 383:DataStructure/linked_list.c ****         len = List_GetFront_Len(list);
+ 1225              		.loc 1 383 9 is_stmt 1 view .LVU334
+ 1226              		.loc 1 383 15 is_stmt 0 view .LVU335
+ 1227 0006 FFF7FEFF 		bl	List_GetFront_Len
+ 1228              	.LVL104:
+ 1229              		.loc 1 383 13 view .LVU336
+ 1230 000a 84B2     		uxth	r4, r0
+ 1231              	.LVL105:
+ 384:DataStructure/linked_list.c ****         len += List_GetBack_Len(list);
+ 1232              		.loc 1 384 9 is_stmt 1 view .LVU337
+ 1233              		.loc 1 384 16 is_stmt 0 view .LVU338
+ 1234 000c 2846     		mov	r0, r5
+ 1235 000e FFF7FEFF 		bl	List_GetBack_Len
+ 1236              	.LVL106:
+ 1237              		.loc 1 384 13 view .LVU339
+ 1238 0012 14FA80F0 		uxtah	r0, r4, r0
+ 1239              	.LVL107:
+ 385:DataStructure/linked_list.c ****     }
+ 386:DataStructure/linked_list.c ****     else
+ 387:DataStructure/linked_list.c ****         return list_obj_error;
+ 388:DataStructure/linked_list.c **** 
+ 389:DataStructure/linked_list.c ****     return len;
+ 1240              		.loc 1 389 5 is_stmt 1 view .LVU340
+ 1241              		.loc 1 389 12 is_stmt 0 view .LVU341
+ 1242 0016 00B2     		sxth	r0, r0
+ 390:DataStructure/linked_list.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 31
+
+
+ 1243              		.loc 1 390 1 view .LVU342
+ 1244 0018 38BD     		pop	{r3, r4, r5, pc}
+ 1245              	.LVL108:
+ 1246              	.L117:
+ 1247              	.LCFI30:
+ 1248              		.cfi_def_cfa_offset 0
+ 1249              		.cfi_restore 3
+ 1250              		.cfi_restore 4
+ 1251              		.cfi_restore 5
+ 1252              		.cfi_restore 14
+ 387:DataStructure/linked_list.c **** 
+ 1253              		.loc 1 387 16 view .LVU343
+ 1254 001a 6FF00100 		mvn	r0, #1
+ 1255              	.LVL109:
+ 1256              		.loc 1 390 1 view .LVU344
+ 1257 001e 7047     		bx	lr
+ 1258              		.cfi_endproc
+ 1259              	.LFE19:
+ 1261              		.text
+ 1262              	.Letext0:
+ 1263              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1264              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1265              		.file 4 "DataStructure/linked_list.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s 			page 32
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 linked_list.c
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:20     .text.Item_SwapLRData:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:25     .text.Item_SwapLRData:00000000 Item_SwapLRData
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:53     .text.List_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:59     .text.List_Init:00000000 List_Init
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:108    .text.List_CheckAt:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:114    .text.List_CheckAt:00000000 List_CheckAt
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:165    .text.List_Chk_FirstItem:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:171    .text.List_Chk_FirstItem:00000000 List_Chk_FirstItem
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:208    .text.List_Chk_LastItem:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:214    .text.List_Chk_LastItem:00000000 List_Chk_LastItem
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:251    .text.List_ItemClear:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:257    .text.List_ItemClear:00000000 List_ItemClear
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:295    .text.List_ItemInit:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:301    .text.List_ItemInit:00000000 List_ItemInit
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:335    .text.List_InsertToPrv:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:341    .text.List_InsertToPrv:00000000 List_InsertToPrv
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:382    .text.List_InsertByOrder:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:388    .text.List_InsertByOrder:00000000 List_InsertByOrder
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:428    .text.List_InsertByCondition:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:434    .text.List_InsertByCondition:00000000 List_InsertByCondition
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:525    .text.List_Insert_Item:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:531    .text.List_Insert_Item:00000000 List_Insert_Item
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:603    .text.List_traverse:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:609    .text.List_traverse:00000000 List_traverse
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:711    .text.List_traverse_HaltByCondition:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:717    .text.List_traverse_HaltByCondition:00000000 List_traverse_HaltByCondition
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:829    .text.List_DecBelowID:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:835    .text.List_DecBelowID:00000000 List_DecBelowID
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:877    .text.List_Delete_Item:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:883    .text.List_Delete_Item:00000000 List_Delete_Item
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:1002   .text.List_PopFirst:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:1008   .text.List_PopFirst:00000000 List_PopFirst
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:1062   .text.List_GetFront_Len:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:1068   .text.List_GetFront_Len:00000000 List_GetFront_Len
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:1129   .text.List_GetBack_Len:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:1135   .text.List_GetBack_Len:00000000 List_GetBack_Len
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:1199   .text.List_GetLen:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccf52FT5.s:1205   .text.List_GetLen:00000000 List_GetLen
+
+NO UNDEFINED SYMBOLS

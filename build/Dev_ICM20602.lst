@@ -1,0 +1,2621 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Dev_ICM20602.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.DevICM20602_Detect,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	DevICM20602_Detect:
+  26              	.LVL0:
+  27              	.LFB1:
+  28              		.file 1 "Device/Dev_ICM20602.c"
+   1:Device/Dev_ICM20602.c **** #include "Dev_ICM20602.h"
+   2:Device/Dev_ICM20602.c **** 
+   3:Device/Dev_ICM20602.c **** #define ConvertToICM20602Trip_Reg(x) (x << 3)
+   4:Device/Dev_ICM20602.c **** 
+   5:Device/Dev_ICM20602.c **** /* internal function */
+   6:Device/Dev_ICM20602.c **** static bool DevICM20602_Reg_Read(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t *rx);
+   7:Device/Dev_ICM20602.c **** static bool DevICM20602_Reg_Write(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t tx);
+   8:Device/Dev_ICM20602.c **** 
+   9:Device/Dev_ICM20602.c **** /* external function */
+  10:Device/Dev_ICM20602.c **** static bool DevICM20602_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl);
+  11:Device/Dev_ICM20602.c **** static bool DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, 
+  12:Device/Dev_ICM20602.c ****                                ICM20602_SampleRate_List rate, 
+  13:Device/Dev_ICM20602.c ****                                ICM20602_GyrTrip_List GyrTrip, 
+  14:Device/Dev_ICM20602.c ****                                ICM20602_AccTrip_List AccTrip);
+  15:Device/Dev_ICM20602.c **** static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
+  16:Device/Dev_ICM20602.c ****                                 cs_ctl_callback cs_ctl,
+  17:Device/Dev_ICM20602.c ****                                 bus_trans_callback bus_trans,
+  18:Device/Dev_ICM20602.c ****                                 delay_callback delay,
+  19:Device/Dev_ICM20602.c ****                                 get_time_stamp_callback get_time_stamp);
+  20:Device/Dev_ICM20602.c **** static bool DevICM20602_Init(DevICM20602Obj_TypeDef *Obj);
+  21:Device/Dev_ICM20602.c **** static void DevICM20602_SetDRDY(DevICM20602Obj_TypeDef *Obj);
+  22:Device/Dev_ICM20602.c **** static bool DevICM20602_SwReset(DevICM20602Obj_TypeDef *Obj);
+  23:Device/Dev_ICM20602.c **** static bool DevICM20602_GetReady(DevICM20602Obj_TypeDef *Obj);
+  24:Device/Dev_ICM20602.c **** static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj);
+  25:Device/Dev_ICM20602.c **** static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj);
+  26:Device/Dev_ICM20602.c **** static IMU_Error_TypeDef DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj);
+  27:Device/Dev_ICM20602.c **** static IMUModuleScale_TypeDef DevICM20602_Get_Scale(const DevICM20602Obj_TypeDef *Obj);
+  28:Device/Dev_ICM20602.c **** static float DevICM20602_Get_Specified_AngularSpeed_Diff(const DevICM20602Obj_TypeDef *Obj);
+  29:Device/Dev_ICM20602.c **** 
+  30:Device/Dev_ICM20602.c **** /* external variable */
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 2
+
+
+  31:Device/Dev_ICM20602.c **** DevICM20602_TypeDef DevICM20602 = {
+  32:Device/Dev_ICM20602.c ****     .detect = DevICM20602_Detect,
+  33:Device/Dev_ICM20602.c ****     .config = DevICM20602_Config,
+  34:Device/Dev_ICM20602.c ****     .init = DevICM20602_Init,
+  35:Device/Dev_ICM20602.c ****     .pre_init = DevICM20602_PreInit,
+  36:Device/Dev_ICM20602.c ****     .reset = DevICM20602_SwReset,
+  37:Device/Dev_ICM20602.c ****     .set_ready = DevICM20602_SetDRDY,
+  38:Device/Dev_ICM20602.c ****     .get_ready = DevICM20602_GetReady,
+  39:Device/Dev_ICM20602.c ****     .sample = DevICM20602_Sample,
+  40:Device/Dev_ICM20602.c ****     .get_error = DevICM20602_Get_InitError,
+  41:Device/Dev_ICM20602.c ****     .get_data = DevICM20602_Get_Data,
+  42:Device/Dev_ICM20602.c ****     .get_scale = DevICM20602_Get_Scale,
+  43:Device/Dev_ICM20602.c ****     .get_gyr_angular_speed_diff = DevICM20602_Get_Specified_AngularSpeed_Diff,
+  44:Device/Dev_ICM20602.c **** };
+  45:Device/Dev_ICM20602.c **** 
+  46:Device/Dev_ICM20602.c **** static bool DevICM20602_Detect(bus_trans_callback trans, cs_ctl_callback cs_ctl)
+  47:Device/Dev_ICM20602.c **** {
+  29              		.loc 1 47 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 8
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 47 1 is_stmt 0 view .LVU1
+  34 0000 30B5     		push	{r4, r5, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 12
+  37              		.cfi_offset 4, -12
+  38              		.cfi_offset 5, -8
+  39              		.cfi_offset 14, -4
+  40 0002 83B0     		sub	sp, sp, #12
+  41              	.LCFI1:
+  42              		.cfi_def_cfa_offset 24
+  48:Device/Dev_ICM20602.c ****     uint8_t Rx_Tmp[2] = {0};
+  43              		.loc 1 48 5 is_stmt 1 view .LVU2
+  44              		.loc 1 48 13 is_stmt 0 view .LVU3
+  45 0004 0023     		movs	r3, #0
+  46 0006 ADF80430 		strh	r3, [sp, #4]	@ movhi
+  49:Device/Dev_ICM20602.c ****     uint8_t Tx_Tmp[2] = {0};
+  47              		.loc 1 49 5 is_stmt 1 view .LVU4
+  48              		.loc 1 49 13 is_stmt 0 view .LVU5
+  49 000a ADF80030 		strh	r3, [sp]	@ movhi
+  50:Device/Dev_ICM20602.c ****     bool state = false;
+  50              		.loc 1 50 5 is_stmt 1 view .LVU6
+  51              	.LVL1:
+  51:Device/Dev_ICM20602.c **** 
+  52:Device/Dev_ICM20602.c ****     if (cs_ctl == NULL || trans == NULL)
+  52              		.loc 1 52 5 view .LVU7
+  53              		.loc 1 52 8 is_stmt 0 view .LVU8
+  54 000e B9B1     		cbz	r1, .L3
+  55 0010 0446     		mov	r4, r0
+  56 0012 0D46     		mov	r5, r1
+  57              		.loc 1 52 24 discriminator 1 view .LVU9
+  58 0014 B0B1     		cbz	r0, .L4
+  53:Device/Dev_ICM20602.c ****         return false;
+  54:Device/Dev_ICM20602.c **** 
+  55:Device/Dev_ICM20602.c ****     Tx_Tmp[0] = ICM20602_WHO_AM_I | ICM20602_READ_MASK;
+  59              		.loc 1 55 5 is_stmt 1 view .LVU10
+  60              		.loc 1 55 15 is_stmt 0 view .LVU11
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 3
+
+
+  61 0016 F523     		movs	r3, #245
+  62 0018 8DF80030 		strb	r3, [sp]
+  56:Device/Dev_ICM20602.c **** 
+  57:Device/Dev_ICM20602.c ****     /* cs low */
+  58:Device/Dev_ICM20602.c ****     cs_ctl(false);
+  63              		.loc 1 58 5 is_stmt 1 view .LVU12
+  64 001c 0020     		movs	r0, #0
+  65              	.LVL2:
+  66              		.loc 1 58 5 is_stmt 0 view .LVU13
+  67 001e 8847     		blx	r1
+  68              	.LVL3:
+  59:Device/Dev_ICM20602.c **** 
+  60:Device/Dev_ICM20602.c ****     state = trans(Tx_Tmp, Rx_Tmp, 2);
+  69              		.loc 1 60 5 is_stmt 1 view .LVU14
+  70              		.loc 1 60 13 is_stmt 0 view .LVU15
+  71 0020 0222     		movs	r2, #2
+  72 0022 01A9     		add	r1, sp, #4
+  73 0024 6846     		mov	r0, sp
+  74 0026 A047     		blx	r4
+  75              	.LVL4:
+  76 0028 0446     		mov	r4, r0
+  77              	.LVL5:
+  61:Device/Dev_ICM20602.c **** 
+  62:Device/Dev_ICM20602.c ****     /* cs high */
+  63:Device/Dev_ICM20602.c ****     cs_ctl(true);
+  78              		.loc 1 63 5 is_stmt 1 view .LVU16
+  79 002a 0120     		movs	r0, #1
+  80 002c A847     		blx	r5
+  81              	.LVL6:
+  64:Device/Dev_ICM20602.c **** 
+  65:Device/Dev_ICM20602.c ****     if(!state)
+  82              		.loc 1 65 5 view .LVU17
+  83              		.loc 1 65 7 is_stmt 0 view .LVU18
+  84 002e 24B1     		cbz	r4, .L2
+  66:Device/Dev_ICM20602.c ****         return false;
+  67:Device/Dev_ICM20602.c **** 
+  68:Device/Dev_ICM20602.c ****     if(Rx_Tmp[1] == ICM20602_DEV_ID)
+  85              		.loc 1 68 5 is_stmt 1 view .LVU19
+  86              		.loc 1 68 14 is_stmt 0 view .LVU20
+  87 0030 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+  88              		.loc 1 68 7 view .LVU21
+  89 0034 122B     		cmp	r3, #18
+  90 0036 00D0     		beq	.L2
+  69:Device/Dev_ICM20602.c ****         return true;
+  70:Device/Dev_ICM20602.c **** 
+  71:Device/Dev_ICM20602.c ****     return false;
+  91              		.loc 1 71 12 view .LVU22
+  92 0038 0024     		movs	r4, #0
+  93              	.LVL7:
+  94              	.L2:
+  72:Device/Dev_ICM20602.c **** }
+  95              		.loc 1 72 1 view .LVU23
+  96 003a 2046     		mov	r0, r4
+  97 003c 03B0     		add	sp, sp, #12
+  98              	.LCFI2:
+  99              		.cfi_remember_state
+ 100              		.cfi_def_cfa_offset 12
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 4
+
+
+ 101              		@ sp needed
+ 102 003e 30BD     		pop	{r4, r5, pc}
+ 103              	.LVL8:
+ 104              	.L3:
+ 105              	.LCFI3:
+ 106              		.cfi_restore_state
+  53:Device/Dev_ICM20602.c **** 
+ 107              		.loc 1 53 16 view .LVU24
+ 108 0040 0024     		movs	r4, #0
+ 109 0042 FAE7     		b	.L2
+ 110              	.L4:
+  53:Device/Dev_ICM20602.c **** 
+ 111              		.loc 1 53 16 view .LVU25
+ 112 0044 0024     		movs	r4, #0
+ 113 0046 F8E7     		b	.L2
+ 114              		.cfi_endproc
+ 115              	.LFE1:
+ 117              		.section	.text.DevICM20602_Reg_Read,"ax",%progbits
+ 118              		.align	1
+ 119              		.syntax unified
+ 120              		.thumb
+ 121              		.thumb_func
+ 123              	DevICM20602_Reg_Read:
+ 124              	.LVL9:
+ 125              	.LFB2:
+  73:Device/Dev_ICM20602.c **** 
+  74:Device/Dev_ICM20602.c **** static bool DevICM20602_Reg_Read(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t *rx)
+  75:Device/Dev_ICM20602.c **** {
+ 126              		.loc 1 75 1 is_stmt 1 view -0
+ 127              		.cfi_startproc
+ 128              		@ args = 0, pretend = 0, frame = 8
+ 129              		@ frame_needed = 0, uses_anonymous_args = 0
+ 130              		.loc 1 75 1 is_stmt 0 view .LVU27
+ 131 0000 70B5     		push	{r4, r5, r6, lr}
+ 132              	.LCFI4:
+ 133              		.cfi_def_cfa_offset 16
+ 134              		.cfi_offset 4, -16
+ 135              		.cfi_offset 5, -12
+ 136              		.cfi_offset 6, -8
+ 137              		.cfi_offset 14, -4
+ 138 0002 82B0     		sub	sp, sp, #8
+ 139              	.LCFI5:
+ 140              		.cfi_def_cfa_offset 24
+  76:Device/Dev_ICM20602.c ****     uint8_t Rx_Tmp[2] = {0};
+ 141              		.loc 1 76 5 is_stmt 1 view .LVU28
+ 142              		.loc 1 76 13 is_stmt 0 view .LVU29
+ 143 0004 0023     		movs	r3, #0
+ 144 0006 ADF80430 		strh	r3, [sp, #4]	@ movhi
+  77:Device/Dev_ICM20602.c ****     uint8_t Tx_Tmp[2] = {0};
+ 145              		.loc 1 77 5 is_stmt 1 view .LVU30
+ 146              		.loc 1 77 13 is_stmt 0 view .LVU31
+ 147 000a ADF80030 		strh	r3, [sp]	@ movhi
+  78:Device/Dev_ICM20602.c ****     bool state = false;
+ 148              		.loc 1 78 5 is_stmt 1 view .LVU32
+ 149              	.LVL10:
+  79:Device/Dev_ICM20602.c **** 
+  80:Device/Dev_ICM20602.c ****     if (Obj == NULL || Obj->cs_ctl == NULL || Obj->bus_trans == NULL)
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 5
+
+
+ 150              		.loc 1 80 5 view .LVU33
+ 151              		.loc 1 80 8 is_stmt 0 view .LVU34
+ 152 000e D8B1     		cbz	r0, .L8
+ 153 0010 1646     		mov	r6, r2
+ 154 0012 0446     		mov	r4, r0
+ 155              		.loc 1 80 27 discriminator 1 view .LVU35
+ 156 0014 0368     		ldr	r3, [r0]
+ 157              		.loc 1 80 21 discriminator 1 view .LVU36
+ 158 0016 CBB1     		cbz	r3, .L9
+ 159              		.loc 1 80 50 discriminator 2 view .LVU37
+ 160 0018 4368     		ldr	r3, [r0, #4]
+ 161              		.loc 1 80 44 discriminator 2 view .LVU38
+ 162 001a CBB1     		cbz	r3, .L10
+  81:Device/Dev_ICM20602.c ****         return false;
+  82:Device/Dev_ICM20602.c **** 
+  83:Device/Dev_ICM20602.c ****     Tx_Tmp[0] = addr | ICM20602_READ_MASK;
+ 163              		.loc 1 83 5 is_stmt 1 view .LVU39
+ 164              		.loc 1 83 15 is_stmt 0 view .LVU40
+ 165 001c 61F07F01 		orn	r1, r1, #127
+ 166              	.LVL11:
+ 167              		.loc 1 83 15 view .LVU41
+ 168 0020 8DF80010 		strb	r1, [sp]
+  84:Device/Dev_ICM20602.c **** 
+  85:Device/Dev_ICM20602.c ****     /* cs low */
+  86:Device/Dev_ICM20602.c ****     Obj->cs_ctl(false);
+ 169              		.loc 1 86 5 is_stmt 1 view .LVU42
+ 170              		.loc 1 86 8 is_stmt 0 view .LVU43
+ 171 0024 0368     		ldr	r3, [r0]
+ 172              		.loc 1 86 5 view .LVU44
+ 173 0026 0020     		movs	r0, #0
+ 174              	.LVL12:
+ 175              		.loc 1 86 5 view .LVU45
+ 176 0028 9847     		blx	r3
+ 177              	.LVL13:
+  87:Device/Dev_ICM20602.c **** 
+  88:Device/Dev_ICM20602.c ****     state = Obj->bus_trans(Tx_Tmp, Rx_Tmp, 2);
+ 178              		.loc 1 88 5 is_stmt 1 view .LVU46
+ 179              		.loc 1 88 16 is_stmt 0 view .LVU47
+ 180 002a 6368     		ldr	r3, [r4, #4]
+ 181              		.loc 1 88 13 view .LVU48
+ 182 002c 0222     		movs	r2, #2
+ 183 002e 01A9     		add	r1, sp, #4
+ 184 0030 6846     		mov	r0, sp
+ 185 0032 9847     		blx	r3
+ 186              	.LVL14:
+ 187 0034 0546     		mov	r5, r0
+ 188              	.LVL15:
+  89:Device/Dev_ICM20602.c **** 
+  90:Device/Dev_ICM20602.c ****     /* cs high */
+  91:Device/Dev_ICM20602.c ****     Obj->cs_ctl(true);
+ 189              		.loc 1 91 5 is_stmt 1 view .LVU49
+ 190              		.loc 1 91 8 is_stmt 0 view .LVU50
+ 191 0036 2368     		ldr	r3, [r4]
+ 192              		.loc 1 91 5 view .LVU51
+ 193 0038 0120     		movs	r0, #1
+ 194 003a 9847     		blx	r3
+ 195              	.LVL16:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 6
+
+
+  92:Device/Dev_ICM20602.c **** 
+  93:Device/Dev_ICM20602.c ****     *rx = Rx_Tmp[1];
+ 196              		.loc 1 93 5 is_stmt 1 view .LVU52
+ 197              		.loc 1 93 17 is_stmt 0 view .LVU53
+ 198 003c 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 199              		.loc 1 93 9 view .LVU54
+ 200 0040 3370     		strb	r3, [r6]
+  94:Device/Dev_ICM20602.c **** 
+  95:Device/Dev_ICM20602.c ****     return state;
+ 201              		.loc 1 95 5 is_stmt 1 view .LVU55
+ 202              	.LVL17:
+ 203              	.L7:
+  96:Device/Dev_ICM20602.c **** }
+ 204              		.loc 1 96 1 is_stmt 0 view .LVU56
+ 205 0042 2846     		mov	r0, r5
+ 206 0044 02B0     		add	sp, sp, #8
+ 207              	.LCFI6:
+ 208              		.cfi_remember_state
+ 209              		.cfi_def_cfa_offset 16
+ 210              		@ sp needed
+ 211 0046 70BD     		pop	{r4, r5, r6, pc}
+ 212              	.LVL18:
+ 213              	.L8:
+ 214              	.LCFI7:
+ 215              		.cfi_restore_state
+  81:Device/Dev_ICM20602.c **** 
+ 216              		.loc 1 81 16 view .LVU57
+ 217 0048 0025     		movs	r5, #0
+ 218 004a FAE7     		b	.L7
+ 219              	.L9:
+  81:Device/Dev_ICM20602.c **** 
+ 220              		.loc 1 81 16 view .LVU58
+ 221 004c 0025     		movs	r5, #0
+ 222 004e F8E7     		b	.L7
+ 223              	.L10:
+ 224 0050 0025     		movs	r5, #0
+ 225 0052 F6E7     		b	.L7
+ 226              		.cfi_endproc
+ 227              	.LFE2:
+ 229              		.section	.text.DevICM20602_Reg_Write,"ax",%progbits
+ 230              		.align	1
+ 231              		.syntax unified
+ 232              		.thumb
+ 233              		.thumb_func
+ 235              	DevICM20602_Reg_Write:
+ 236              	.LVL19:
+ 237              	.LFB3:
+  97:Device/Dev_ICM20602.c **** 
+  98:Device/Dev_ICM20602.c **** static bool DevICM20602_Reg_Write(DevICM20602Obj_TypeDef *Obj, uint8_t addr, uint8_t tx)
+  99:Device/Dev_ICM20602.c **** {
+ 238              		.loc 1 99 1 is_stmt 1 view -0
+ 239              		.cfi_startproc
+ 240              		@ args = 0, pretend = 0, frame = 8
+ 241              		@ frame_needed = 0, uses_anonymous_args = 0
+ 242              		.loc 1 99 1 is_stmt 0 view .LVU60
+ 243 0000 30B5     		push	{r4, r5, lr}
+ 244              	.LCFI8:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 7
+
+
+ 245              		.cfi_def_cfa_offset 12
+ 246              		.cfi_offset 4, -12
+ 247              		.cfi_offset 5, -8
+ 248              		.cfi_offset 14, -4
+ 249 0002 83B0     		sub	sp, sp, #12
+ 250              	.LCFI9:
+ 251              		.cfi_def_cfa_offset 24
+ 100:Device/Dev_ICM20602.c ****     uint8_t Rx_Tmp[2] = {0};
+ 252              		.loc 1 100 5 is_stmt 1 view .LVU61
+ 253              		.loc 1 100 13 is_stmt 0 view .LVU62
+ 254 0004 0023     		movs	r3, #0
+ 255 0006 ADF80430 		strh	r3, [sp, #4]	@ movhi
+ 101:Device/Dev_ICM20602.c ****     uint8_t Tx_Tmp[2] = {0};
+ 256              		.loc 1 101 5 is_stmt 1 view .LVU63
+ 257              		.loc 1 101 13 is_stmt 0 view .LVU64
+ 258 000a ADF80030 		strh	r3, [sp]	@ movhi
+ 102:Device/Dev_ICM20602.c ****     bool state = false;
+ 259              		.loc 1 102 5 is_stmt 1 view .LVU65
+ 260              	.LVL20:
+ 103:Device/Dev_ICM20602.c **** 
+ 104:Device/Dev_ICM20602.c ****     if (Obj == NULL || Obj->cs_ctl == NULL || Obj->bus_trans == NULL)
+ 261              		.loc 1 104 5 view .LVU66
+ 262              		.loc 1 104 8 is_stmt 0 view .LVU67
+ 263 000e B8B1     		cbz	r0, .L14
+ 264 0010 0446     		mov	r4, r0
+ 265              		.loc 1 104 27 discriminator 1 view .LVU68
+ 266 0012 0368     		ldr	r3, [r0]
+ 267              		.loc 1 104 21 discriminator 1 view .LVU69
+ 268 0014 B3B1     		cbz	r3, .L15
+ 269              		.loc 1 104 50 discriminator 2 view .LVU70
+ 270 0016 4368     		ldr	r3, [r0, #4]
+ 271              		.loc 1 104 44 discriminator 2 view .LVU71
+ 272 0018 B3B1     		cbz	r3, .L16
+ 105:Device/Dev_ICM20602.c ****         return false;
+ 106:Device/Dev_ICM20602.c **** 
+ 107:Device/Dev_ICM20602.c ****     Tx_Tmp[0] = addr;
+ 273              		.loc 1 107 5 is_stmt 1 view .LVU72
+ 274              		.loc 1 107 15 is_stmt 0 view .LVU73
+ 275 001a 8DF80010 		strb	r1, [sp]
+ 108:Device/Dev_ICM20602.c ****     Tx_Tmp[1] = tx;
+ 276              		.loc 1 108 5 is_stmt 1 view .LVU74
+ 277              		.loc 1 108 15 is_stmt 0 view .LVU75
+ 278 001e 8DF80120 		strb	r2, [sp, #1]
+ 109:Device/Dev_ICM20602.c **** 
+ 110:Device/Dev_ICM20602.c ****     /* cs low */
+ 111:Device/Dev_ICM20602.c ****     Obj->cs_ctl(false);
+ 279              		.loc 1 111 5 is_stmt 1 view .LVU76
+ 280              		.loc 1 111 8 is_stmt 0 view .LVU77
+ 281 0022 0368     		ldr	r3, [r0]
+ 282              		.loc 1 111 5 view .LVU78
+ 283 0024 0020     		movs	r0, #0
+ 284              	.LVL21:
+ 285              		.loc 1 111 5 view .LVU79
+ 286 0026 9847     		blx	r3
+ 287              	.LVL22:
+ 112:Device/Dev_ICM20602.c **** 
+ 113:Device/Dev_ICM20602.c ****     state = Obj->bus_trans(Tx_Tmp, Rx_Tmp, 2);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 8
+
+
+ 288              		.loc 1 113 5 is_stmt 1 view .LVU80
+ 289              		.loc 1 113 16 is_stmt 0 view .LVU81
+ 290 0028 6368     		ldr	r3, [r4, #4]
+ 291              		.loc 1 113 13 view .LVU82
+ 292 002a 0222     		movs	r2, #2
+ 293 002c 01A9     		add	r1, sp, #4
+ 294 002e 6846     		mov	r0, sp
+ 295 0030 9847     		blx	r3
+ 296              	.LVL23:
+ 297 0032 0546     		mov	r5, r0
+ 298              	.LVL24:
+ 114:Device/Dev_ICM20602.c **** 
+ 115:Device/Dev_ICM20602.c ****     /* cs high */
+ 116:Device/Dev_ICM20602.c ****     Obj->cs_ctl(true);
+ 299              		.loc 1 116 5 is_stmt 1 view .LVU83
+ 300              		.loc 1 116 8 is_stmt 0 view .LVU84
+ 301 0034 2368     		ldr	r3, [r4]
+ 302              		.loc 1 116 5 view .LVU85
+ 303 0036 0120     		movs	r0, #1
+ 304 0038 9847     		blx	r3
+ 305              	.LVL25:
+ 117:Device/Dev_ICM20602.c **** 
+ 118:Device/Dev_ICM20602.c ****     return state;
+ 306              		.loc 1 118 5 is_stmt 1 view .LVU86
+ 307              	.L13:
+ 119:Device/Dev_ICM20602.c **** }
+ 308              		.loc 1 119 1 is_stmt 0 view .LVU87
+ 309 003a 2846     		mov	r0, r5
+ 310 003c 03B0     		add	sp, sp, #12
+ 311              	.LCFI10:
+ 312              		.cfi_remember_state
+ 313              		.cfi_def_cfa_offset 12
+ 314              		@ sp needed
+ 315 003e 30BD     		pop	{r4, r5, pc}
+ 316              	.LVL26:
+ 317              	.L14:
+ 318              	.LCFI11:
+ 319              		.cfi_restore_state
+ 105:Device/Dev_ICM20602.c **** 
+ 320              		.loc 1 105 16 view .LVU88
+ 321 0040 0025     		movs	r5, #0
+ 322 0042 FAE7     		b	.L13
+ 323              	.L15:
+ 105:Device/Dev_ICM20602.c **** 
+ 324              		.loc 1 105 16 view .LVU89
+ 325 0044 0025     		movs	r5, #0
+ 326 0046 F8E7     		b	.L13
+ 327              	.L16:
+ 328 0048 0025     		movs	r5, #0
+ 329 004a F6E7     		b	.L13
+ 330              		.cfi_endproc
+ 331              	.LFE3:
+ 333              		.section	.text.DevICM20602_Config,"ax",%progbits
+ 334              		.align	1
+ 335              		.syntax unified
+ 336              		.thumb
+ 337              		.thumb_func
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 9
+
+
+ 339              	DevICM20602_Config:
+ 340              	.LVL27:
+ 341              	.LFB4:
+ 120:Device/Dev_ICM20602.c **** 
+ 121:Device/Dev_ICM20602.c **** static bool DevICM20602_Config(DevICM20602Obj_TypeDef *Obj, 
+ 122:Device/Dev_ICM20602.c ****                                ICM20602_SampleRate_List rate, 
+ 123:Device/Dev_ICM20602.c ****                                ICM20602_GyrTrip_List GyrTrip, 
+ 124:Device/Dev_ICM20602.c ****                                ICM20602_AccTrip_List AccTrip)
+ 125:Device/Dev_ICM20602.c **** {
+ 342              		.loc 1 125 1 is_stmt 1 view -0
+ 343              		.cfi_startproc
+ 344              		@ args = 0, pretend = 0, frame = 0
+ 345              		@ frame_needed = 0, uses_anonymous_args = 0
+ 126:Device/Dev_ICM20602.c ****     if(Obj == NULL)
+ 346              		.loc 1 126 5 view .LVU91
+ 347              		.loc 1 126 7 is_stmt 0 view .LVU92
+ 348 0000 0028     		cmp	r0, #0
+ 349 0002 65D0     		beq	.L32
+ 125:Device/Dev_ICM20602.c ****     if(Obj == NULL)
+ 350              		.loc 1 125 1 view .LVU93
+ 351 0004 10B5     		push	{r4, lr}
+ 352              	.LCFI12:
+ 353              		.cfi_def_cfa_offset 8
+ 354              		.cfi_offset 4, -8
+ 355              		.cfi_offset 14, -4
+ 356 0006 8646     		mov	lr, r0
+ 127:Device/Dev_ICM20602.c ****         return false;
+ 128:Device/Dev_ICM20602.c **** 
+ 129:Device/Dev_ICM20602.c ****     switch ((uint8_t)Obj->rate)
+ 357              		.loc 1 129 5 is_stmt 1 view .LVU94
+ 358              		.loc 1 129 25 is_stmt 0 view .LVU95
+ 359 0008 90F830C0 		ldrb	ip, [r0, #48]	@ zero_extendqisi2
+ 360 000c BCF1070F 		cmp	ip, #7
+ 361 0010 94BF     		ite	ls
+ 362 0012 0024     		movls	r4, #0
+ 363 0014 0124     		movhi	r4, #1
+ 364 0016 002C     		cmp	r4, #0
+ 365 0018 5CD1     		bne	.L33
+ 366 001a 0120     		movs	r0, #1
+ 367              	.LVL28:
+ 368              		.loc 1 129 25 view .LVU96
+ 369 001c 00FA0CF0 		lsl	r0, r0, ip
+ 370 0020 10F08B0F 		tst	r0, #139
+ 371 0024 14BF     		ite	ne
+ 372 0026 0120     		movne	r0, #1
+ 373 0028 0020     		moveq	r0, #0
+ 374 002a 38D0     		beq	.L19
+ 130:Device/Dev_ICM20602.c ****     {
+ 131:Device/Dev_ICM20602.c ****     case ICM20602_SampleRate_8K:
+ 132:Device/Dev_ICM20602.c ****     case ICM20602_SampleRate_4K:
+ 133:Device/Dev_ICM20602.c ****     case ICM20602_SampleRate_2K:
+ 134:Device/Dev_ICM20602.c ****     case ICM20602_SampleRate_1K:
+ 135:Device/Dev_ICM20602.c ****         break;
+ 375              		.loc 1 135 9 is_stmt 1 view .LVU97
+ 136:Device/Dev_ICM20602.c **** 
+ 137:Device/Dev_ICM20602.c ****     default:
+ 138:Device/Dev_ICM20602.c ****         return false;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 10
+
+
+ 139:Device/Dev_ICM20602.c ****     }
+ 140:Device/Dev_ICM20602.c **** 
+ 141:Device/Dev_ICM20602.c ****     Obj->rate = rate;
+ 376              		.loc 1 141 5 view .LVU98
+ 377              		.loc 1 141 15 is_stmt 0 view .LVU99
+ 378 002c 8EF83010 		strb	r1, [lr, #48]
+ 142:Device/Dev_ICM20602.c **** 
+ 143:Device/Dev_ICM20602.c ****     switch ((uint8_t)AccTrip)
+ 379              		.loc 1 143 5 is_stmt 1 view .LVU100
+ 380 0030 032B     		cmp	r3, #3
+ 381 0032 51D8     		bhi	.L34
+ 382 0034 DFE803F0 		tbb	[pc, r3]
+ 383              	.LVL29:
+ 384              	.L21:
+ 385 0038 02       		.byte	(.L24-.L21)/2
+ 386 0039 0F       		.byte	(.L23-.L21)/2
+ 387 003a 17       		.byte	(.L22-.L21)/2
+ 388 003b 1F       		.byte	(.L20-.L21)/2
+ 389              		.p2align 1
+ 390              	.L24:
+ 144:Device/Dev_ICM20602.c ****     {
+ 145:Device/Dev_ICM20602.c ****     case ICM20602_Acc_2G:
+ 146:Device/Dev_ICM20602.c ****         Obj->acc_scale = ICM20602_ACC_2G_SCALE;
+ 391              		.loc 1 146 9 view .LVU101
+ 392              		.loc 1 146 24 is_stmt 0 view .LVU102
+ 393 003c 4FF08D41 		mov	r1, #1182793728
+ 394 0040 CEF81810 		str	r1, [lr, #24]	@ float
+ 147:Device/Dev_ICM20602.c ****         Obj->PHY_AccTrip_Val = 2;
+ 395              		.loc 1 147 9 is_stmt 1 view .LVU103
+ 396              		.loc 1 147 30 is_stmt 0 view .LVU104
+ 397 0044 0221     		movs	r1, #2
+ 398 0046 8EF81410 		strb	r1, [lr, #20]
+ 148:Device/Dev_ICM20602.c ****         break;
+ 399              		.loc 1 148 9 is_stmt 1 view .LVU105
+ 400              	.L25:
+ 149:Device/Dev_ICM20602.c **** 
+ 150:Device/Dev_ICM20602.c ****     case ICM20602_Acc_4G:
+ 151:Device/Dev_ICM20602.c ****         Obj->acc_scale = ICM20602_ACC_4G_SCALE;
+ 152:Device/Dev_ICM20602.c ****         Obj->PHY_AccTrip_Val = 4;
+ 153:Device/Dev_ICM20602.c ****         break;
+ 154:Device/Dev_ICM20602.c **** 
+ 155:Device/Dev_ICM20602.c ****     case ICM20602_Acc_8G:
+ 156:Device/Dev_ICM20602.c ****         Obj->acc_scale = ICM20602_ACC_8G_SCALE;
+ 157:Device/Dev_ICM20602.c ****         Obj->PHY_AccTrip_Val = 8;
+ 158:Device/Dev_ICM20602.c ****         break;
+ 159:Device/Dev_ICM20602.c **** 
+ 160:Device/Dev_ICM20602.c ****     case ICM20602_Acc_16G:
+ 161:Device/Dev_ICM20602.c ****         Obj->acc_scale = ICM20602_ACC_16G_SCALE;
+ 162:Device/Dev_ICM20602.c ****         Obj->PHY_AccTrip_Val = 16;
+ 163:Device/Dev_ICM20602.c ****         break;
+ 164:Device/Dev_ICM20602.c **** 
+ 165:Device/Dev_ICM20602.c ****     default:
+ 166:Device/Dev_ICM20602.c ****         return false;
+ 167:Device/Dev_ICM20602.c ****     }
+ 168:Device/Dev_ICM20602.c **** 
+ 169:Device/Dev_ICM20602.c ****     switch ((uint8_t)GyrTrip)
+ 401              		.loc 1 169 5 view .LVU106
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 11
+
+
+ 402 004a 032A     		cmp	r2, #3
+ 403 004c 46D8     		bhi	.L35
+ 404 004e DFE802F0 		tbb	[pc, r2]
+ 405              	.L27:
+ 406 0052 1A       		.byte	(.L30-.L27)/2
+ 407 0053 27       		.byte	(.L29-.L27)/2
+ 408 0054 2F       		.byte	(.L28-.L27)/2
+ 409 0055 37       		.byte	(.L26-.L27)/2
+ 410              		.p2align 1
+ 411              	.L23:
+ 151:Device/Dev_ICM20602.c ****         Obj->PHY_AccTrip_Val = 4;
+ 412              		.loc 1 151 9 view .LVU107
+ 151:Device/Dev_ICM20602.c ****         Obj->PHY_AccTrip_Val = 4;
+ 413              		.loc 1 151 24 is_stmt 0 view .LVU108
+ 414 0056 4FF08C41 		mov	r1, #1174405120
+ 415 005a CEF81810 		str	r1, [lr, #24]	@ float
+ 152:Device/Dev_ICM20602.c ****         break;
+ 416              		.loc 1 152 9 is_stmt 1 view .LVU109
+ 152:Device/Dev_ICM20602.c ****         break;
+ 417              		.loc 1 152 30 is_stmt 0 view .LVU110
+ 418 005e 0421     		movs	r1, #4
+ 419 0060 8EF81410 		strb	r1, [lr, #20]
+ 153:Device/Dev_ICM20602.c **** 
+ 420              		.loc 1 153 9 is_stmt 1 view .LVU111
+ 421 0064 F1E7     		b	.L25
+ 422              	.L22:
+ 156:Device/Dev_ICM20602.c ****         Obj->PHY_AccTrip_Val = 8;
+ 423              		.loc 1 156 9 view .LVU112
+ 156:Device/Dev_ICM20602.c ****         Obj->PHY_AccTrip_Val = 8;
+ 424              		.loc 1 156 24 is_stmt 0 view .LVU113
+ 425 0066 4FF08B41 		mov	r1, #1166016512
+ 426 006a CEF81810 		str	r1, [lr, #24]	@ float
+ 157:Device/Dev_ICM20602.c ****         break;
+ 427              		.loc 1 157 9 is_stmt 1 view .LVU114
+ 157:Device/Dev_ICM20602.c ****         break;
+ 428              		.loc 1 157 30 is_stmt 0 view .LVU115
+ 429 006e 0821     		movs	r1, #8
+ 430 0070 8EF81410 		strb	r1, [lr, #20]
+ 158:Device/Dev_ICM20602.c **** 
+ 431              		.loc 1 158 9 is_stmt 1 view .LVU116
+ 432 0074 E9E7     		b	.L25
+ 433              	.L20:
+ 161:Device/Dev_ICM20602.c ****         Obj->PHY_AccTrip_Val = 16;
+ 434              		.loc 1 161 9 view .LVU117
+ 161:Device/Dev_ICM20602.c ****         Obj->PHY_AccTrip_Val = 16;
+ 435              		.loc 1 161 24 is_stmt 0 view .LVU118
+ 436 0076 4FF08A41 		mov	r1, #1157627904
+ 437 007a CEF81810 		str	r1, [lr, #24]	@ float
+ 162:Device/Dev_ICM20602.c ****         break;
+ 438              		.loc 1 162 9 is_stmt 1 view .LVU119
+ 162:Device/Dev_ICM20602.c ****         break;
+ 439              		.loc 1 162 30 is_stmt 0 view .LVU120
+ 440 007e 1021     		movs	r1, #16
+ 441 0080 8EF81410 		strb	r1, [lr, #20]
+ 163:Device/Dev_ICM20602.c **** 
+ 442              		.loc 1 163 9 is_stmt 1 view .LVU121
+ 443 0084 E1E7     		b	.L25
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 12
+
+
+ 444              	.L30:
+ 170:Device/Dev_ICM20602.c ****     {
+ 171:Device/Dev_ICM20602.c ****     case ICM20602_Gyr_250DPS:
+ 172:Device/Dev_ICM20602.c ****         Obj->gyr_scale = ICM20602_GYR_250DPS_SCALE;
+ 445              		.loc 1 172 9 view .LVU122
+ 446              		.loc 1 172 24 is_stmt 0 view .LVU123
+ 447 0086 1649     		ldr	r1, .L40
+ 448 0088 CEF81C10 		str	r1, [lr, #28]	@ float
+ 173:Device/Dev_ICM20602.c ****         Obj->PHY_GyrTrip_Val = 250;
+ 449              		.loc 1 173 9 is_stmt 1 view .LVU124
+ 450              		.loc 1 173 30 is_stmt 0 view .LVU125
+ 451 008c FA21     		movs	r1, #250
+ 452 008e AEF81610 		strh	r1, [lr, #22]	@ movhi
+ 174:Device/Dev_ICM20602.c ****         break;
+ 453              		.loc 1 174 9 is_stmt 1 view .LVU126
+ 454              	.L31:
+ 175:Device/Dev_ICM20602.c **** 
+ 176:Device/Dev_ICM20602.c ****     case ICM20602_Gyr_500DPS:
+ 177:Device/Dev_ICM20602.c ****         Obj->gyr_scale = ICM20602_GYR_500DPS_SCALE;
+ 178:Device/Dev_ICM20602.c ****         Obj->PHY_GyrTrip_Val = 500;
+ 179:Device/Dev_ICM20602.c ****         break;
+ 180:Device/Dev_ICM20602.c **** 
+ 181:Device/Dev_ICM20602.c ****     case ICM20602_Gyr_1000DPS:
+ 182:Device/Dev_ICM20602.c ****         Obj->gyr_scale = ICM20602_GYR_1000DPS_SCALE;
+ 183:Device/Dev_ICM20602.c ****         Obj->PHY_GyrTrip_Val = 1000;
+ 184:Device/Dev_ICM20602.c ****         break;
+ 185:Device/Dev_ICM20602.c **** 
+ 186:Device/Dev_ICM20602.c ****     case ICM20602_Gyr_2000DPS:
+ 187:Device/Dev_ICM20602.c ****         Obj->gyr_scale = ICM20602_GYR_2000DPS_SCALE;
+ 188:Device/Dev_ICM20602.c ****         Obj->PHY_GyrTrip_Val = 2000;
+ 189:Device/Dev_ICM20602.c ****         break;
+ 190:Device/Dev_ICM20602.c **** 
+ 191:Device/Dev_ICM20602.c ****     default:
+ 192:Device/Dev_ICM20602.c ****         return false;
+ 193:Device/Dev_ICM20602.c ****     }
+ 194:Device/Dev_ICM20602.c **** 
+ 195:Device/Dev_ICM20602.c ****     // set Trip Reg val
+ 196:Device/Dev_ICM20602.c ****     Obj->AccTrip = ConvertToICM20602Trip_Reg(AccTrip);
+ 455              		.loc 1 196 5 view .LVU127
+ 456              		.loc 1 196 20 is_stmt 0 view .LVU128
+ 457 0092 DB00     		lsls	r3, r3, #3
+ 458              	.LVL30:
+ 459              		.loc 1 196 18 view .LVU129
+ 460 0094 8EF81230 		strb	r3, [lr, #18]
+ 197:Device/Dev_ICM20602.c ****     Obj->GyrTrip = ConvertToICM20602Trip_Reg(GyrTrip);
+ 461              		.loc 1 197 5 is_stmt 1 view .LVU130
+ 462              		.loc 1 197 20 is_stmt 0 view .LVU131
+ 463 0098 D200     		lsls	r2, r2, #3
+ 464              	.LVL31:
+ 465              		.loc 1 197 18 view .LVU132
+ 466 009a 8EF81320 		strb	r2, [lr, #19]
+ 198:Device/Dev_ICM20602.c **** 
+ 199:Device/Dev_ICM20602.c ****     return true;
+ 467              		.loc 1 199 5 is_stmt 1 view .LVU133
+ 468              	.LVL32:
+ 469              	.L19:
+ 200:Device/Dev_ICM20602.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 13
+
+
+ 470              		.loc 1 200 1 is_stmt 0 view .LVU134
+ 471 009e 10BD     		pop	{r4, pc}
+ 472              	.LVL33:
+ 473              	.L29:
+ 177:Device/Dev_ICM20602.c ****         Obj->PHY_GyrTrip_Val = 500;
+ 474              		.loc 1 177 9 is_stmt 1 view .LVU135
+ 177:Device/Dev_ICM20602.c ****         Obj->PHY_GyrTrip_Val = 500;
+ 475              		.loc 1 177 24 is_stmt 0 view .LVU136
+ 476 00a0 1049     		ldr	r1, .L40+4
+ 477 00a2 CEF81C10 		str	r1, [lr, #28]	@ float
+ 178:Device/Dev_ICM20602.c ****         break;
+ 478              		.loc 1 178 9 is_stmt 1 view .LVU137
+ 178:Device/Dev_ICM20602.c ****         break;
+ 479              		.loc 1 178 30 is_stmt 0 view .LVU138
+ 480 00a6 4FF4FA71 		mov	r1, #500
+ 481 00aa AEF81610 		strh	r1, [lr, #22]	@ movhi
+ 179:Device/Dev_ICM20602.c **** 
+ 482              		.loc 1 179 9 is_stmt 1 view .LVU139
+ 483 00ae F0E7     		b	.L31
+ 484              	.L28:
+ 182:Device/Dev_ICM20602.c ****         Obj->PHY_GyrTrip_Val = 1000;
+ 485              		.loc 1 182 9 view .LVU140
+ 182:Device/Dev_ICM20602.c ****         Obj->PHY_GyrTrip_Val = 1000;
+ 486              		.loc 1 182 24 is_stmt 0 view .LVU141
+ 487 00b0 0D49     		ldr	r1, .L40+8
+ 488 00b2 CEF81C10 		str	r1, [lr, #28]	@ float
+ 183:Device/Dev_ICM20602.c ****         break;
+ 489              		.loc 1 183 9 is_stmt 1 view .LVU142
+ 183:Device/Dev_ICM20602.c ****         break;
+ 490              		.loc 1 183 30 is_stmt 0 view .LVU143
+ 491 00b6 4FF47A71 		mov	r1, #1000
+ 492 00ba AEF81610 		strh	r1, [lr, #22]	@ movhi
+ 184:Device/Dev_ICM20602.c **** 
+ 493              		.loc 1 184 9 is_stmt 1 view .LVU144
+ 494 00be E8E7     		b	.L31
+ 495              	.L26:
+ 187:Device/Dev_ICM20602.c ****         Obj->PHY_GyrTrip_Val = 2000;
+ 496              		.loc 1 187 9 view .LVU145
+ 187:Device/Dev_ICM20602.c ****         Obj->PHY_GyrTrip_Val = 2000;
+ 497              		.loc 1 187 24 is_stmt 0 view .LVU146
+ 498 00c0 0A49     		ldr	r1, .L40+12
+ 499 00c2 CEF81C10 		str	r1, [lr, #28]	@ float
+ 188:Device/Dev_ICM20602.c ****         break;
+ 500              		.loc 1 188 9 is_stmt 1 view .LVU147
+ 188:Device/Dev_ICM20602.c ****         break;
+ 501              		.loc 1 188 30 is_stmt 0 view .LVU148
+ 502 00c6 4FF4FA61 		mov	r1, #2000
+ 503 00ca AEF81610 		strh	r1, [lr, #22]	@ movhi
+ 189:Device/Dev_ICM20602.c **** 
+ 504              		.loc 1 189 9 is_stmt 1 view .LVU149
+ 505 00ce E0E7     		b	.L31
+ 506              	.LVL34:
+ 507              	.L32:
+ 508              	.LCFI13:
+ 509              		.cfi_def_cfa_offset 0
+ 510              		.cfi_restore 4
+ 511              		.cfi_restore 14
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 14
+
+
+ 127:Device/Dev_ICM20602.c **** 
+ 512              		.loc 1 127 16 is_stmt 0 view .LVU150
+ 513 00d0 0020     		movs	r0, #0
+ 514              	.LVL35:
+ 515              		.loc 1 200 1 view .LVU151
+ 516 00d2 7047     		bx	lr
+ 517              	.LVL36:
+ 518              	.L33:
+ 519              	.LCFI14:
+ 520              		.cfi_def_cfa_offset 8
+ 521              		.cfi_offset 4, -8
+ 522              		.cfi_offset 14, -4
+ 129:Device/Dev_ICM20602.c ****     {
+ 523              		.loc 1 129 25 view .LVU152
+ 524 00d4 0020     		movs	r0, #0
+ 525              	.LVL37:
+ 129:Device/Dev_ICM20602.c ****     {
+ 526              		.loc 1 129 25 view .LVU153
+ 527 00d6 E2E7     		b	.L19
+ 528              	.LVL38:
+ 529              	.L34:
+ 143:Device/Dev_ICM20602.c ****     {
+ 530              		.loc 1 143 5 view .LVU154
+ 531 00d8 2046     		mov	r0, r4
+ 532 00da E0E7     		b	.L19
+ 533              	.L35:
+ 169:Device/Dev_ICM20602.c ****     {
+ 534              		.loc 1 169 5 view .LVU155
+ 535 00dc 2046     		mov	r0, r4
+ 536 00de DEE7     		b	.L19
+ 537              	.L41:
+ 538              		.align	2
+ 539              	.L40:
+ 540 00e0 00000343 		.word	1124270080
+ 541 00e4 00008342 		.word	1115881472
+ 542 00e8 33330342 		.word	1107505971
+ 543 00ec 33338341 		.word	1099117363
+ 544              		.cfi_endproc
+ 545              	.LFE4:
+ 547              		.section	.text.DevICM20602_PreInit,"ax",%progbits
+ 548              		.align	1
+ 549              		.syntax unified
+ 550              		.thumb
+ 551              		.thumb_func
+ 553              	DevICM20602_PreInit:
+ 554              	.LVL39:
+ 555              	.LFB5:
+ 201:Device/Dev_ICM20602.c **** 
+ 202:Device/Dev_ICM20602.c **** static void DevICM20602_PreInit(DevICM20602Obj_TypeDef *Obj,
+ 203:Device/Dev_ICM20602.c ****                                 cs_ctl_callback cs_ctl,
+ 204:Device/Dev_ICM20602.c ****                                 bus_trans_callback bus_trans,
+ 205:Device/Dev_ICM20602.c ****                                 delay_callback delay,
+ 206:Device/Dev_ICM20602.c ****                                 get_time_stamp_callback get_time_stamp)
+ 207:Device/Dev_ICM20602.c **** {
+ 556              		.loc 1 207 1 is_stmt 1 view -0
+ 557              		.cfi_startproc
+ 558              		@ args = 4, pretend = 0, frame = 0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 15
+
+
+ 559              		@ frame_needed = 0, uses_anonymous_args = 0
+ 560              		@ link register save eliminated.
+ 208:Device/Dev_ICM20602.c ****     Obj->cs_ctl = cs_ctl;
+ 561              		.loc 1 208 5 view .LVU157
+ 562              		.loc 1 208 17 is_stmt 0 view .LVU158
+ 563 0000 0160     		str	r1, [r0]
+ 209:Device/Dev_ICM20602.c ****     Obj->bus_trans = bus_trans;
+ 564              		.loc 1 209 5 is_stmt 1 view .LVU159
+ 565              		.loc 1 209 20 is_stmt 0 view .LVU160
+ 566 0002 4260     		str	r2, [r0, #4]
+ 210:Device/Dev_ICM20602.c ****     Obj->delay = delay;
+ 567              		.loc 1 210 5 is_stmt 1 view .LVU161
+ 568              		.loc 1 210 16 is_stmt 0 view .LVU162
+ 569 0004 8360     		str	r3, [r0, #8]
+ 211:Device/Dev_ICM20602.c ****     Obj->get_timestamp = get_time_stamp;
+ 570              		.loc 1 211 5 is_stmt 1 view .LVU163
+ 571              		.loc 1 211 24 is_stmt 0 view .LVU164
+ 572 0006 009B     		ldr	r3, [sp]
+ 573              	.LVL40:
+ 574              		.loc 1 211 24 view .LVU165
+ 575 0008 C360     		str	r3, [r0, #12]
+ 212:Device/Dev_ICM20602.c **** }
+ 576              		.loc 1 212 1 view .LVU166
+ 577 000a 7047     		bx	lr
+ 578              		.cfi_endproc
+ 579              	.LFE5:
+ 581              		.section	.text.DevICM20602_SetDRDY,"ax",%progbits
+ 582              		.align	1
+ 583              		.syntax unified
+ 584              		.thumb
+ 585              		.thumb_func
+ 587              	DevICM20602_SetDRDY:
+ 588              	.LVL41:
+ 589              	.LFB7:
+ 213:Device/Dev_ICM20602.c **** 
+ 214:Device/Dev_ICM20602.c **** static bool DevICM20602_Init(DevICM20602Obj_TypeDef *Obj)
+ 215:Device/Dev_ICM20602.c **** {
+ 216:Device/Dev_ICM20602.c ****     uint8_t read_out = 0;
+ 217:Device/Dev_ICM20602.c **** 
+ 218:Device/Dev_ICM20602.c ****     if ((Obj == NULL) ||
+ 219:Device/Dev_ICM20602.c ****         (Obj->bus_trans == NULL) ||
+ 220:Device/Dev_ICM20602.c ****         (Obj->cs_ctl == NULL))
+ 221:Device/Dev_ICM20602.c ****     {
+ 222:Device/Dev_ICM20602.c ****         IMUData_SetError(&(Obj->error), ICM20602_Obj_Error, __FUNCTION__, __LINE__, 0, 0, 0);
+ 223:Device/Dev_ICM20602.c ****         return false;
+ 224:Device/Dev_ICM20602.c ****     }
+ 225:Device/Dev_ICM20602.c **** 
+ 226:Device/Dev_ICM20602.c ****     /* reset device */
+ 227:Device/Dev_ICM20602.c ****     if (!DevICM20602_SwReset(Obj))
+ 228:Device/Dev_ICM20602.c ****     {
+ 229:Device/Dev_ICM20602.c ****         IMUData_SetError(&(Obj->error), ICM20602_Reset_Error, __FUNCTION__, __LINE__, 0, 0, 0);
+ 230:Device/Dev_ICM20602.c ****         return false;
+ 231:Device/Dev_ICM20602.c ****     }
+ 232:Device/Dev_ICM20602.c **** 
+ 233:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_WHO_AM_I, &read_out);
+ 234:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 235:Device/Dev_ICM20602.c **** 
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 16
+
+
+ 236:Device/Dev_ICM20602.c ****     if (read_out != ICM20602_DEV_ID)
+ 237:Device/Dev_ICM20602.c ****     {
+ 238:Device/Dev_ICM20602.c ****         IMUData_SetError(&(Obj->error), ICM20602_DevID_Error, __FUNCTION__, __LINE__, ICM20602_WHO_
+ 239:Device/Dev_ICM20602.c ****         return false;
+ 240:Device/Dev_ICM20602.c ****     }
+ 241:Device/Dev_ICM20602.c **** 
+ 242:Device/Dev_ICM20602.c ****     /* set oscillator clock */
+ 243:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_PWR_MGMT_1, 0x01);
+ 244:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 245:Device/Dev_ICM20602.c **** 
+ 246:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_1, &read_out);
+ 247:Device/Dev_ICM20602.c ****     if (read_out != 0x01)
+ 248:Device/Dev_ICM20602.c ****     {
+ 249:Device/Dev_ICM20602.c ****         IMUData_SetError(&(Obj->error), ICM20602_OSC_Error, __FUNCTION__, __LINE__, ICM20602_PWR_MG
+ 250:Device/Dev_ICM20602.c ****         return false;
+ 251:Device/Dev_ICM20602.c ****     }
+ 252:Device/Dev_ICM20602.c **** 
+ 253:Device/Dev_ICM20602.c ****     /* enable gyro and acc */
+ 254:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_PWR_MGMT_2, 0x00);
+ 255:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 256:Device/Dev_ICM20602.c **** 
+ 257:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_2, &read_out);
+ 258:Device/Dev_ICM20602.c ****     if (read_out != 0x00)
+ 259:Device/Dev_ICM20602.c ****     {
+ 260:Device/Dev_ICM20602.c ****         IMUData_SetError(&(Obj->error), ICM20602_InertialEnable_Error, __FUNCTION__, __LINE__, ICM2
+ 261:Device/Dev_ICM20602.c ****         return false;
+ 262:Device/Dev_ICM20602.c ****     }
+ 263:Device/Dev_ICM20602.c **** 
+ 264:Device/Dev_ICM20602.c ****     /* disable iic interface */
+ 265:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_I2C_IF, 0x40);
+ 266:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 267:Device/Dev_ICM20602.c **** 
+ 268:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_I2C_IF, &read_out);
+ 269:Device/Dev_ICM20602.c ****     if (read_out != 0x40)
+ 270:Device/Dev_ICM20602.c ****     {
+ 271:Device/Dev_ICM20602.c ****         IMUData_SetError(&(Obj->error), ICM20602_InterfaceSet_Error, __FUNCTION__, __LINE__, ICM206
+ 272:Device/Dev_ICM20602.c ****         return false;
+ 273:Device/Dev_ICM20602.c ****     }
+ 274:Device/Dev_ICM20602.c **** 
+ 275:Device/Dev_ICM20602.c ****     /* set sample rate */
+ 276:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_SMPLRT_DIV, Obj->rate);
+ 277:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 278:Device/Dev_ICM20602.c **** 
+ 279:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_SMPLRT_DIV, &read_out);
+ 280:Device/Dev_ICM20602.c ****     if (read_out != Obj->rate)
+ 281:Device/Dev_ICM20602.c ****     {
+ 282:Device/Dev_ICM20602.c ****         IMUData_SetError(&(Obj->error), ICM20602_RateSet_Error, __FUNCTION__, __LINE__, ICM20602_SM
+ 283:Device/Dev_ICM20602.c ****         return false;
+ 284:Device/Dev_ICM20602.c ****     }
+ 285:Device/Dev_ICM20602.c **** 
+ 286:Device/Dev_ICM20602.c ****     /* set acc trip */
+ 287:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_ACCEL_CONFIG, Obj->AccTrip);
+ 288:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 289:Device/Dev_ICM20602.c **** 
+ 290:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_ACCEL_CONFIG, &read_out);
+ 291:Device/Dev_ICM20602.c ****     if (read_out != Obj->AccTrip)
+ 292:Device/Dev_ICM20602.c ****     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 17
+
+
+ 293:Device/Dev_ICM20602.c ****         IMUData_SetError(&(Obj->error), ICM20602_AccSet_Error, __FUNCTION__, __LINE__, ICM20602_ACC
+ 294:Device/Dev_ICM20602.c ****         return false;
+ 295:Device/Dev_ICM20602.c ****     }
+ 296:Device/Dev_ICM20602.c **** 
+ 297:Device/Dev_ICM20602.c ****     /* set gyr trip */
+ 298:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_GYRO_CONFIG, Obj->GyrTrip);
+ 299:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 300:Device/Dev_ICM20602.c **** 
+ 301:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_GYRO_CONFIG, &read_out);
+ 302:Device/Dev_ICM20602.c ****     if (read_out != Obj->GyrTrip)
+ 303:Device/Dev_ICM20602.c ****     {
+ 304:Device/Dev_ICM20602.c ****         IMUData_SetError(&(Obj->error), ICM20602_GyrSet_Error, __FUNCTION__, __LINE__, ICM20602_GYR
+ 305:Device/Dev_ICM20602.c ****         return false;
+ 306:Device/Dev_ICM20602.c ****     }
+ 307:Device/Dev_ICM20602.c **** 
+ 308:Device/Dev_ICM20602.c ****     /* enable odr int output */
+ 309:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_INT_PIN_CFG, 0x60);
+ 310:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 311:Device/Dev_ICM20602.c **** 
+ 312:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Read(Obj, ICM20602_INT_PIN_CFG, &read_out);
+ 313:Device/Dev_ICM20602.c ****     if (read_out != 0x60)
+ 314:Device/Dev_ICM20602.c ****     {
+ 315:Device/Dev_ICM20602.c ****         IMUData_SetError(&(Obj->error), ICM20602_IntPinSet_Error, __FUNCTION__, __LINE__, ICM20602_
+ 316:Device/Dev_ICM20602.c ****         return false;
+ 317:Device/Dev_ICM20602.c ****     }
+ 318:Device/Dev_ICM20602.c **** 
+ 319:Device/Dev_ICM20602.c ****     IMUData_SetError(&(Obj->error), ICM20602_No_Error, "", 0, 0, 0, 0);
+ 320:Device/Dev_ICM20602.c ****     return true;
+ 321:Device/Dev_ICM20602.c **** }
+ 322:Device/Dev_ICM20602.c **** 
+ 323:Device/Dev_ICM20602.c **** static void DevICM20602_SetDRDY(DevICM20602Obj_TypeDef *Obj)
+ 324:Device/Dev_ICM20602.c **** {
+ 590              		.loc 1 324 1 is_stmt 1 view -0
+ 591              		.cfi_startproc
+ 592              		@ args = 0, pretend = 0, frame = 0
+ 593              		@ frame_needed = 0, uses_anonymous_args = 0
+ 594              		@ link register save eliminated.
+ 325:Device/Dev_ICM20602.c ****     if(Obj)
+ 595              		.loc 1 325 5 view .LVU168
+ 596              		.loc 1 325 7 is_stmt 0 view .LVU169
+ 597 0000 08B1     		cbz	r0, .L43
+ 326:Device/Dev_ICM20602.c ****         Obj->drdy = true;
+ 598              		.loc 1 326 9 is_stmt 1 view .LVU170
+ 599              		.loc 1 326 19 is_stmt 0 view .LVU171
+ 600 0002 0122     		movs	r2, #1
+ 601 0004 0274     		strb	r2, [r0, #16]
+ 602              	.L43:
+ 327:Device/Dev_ICM20602.c **** }
+ 603              		.loc 1 327 1 view .LVU172
+ 604 0006 7047     		bx	lr
+ 605              		.cfi_endproc
+ 606              	.LFE7:
+ 608              		.section	.text.DevICM20602_SwReset,"ax",%progbits
+ 609              		.align	1
+ 610              		.syntax unified
+ 611              		.thumb
+ 612              		.thumb_func
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 18
+
+
+ 614              	DevICM20602_SwReset:
+ 615              	.LVL42:
+ 616              	.LFB8:
+ 328:Device/Dev_ICM20602.c **** 
+ 329:Device/Dev_ICM20602.c **** static bool DevICM20602_SwReset(DevICM20602Obj_TypeDef *Obj)
+ 330:Device/Dev_ICM20602.c **** {
+ 617              		.loc 1 330 1 is_stmt 1 view -0
+ 618              		.cfi_startproc
+ 619              		@ args = 0, pretend = 0, frame = 0
+ 620              		@ frame_needed = 0, uses_anonymous_args = 0
+ 621              		.loc 1 330 1 is_stmt 0 view .LVU174
+ 622 0000 10B5     		push	{r4, lr}
+ 623              	.LCFI15:
+ 624              		.cfi_def_cfa_offset 8
+ 625              		.cfi_offset 4, -8
+ 626              		.cfi_offset 14, -4
+ 627 0002 0446     		mov	r4, r0
+ 331:Device/Dev_ICM20602.c ****     // uint8_t read_out = 0;
+ 332:Device/Dev_ICM20602.c ****     // uint32_t reset_UsRt = 0;
+ 333:Device/Dev_ICM20602.c **** 
+ 334:Device/Dev_ICM20602.c ****     DevICM20602_Reg_Write(Obj, ICM20602_PWR_MGMT_1, ICM20602_RESET_CMD);
+ 628              		.loc 1 334 5 is_stmt 1 view .LVU175
+ 629 0004 8022     		movs	r2, #128
+ 630 0006 6B21     		movs	r1, #107
+ 631 0008 FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 632              	.LVL43:
+ 335:Device/Dev_ICM20602.c ****     Obj->delay(20);
+ 633              		.loc 1 335 5 view .LVU176
+ 634              		.loc 1 335 8 is_stmt 0 view .LVU177
+ 635 000c A368     		ldr	r3, [r4, #8]
+ 636              		.loc 1 335 5 view .LVU178
+ 637 000e 1420     		movs	r0, #20
+ 638 0010 9847     		blx	r3
+ 639              	.LVL44:
+ 336:Device/Dev_ICM20602.c ****     // reset_UsRt = Obj->get_timestamp();
+ 337:Device/Dev_ICM20602.c **** 
+ 338:Device/Dev_ICM20602.c ****     // do
+ 339:Device/Dev_ICM20602.c ****     // {
+ 340:Device/Dev_ICM20602.c ****     //     if ((Obj->get_timestamp() - reset_UsRt) >= ICM20602_RESET_TIMEOUT)
+ 341:Device/Dev_ICM20602.c ****     //         return false;
+ 342:Device/Dev_ICM20602.c **** 
+ 343:Device/Dev_ICM20602.c ****     //     DevICM20602_Reg_Read(Obj, ICM20602_PWR_MGMT_1, &read_out);
+ 344:Device/Dev_ICM20602.c ****     // } while (ICM20602_RESET_SUCCESS != read_out);
+ 345:Device/Dev_ICM20602.c **** 
+ 346:Device/Dev_ICM20602.c ****     return true;
+ 640              		.loc 1 346 5 is_stmt 1 view .LVU179
+ 347:Device/Dev_ICM20602.c **** }
+ 641              		.loc 1 347 1 is_stmt 0 view .LVU180
+ 642 0012 0120     		movs	r0, #1
+ 643 0014 10BD     		pop	{r4, pc}
+ 644              		.loc 1 347 1 view .LVU181
+ 645              		.cfi_endproc
+ 646              	.LFE8:
+ 648              		.section	.rodata.DevICM20602_Init.str1.4,"aMS",%progbits,1
+ 649              		.align	2
+ 650              	.LC0:
+ 651 0000 00       		.ascii	"\000"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 19
+
+
+ 652              		.section	.text.DevICM20602_Init,"ax",%progbits
+ 653              		.align	1
+ 654              		.syntax unified
+ 655              		.thumb
+ 656              		.thumb_func
+ 658              	DevICM20602_Init:
+ 659              	.LVL45:
+ 660              	.LFB6:
+ 215:Device/Dev_ICM20602.c ****     uint8_t read_out = 0;
+ 661              		.loc 1 215 1 is_stmt 1 view -0
+ 662              		.cfi_startproc
+ 663              		@ args = 0, pretend = 0, frame = 8
+ 664              		@ frame_needed = 0, uses_anonymous_args = 0
+ 215:Device/Dev_ICM20602.c ****     uint8_t read_out = 0;
+ 665              		.loc 1 215 1 is_stmt 0 view .LVU183
+ 666 0000 30B5     		push	{r4, r5, lr}
+ 667              	.LCFI16:
+ 668              		.cfi_def_cfa_offset 12
+ 669              		.cfi_offset 4, -12
+ 670              		.cfi_offset 5, -8
+ 671              		.cfi_offset 14, -4
+ 672 0002 83B0     		sub	sp, sp, #12
+ 673              	.LCFI17:
+ 674              		.cfi_def_cfa_offset 24
+ 216:Device/Dev_ICM20602.c **** 
+ 675              		.loc 1 216 5 is_stmt 1 view .LVU184
+ 216:Device/Dev_ICM20602.c **** 
+ 676              		.loc 1 216 13 is_stmt 0 view .LVU185
+ 677 0004 0023     		movs	r3, #0
+ 678 0006 8DF80730 		strb	r3, [sp, #7]
+ 218:Device/Dev_ICM20602.c ****         (Obj->bus_trans == NULL) ||
+ 679              		.loc 1 218 5 is_stmt 1 view .LVU186
+ 218:Device/Dev_ICM20602.c ****         (Obj->bus_trans == NULL) ||
+ 680              		.loc 1 218 8 is_stmt 0 view .LVU187
+ 681 000a 0446     		mov	r4, r0
+ 682 000c C8B1     		cbz	r0, .L48
+ 219:Device/Dev_ICM20602.c ****         (Obj->cs_ctl == NULL))
+ 683              		.loc 1 219 13 discriminator 1 view .LVU188
+ 684 000e 4368     		ldr	r3, [r0, #4]
+ 218:Device/Dev_ICM20602.c ****         (Obj->bus_trans == NULL) ||
+ 685              		.loc 1 218 23 discriminator 1 view .LVU189
+ 686 0010 BBB1     		cbz	r3, .L48
+ 220:Device/Dev_ICM20602.c ****     {
+ 687              		.loc 1 220 13 view .LVU190
+ 688 0012 0368     		ldr	r3, [r0]
+ 219:Device/Dev_ICM20602.c ****         (Obj->cs_ctl == NULL))
+ 689              		.loc 1 219 34 view .LVU191
+ 690 0014 ABB1     		cbz	r3, .L48
+ 227:Device/Dev_ICM20602.c ****     {
+ 691              		.loc 1 227 5 is_stmt 1 view .LVU192
+ 227:Device/Dev_ICM20602.c ****     {
+ 692              		.loc 1 227 10 is_stmt 0 view .LVU193
+ 693 0016 FFF7FEFF 		bl	DevICM20602_SwReset
+ 694              	.LVL46:
+ 227:Device/Dev_ICM20602.c ****     {
+ 695              		.loc 1 227 8 view .LVU194
+ 696 001a 0546     		mov	r5, r0
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 20
+
+
+ 697 001c 30BB     		cbnz	r0, .L52
+ 229:Device/Dev_ICM20602.c ****         return false;
+ 698              		.loc 1 229 9 is_stmt 1 view .LVU195
+ 699              	.LVL47:
+ 700              	.LBB24:
+ 701              	.LBI24:
+ 702              		.file 2 "common/gen_physic_def/imu_data.h"
+   1:common/gen_physic_def/imu_data.h **** #ifndef __IMU_DATA_H
+   2:common/gen_physic_def/imu_data.h **** #define __IMU_DATA_H
+   3:common/gen_physic_def/imu_data.h **** 
+   4:common/gen_physic_def/imu_data.h **** #ifdef __cplusplus
+   5:common/gen_physic_def/imu_data.h **** extern "C" {
+   6:common/gen_physic_def/imu_data.h **** #endif
+   7:common/gen_physic_def/imu_data.h **** 
+   8:common/gen_physic_def/imu_data.h **** #include <stdbool.h>
+   9:common/gen_physic_def/imu_data.h **** #include <stdint.h>
+  10:common/gen_physic_def/imu_data.h **** #include <string.h>
+  11:common/gen_physic_def/imu_data.h **** 
+  12:common/gen_physic_def/imu_data.h **** /*
+  13:common/gen_physic_def/imu_data.h ****  *  CNT 100 in 2K Sample Frequence is about keeping 50Ms abnormality data
+  14:common/gen_physic_def/imu_data.h ****  */
+  15:common/gen_physic_def/imu_data.h **** #define IMU_BLUNT_SAMPLE_CNT 100
+  16:common/gen_physic_def/imu_data.h **** 
+  17:common/gen_physic_def/imu_data.h **** typedef void (*cs_ctl_callback)(bool state);
+  18:common/gen_physic_def/imu_data.h **** typedef bool (*bus_trans_callback)(uint8_t *tx, uint8_t *rx, uint16_t len);
+  19:common/gen_physic_def/imu_data.h **** typedef void (*delay_callback)(uint32_t ms);
+  20:common/gen_physic_def/imu_data.h **** typedef uint32_t (*get_time_stamp_callback)(void);
+  21:common/gen_physic_def/imu_data.h **** 
+  22:common/gen_physic_def/imu_data.h **** typedef enum
+  23:common/gen_physic_def/imu_data.h **** {
+  24:common/gen_physic_def/imu_data.h ****     Att_Pitch = 0,
+  25:common/gen_physic_def/imu_data.h ****     Att_Roll,
+  26:common/gen_physic_def/imu_data.h ****     Att_Ctl_Sum,
+  27:common/gen_physic_def/imu_data.h ****     Att_Heading,
+  28:common/gen_physic_def/imu_data.h **** } Attitude_List;
+  29:common/gen_physic_def/imu_data.h **** 
+  30:common/gen_physic_def/imu_data.h **** typedef enum
+  31:common/gen_physic_def/imu_data.h **** {
+  32:common/gen_physic_def/imu_data.h ****     Axis_X = 0,
+  33:common/gen_physic_def/imu_data.h ****     Axis_Y,
+  34:common/gen_physic_def/imu_data.h ****     Axis_Z,
+  35:common/gen_physic_def/imu_data.h ****     Axis_Sum,
+  36:common/gen_physic_def/imu_data.h **** } Axis_List;
+  37:common/gen_physic_def/imu_data.h **** 
+  38:common/gen_physic_def/imu_data.h **** #pragma pack(1)
+  39:common/gen_physic_def/imu_data.h **** typedef struct
+  40:common/gen_physic_def/imu_data.h **** {
+  41:common/gen_physic_def/imu_data.h ****     uint32_t time_stamp;
+  42:common/gen_physic_def/imu_data.h ****     uint8_t cycle_cnt;
+  43:common/gen_physic_def/imu_data.h **** 
+  44:common/gen_physic_def/imu_data.h ****     int16_t temp_int;
+  45:common/gen_physic_def/imu_data.h ****     int16_t gyr_int[Axis_Sum];
+  46:common/gen_physic_def/imu_data.h ****     int16_t acc_int[Axis_Sum];
+  47:common/gen_physic_def/imu_data.h **** 
+  48:common/gen_physic_def/imu_data.h ****     float temp_flt;
+  49:common/gen_physic_def/imu_data.h ****     float gyr_flt[Axis_Sum];
+  50:common/gen_physic_def/imu_data.h ****     float acc_flt[Axis_Sum];
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 21
+
+
+  51:common/gen_physic_def/imu_data.h **** 
+  52:common/gen_physic_def/imu_data.h ****     int16_t gyr_int_lst[Axis_Sum];
+  53:common/gen_physic_def/imu_data.h ****     int16_t acc_int_lst[Axis_Sum];
+  54:common/gen_physic_def/imu_data.h **** 
+  55:common/gen_physic_def/imu_data.h ****     uint16_t gyr_blunt_cnt[Axis_Sum];
+  56:common/gen_physic_def/imu_data.h ****     uint16_t acc_blunt_cnt[Axis_Sum];
+  57:common/gen_physic_def/imu_data.h **** } IMUData_TypeDef;
+  58:common/gen_physic_def/imu_data.h **** 
+  59:common/gen_physic_def/imu_data.h **** typedef struct
+  60:common/gen_physic_def/imu_data.h **** {
+  61:common/gen_physic_def/imu_data.h ****     float acc_scale;
+  62:common/gen_physic_def/imu_data.h ****     float gyr_scale;
+  63:common/gen_physic_def/imu_data.h **** } IMUModuleScale_TypeDef;
+  64:common/gen_physic_def/imu_data.h **** 
+  65:common/gen_physic_def/imu_data.h **** typedef struct
+  66:common/gen_physic_def/imu_data.h **** {
+  67:common/gen_physic_def/imu_data.h ****     uint32_t time_stamp;
+  68:common/gen_physic_def/imu_data.h ****     float pitch;
+  69:common/gen_physic_def/imu_data.h ****     float roll;
+  70:common/gen_physic_def/imu_data.h ****     float yaw;
+  71:common/gen_physic_def/imu_data.h ****     float q0;
+  72:common/gen_physic_def/imu_data.h ****     float q1;
+  73:common/gen_physic_def/imu_data.h ****     float q2;
+  74:common/gen_physic_def/imu_data.h ****     float q3;
+  75:common/gen_physic_def/imu_data.h ****     bool flip_over;
+  76:common/gen_physic_def/imu_data.h ****     uint8_t err_code;
+  77:common/gen_physic_def/imu_data.h **** } IMUAtt_TypeDef;
+  78:common/gen_physic_def/imu_data.h **** #pragma pack()
+  79:common/gen_physic_def/imu_data.h **** 
+  80:common/gen_physic_def/imu_data.h **** typedef struct
+  81:common/gen_physic_def/imu_data.h **** {
+  82:common/gen_physic_def/imu_data.h ****     uint8_t code;
+  83:common/gen_physic_def/imu_data.h ****     char* function;
+  84:common/gen_physic_def/imu_data.h ****     uint16_t line;
+  85:common/gen_physic_def/imu_data.h **** 
+  86:common/gen_physic_def/imu_data.h ****     uint8_t tar_reg;
+  87:common/gen_physic_def/imu_data.h ****     uint8_t reg_r_val;
+  88:common/gen_physic_def/imu_data.h ****     uint8_t reg_t_val;
+  89:common/gen_physic_def/imu_data.h **** }IMU_Error_TypeDef;
+  90:common/gen_physic_def/imu_data.h **** 
+  91:common/gen_physic_def/imu_data.h **** inline void IMUData_SetError(IMU_Error_TypeDef *error, uint8_t code, const char* func, uint16_t lin
+ 703              		.loc 2 91 13 view .LVU196
+ 704              	.LBB25:
+  92:common/gen_physic_def/imu_data.h **** {
+  93:common/gen_physic_def/imu_data.h ****     if(error)
+ 705              		.loc 2 93 5 view .LVU197
+ 706              		.loc 2 93 7 is_stmt 0 view .LVU198
+ 707 001e 14F1200F 		cmn	r4, #32
+ 708 0022 20D0     		beq	.L51
+  94:common/gen_physic_def/imu_data.h ****     {
+  95:common/gen_physic_def/imu_data.h ****         error->code = code;
+ 709              		.loc 2 95 9 is_stmt 1 view .LVU199
+ 710              		.loc 2 95 21 is_stmt 0 view .LVU200
+ 711 0024 0323     		movs	r3, #3
+ 712 0026 84F82030 		strb	r3, [r4, #32]
+  96:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 713              		.loc 2 96 9 is_stmt 1 view .LVU201
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 22
+
+
+ 714              		.loc 2 96 25 is_stmt 0 view .LVU202
+ 715 002a B24B     		ldr	r3, .L71
+ 716 002c 6362     		str	r3, [r4, #36]
+  97:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 717              		.loc 2 97 9 is_stmt 1 view .LVU203
+ 718              		.loc 2 97 21 is_stmt 0 view .LVU204
+ 719 002e E523     		movs	r3, #229
+ 720 0030 2385     		strh	r3, [r4, #40]	@ movhi
+  98:common/gen_physic_def/imu_data.h **** 
+  99:common/gen_physic_def/imu_data.h ****         error->tar_reg = reg;
+ 721              		.loc 2 99 9 is_stmt 1 view .LVU205
+ 722              		.loc 2 99 24 is_stmt 0 view .LVU206
+ 723 0032 0023     		movs	r3, #0
+ 724 0034 84F82A30 		strb	r3, [r4, #42]
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 725              		.loc 2 100 9 is_stmt 1 view .LVU207
+ 726              		.loc 2 100 26 is_stmt 0 view .LVU208
+ 727 0038 84F82B30 		strb	r3, [r4, #43]
+ 101:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 728              		.loc 2 101 9 is_stmt 1 view .LVU209
+ 729              		.loc 2 101 26 is_stmt 0 view .LVU210
+ 730 003c 84F82C30 		strb	r3, [r4, #44]
+ 731              	.LVL48:
+ 732              		.loc 2 101 26 view .LVU211
+ 733              	.LBE25:
+ 734              	.LBE24:
+ 230:Device/Dev_ICM20602.c ****     }
+ 735              		.loc 1 230 9 is_stmt 1 view .LVU212
+ 230:Device/Dev_ICM20602.c ****     }
+ 736              		.loc 1 230 16 is_stmt 0 view .LVU213
+ 737 0040 11E0     		b	.L51
+ 738              	.LVL49:
+ 739              	.L48:
+ 222:Device/Dev_ICM20602.c ****         return false;
+ 740              		.loc 1 222 9 is_stmt 1 view .LVU214
+ 741              	.LBB26:
+ 742              	.LBI26:
+  91:common/gen_physic_def/imu_data.h **** {
+ 743              		.loc 2 91 13 view .LVU215
+ 744              	.LBB27:
+  93:common/gen_physic_def/imu_data.h ****     {
+ 745              		.loc 2 93 5 view .LVU216
+  93:common/gen_physic_def/imu_data.h ****     {
+ 746              		.loc 2 93 7 is_stmt 0 view .LVU217
+ 747 0042 14F1200F 		cmn	r4, #32
+ 748 0046 0DD0     		beq	.L50
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 749              		.loc 2 95 9 is_stmt 1 view .LVU218
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 750              		.loc 2 95 21 is_stmt 0 view .LVU219
+ 751 0048 0123     		movs	r3, #1
+ 752 004a 84F82030 		strb	r3, [r4, #32]
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 753              		.loc 2 96 9 is_stmt 1 view .LVU220
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 754              		.loc 2 96 25 is_stmt 0 view .LVU221
+ 755 004e A94B     		ldr	r3, .L71
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 23
+
+
+ 756 0050 6362     		str	r3, [r4, #36]
+  97:common/gen_physic_def/imu_data.h **** 
+ 757              		.loc 2 97 9 is_stmt 1 view .LVU222
+  97:common/gen_physic_def/imu_data.h **** 
+ 758              		.loc 2 97 21 is_stmt 0 view .LVU223
+ 759 0052 DE23     		movs	r3, #222
+ 760 0054 2385     		strh	r3, [r4, #40]	@ movhi
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 761              		.loc 2 99 9 is_stmt 1 view .LVU224
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 762              		.loc 2 99 24 is_stmt 0 view .LVU225
+ 763 0056 0023     		movs	r3, #0
+ 764 0058 84F82A30 		strb	r3, [r4, #42]
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 765              		.loc 2 100 9 is_stmt 1 view .LVU226
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 766              		.loc 2 100 26 is_stmt 0 view .LVU227
+ 767 005c 84F82B30 		strb	r3, [r4, #43]
+ 768              		.loc 2 101 9 is_stmt 1 view .LVU228
+ 769              		.loc 2 101 26 is_stmt 0 view .LVU229
+ 770 0060 84F82C30 		strb	r3, [r4, #44]
+ 771              	.L50:
+ 772              	.LVL50:
+ 773              		.loc 2 101 26 view .LVU230
+ 774              	.LBE27:
+ 775              	.LBE26:
+ 223:Device/Dev_ICM20602.c ****     }
+ 776              		.loc 1 223 9 is_stmt 1 view .LVU231
+ 223:Device/Dev_ICM20602.c ****     }
+ 777              		.loc 1 223 16 is_stmt 0 view .LVU232
+ 778 0064 0025     		movs	r5, #0
+ 779              	.LVL51:
+ 780              	.L51:
+ 321:Device/Dev_ICM20602.c **** 
+ 781              		.loc 1 321 1 view .LVU233
+ 782 0066 2846     		mov	r0, r5
+ 783 0068 03B0     		add	sp, sp, #12
+ 784              	.LCFI18:
+ 785              		.cfi_remember_state
+ 786              		.cfi_def_cfa_offset 12
+ 787              		@ sp needed
+ 788 006a 30BD     		pop	{r4, r5, pc}
+ 789              	.LVL52:
+ 790              	.L52:
+ 791              	.LCFI19:
+ 792              		.cfi_restore_state
+ 233:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 793              		.loc 1 233 5 is_stmt 1 view .LVU234
+ 794 006c 0DF10702 		add	r2, sp, #7
+ 795 0070 7521     		movs	r1, #117
+ 796 0072 2046     		mov	r0, r4
+ 797 0074 FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 798              	.LVL53:
+ 234:Device/Dev_ICM20602.c **** 
+ 799              		.loc 1 234 5 view .LVU235
+ 234:Device/Dev_ICM20602.c **** 
+ 800              		.loc 1 234 8 is_stmt 0 view .LVU236
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 24
+
+
+ 801 0078 A368     		ldr	r3, [r4, #8]
+ 234:Device/Dev_ICM20602.c **** 
+ 802              		.loc 1 234 5 view .LVU237
+ 803 007a 0A20     		movs	r0, #10
+ 804 007c 9847     		blx	r3
+ 805              	.LVL54:
+ 236:Device/Dev_ICM20602.c ****     {
+ 806              		.loc 1 236 5 is_stmt 1 view .LVU238
+ 236:Device/Dev_ICM20602.c ****     {
+ 807              		.loc 1 236 18 is_stmt 0 view .LVU239
+ 808 007e 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 236:Device/Dev_ICM20602.c ****     {
+ 809              		.loc 1 236 8 view .LVU240
+ 810 0082 122B     		cmp	r3, #18
+ 811 0084 13D0     		beq	.L54
+ 238:Device/Dev_ICM20602.c ****         return false;
+ 812              		.loc 1 238 9 is_stmt 1 view .LVU241
+ 813              	.LVL55:
+ 814              	.LBB28:
+ 815              	.LBI28:
+  91:common/gen_physic_def/imu_data.h **** {
+ 816              		.loc 2 91 13 view .LVU242
+ 817              	.LBB29:
+  93:common/gen_physic_def/imu_data.h ****     {
+ 818              		.loc 2 93 5 view .LVU243
+  93:common/gen_physic_def/imu_data.h ****     {
+ 819              		.loc 2 93 7 is_stmt 0 view .LVU244
+ 820 0086 14F1200F 		cmn	r4, #32
+ 821 008a 0ED0     		beq	.L55
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 822              		.loc 2 95 9 is_stmt 1 view .LVU245
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 823              		.loc 2 95 21 is_stmt 0 view .LVU246
+ 824 008c 0222     		movs	r2, #2
+ 825 008e 84F82020 		strb	r2, [r4, #32]
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 826              		.loc 2 96 9 is_stmt 1 view .LVU247
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 827              		.loc 2 96 25 is_stmt 0 view .LVU248
+ 828 0092 984A     		ldr	r2, .L71
+ 829 0094 6262     		str	r2, [r4, #36]
+  97:common/gen_physic_def/imu_data.h **** 
+ 830              		.loc 2 97 9 is_stmt 1 view .LVU249
+  97:common/gen_physic_def/imu_data.h **** 
+ 831              		.loc 2 97 21 is_stmt 0 view .LVU250
+ 832 0096 EE22     		movs	r2, #238
+ 833 0098 2285     		strh	r2, [r4, #40]	@ movhi
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 834              		.loc 2 99 9 is_stmt 1 view .LVU251
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 835              		.loc 2 99 24 is_stmt 0 view .LVU252
+ 836 009a 7522     		movs	r2, #117
+ 837 009c 84F82A20 		strb	r2, [r4, #42]
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 838              		.loc 2 100 9 is_stmt 1 view .LVU253
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 839              		.loc 2 100 26 is_stmt 0 view .LVU254
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 25
+
+
+ 840 00a0 84F82B30 		strb	r3, [r4, #43]
+ 841              		.loc 2 101 9 is_stmt 1 view .LVU255
+ 842              		.loc 2 101 26 is_stmt 0 view .LVU256
+ 843 00a4 1223     		movs	r3, #18
+ 844              	.LVL56:
+ 845              		.loc 2 101 26 view .LVU257
+ 846 00a6 84F82C30 		strb	r3, [r4, #44]
+ 847              	.LVL57:
+ 848              	.L55:
+ 849              		.loc 2 101 26 view .LVU258
+ 850              	.LBE29:
+ 851              	.LBE28:
+ 239:Device/Dev_ICM20602.c ****     }
+ 852              		.loc 1 239 9 is_stmt 1 view .LVU259
+ 239:Device/Dev_ICM20602.c ****     }
+ 853              		.loc 1 239 16 is_stmt 0 view .LVU260
+ 854 00aa 0025     		movs	r5, #0
+ 855 00ac DBE7     		b	.L51
+ 856              	.L54:
+ 243:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 857              		.loc 1 243 5 is_stmt 1 view .LVU261
+ 858 00ae 0122     		movs	r2, #1
+ 859 00b0 6B21     		movs	r1, #107
+ 860 00b2 2046     		mov	r0, r4
+ 861 00b4 FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 862              	.LVL58:
+ 244:Device/Dev_ICM20602.c **** 
+ 863              		.loc 1 244 5 view .LVU262
+ 244:Device/Dev_ICM20602.c **** 
+ 864              		.loc 1 244 8 is_stmt 0 view .LVU263
+ 865 00b8 A368     		ldr	r3, [r4, #8]
+ 244:Device/Dev_ICM20602.c **** 
+ 866              		.loc 1 244 5 view .LVU264
+ 867 00ba 0A20     		movs	r0, #10
+ 868 00bc 9847     		blx	r3
+ 869              	.LVL59:
+ 246:Device/Dev_ICM20602.c ****     if (read_out != 0x01)
+ 870              		.loc 1 246 5 is_stmt 1 view .LVU265
+ 871 00be 0DF10702 		add	r2, sp, #7
+ 872 00c2 6B21     		movs	r1, #107
+ 873 00c4 2046     		mov	r0, r4
+ 874 00c6 FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 875              	.LVL60:
+ 247:Device/Dev_ICM20602.c ****     {
+ 876              		.loc 1 247 5 view .LVU266
+ 247:Device/Dev_ICM20602.c ****     {
+ 877              		.loc 1 247 18 is_stmt 0 view .LVU267
+ 878 00ca 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 247:Device/Dev_ICM20602.c ****     {
+ 879              		.loc 1 247 8 view .LVU268
+ 880 00ce 012B     		cmp	r3, #1
+ 881 00d0 13D0     		beq	.L56
+ 249:Device/Dev_ICM20602.c ****         return false;
+ 882              		.loc 1 249 9 is_stmt 1 view .LVU269
+ 883              	.LVL61:
+ 884              	.LBB30:
+ 885              	.LBI30:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 26
+
+
+  91:common/gen_physic_def/imu_data.h **** {
+ 886              		.loc 2 91 13 view .LVU270
+ 887              	.LBB31:
+  93:common/gen_physic_def/imu_data.h ****     {
+ 888              		.loc 2 93 5 view .LVU271
+  93:common/gen_physic_def/imu_data.h ****     {
+ 889              		.loc 2 93 7 is_stmt 0 view .LVU272
+ 890 00d2 14F1200F 		cmn	r4, #32
+ 891 00d6 0ED0     		beq	.L57
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 892              		.loc 2 95 9 is_stmt 1 view .LVU273
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 893              		.loc 2 95 21 is_stmt 0 view .LVU274
+ 894 00d8 0422     		movs	r2, #4
+ 895 00da 84F82020 		strb	r2, [r4, #32]
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 896              		.loc 2 96 9 is_stmt 1 view .LVU275
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 897              		.loc 2 96 25 is_stmt 0 view .LVU276
+ 898 00de 854A     		ldr	r2, .L71
+ 899 00e0 6262     		str	r2, [r4, #36]
+  97:common/gen_physic_def/imu_data.h **** 
+ 900              		.loc 2 97 9 is_stmt 1 view .LVU277
+  97:common/gen_physic_def/imu_data.h **** 
+ 901              		.loc 2 97 21 is_stmt 0 view .LVU278
+ 902 00e2 F922     		movs	r2, #249
+ 903 00e4 2285     		strh	r2, [r4, #40]	@ movhi
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 904              		.loc 2 99 9 is_stmt 1 view .LVU279
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 905              		.loc 2 99 24 is_stmt 0 view .LVU280
+ 906 00e6 6B22     		movs	r2, #107
+ 907 00e8 84F82A20 		strb	r2, [r4, #42]
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 908              		.loc 2 100 9 is_stmt 1 view .LVU281
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 909              		.loc 2 100 26 is_stmt 0 view .LVU282
+ 910 00ec 84F82B30 		strb	r3, [r4, #43]
+ 911              		.loc 2 101 9 is_stmt 1 view .LVU283
+ 912              		.loc 2 101 26 is_stmt 0 view .LVU284
+ 913 00f0 0123     		movs	r3, #1
+ 914              	.LVL62:
+ 915              		.loc 2 101 26 view .LVU285
+ 916 00f2 84F82C30 		strb	r3, [r4, #44]
+ 917              	.LVL63:
+ 918              	.L57:
+ 919              		.loc 2 101 26 view .LVU286
+ 920              	.LBE31:
+ 921              	.LBE30:
+ 250:Device/Dev_ICM20602.c ****     }
+ 922              		.loc 1 250 9 is_stmt 1 view .LVU287
+ 250:Device/Dev_ICM20602.c ****     }
+ 923              		.loc 1 250 16 is_stmt 0 view .LVU288
+ 924 00f6 0025     		movs	r5, #0
+ 925 00f8 B5E7     		b	.L51
+ 926              	.L56:
+ 254:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 27
+
+
+ 927              		.loc 1 254 5 is_stmt 1 view .LVU289
+ 928 00fa 0022     		movs	r2, #0
+ 929 00fc 6C21     		movs	r1, #108
+ 930 00fe 2046     		mov	r0, r4
+ 931 0100 FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 932              	.LVL64:
+ 255:Device/Dev_ICM20602.c **** 
+ 933              		.loc 1 255 5 view .LVU290
+ 255:Device/Dev_ICM20602.c **** 
+ 934              		.loc 1 255 8 is_stmt 0 view .LVU291
+ 935 0104 A368     		ldr	r3, [r4, #8]
+ 255:Device/Dev_ICM20602.c **** 
+ 936              		.loc 1 255 5 view .LVU292
+ 937 0106 0A20     		movs	r0, #10
+ 938 0108 9847     		blx	r3
+ 939              	.LVL65:
+ 257:Device/Dev_ICM20602.c ****     if (read_out != 0x00)
+ 940              		.loc 1 257 5 is_stmt 1 view .LVU293
+ 941 010a 0DF10702 		add	r2, sp, #7
+ 942 010e 6C21     		movs	r1, #108
+ 943 0110 2046     		mov	r0, r4
+ 944 0112 FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 945              	.LVL66:
+ 258:Device/Dev_ICM20602.c ****     {
+ 946              		.loc 1 258 5 view .LVU294
+ 258:Device/Dev_ICM20602.c ****     {
+ 947              		.loc 1 258 18 is_stmt 0 view .LVU295
+ 948 0116 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 258:Device/Dev_ICM20602.c ****     {
+ 949              		.loc 1 258 8 view .LVU296
+ 950 011a A3B1     		cbz	r3, .L58
+ 260:Device/Dev_ICM20602.c ****         return false;
+ 951              		.loc 1 260 9 is_stmt 1 view .LVU297
+ 952              	.LVL67:
+ 953              	.LBB32:
+ 954              	.LBI32:
+  91:common/gen_physic_def/imu_data.h **** {
+ 955              		.loc 2 91 13 view .LVU298
+ 956              	.LBB33:
+  93:common/gen_physic_def/imu_data.h ****     {
+ 957              		.loc 2 93 5 view .LVU299
+  93:common/gen_physic_def/imu_data.h ****     {
+ 958              		.loc 2 93 7 is_stmt 0 view .LVU300
+ 959 011c 14F1200F 		cmn	r4, #32
+ 960 0120 0FD0     		beq	.L59
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 961              		.loc 2 95 9 is_stmt 1 view .LVU301
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 962              		.loc 2 95 21 is_stmt 0 view .LVU302
+ 963 0122 0522     		movs	r2, #5
+ 964 0124 84F82020 		strb	r2, [r4, #32]
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 965              		.loc 2 96 9 is_stmt 1 view .LVU303
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 966              		.loc 2 96 25 is_stmt 0 view .LVU304
+ 967 0128 724A     		ldr	r2, .L71
+ 968 012a 6262     		str	r2, [r4, #36]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 28
+
+
+  97:common/gen_physic_def/imu_data.h **** 
+ 969              		.loc 2 97 9 is_stmt 1 view .LVU305
+  97:common/gen_physic_def/imu_data.h **** 
+ 970              		.loc 2 97 21 is_stmt 0 view .LVU306
+ 971 012c 4FF48272 		mov	r2, #260
+ 972 0130 2285     		strh	r2, [r4, #40]	@ movhi
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 973              		.loc 2 99 9 is_stmt 1 view .LVU307
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 974              		.loc 2 99 24 is_stmt 0 view .LVU308
+ 975 0132 6C22     		movs	r2, #108
+ 976 0134 84F82A20 		strb	r2, [r4, #42]
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 977              		.loc 2 100 9 is_stmt 1 view .LVU309
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 978              		.loc 2 100 26 is_stmt 0 view .LVU310
+ 979 0138 84F82B30 		strb	r3, [r4, #43]
+ 980              		.loc 2 101 9 is_stmt 1 view .LVU311
+ 981              		.loc 2 101 26 is_stmt 0 view .LVU312
+ 982 013c 0023     		movs	r3, #0
+ 983              	.LVL68:
+ 984              		.loc 2 101 26 view .LVU313
+ 985 013e 84F82C30 		strb	r3, [r4, #44]
+ 986              	.LVL69:
+ 987              	.L59:
+ 988              		.loc 2 101 26 view .LVU314
+ 989              	.LBE33:
+ 990              	.LBE32:
+ 261:Device/Dev_ICM20602.c ****     }
+ 991              		.loc 1 261 9 is_stmt 1 view .LVU315
+ 261:Device/Dev_ICM20602.c ****     }
+ 992              		.loc 1 261 16 is_stmt 0 view .LVU316
+ 993 0142 0025     		movs	r5, #0
+ 994 0144 8FE7     		b	.L51
+ 995              	.L58:
+ 265:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 996              		.loc 1 265 5 is_stmt 1 view .LVU317
+ 997 0146 4022     		movs	r2, #64
+ 998 0148 7021     		movs	r1, #112
+ 999 014a 2046     		mov	r0, r4
+ 1000 014c FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 1001              	.LVL70:
+ 266:Device/Dev_ICM20602.c **** 
+ 1002              		.loc 1 266 5 view .LVU318
+ 266:Device/Dev_ICM20602.c **** 
+ 1003              		.loc 1 266 8 is_stmt 0 view .LVU319
+ 1004 0150 A368     		ldr	r3, [r4, #8]
+ 266:Device/Dev_ICM20602.c **** 
+ 1005              		.loc 1 266 5 view .LVU320
+ 1006 0152 0A20     		movs	r0, #10
+ 1007 0154 9847     		blx	r3
+ 1008              	.LVL71:
+ 268:Device/Dev_ICM20602.c ****     if (read_out != 0x40)
+ 1009              		.loc 1 268 5 is_stmt 1 view .LVU321
+ 1010 0156 0DF10702 		add	r2, sp, #7
+ 1011 015a 7021     		movs	r1, #112
+ 1012 015c 2046     		mov	r0, r4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 29
+
+
+ 1013 015e FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 1014              	.LVL72:
+ 269:Device/Dev_ICM20602.c ****     {
+ 1015              		.loc 1 269 5 view .LVU322
+ 269:Device/Dev_ICM20602.c ****     {
+ 1016              		.loc 1 269 18 is_stmt 0 view .LVU323
+ 1017 0162 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 269:Device/Dev_ICM20602.c ****     {
+ 1018              		.loc 1 269 8 view .LVU324
+ 1019 0166 402B     		cmp	r3, #64
+ 1020 0168 14D0     		beq	.L60
+ 271:Device/Dev_ICM20602.c ****         return false;
+ 1021              		.loc 1 271 9 is_stmt 1 view .LVU325
+ 1022              	.LVL73:
+ 1023              	.LBB34:
+ 1024              	.LBI34:
+  91:common/gen_physic_def/imu_data.h **** {
+ 1025              		.loc 2 91 13 view .LVU326
+ 1026              	.LBB35:
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1027              		.loc 2 93 5 view .LVU327
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1028              		.loc 2 93 7 is_stmt 0 view .LVU328
+ 1029 016a 14F1200F 		cmn	r4, #32
+ 1030 016e 0FD0     		beq	.L61
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1031              		.loc 2 95 9 is_stmt 1 view .LVU329
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1032              		.loc 2 95 21 is_stmt 0 view .LVU330
+ 1033 0170 0622     		movs	r2, #6
+ 1034 0172 84F82020 		strb	r2, [r4, #32]
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1035              		.loc 2 96 9 is_stmt 1 view .LVU331
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1036              		.loc 2 96 25 is_stmt 0 view .LVU332
+ 1037 0176 5F4A     		ldr	r2, .L71
+ 1038 0178 6262     		str	r2, [r4, #36]
+  97:common/gen_physic_def/imu_data.h **** 
+ 1039              		.loc 2 97 9 is_stmt 1 view .LVU333
+  97:common/gen_physic_def/imu_data.h **** 
+ 1040              		.loc 2 97 21 is_stmt 0 view .LVU334
+ 1041 017a 40F20F12 		movw	r2, #271
+ 1042 017e 2285     		strh	r2, [r4, #40]	@ movhi
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1043              		.loc 2 99 9 is_stmt 1 view .LVU335
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1044              		.loc 2 99 24 is_stmt 0 view .LVU336
+ 1045 0180 7022     		movs	r2, #112
+ 1046 0182 84F82A20 		strb	r2, [r4, #42]
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1047              		.loc 2 100 9 is_stmt 1 view .LVU337
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1048              		.loc 2 100 26 is_stmt 0 view .LVU338
+ 1049 0186 84F82B30 		strb	r3, [r4, #43]
+ 1050              		.loc 2 101 9 is_stmt 1 view .LVU339
+ 1051              		.loc 2 101 26 is_stmt 0 view .LVU340
+ 1052 018a 4023     		movs	r3, #64
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 30
+
+
+ 1053              	.LVL74:
+ 1054              		.loc 2 101 26 view .LVU341
+ 1055 018c 84F82C30 		strb	r3, [r4, #44]
+ 1056              	.LVL75:
+ 1057              	.L61:
+ 1058              		.loc 2 101 26 view .LVU342
+ 1059              	.LBE35:
+ 1060              	.LBE34:
+ 272:Device/Dev_ICM20602.c ****     }
+ 1061              		.loc 1 272 9 is_stmt 1 view .LVU343
+ 272:Device/Dev_ICM20602.c ****     }
+ 1062              		.loc 1 272 16 is_stmt 0 view .LVU344
+ 1063 0190 0025     		movs	r5, #0
+ 1064 0192 68E7     		b	.L51
+ 1065              	.L60:
+ 276:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 1066              		.loc 1 276 5 is_stmt 1 view .LVU345
+ 1067 0194 94F83020 		ldrb	r2, [r4, #48]	@ zero_extendqisi2
+ 1068 0198 1921     		movs	r1, #25
+ 1069 019a 2046     		mov	r0, r4
+ 1070 019c FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 1071              	.LVL76:
+ 277:Device/Dev_ICM20602.c **** 
+ 1072              		.loc 1 277 5 view .LVU346
+ 277:Device/Dev_ICM20602.c **** 
+ 1073              		.loc 1 277 8 is_stmt 0 view .LVU347
+ 1074 01a0 A368     		ldr	r3, [r4, #8]
+ 277:Device/Dev_ICM20602.c **** 
+ 1075              		.loc 1 277 5 view .LVU348
+ 1076 01a2 0A20     		movs	r0, #10
+ 1077 01a4 9847     		blx	r3
+ 1078              	.LVL77:
+ 279:Device/Dev_ICM20602.c ****     if (read_out != Obj->rate)
+ 1079              		.loc 1 279 5 is_stmt 1 view .LVU349
+ 1080 01a6 0DF10702 		add	r2, sp, #7
+ 1081 01aa 1921     		movs	r1, #25
+ 1082 01ac 2046     		mov	r0, r4
+ 1083 01ae FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 1084              	.LVL78:
+ 280:Device/Dev_ICM20602.c ****     {
+ 1085              		.loc 1 280 5 view .LVU350
+ 280:Device/Dev_ICM20602.c ****     {
+ 1086              		.loc 1 280 24 is_stmt 0 view .LVU351
+ 1087 01b2 94F83030 		ldrb	r3, [r4, #48]	@ zero_extendqisi2
+ 280:Device/Dev_ICM20602.c ****     {
+ 1088              		.loc 1 280 18 view .LVU352
+ 1089 01b6 9DF80720 		ldrb	r2, [sp, #7]	@ zero_extendqisi2
+ 280:Device/Dev_ICM20602.c ****     {
+ 1090              		.loc 1 280 8 view .LVU353
+ 1091 01ba 9342     		cmp	r3, r2
+ 1092 01bc 13D0     		beq	.L62
+ 282:Device/Dev_ICM20602.c ****         return false;
+ 1093              		.loc 1 282 9 is_stmt 1 view .LVU354
+ 1094              	.LVL79:
+ 1095              	.LBB36:
+ 1096              	.LBI36:
+  91:common/gen_physic_def/imu_data.h **** {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 31
+
+
+ 1097              		.loc 2 91 13 view .LVU355
+ 1098              	.LBB37:
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1099              		.loc 2 93 5 view .LVU356
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1100              		.loc 2 93 7 is_stmt 0 view .LVU357
+ 1101 01be 14F1200F 		cmn	r4, #32
+ 1102 01c2 0ED0     		beq	.L63
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1103              		.loc 2 95 9 is_stmt 1 view .LVU358
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1104              		.loc 2 95 21 is_stmt 0 view .LVU359
+ 1105 01c4 0A21     		movs	r1, #10
+ 1106 01c6 84F82010 		strb	r1, [r4, #32]
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1107              		.loc 2 96 9 is_stmt 1 view .LVU360
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1108              		.loc 2 96 25 is_stmt 0 view .LVU361
+ 1109 01ca 4A49     		ldr	r1, .L71
+ 1110 01cc 6162     		str	r1, [r4, #36]
+  97:common/gen_physic_def/imu_data.h **** 
+ 1111              		.loc 2 97 9 is_stmt 1 view .LVU362
+  97:common/gen_physic_def/imu_data.h **** 
+ 1112              		.loc 2 97 21 is_stmt 0 view .LVU363
+ 1113 01ce 4FF48D71 		mov	r1, #282
+ 1114 01d2 2185     		strh	r1, [r4, #40]	@ movhi
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1115              		.loc 2 99 9 is_stmt 1 view .LVU364
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1116              		.loc 2 99 24 is_stmt 0 view .LVU365
+ 1117 01d4 1921     		movs	r1, #25
+ 1118 01d6 84F82A10 		strb	r1, [r4, #42]
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1119              		.loc 2 100 9 is_stmt 1 view .LVU366
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1120              		.loc 2 100 26 is_stmt 0 view .LVU367
+ 1121 01da 84F82B20 		strb	r2, [r4, #43]
+ 1122              		.loc 2 101 9 is_stmt 1 view .LVU368
+ 1123              		.loc 2 101 26 is_stmt 0 view .LVU369
+ 1124 01de 84F82C30 		strb	r3, [r4, #44]
+ 1125              	.L63:
+ 1126              	.LVL80:
+ 1127              		.loc 2 101 26 view .LVU370
+ 1128              	.LBE37:
+ 1129              	.LBE36:
+ 283:Device/Dev_ICM20602.c ****     }
+ 1130              		.loc 1 283 9 is_stmt 1 view .LVU371
+ 283:Device/Dev_ICM20602.c ****     }
+ 1131              		.loc 1 283 16 is_stmt 0 view .LVU372
+ 1132 01e2 0025     		movs	r5, #0
+ 1133 01e4 3FE7     		b	.L51
+ 1134              	.L62:
+ 287:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 1135              		.loc 1 287 5 is_stmt 1 view .LVU373
+ 1136 01e6 A27C     		ldrb	r2, [r4, #18]	@ zero_extendqisi2
+ 1137 01e8 1C21     		movs	r1, #28
+ 1138 01ea 2046     		mov	r0, r4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 32
+
+
+ 1139 01ec FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 1140              	.LVL81:
+ 288:Device/Dev_ICM20602.c **** 
+ 1141              		.loc 1 288 5 view .LVU374
+ 288:Device/Dev_ICM20602.c **** 
+ 1142              		.loc 1 288 8 is_stmt 0 view .LVU375
+ 1143 01f0 A368     		ldr	r3, [r4, #8]
+ 288:Device/Dev_ICM20602.c **** 
+ 1144              		.loc 1 288 5 view .LVU376
+ 1145 01f2 0A20     		movs	r0, #10
+ 1146 01f4 9847     		blx	r3
+ 1147              	.LVL82:
+ 290:Device/Dev_ICM20602.c ****     if (read_out != Obj->AccTrip)
+ 1148              		.loc 1 290 5 is_stmt 1 view .LVU377
+ 1149 01f6 0DF10702 		add	r2, sp, #7
+ 1150 01fa 1C21     		movs	r1, #28
+ 1151 01fc 2046     		mov	r0, r4
+ 1152 01fe FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 1153              	.LVL83:
+ 291:Device/Dev_ICM20602.c ****     {
+ 1154              		.loc 1 291 5 view .LVU378
+ 291:Device/Dev_ICM20602.c ****     {
+ 1155              		.loc 1 291 24 is_stmt 0 view .LVU379
+ 1156 0202 A37C     		ldrb	r3, [r4, #18]	@ zero_extendqisi2
+ 291:Device/Dev_ICM20602.c ****     {
+ 1157              		.loc 1 291 18 view .LVU380
+ 1158 0204 9DF80720 		ldrb	r2, [sp, #7]	@ zero_extendqisi2
+ 291:Device/Dev_ICM20602.c ****     {
+ 1159              		.loc 1 291 8 view .LVU381
+ 1160 0208 9342     		cmp	r3, r2
+ 1161 020a 13D0     		beq	.L64
+ 293:Device/Dev_ICM20602.c ****         return false;
+ 1162              		.loc 1 293 9 is_stmt 1 view .LVU382
+ 1163              	.LVL84:
+ 1164              	.LBB38:
+ 1165              	.LBI38:
+  91:common/gen_physic_def/imu_data.h **** {
+ 1166              		.loc 2 91 13 view .LVU383
+ 1167              	.LBB39:
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1168              		.loc 2 93 5 view .LVU384
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1169              		.loc 2 93 7 is_stmt 0 view .LVU385
+ 1170 020c 14F1200F 		cmn	r4, #32
+ 1171 0210 0ED0     		beq	.L65
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1172              		.loc 2 95 9 is_stmt 1 view .LVU386
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1173              		.loc 2 95 21 is_stmt 0 view .LVU387
+ 1174 0212 0821     		movs	r1, #8
+ 1175 0214 84F82010 		strb	r1, [r4, #32]
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1176              		.loc 2 96 9 is_stmt 1 view .LVU388
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1177              		.loc 2 96 25 is_stmt 0 view .LVU389
+ 1178 0218 3649     		ldr	r1, .L71
+ 1179 021a 6162     		str	r1, [r4, #36]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 33
+
+
+  97:common/gen_physic_def/imu_data.h **** 
+ 1180              		.loc 2 97 9 is_stmt 1 view .LVU390
+  97:common/gen_physic_def/imu_data.h **** 
+ 1181              		.loc 2 97 21 is_stmt 0 view .LVU391
+ 1182 021c 40F22511 		movw	r1, #293
+ 1183 0220 2185     		strh	r1, [r4, #40]	@ movhi
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1184              		.loc 2 99 9 is_stmt 1 view .LVU392
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1185              		.loc 2 99 24 is_stmt 0 view .LVU393
+ 1186 0222 1C21     		movs	r1, #28
+ 1187 0224 84F82A10 		strb	r1, [r4, #42]
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1188              		.loc 2 100 9 is_stmt 1 view .LVU394
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1189              		.loc 2 100 26 is_stmt 0 view .LVU395
+ 1190 0228 84F82B20 		strb	r2, [r4, #43]
+ 1191              		.loc 2 101 9 is_stmt 1 view .LVU396
+ 1192              		.loc 2 101 26 is_stmt 0 view .LVU397
+ 1193 022c 84F82C30 		strb	r3, [r4, #44]
+ 1194              	.L65:
+ 1195              	.LVL85:
+ 1196              		.loc 2 101 26 view .LVU398
+ 1197              	.LBE39:
+ 1198              	.LBE38:
+ 294:Device/Dev_ICM20602.c ****     }
+ 1199              		.loc 1 294 9 is_stmt 1 view .LVU399
+ 294:Device/Dev_ICM20602.c ****     }
+ 1200              		.loc 1 294 16 is_stmt 0 view .LVU400
+ 1201 0230 0025     		movs	r5, #0
+ 1202 0232 18E7     		b	.L51
+ 1203              	.L64:
+ 298:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 1204              		.loc 1 298 5 is_stmt 1 view .LVU401
+ 1205 0234 E27C     		ldrb	r2, [r4, #19]	@ zero_extendqisi2
+ 1206 0236 1B21     		movs	r1, #27
+ 1207 0238 2046     		mov	r0, r4
+ 1208 023a FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 1209              	.LVL86:
+ 299:Device/Dev_ICM20602.c **** 
+ 1210              		.loc 1 299 5 view .LVU402
+ 299:Device/Dev_ICM20602.c **** 
+ 1211              		.loc 1 299 8 is_stmt 0 view .LVU403
+ 1212 023e A368     		ldr	r3, [r4, #8]
+ 299:Device/Dev_ICM20602.c **** 
+ 1213              		.loc 1 299 5 view .LVU404
+ 1214 0240 0A20     		movs	r0, #10
+ 1215 0242 9847     		blx	r3
+ 1216              	.LVL87:
+ 301:Device/Dev_ICM20602.c ****     if (read_out != Obj->GyrTrip)
+ 1217              		.loc 1 301 5 is_stmt 1 view .LVU405
+ 1218 0244 0DF10702 		add	r2, sp, #7
+ 1219 0248 1B21     		movs	r1, #27
+ 1220 024a 2046     		mov	r0, r4
+ 1221 024c FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 1222              	.LVL88:
+ 302:Device/Dev_ICM20602.c ****     {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 34
+
+
+ 1223              		.loc 1 302 5 view .LVU406
+ 302:Device/Dev_ICM20602.c ****     {
+ 1224              		.loc 1 302 24 is_stmt 0 view .LVU407
+ 1225 0250 E37C     		ldrb	r3, [r4, #19]	@ zero_extendqisi2
+ 302:Device/Dev_ICM20602.c ****     {
+ 1226              		.loc 1 302 18 view .LVU408
+ 1227 0252 9DF80720 		ldrb	r2, [sp, #7]	@ zero_extendqisi2
+ 302:Device/Dev_ICM20602.c ****     {
+ 1228              		.loc 1 302 8 view .LVU409
+ 1229 0256 9342     		cmp	r3, r2
+ 1230 0258 13D0     		beq	.L66
+ 304:Device/Dev_ICM20602.c ****         return false;
+ 1231              		.loc 1 304 9 is_stmt 1 view .LVU410
+ 1232              	.LVL89:
+ 1233              	.LBB40:
+ 1234              	.LBI40:
+  91:common/gen_physic_def/imu_data.h **** {
+ 1235              		.loc 2 91 13 view .LVU411
+ 1236              	.LBB41:
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1237              		.loc 2 93 5 view .LVU412
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1238              		.loc 2 93 7 is_stmt 0 view .LVU413
+ 1239 025a 14F1200F 		cmn	r4, #32
+ 1240 025e 0ED0     		beq	.L67
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1241              		.loc 2 95 9 is_stmt 1 view .LVU414
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1242              		.loc 2 95 21 is_stmt 0 view .LVU415
+ 1243 0260 0921     		movs	r1, #9
+ 1244 0262 84F82010 		strb	r1, [r4, #32]
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1245              		.loc 2 96 9 is_stmt 1 view .LVU416
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1246              		.loc 2 96 25 is_stmt 0 view .LVU417
+ 1247 0266 2349     		ldr	r1, .L71
+ 1248 0268 6162     		str	r1, [r4, #36]
+  97:common/gen_physic_def/imu_data.h **** 
+ 1249              		.loc 2 97 9 is_stmt 1 view .LVU418
+  97:common/gen_physic_def/imu_data.h **** 
+ 1250              		.loc 2 97 21 is_stmt 0 view .LVU419
+ 1251 026a 4FF49871 		mov	r1, #304
+ 1252 026e 2185     		strh	r1, [r4, #40]	@ movhi
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1253              		.loc 2 99 9 is_stmt 1 view .LVU420
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1254              		.loc 2 99 24 is_stmt 0 view .LVU421
+ 1255 0270 1B21     		movs	r1, #27
+ 1256 0272 84F82A10 		strb	r1, [r4, #42]
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1257              		.loc 2 100 9 is_stmt 1 view .LVU422
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1258              		.loc 2 100 26 is_stmt 0 view .LVU423
+ 1259 0276 84F82B20 		strb	r2, [r4, #43]
+ 1260              		.loc 2 101 9 is_stmt 1 view .LVU424
+ 1261              		.loc 2 101 26 is_stmt 0 view .LVU425
+ 1262 027a 84F82C30 		strb	r3, [r4, #44]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 35
+
+
+ 1263              	.L67:
+ 1264              	.LVL90:
+ 1265              		.loc 2 101 26 view .LVU426
+ 1266              	.LBE41:
+ 1267              	.LBE40:
+ 305:Device/Dev_ICM20602.c ****     }
+ 1268              		.loc 1 305 9 is_stmt 1 view .LVU427
+ 305:Device/Dev_ICM20602.c ****     }
+ 1269              		.loc 1 305 16 is_stmt 0 view .LVU428
+ 1270 027e 0025     		movs	r5, #0
+ 1271 0280 F1E6     		b	.L51
+ 1272              	.L66:
+ 309:Device/Dev_ICM20602.c ****     Obj->delay(10);
+ 1273              		.loc 1 309 5 is_stmt 1 view .LVU429
+ 1274 0282 6022     		movs	r2, #96
+ 1275 0284 3721     		movs	r1, #55
+ 1276 0286 2046     		mov	r0, r4
+ 1277 0288 FFF7FEFF 		bl	DevICM20602_Reg_Write
+ 1278              	.LVL91:
+ 310:Device/Dev_ICM20602.c **** 
+ 1279              		.loc 1 310 5 view .LVU430
+ 310:Device/Dev_ICM20602.c **** 
+ 1280              		.loc 1 310 8 is_stmt 0 view .LVU431
+ 1281 028c A368     		ldr	r3, [r4, #8]
+ 310:Device/Dev_ICM20602.c **** 
+ 1282              		.loc 1 310 5 view .LVU432
+ 1283 028e 0A20     		movs	r0, #10
+ 1284 0290 9847     		blx	r3
+ 1285              	.LVL92:
+ 312:Device/Dev_ICM20602.c ****     if (read_out != 0x60)
+ 1286              		.loc 1 312 5 is_stmt 1 view .LVU433
+ 1287 0292 0DF10702 		add	r2, sp, #7
+ 1288 0296 3721     		movs	r1, #55
+ 1289 0298 2046     		mov	r0, r4
+ 1290 029a FFF7FEFF 		bl	DevICM20602_Reg_Read
+ 1291              	.LVL93:
+ 313:Device/Dev_ICM20602.c ****     {
+ 1292              		.loc 1 313 5 view .LVU434
+ 313:Device/Dev_ICM20602.c ****     {
+ 1293              		.loc 1 313 18 is_stmt 0 view .LVU435
+ 1294 029e 9DF80730 		ldrb	r3, [sp, #7]	@ zero_extendqisi2
+ 313:Device/Dev_ICM20602.c ****     {
+ 1295              		.loc 1 313 8 view .LVU436
+ 1296 02a2 602B     		cmp	r3, #96
+ 1297 02a4 14D0     		beq	.L68
+ 315:Device/Dev_ICM20602.c ****         return false;
+ 1298              		.loc 1 315 9 is_stmt 1 view .LVU437
+ 1299              	.LVL94:
+ 1300              	.LBB42:
+ 1301              	.LBI42:
+  91:common/gen_physic_def/imu_data.h **** {
+ 1302              		.loc 2 91 13 view .LVU438
+ 1303              	.LBB43:
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1304              		.loc 2 93 5 view .LVU439
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1305              		.loc 2 93 7 is_stmt 0 view .LVU440
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 36
+
+
+ 1306 02a6 14F1200F 		cmn	r4, #32
+ 1307 02aa 0FD0     		beq	.L69
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1308              		.loc 2 95 9 is_stmt 1 view .LVU441
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1309              		.loc 2 95 21 is_stmt 0 view .LVU442
+ 1310 02ac 0722     		movs	r2, #7
+ 1311 02ae 84F82020 		strb	r2, [r4, #32]
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1312              		.loc 2 96 9 is_stmt 1 view .LVU443
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1313              		.loc 2 96 25 is_stmt 0 view .LVU444
+ 1314 02b2 104A     		ldr	r2, .L71
+ 1315 02b4 6262     		str	r2, [r4, #36]
+  97:common/gen_physic_def/imu_data.h **** 
+ 1316              		.loc 2 97 9 is_stmt 1 view .LVU445
+  97:common/gen_physic_def/imu_data.h **** 
+ 1317              		.loc 2 97 21 is_stmt 0 view .LVU446
+ 1318 02b6 40F23B12 		movw	r2, #315
+ 1319 02ba 2285     		strh	r2, [r4, #40]	@ movhi
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1320              		.loc 2 99 9 is_stmt 1 view .LVU447
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1321              		.loc 2 99 24 is_stmt 0 view .LVU448
+ 1322 02bc 3722     		movs	r2, #55
+ 1323 02be 84F82A20 		strb	r2, [r4, #42]
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1324              		.loc 2 100 9 is_stmt 1 view .LVU449
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1325              		.loc 2 100 26 is_stmt 0 view .LVU450
+ 1326 02c2 84F82B30 		strb	r3, [r4, #43]
+ 1327              		.loc 2 101 9 is_stmt 1 view .LVU451
+ 1328              		.loc 2 101 26 is_stmt 0 view .LVU452
+ 1329 02c6 6023     		movs	r3, #96
+ 1330              	.LVL95:
+ 1331              		.loc 2 101 26 view .LVU453
+ 1332 02c8 84F82C30 		strb	r3, [r4, #44]
+ 1333              	.LVL96:
+ 1334              	.L69:
+ 1335              		.loc 2 101 26 view .LVU454
+ 1336              	.LBE43:
+ 1337              	.LBE42:
+ 316:Device/Dev_ICM20602.c ****     }
+ 1338              		.loc 1 316 9 is_stmt 1 view .LVU455
+ 316:Device/Dev_ICM20602.c ****     }
+ 1339              		.loc 1 316 16 is_stmt 0 view .LVU456
+ 1340 02cc 0025     		movs	r5, #0
+ 1341 02ce CAE6     		b	.L51
+ 1342              	.L68:
+ 319:Device/Dev_ICM20602.c ****     return true;
+ 1343              		.loc 1 319 5 is_stmt 1 view .LVU457
+ 1344              	.LVL97:
+ 1345              	.LBB44:
+ 1346              	.LBI44:
+  91:common/gen_physic_def/imu_data.h **** {
+ 1347              		.loc 2 91 13 view .LVU458
+ 1348              	.LBB45:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 37
+
+
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1349              		.loc 2 93 5 view .LVU459
+  93:common/gen_physic_def/imu_data.h ****     {
+ 1350              		.loc 2 93 7 is_stmt 0 view .LVU460
+ 1351 02d0 14F1200F 		cmn	r4, #32
+ 1352 02d4 3FF4C7AE 		beq	.L51
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1353              		.loc 2 95 9 is_stmt 1 view .LVU461
+  95:common/gen_physic_def/imu_data.h ****         error->function = (char *)func;
+ 1354              		.loc 2 95 21 is_stmt 0 view .LVU462
+ 1355 02d8 0023     		movs	r3, #0
+ 1356 02da 84F82030 		strb	r3, [r4, #32]
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1357              		.loc 2 96 9 is_stmt 1 view .LVU463
+  96:common/gen_physic_def/imu_data.h ****         error->line = line;
+ 1358              		.loc 2 96 25 is_stmt 0 view .LVU464
+ 1359 02de 064A     		ldr	r2, .L71+4
+ 1360 02e0 6262     		str	r2, [r4, #36]
+  97:common/gen_physic_def/imu_data.h **** 
+ 1361              		.loc 2 97 9 is_stmt 1 view .LVU465
+  97:common/gen_physic_def/imu_data.h **** 
+ 1362              		.loc 2 97 21 is_stmt 0 view .LVU466
+ 1363 02e2 2385     		strh	r3, [r4, #40]	@ movhi
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1364              		.loc 2 99 9 is_stmt 1 view .LVU467
+  99:common/gen_physic_def/imu_data.h ****         error->reg_r_val = reg_r;
+ 1365              		.loc 2 99 24 is_stmt 0 view .LVU468
+ 1366 02e4 84F82A30 		strb	r3, [r4, #42]
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1367              		.loc 2 100 9 is_stmt 1 view .LVU469
+ 100:common/gen_physic_def/imu_data.h ****         error->reg_t_val = reg_t;
+ 1368              		.loc 2 100 26 is_stmt 0 view .LVU470
+ 1369 02e8 84F82B30 		strb	r3, [r4, #43]
+ 1370              		.loc 2 101 9 is_stmt 1 view .LVU471
+ 1371              		.loc 2 101 26 is_stmt 0 view .LVU472
+ 1372 02ec 84F82C30 		strb	r3, [r4, #44]
+ 1373 02f0 B9E6     		b	.L51
+ 1374              	.L72:
+ 1375 02f2 00BF     		.align	2
+ 1376              	.L71:
+ 1377 02f4 00000000 		.word	.LANCHOR0
+ 1378 02f8 00000000 		.word	.LC0
+ 1379              	.LBE45:
+ 1380              	.LBE44:
+ 1381              		.cfi_endproc
+ 1382              	.LFE6:
+ 1384              		.section	.text.DevICM20602_GetReady,"ax",%progbits
+ 1385              		.align	1
+ 1386              		.syntax unified
+ 1387              		.thumb
+ 1388              		.thumb_func
+ 1390              	DevICM20602_GetReady:
+ 1391              	.LVL98:
+ 1392              	.LFB9:
+ 348:Device/Dev_ICM20602.c **** 
+ 349:Device/Dev_ICM20602.c **** static bool DevICM20602_GetReady(DevICM20602Obj_TypeDef *Obj)
+ 350:Device/Dev_ICM20602.c **** {
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 38
+
+
+ 1393              		.loc 1 350 1 is_stmt 1 view -0
+ 1394              		.cfi_startproc
+ 1395              		@ args = 0, pretend = 0, frame = 0
+ 1396              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1397              		@ link register save eliminated.
+ 351:Device/Dev_ICM20602.c ****     if(Obj == NULL)
+ 1398              		.loc 1 351 5 view .LVU474
+ 1399              		.loc 1 351 7 is_stmt 0 view .LVU475
+ 1400 0000 08B1     		cbz	r0, .L75
+ 352:Device/Dev_ICM20602.c ****         return false;
+ 353:Device/Dev_ICM20602.c ****         
+ 354:Device/Dev_ICM20602.c ****     return Obj->drdy;
+ 1401              		.loc 1 354 5 is_stmt 1 view .LVU476
+ 1402              		.loc 1 354 15 is_stmt 0 view .LVU477
+ 1403 0002 007C     		ldrb	r0, [r0, #16]	@ zero_extendqisi2
+ 1404              	.LVL99:
+ 1405              		.loc 1 354 15 view .LVU478
+ 1406 0004 7047     		bx	lr
+ 1407              	.LVL100:
+ 1408              	.L75:
+ 352:Device/Dev_ICM20602.c ****         return false;
+ 1409              		.loc 1 352 16 view .LVU479
+ 1410 0006 0020     		movs	r0, #0
+ 1411              	.LVL101:
+ 355:Device/Dev_ICM20602.c **** }
+ 1412              		.loc 1 355 1 view .LVU480
+ 1413 0008 7047     		bx	lr
+ 1414              		.cfi_endproc
+ 1415              	.LFE9:
+ 1417              		.section	.text.DevICM20602_Sample,"ax",%progbits
+ 1418              		.align	1
+ 1419              		.syntax unified
+ 1420              		.thumb
+ 1421              		.thumb_func
+ 1423              	DevICM20602_Sample:
+ 1424              	.LVL102:
+ 1425              	.LFB10:
+ 356:Device/Dev_ICM20602.c **** 
+ 357:Device/Dev_ICM20602.c **** static bool DevICM20602_Sample(DevICM20602Obj_TypeDef *Obj)
+ 358:Device/Dev_ICM20602.c **** {
+ 1426              		.loc 1 358 1 is_stmt 1 view -0
+ 1427              		.cfi_startproc
+ 1428              		@ args = 0, pretend = 0, frame = 0
+ 1429              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1430              		@ link register save eliminated.
+ 359:Device/Dev_ICM20602.c ****     if (Obj == NULL)
+ 1431              		.loc 1 359 5 view .LVU482
+ 1432              		.loc 1 359 8 is_stmt 0 view .LVU483
+ 1433 0000 08B1     		cbz	r0, .L78
+ 360:Device/Dev_ICM20602.c ****         return false;
+ 361:Device/Dev_ICM20602.c **** 
+ 362:Device/Dev_ICM20602.c ****     return true;
+ 1434              		.loc 1 362 12 view .LVU484
+ 1435 0002 0120     		movs	r0, #1
+ 1436              	.LVL103:
+ 1437              		.loc 1 362 12 view .LVU485
+ 1438 0004 7047     		bx	lr
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 39
+
+
+ 1439              	.LVL104:
+ 1440              	.L78:
+ 360:Device/Dev_ICM20602.c ****         return false;
+ 1441              		.loc 1 360 16 view .LVU486
+ 1442 0006 0020     		movs	r0, #0
+ 1443              	.LVL105:
+ 363:Device/Dev_ICM20602.c **** }
+ 1444              		.loc 1 363 1 view .LVU487
+ 1445 0008 7047     		bx	lr
+ 1446              		.cfi_endproc
+ 1447              	.LFE10:
+ 1449              		.section	.text.DevICM20602_Get_InitError,"ax",%progbits
+ 1450              		.align	1
+ 1451              		.syntax unified
+ 1452              		.thumb
+ 1453              		.thumb_func
+ 1455              	DevICM20602_Get_InitError:
+ 1456              	.LVL106:
+ 1457              	.LFB12:
+ 364:Device/Dev_ICM20602.c **** 
+ 365:Device/Dev_ICM20602.c **** static IMUData_TypeDef DevICM20602_Get_Data(DevICM20602Obj_TypeDef *Obj)
+ 366:Device/Dev_ICM20602.c **** {
+ 367:Device/Dev_ICM20602.c ****     IMUData_TypeDef tmp;
+ 368:Device/Dev_ICM20602.c ****     memset(&tmp, 0, sizeof(tmp));
+ 369:Device/Dev_ICM20602.c **** 
+ 370:Device/Dev_ICM20602.c ****     if ((Obj->error.code == ICM20602_No_Error) && !Obj->update)
+ 371:Device/Dev_ICM20602.c ****     {
+ 372:Device/Dev_ICM20602.c ****         Obj->drdy = false;
+ 373:Device/Dev_ICM20602.c ****         return Obj->OriData;
+ 374:Device/Dev_ICM20602.c ****     }
+ 375:Device/Dev_ICM20602.c **** 
+ 376:Device/Dev_ICM20602.c ****     return tmp;
+ 377:Device/Dev_ICM20602.c **** }
+ 378:Device/Dev_ICM20602.c **** 
+ 379:Device/Dev_ICM20602.c **** static IMU_Error_TypeDef DevICM20602_Get_InitError(DevICM20602Obj_TypeDef *Obj)
+ 380:Device/Dev_ICM20602.c **** {
+ 1458              		.loc 1 380 1 is_stmt 1 view -0
+ 1459              		.cfi_startproc
+ 1460              		@ args = 0, pretend = 0, frame = 0
+ 1461              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1462              		@ link register save eliminated.
+ 1463              		.loc 1 380 1 is_stmt 0 view .LVU489
+ 1464 0000 8446     		mov	ip, r0
+ 381:Device/Dev_ICM20602.c ****     return Obj->error;
+ 1465              		.loc 1 381 5 is_stmt 1 view .LVU490
+ 1466              		.loc 1 381 15 is_stmt 0 view .LVU491
+ 1467 0002 2031     		adds	r1, r1, #32
+ 1468              	.LVL107:
+ 1469              		.loc 1 381 15 view .LVU492
+ 1470 0004 0FC9     		ldm	r1, {r0, r1, r2, r3}
+ 1471              	.LVL108:
+ 1472              		.loc 1 381 15 view .LVU493
+ 1473 0006 8CE80F00 		stm	ip, {r0, r1, r2, r3}
+ 382:Device/Dev_ICM20602.c **** }
+ 1474              		.loc 1 382 1 view .LVU494
+ 1475 000a 6046     		mov	r0, ip
+ 1476 000c 7047     		bx	lr
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 40
+
+
+ 1477              		.cfi_endproc
+ 1478              	.LFE12:
+ 1480              		.section	.text.DevICM20602_Get_Scale,"ax",%progbits
+ 1481              		.align	1
+ 1482              		.syntax unified
+ 1483              		.thumb
+ 1484              		.thumb_func
+ 1486              	DevICM20602_Get_Scale:
+ 1487              	.LVL109:
+ 1488              	.LFB13:
+ 383:Device/Dev_ICM20602.c **** 
+ 384:Device/Dev_ICM20602.c **** static IMUModuleScale_TypeDef DevICM20602_Get_Scale(const DevICM20602Obj_TypeDef *Obj)
+ 385:Device/Dev_ICM20602.c **** {
+ 1489              		.loc 1 385 1 is_stmt 1 view -0
+ 1490              		.cfi_startproc
+ 1491              		@ args = 0, pretend = 0, frame = 24
+ 1492              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1493              		@ link register save eliminated.
+ 1494              		.loc 1 385 1 is_stmt 0 view .LVU496
+ 1495 0000 86B0     		sub	sp, sp, #24
+ 1496              	.LCFI20:
+ 1497              		.cfi_def_cfa_offset 24
+ 386:Device/Dev_ICM20602.c ****     IMUModuleScale_TypeDef scale;
+ 1498              		.loc 1 386 5 is_stmt 1 view .LVU497
+ 387:Device/Dev_ICM20602.c **** 
+ 388:Device/Dev_ICM20602.c ****     scale.acc_scale = Obj->acc_scale;
+ 1499              		.loc 1 388 5 view .LVU498
+ 1500              		.loc 1 388 26 is_stmt 0 view .LVU499
+ 1501 0002 8369     		ldr	r3, [r0, #24]	@ float
+ 1502              		.loc 1 388 21 view .LVU500
+ 1503 0004 0293     		str	r3, [sp, #8]	@ float
+ 389:Device/Dev_ICM20602.c ****     scale.gyr_scale = Obj->gyr_scale;
+ 1504              		.loc 1 389 5 is_stmt 1 view .LVU501
+ 1505              		.loc 1 389 26 is_stmt 0 view .LVU502
+ 1506 0006 C369     		ldr	r3, [r0, #28]	@ float
+ 1507              		.loc 1 389 21 view .LVU503
+ 1508 0008 0393     		str	r3, [sp, #12]	@ float
+ 390:Device/Dev_ICM20602.c **** 
+ 391:Device/Dev_ICM20602.c ****     return scale;
+ 1509              		.loc 1 391 5 is_stmt 1 view .LVU504
+ 1510              		.loc 1 391 12 is_stmt 0 view .LVU505
+ 1511 000a 02AB     		add	r3, sp, #8
+ 1512 000c 93E80300 		ldm	r3, {r0, r1}
+ 1513              	.LVL110:
+ 1514              		.loc 1 391 12 view .LVU506
+ 1515 0010 06AB     		add	r3, sp, #24
+ 1516 0012 03E90300 		stmdb	r3, {r0, r1}
+ 392:Device/Dev_ICM20602.c **** }
+ 1517              		.loc 1 392 1 view .LVU507
+ 1518 0016 9DED040A 		vldr.32	s0, [sp, #16]
+ 1519 001a DDED050A 		vldr.32	s1, [sp, #20]
+ 1520 001e 06B0     		add	sp, sp, #24
+ 1521              	.LCFI21:
+ 1522              		.cfi_def_cfa_offset 0
+ 1523              		@ sp needed
+ 1524 0020 7047     		bx	lr
+ 1525              		.cfi_endproc
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 41
+
+
+ 1526              	.LFE13:
+ 1528              		.section	.text.DevICM20602_Get_Specified_AngularSpeed_Diff,"ax",%progbits
+ 1529              		.align	1
+ 1530              		.syntax unified
+ 1531              		.thumb
+ 1532              		.thumb_func
+ 1534              	DevICM20602_Get_Specified_AngularSpeed_Diff:
+ 1535              	.LVL111:
+ 1536              	.LFB14:
+ 393:Device/Dev_ICM20602.c **** 
+ 394:Device/Dev_ICM20602.c **** /* get specified angular speed diff per sec */
+ 395:Device/Dev_ICM20602.c **** static float DevICM20602_Get_Specified_AngularSpeed_Diff(const DevICM20602Obj_TypeDef *Obj)
+ 396:Device/Dev_ICM20602.c **** {
+ 1537              		.loc 1 396 1 is_stmt 1 view -0
+ 1538              		.cfi_startproc
+ 1539              		@ args = 0, pretend = 0, frame = 0
+ 1540              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1541              		@ link register save eliminated.
+ 397:Device/Dev_ICM20602.c ****     return Obj->PHY_GyrTrip_Val / 1000.0f;
+ 1542              		.loc 1 397 5 view .LVU509
+ 1543              		.loc 1 397 15 is_stmt 0 view .LVU510
+ 1544 0000 C38A     		ldrh	r3, [r0, #22]
+ 1545 0002 07EE903A 		vmov	s15, r3	@ int
+ 1546              		.loc 1 397 33 view .LVU511
+ 1547 0006 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 398:Device/Dev_ICM20602.c **** }...
+ 1548              		.loc 1 398 1 view .LVU512
+ 1549 000a 9FED020A 		vldr.32	s0, .L83
+ 1550 000e 87EE800A 		vdiv.f32	s0, s15, s0
+ 1551 0012 7047     		bx	lr
+ 1552              	.L84:
+ 1553              		.align	2
+ 1554              	.L83:
+ 1555 0014 00007A44 		.word	1148846080
+ 1556              		.cfi_endproc
+ 1557              	.LFE14:
+ 1559              		.section	.text.DevICM20602_Get_Data,"ax",%progbits
+ 1560              		.align	1
+ 1561              		.syntax unified
+ 1562              		.thumb
+ 1563              		.thumb_func
+ 1565              	DevICM20602_Get_Data:
+ 1566              	.LVL112:
+ 1567              	.LFB11:
+ 366:Device/Dev_ICM20602.c **** {
+ 1568              		.loc 1 366 1 is_stmt 1 view -0
+ 1569              		.cfi_startproc
+ 1570              		@ args = 0, pretend = 0, frame = 72
+ 1571              		@ frame_needed = 0, uses_anonymous_args = 0
+ 366:Device/Dev_ICM20602.c **** {
+ 1572              		.loc 1 366 1 is_stmt 0 view .LVU514
+ 1573 0000 30B5     		push	{r4, r5, lr}
+ 1574              	.LCFI22:
+ 1575              		.cfi_def_cfa_offset 12
+ 1576              		.cfi_offset 4, -12
+ 1577              		.cfi_offset 5, -8
+ 1578              		.cfi_offset 14, -4
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 42
+
+
+ 1579 0002 93B0     		sub	sp, sp, #76
+ 1580              	.LCFI23:
+ 1581              		.cfi_def_cfa_offset 88
+ 1582 0004 0446     		mov	r4, r0
+ 1583 0006 0D46     		mov	r5, r1
+ 367:Device/Dev_ICM20602.c ****     IMUData_TypeDef tmp;
+ 1584              		.loc 1 367 5 is_stmt 1 view .LVU515
+ 368:Device/Dev_ICM20602.c ****     memset(&tmp, 0, sizeof(tmp));
+ 1585              		.loc 1 368 5 view .LVU516
+ 1586 0008 4722     		movs	r2, #71
+ 1587 000a 0021     		movs	r1, #0
+ 1588              	.LVL113:
+ 368:Device/Dev_ICM20602.c ****     memset(&tmp, 0, sizeof(tmp));
+ 1589              		.loc 1 368 5 is_stmt 0 view .LVU517
+ 1590 000c 6846     		mov	r0, sp
+ 1591              	.LVL114:
+ 368:Device/Dev_ICM20602.c ****     memset(&tmp, 0, sizeof(tmp));
+ 1592              		.loc 1 368 5 view .LVU518
+ 1593 000e FFF7FEFF 		bl	memset
+ 1594              	.LVL115:
+ 370:Device/Dev_ICM20602.c ****     if ((Obj->error.code == ICM20602_No_Error) && !Obj->update)
+ 1595              		.loc 1 370 5 is_stmt 1 view .LVU519
+ 370:Device/Dev_ICM20602.c ****     if ((Obj->error.code == ICM20602_No_Error) && !Obj->update)
+ 1596              		.loc 1 370 20 is_stmt 0 view .LVU520
+ 1597 0012 95F82030 		ldrb	r3, [r5, #32]	@ zero_extendqisi2
+ 370:Device/Dev_ICM20602.c ****     if ((Obj->error.code == ICM20602_No_Error) && !Obj->update)
+ 1598              		.loc 1 370 8 view .LVU521
+ 1599 0016 0BB9     		cbnz	r3, .L86
+ 370:Device/Dev_ICM20602.c ****     if ((Obj->error.code == ICM20602_No_Error) && !Obj->update)
+ 1600              		.loc 1 370 55 discriminator 1 view .LVU522
+ 1601 0018 6B7C     		ldrb	r3, [r5, #17]	@ zero_extendqisi2
+ 370:Device/Dev_ICM20602.c ****     if ((Obj->error.code == ICM20602_No_Error) && !Obj->update)
+ 1602              		.loc 1 370 48 discriminator 1 view .LVU523
+ 1603 001a 3BB1     		cbz	r3, .L89
+ 1604              	.L86:
+ 376:Device/Dev_ICM20602.c ****     return tmp;
+ 1605              		.loc 1 376 5 is_stmt 1 view .LVU524
+ 376:Device/Dev_ICM20602.c ****     return tmp;
+ 1606              		.loc 1 376 12 is_stmt 0 view .LVU525
+ 1607 001c 4722     		movs	r2, #71
+ 1608 001e 0021     		movs	r1, #0
+ 1609 0020 2046     		mov	r0, r4
+ 1610 0022 FFF7FEFF 		bl	memset
+ 1611              	.LVL116:
+ 1612              	.L85:
+ 377:Device/Dev_ICM20602.c **** }
+ 1613              		.loc 1 377 1 view .LVU526
+ 1614 0026 2046     		mov	r0, r4
+ 1615 0028 13B0     		add	sp, sp, #76
+ 1616              	.LCFI24:
+ 1617              		.cfi_remember_state
+ 1618              		.cfi_def_cfa_offset 12
+ 1619              		@ sp needed
+ 1620 002a 30BD     		pop	{r4, r5, pc}
+ 1621              	.LVL117:
+ 1622              	.L89:
+ 1623              	.LCFI25:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 43
+
+
+ 1624              		.cfi_restore_state
+ 372:Device/Dev_ICM20602.c ****         Obj->drdy = false;
+ 1625              		.loc 1 372 9 is_stmt 1 view .LVU527
+ 372:Device/Dev_ICM20602.c ****         Obj->drdy = false;
+ 1626              		.loc 1 372 19 is_stmt 0 view .LVU528
+ 1627 002c 2B74     		strb	r3, [r5, #16]
+ 373:Device/Dev_ICM20602.c ****         return Obj->OriData;
+ 1628              		.loc 1 373 9 is_stmt 1 view .LVU529
+ 373:Device/Dev_ICM20602.c ****         return Obj->OriData;
+ 1629              		.loc 1 373 19 is_stmt 0 view .LVU530
+ 1630 002e 4722     		movs	r2, #71
+ 1631 0030 05F13101 		add	r1, r5, #49
+ 1632 0034 2046     		mov	r0, r4
+ 1633 0036 FFF7FEFF 		bl	memcpy
+ 1634              	.LVL118:
+ 1635 003a F4E7     		b	.L85
+ 1636              		.cfi_endproc
+ 1637              	.LFE11:
+ 1639              		.global	DevICM20602
+ 1640              		.section	.data.DevICM20602,"aw"
+ 1641              		.align	2
+ 1644              	DevICM20602:
+ 1645 0000 00000000 		.word	DevICM20602_Detect
+ 1646 0004 00000000 		.word	DevICM20602_Config
+ 1647 0008 00000000 		.word	DevICM20602_PreInit
+ 1648 000c 00000000 		.word	DevICM20602_Init
+ 1649 0010 00000000 		.word	DevICM20602_SetDRDY
+ 1650 0014 00000000 		.word	DevICM20602_GetReady
+ 1651 0018 00000000 		.word	DevICM20602_SwReset
+ 1652 001c 00000000 		.word	DevICM20602_Sample
+ 1653 0020 00000000 		.word	DevICM20602_Get_Data
+ 1654 0024 00000000 		.word	DevICM20602_Get_InitError
+ 1655 0028 00000000 		.word	DevICM20602_Get_Scale
+ 1656 002c 00000000 		.word	DevICM20602_Get_Specified_AngularSpeed_Diff
+ 1657              		.section	.rodata.__FUNCTION__.0,"a"
+ 1658              		.align	2
+ 1659              		.set	.LANCHOR0,. + 0
+ 1662              	__FUNCTION__.0:
+ 1663 0000 44657649 		.ascii	"DevICM20602_Init\000"
+ 1663      434D3230 
+ 1663      3630325F 
+ 1663      496E6974 
+ 1663      00
+ 1664              		.text
+ 1665              	.Letext0:
+ 1666              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1667              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 1668              		.file 5 "Device/Dev_ICM20602.h"
+ 1669              		.file 6 "<built-in>"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s 			page 44
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Dev_ICM20602.c
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:20     .text.DevICM20602_Detect:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:25     .text.DevICM20602_Detect:00000000 DevICM20602_Detect
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:118    .text.DevICM20602_Reg_Read:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:123    .text.DevICM20602_Reg_Read:00000000 DevICM20602_Reg_Read
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:230    .text.DevICM20602_Reg_Write:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:235    .text.DevICM20602_Reg_Write:00000000 DevICM20602_Reg_Write
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:334    .text.DevICM20602_Config:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:339    .text.DevICM20602_Config:00000000 DevICM20602_Config
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:385    .text.DevICM20602_Config:00000038 $d
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:389    .text.DevICM20602_Config:0000003c $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:406    .text.DevICM20602_Config:00000052 $d
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:410    .text.DevICM20602_Config:00000056 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:540    .text.DevICM20602_Config:000000e0 $d
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:548    .text.DevICM20602_PreInit:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:553    .text.DevICM20602_PreInit:00000000 DevICM20602_PreInit
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:582    .text.DevICM20602_SetDRDY:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:587    .text.DevICM20602_SetDRDY:00000000 DevICM20602_SetDRDY
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:609    .text.DevICM20602_SwReset:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:614    .text.DevICM20602_SwReset:00000000 DevICM20602_SwReset
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:649    .rodata.DevICM20602_Init.str1.4:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:653    .text.DevICM20602_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:658    .text.DevICM20602_Init:00000000 DevICM20602_Init
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1377   .text.DevICM20602_Init:000002f4 $d
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1385   .text.DevICM20602_GetReady:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1390   .text.DevICM20602_GetReady:00000000 DevICM20602_GetReady
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1418   .text.DevICM20602_Sample:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1423   .text.DevICM20602_Sample:00000000 DevICM20602_Sample
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1450   .text.DevICM20602_Get_InitError:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1455   .text.DevICM20602_Get_InitError:00000000 DevICM20602_Get_InitError
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1481   .text.DevICM20602_Get_Scale:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1486   .text.DevICM20602_Get_Scale:00000000 DevICM20602_Get_Scale
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1529   .text.DevICM20602_Get_Specified_AngularSpeed_Diff:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1534   .text.DevICM20602_Get_Specified_AngularSpeed_Diff:00000000 DevICM20602_Get_Specified_AngularSpeed_Diff
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1555   .text.DevICM20602_Get_Specified_AngularSpeed_Diff:00000014 $d
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1560   .text.DevICM20602_Get_Data:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1565   .text.DevICM20602_Get_Data:00000000 DevICM20602_Get_Data
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1644   .data.DevICM20602:00000000 DevICM20602
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1641   .data.DevICM20602:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1658   .rodata.__FUNCTION__.0:00000000 $d
+C:\Users\8bit\AppData\Local\Temp\ccZPlxCa.s:1662   .rodata.__FUNCTION__.0:00000000 __FUNCTION__.0
+
+UNDEFINED SYMBOLS
+memset
+memcpy
