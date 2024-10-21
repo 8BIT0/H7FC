@@ -65,3 +65,29 @@ static bool Bsp_QSPI_Recv(BspQSPI_Config_TypeDef *obj, uint32_t addr, uint32_t c
 
     return true;
 }
+
+static bool Bsp_QSPI_Command(BspQSPI_Config_TypeDef *obj, uint32_t mode, uint32_t dummy_cyc, uint32_t nb_data, uint32_t cmd)
+{
+    QSPI_CommandTypeDef s_command;
+
+	s_command.InstructionMode   = QSPI_INSTRUCTION_1_LINE;
+	s_command.AddressMode       = QSPI_ADDRESS_NONE;
+	s_command.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+	s_command.DdrMode           = QSPI_DDR_MODE_DISABLE;
+	s_command.DdrHoldHalfCycle  = QSPI_DDR_HHC_ANALOG_DELAY;
+	s_command.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;
+	s_command.DataMode          = mode;
+    s_command.NbData            = nb_data;
+	s_command.DummyCycles       = dummy_cyc;
+	s_command.Instruction       = cmd;
+
+    if ((obj == NULL) || \
+        (obj->p_qspi == NULL) || \
+        !obj->init_state)
+        return false;
+
+    if (HAL_QSPI_Command(obj->p_qspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+        return false;
+
+    return true;
+}
