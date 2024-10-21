@@ -452,12 +452,10 @@ static uint16_t Telemetry_GimbalToPercent(Telemetry_RCFuncMap_TypeDef *gimbal)
     if ((gimbal_channel == NULL) || (gimbal_channel->min >= gimbal_channel->max))
         return 0;
 
-    if (gimbal_channel->enable_deadzone)
-    {
-        if (*gimbal_channel->channel_ptr <= (gimbal_channel->mid + gimbal_channel->center_deadzone_scope) &&
-            (*gimbal_channel->channel_ptr >= (gimbal_channel->mid - gimbal_channel->center_deadzone_scope)))
-            return 50;
-    }
+    if (gimbal_channel->enable_deadzone && \
+        (*gimbal_channel->channel_ptr <= (gimbal_channel->mid + gimbal_channel->center_deadzone_scope)) && \
+        (*gimbal_channel->channel_ptr >= (gimbal_channel->mid - gimbal_channel->center_deadzone_scope)))
+        return 50;
 
     pos_range = (gimbal_channel->max - gimbal_channel->mid - gimbal_channel->center_deadzone_scope);
     neg_range = (gimbal_channel->mid - gimbal_channel->min - gimbal_channel->center_deadzone_scope);
