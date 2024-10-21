@@ -6,11 +6,13 @@
 static bool Bsp_QSPI_Init(BspQSPI_Config_TypeDef *obj);
 static bool Bsp_QSPI_Command(BspQSPI_Config_TypeDef *obj, uint32_t mode, uint32_t dummy_cyc, uint32_t nb_data, uint32_t cmd);
 static bool Bsp_QSPI_Polling(BspQSPI_Config_TypeDef *obj, uint32_t mode, uint32_t cmd, uint32_t cyc, uint32_t nb_data, uint32_t match, uint32_t mask);
+static bool Bsp_QSPI_MemMap(BspQSPI_Config_TypeDef *obj, uint32_t cmd);
 
 BspQSpi_TypeDef BspQspi = {
-    .init = Bsp_QSPI_Init,
-    .cmd  = Bsp_QSPI_Command,
+    .init    = Bsp_QSPI_Init,
+    .cmd     = Bsp_QSPI_Command,
     .polling = Bsp_QSPI_Polling,
+    .memmap  = Bsp_QSPI_MemMap,
 };
 
 static bool Bsp_QSPI_Init(BspQSPI_Config_TypeDef *obj)
@@ -130,6 +132,39 @@ static bool Bsp_QSPI_Polling(BspQSPI_Config_TypeDef *obj, uint32_t mode, uint32_
 	s_config.AutomaticStop      = QSPI_AUTOMATIC_STOP_ENABLE;
 
     if (HAL_QSPI_AutoPolling(obj->p_qspi, &s_command, &s_config, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+        return false;
+
+    return true;
+}
+
+static bool Bsp_QSPI_MemMap(BspQSPI_Config_TypeDef *obj, uint32_t cmd)
+{
+	QSPI_CommandTypeDef s_command;
+	QSPI_MemoryMappedTypeDef s_mem_mapped_cfg;
+
+    memset(&s_command, 0, sizeof(QSPI_CommandTypeDef));
+    memset(&s_mem_mapped_cfg, 0, sizeof(QSPI_MemoryMappedTypeDef));
+
+    if ((obj == NULL) || \
+        (obj->p_qspi == NULL) || \
+        !obj->init_state)
+        return false;
+
+	s_command.InstructionMode   = QSPI_INSTRUCTION_1_LINE;
+	s_command.AddressSize       = QSPI_ADDRESS_24_BITS;
+	s_command.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
+	s_command.DdrMode           = QSPI_DDR_MODE_DISABLE;
+	s_command.DdrHoldHalfCycle  = QSPI_DDR_HHC_ANALOG_DELAY;
+	s_command.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;
+	s_command.AddressMode       = QSPI_ADDRESS_4_LINES;
+	s_command.DataMode          = QSPI_DATA_4_LINES;
+	s_command.DummyCycles       = 6;
+	s_command.Instruction       = cmd;
+	
+	s_mem_mapped_cfg.TimeOutActivation = QSPI_TIMEOUT_COUNTER_DISABLE;
+	s_mem_mapped_cfg.TimeOutPeriod     = 0;
+
+    if (HAL_QSPI_MemoryMapped(obj->p_qspi, &s_command, &s_mem_mapped_cfg) != HAL_OK)
         return false;
 
     return true;
