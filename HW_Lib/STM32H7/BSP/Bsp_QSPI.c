@@ -25,6 +25,8 @@ static bool Bsp_QSPI_Init(BspQSPI_Config_TypeDef *obj)
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
         return false;
 
+    __HAL_RCC_QSPI_CLK_ENABLE();
+
     /* pin init */
 
 
@@ -44,3 +46,22 @@ static bool Bsp_QSPI_Init(BspQSPI_Config_TypeDef *obj)
     return true;
 }
 
+static bool Bsp_QSPI_Trans(BspQSPI_Config_TypeDef *obj, uint32_t addr, uint32_t cmd, uint8_t *p_data, uint32_t len)
+{
+    if ((obj == NULL) || \
+        (obj->p_qspi == NULL) || \
+        !obj->init_state)
+        return false;
+
+    return true;
+}
+
+static bool Bsp_QSPI_Recv(BspQSPI_Config_TypeDef *obj, uint32_t addr, uint32_t cmd, uint8_t *p_data, uint32_t len)
+{
+    if ((obj == NULL) || \
+        (obj->p_qspi == NULL) || \
+        !obj->init_state)
+        return false;
+
+    return true;
+}
