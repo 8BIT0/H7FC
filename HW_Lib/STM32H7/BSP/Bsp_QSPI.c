@@ -4,9 +4,11 @@
 
 /* external function */
 static bool Bsp_QSPI_Init(BspQSPI_Config_TypeDef *obj);
+static bool Bsp_QSPI_Command(BspQSPI_Config_TypeDef *obj, uint32_t mode, uint32_t dummy_cyc, uint32_t nb_data, uint32_t cmd);
 
 BspQSpi_TypeDef BspQspi = {
     .init = Bsp_QSPI_Init,
+    .cmd  = Bsp_QSPI_Command,
 };
 
 static bool Bsp_QSPI_Init(BspQSPI_Config_TypeDef *obj)
