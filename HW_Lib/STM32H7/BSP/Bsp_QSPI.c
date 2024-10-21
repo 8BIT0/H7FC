@@ -32,16 +32,16 @@ static bool Bsp_QSPI_Init(BspQSPI_Config_TypeDef *obj)
     /* pin init */
 
 
-    obj->p_qspi.Instance                    = QUADSPI;
+    obj->p_qspi.Instance                = QUADSPI;
 	HAL_QSPI_DeInit(obj->p_qspi);
-	obj->p_qspi.Init.ClockPrescaler         = 1;
-	obj->p_qspi.Init.FifoThreshold          = 32;
-	obj->p_qspi.Init.SampleShifting         = QSPI_SAMPLE_SHIFTING_HALFCYCLE;
-	obj->p_qspi.Init.FlashSize              = 22;
-	obj->p_qspi.Init.ChipSelectHighTime     = QSPI_CS_HIGH_TIME_1_CYCLE;
-	obj->p_qspi.Init.ClockMode              = QSPI_CLOCK_MODE_3;
-	obj->p_qspi.Init.FlashID                = QSPI_FLASH_ID_1;
-	obj->p_qspi.Init.DualFlash              = QSPI_DUALFLASH_DISABLE;
+	obj->p_qspi.Init.ClockPrescaler     = 1;
+	obj->p_qspi.Init.FifoThreshold      = 32;
+	obj->p_qspi.Init.SampleShifting     = QSPI_SAMPLE_SHIFTING_HALFCYCLE;
+	obj->p_qspi.Init.FlashSize          = 22;
+	obj->p_qspi.Init.ChipSelectHighTime = QSPI_CS_HIGH_TIME_1_CYCLE;
+	obj->p_qspi.Init.ClockMode          = QSPI_CLOCK_MODE_3;
+	obj->p_qspi.Init.FlashID            = QSPI_FLASH_ID_1;
+	obj->p_qspi.Init.DualFlash          = QSPI_DUALFLASH_DISABLE;
 	HAL_QSPI_Init(obj->p_qspi);
 
     obj->init_state = true;
@@ -72,6 +72,8 @@ static bool Bsp_QSPI_Command(BspQSPI_Config_TypeDef *obj, uint32_t mode, uint32_
 {
     QSPI_CommandTypeDef s_command;
 
+    memset(&s_command, 0, sizeof(QSPI_CommandTypeDef));
+
 	s_command.InstructionMode   = QSPI_INSTRUCTION_1_LINE;
 	s_command.AddressMode       = QSPI_ADDRESS_NONE;
 	s_command.AlternateByteMode = QSPI_ALTERNATE_BYTES_NONE;
@@ -89,6 +91,25 @@ static bool Bsp_QSPI_Command(BspQSPI_Config_TypeDef *obj, uint32_t mode, uint32_
         return false;
 
     if (HAL_QSPI_Command(obj->p_qspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
+        return false;
+
+    return true;
+}
+
+static bool Bsp_QSPI_Polling(BspQSPI_Config_TypeDef *obj)
+{
+	QSPI_CommandTypeDef s_command;
+	QSPI_AutoPollingTypeDef s_config;
+
+    memset(&s_command, 0, sizeof(QSPI_CommandTypeDef));
+    memset(&s_config, 0, sizeof(QSPI_AutoPollingTypeDef));
+
+    if ((obj == NULL) || \
+        (obj->p_qspi == NULL) || \
+        !obj->init_state)
+        return false;
+
+    if (HAL_QSPI_AutoPolling(obj->p_qspi, &s_command, &s_config, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK)
         return false;
 
     return true;
