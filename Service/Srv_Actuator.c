@@ -541,25 +541,25 @@ static bool SrvActuator_QuadDrone_MotoMixControl(int16_t *pid_ctl)
     if (tmp < 0)
         tmp = 0;
 
-    SrvActuator_Obj.drive_module.obj_list[0].ctl_val += tmp;
+    SrvActuator_Obj.drive_module.obj_list[2].ctl_val += tmp;
 
     tmp = pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
     if (tmp < 0)
         tmp = 0;
 
-    SrvActuator_Obj.drive_module.obj_list[1].ctl_val += tmp;
+    SrvActuator_Obj.drive_module.obj_list[0].ctl_val += tmp;
 
     tmp = pid_ctl[Actuator_Ctl_GyrX] + pid_ctl[Actuator_Ctl_GyrY] - pid_ctl[Actuator_Ctl_GyrZ];
     if (tmp > 0)
         tmp = 0;
 
-    SrvActuator_Obj.drive_module.obj_list[2].ctl_val -= tmp;
+    SrvActuator_Obj.drive_module.obj_list[3].ctl_val -= tmp;
     
     tmp = pid_ctl[Actuator_Ctl_GyrX] - pid_ctl[Actuator_Ctl_GyrY] + pid_ctl[Actuator_Ctl_GyrZ];
     if (tmp > 0)
         tmp = 0;
 
-    SrvActuator_Obj.drive_module.obj_list[3].ctl_val -= tmp;
+    SrvActuator_Obj.drive_module.obj_list[1].ctl_val -= tmp;
 
     for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
         SrvActuator_Moto_DirectDrive(i, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
