@@ -506,7 +506,7 @@ void TaskBlackBox_LogControl(void)
         Monitor.log_byte_size = 0;
         Queue.reset(&BlackBox_Queue);
 
-        if (p_blackbox->enable && p_blackbox->enable())
+        if (p_blackbox && p_blackbox->enable && p_blackbox->enable())
             Monitor.state = BlackBox_Log_Enable;
     }
     else
