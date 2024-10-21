@@ -29,11 +29,19 @@ typedef struct
     uint32_t alt_io3;
 } BspQSPI_PinConfig_TypeDef;
 
+typedef enum
+{
+    BsPQSPI_Polling = 0,
+    BsPQSPI_Irq,
+} BspQSPI_Mode_List;
+
 typedef struct
 {
     bool init_state;
     void *p_qspi;
+    BspQSPI_Mode_List mode;
     BspQSPI_PinConfig_TypeDef pin;
+    bool dma_enable;
 } BspQSPI_Config_TypeDef;
 
 typedef struct
