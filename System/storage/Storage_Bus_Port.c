@@ -33,11 +33,11 @@ static void* Storage_External_Chip_Bus_Init(StorageBus_Malloc_Callback p_malloc,
 
 #if (ExtFlash_Bus_Type == Storage_ChipBus_Spi)
         /* malloc bus object */
-        obj = p_malloc(sizeof(BspSPI_NorModeConfig_TypeDef));
+        obj = p_malloc(sizeof(BspSPI_Config_TypeDef));
         if (obj == NULL)
             return NULL;
 
-        memset(obj, 0, sizeof(BspSPI_NorModeConfig_TypeDef));
+        memset(obj, 0, sizeof(BspSPI_Config_TypeDef));
 
         To_NormalSPI_ObjPtr(obj)->BaudRatePrescaler = ExtFlash_Bus_Clock_Div;
         To_NormalSPI_ObjPtr(obj)->CLKPhase = ExtFlash_Bus_CLKPhase;

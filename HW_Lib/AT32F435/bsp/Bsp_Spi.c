@@ -10,8 +10,8 @@ static crm_periph_clock_type BspSPI_Get_Clock(spi_type *type);
 static bool BspSPI_Pin_Init(BspSPI_PinConfig_TypeDef pin);
 
 /* external function */
-static bool BspSPI_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance);
-static bool BspSPI_Deinit(BspSPI_NorModeConfig_TypeDef spi_cfg);
+static bool BspSPI_Init(BspSPI_Config_TypeDef spi_cfg, void *spi_instance);
+static bool BspSPI_Deinit(BspSPI_Config_TypeDef spi_cfg);
 static bool BspSPI_Transmit(void *instance, uint8_t *tx, uint16_t size, uint16_t time_out);
 static bool BspSPI_Receive(void *instance, uint8_t *rx, uint16_t size, uint16_t time_out);
 static uint16_t BspSPI_Trans_Receive(void *instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
@@ -87,7 +87,7 @@ static bool BspSPI_Pin_Init(BspSPI_PinConfig_TypeDef pin)
     return true;
 }
 
-static bool BspSPI_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance)
+static bool BspSPI_Init(BspSPI_Config_TypeDef spi_cfg, void *spi_instance)
 {
     spi_init_type spi_init_struct;
     crm_periph_clock_type clk = 0;
@@ -123,7 +123,7 @@ static bool BspSPI_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance
     return true;
 }
 
-static bool BspSPI_Deinit(BspSPI_NorModeConfig_TypeDef spi_cfg)
+static bool BspSPI_Deinit(BspSPI_Config_TypeDef spi_cfg)
 {
     uint32_t clk = 0;
 

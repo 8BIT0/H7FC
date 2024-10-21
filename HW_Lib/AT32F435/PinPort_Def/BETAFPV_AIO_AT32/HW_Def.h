@@ -239,11 +239,11 @@ extern DebugPinObj_TypeDef Debug_PC0;
 extern BspGPIO_Obj_TypeDef PriIMU_CSPin;
 extern BspGPIO_Obj_TypeDef PriIMU_INTPin;
 extern BspSPI_PinConfig_TypeDef PriIMU_BusPin;
-extern BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg;
+extern BspSPI_Config_TypeDef PriIMU_BusCfg;
 
 extern BspGPIO_Obj_TypeDef Baro_CSPin;
 extern BspSPI_PinConfig_TypeDef Baro_BusPin;
-extern BspSPI_NorModeConfig_TypeDef Baro_BusCfg;
+extern BspSPI_Config_TypeDef Baro_BusCfg;
 
 extern BspGPIO_Port_TypeDef PWM_1_Port;
 extern BspGPIO_Port_TypeDef PWM_2_Port;

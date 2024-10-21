@@ -3,8 +3,8 @@
 #define To_SPI_Handle_Ptr(x) ((SPI_HandleTypeDef *)x)
 
 /* internal function */
-static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance);
-static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg);
+static bool BspSPI_NormalMode_Init(BspSPI_Config_TypeDef spi_cfg, void *spi_instance);
+static bool BspSPI_DeInit(BspSPI_Config_TypeDef spi_cfg);
 static bool BspSPI_Trans(void *spi_instance, uint8_t *tx, uint16_t size, uint16_t time_out);
 static bool BspSPI_Receive(void *spi_instance, uint8_t *rx, uint16_t size, uint16_t time_out);
 static uint16_t BspSPI_TransReceive(void *spi_instance, uint8_t *tx, uint8_t *rx, uint16_t size, uint16_t time_out);
@@ -97,7 +97,7 @@ static bool BspSPI_PinInit(BspSPI_PinConfig_TypeDef pin_cfg)
     return true;
 }
 
-static bool BspSPI_NormalMode_Init(BspSPI_NorModeConfig_TypeDef spi_cfg, void *spi_instance)
+static bool BspSPI_NormalMode_Init(BspSPI_Config_TypeDef spi_cfg, void *spi_instance)
 {
     SPI_HandleTypeDef SPI_InitStructure;
 
@@ -174,7 +174,7 @@ static bool BspSPI_Set_CLKSpeed(void *spi_instance, uint32_t speed)
     return true;
 }
 
-static bool BspSPI_DeInit(BspSPI_NorModeConfig_TypeDef spi_cfg)
+static bool BspSPI_DeInit(BspSPI_Config_TypeDef spi_cfg)
 {
     if (spi_cfg.Instance == SPI1)
     {

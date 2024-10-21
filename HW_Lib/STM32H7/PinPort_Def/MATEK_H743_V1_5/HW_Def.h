@@ -317,8 +317,8 @@ extern BspSPI_PinConfig_TypeDef SecIMU_BusPin;
 
 extern BspIIC_PinConfig_TypeDef SrvBaro_BusPin;
 
-extern BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg;
-extern BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg;
+extern BspSPI_Config_TypeDef PriIMU_BusCfg;
+extern BspSPI_Config_TypeDef SecIMU_BusCfg;
 
 extern DebugPrintObj_TypeDef DebugPort;
 #define DEBUG_TAG "[ DEBUG INFO ] "

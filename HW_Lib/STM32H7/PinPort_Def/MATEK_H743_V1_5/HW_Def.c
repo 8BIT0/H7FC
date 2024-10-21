@@ -160,14 +160,14 @@ BspGPIO_Obj_TypeDef USB_DctPin = {
     .port = USB_DETECT_INT_PORT,
 };
 
-BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg = {
+BspSPI_Config_TypeDef PriIMU_BusCfg = {
     .Instance = PriIMU_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_HIGH,
     .CLKPhase = SPI_PHASE_2EDGE,
     .BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4,
 };
 
-BspSPI_NorModeConfig_TypeDef SecIMU_BusCfg = {
+BspSPI_Config_TypeDef SecIMU_BusCfg = {
     .Instance = SecIMU_SPI_BUS,
     .CLKPolarity = SPI_POLARITY_LOW,
     .CLKPhase = SPI_PHASE_1EDGE,

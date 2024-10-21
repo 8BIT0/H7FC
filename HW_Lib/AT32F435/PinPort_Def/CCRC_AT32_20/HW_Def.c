@@ -218,7 +218,7 @@ BspSPI_PinConfig_TypeDef PriIMU_BusPin = {
     .pin_Alternate = GPIO_MUX_5,
 };
 
-BspSPI_NorModeConfig_TypeDef PriIMU_BusCfg = {
+BspSPI_Config_TypeDef PriIMU_BusCfg = {
     .Instance = PriIMU_SPI_BUS,
     .CLKPolarity = SPI_CLOCK_POLARITY_HIGH,
     .CLKPhase = SPI_CLOCK_PHASE_2EDGE,
