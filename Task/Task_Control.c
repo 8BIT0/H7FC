@@ -158,6 +158,11 @@ static void TaskControl_Get_StoreParam(void)
     else if (TaskControl_Monitor.actuator_store_info.item_addr && \
              (Storage.get(Para_User, TaskControl_Monitor.actuator_store_info.item, (uint8_t *)&Actuator_Param, sizeof(SrvActuator_Setting_TypeDef)) == Storage_Error_None))
         TaskControl_Monitor.actuator_param = Actuator_Param;
+
+    TaskControl_Monitor.actuator_param.moto_map[0] = 3;
+    TaskControl_Monitor.actuator_param.moto_map[1] = 1;
+    TaskControl_Monitor.actuator_param.moto_map[2] = 0;
+    TaskControl_Monitor.actuator_param.moto_map[3] = 2;
 }
 
 static bool TaskControl_disarm_check(bool telemetry_arm, float pitch, float roll)
