@@ -543,6 +543,12 @@ static bool SrvActuator_QuadDrone_MotoMixControl(int16_t *ctl)
 
     for (uint8_t i = 0; i < 4; i++)
     {
+        if (tmp[i] < SrvActuator_Obj.drive_module.obj_list[i].idle_val)
+            tmp[i] = SrvActuator_Obj.drive_module.obj_list[i].idle_val;
+
+        if (tmp[i] > SrvActuator_Obj.drive_module.obj_list[i].max_val)
+            tmp[i] = SrvActuator_Obj.drive_module.obj_list[i].max_val;
+
         // SrvActuator_Obj.drive_module.obj_list[i].ctl_val = tmp[i];
         /* test code */
         SrvActuator_Obj.drive_module.obj_list[i].ctl_val = 0;
