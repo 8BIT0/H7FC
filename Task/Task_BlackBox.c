@@ -507,10 +507,16 @@ void TaskBlackBox_LogControl(void)
         Queue.reset(&BlackBox_Queue);
 
         if (p_blackbox && p_blackbox->enable && p_blackbox->enable())
+        {
             Monitor.state = BlackBox_Log_Enable;
+            DevLED.ctl(Led2, true);
+        }
     }
     else
+    {
+        DevLED.ctl(Led2, false);
         Monitor.state = BlackBox_Log_Disable;
+    }
 }
 
 bool TaskBlackBox_Set_LogInfo(BlackBox_MediumType_List medium, BlackBox_LogType_List type, uint32_t size)
