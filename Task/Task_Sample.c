@@ -155,7 +155,9 @@ static void TaskInertical_Blink_Notification(uint16_t duration)
         Lst_Rt = Rt;
     }
 
-    DevLED.ctl(Sample_Blinkly, led_state);
+    /* test code */
+    // DevLED.ctl(Sample_Blinkly, led_state);
+    /* test code */
 }
 
 static void TaskSample_Get_SensorState(void)

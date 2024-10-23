@@ -6,6 +6,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "Task_BlackBox.h"
+#include "Dev_Led.h"
 #include "shell_port.h"
 #include "debug_util.h"
 #include "../DataStructure/CusQueue.h"
@@ -311,12 +312,12 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     static BlackBox_LogState_List lst_state;
     static bool alt_update = false;
     static bool att_update = false;
+    static bool imu_update = false;
+    static bool ctl_update = false;
     BlackBox_DataHeader_TypeDef blackbox_header;
     BlackBox_DataEnder_TypeDef blackbox_ender;
     uint8_t check_sum = 0;
     uint8_t i = 0;
-    bool imu_update = false;
-    bool ctl_update = false;
 
     memset(&blackbox_header, 0, BLACKBOX_HEADER_SIZE);
     memset(&blackbox_ender,  0, BLACKBOX_ENDER_SIZE);
@@ -500,16 +501,27 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
     lst_state = Monitor.state;
 }
 
-void TaskBlackBox_LogControl(void)
+bool TaskBlackBox_LogControl(void)
 {
+    uint8_t time_out = 100; /* unit: ms */
+
     if (Monitor.state != BlackBox_Log_Enable)
     {
         Monitor.log_cnt = 0;
         Monitor.log_byte_size = 0;
         Queue.reset(&BlackBox_Queue);
 
-        if (p_blackbox && p_blackbox->enable && p_blackbox->enable())
+        if (p_blackbox && p_blackbox->enable)
         {
+            while (!p_blackbox->enable())
+            {
+                if (time_out == 0)
+                    return false;
+
+                SrvOsCommon.delay_ms(1);
+                time_out --;
+            }
+
             Monitor.state = BlackBox_Log_Enable;
             DevLED.ctl(Led2, true);
         }
@@ -519,6 +531,8 @@ void TaskBlackBox_LogControl(void)
         DevLED.ctl(Led2, false);
         Monitor.state = BlackBox_Log_Disable;
     }
+
+    return true;
 }
 
 bool TaskBlackBox_Set_LogInfo(BlackBox_MediumType_List medium, BlackBox_LogType_List type, uint32_t size)

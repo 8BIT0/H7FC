@@ -46,7 +46,7 @@ BspGPIO_Port_TypeDef Led1_Port = {
 BspGPIO_Obj_TypeDef Led1 = {
     .port = (void *)&Led1_Port,
     .pin = GPIO_PINS_13,
-    .init_state = GPIO_PULL_NONE,
+    .init_state = GPIO_PULL_DOWN,
 };
 
 /* Led 2 C14 */
@@ -57,7 +57,7 @@ BspGPIO_Port_TypeDef Led2_Port = {
 BspGPIO_Obj_TypeDef Led2 = {
     .port = (void *)&Led2_Port,
     .pin = GPIO_PINS_14,
-    .init_state = GPIO_PULL_NONE,
+    .init_state = GPIO_PULL_DOWN,
 };
 
 /* on board receiver uart tx port B11 */

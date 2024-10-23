@@ -107,7 +107,7 @@ typedef struct
 
 void TaskBlackBox_Init(void);
 void TaskBlackBox_Core(void const *arg);
-void TaskBlackBox_LogControl(void);
+bool TaskBlackBox_LogControl(void);
 bool TaskBlackBox_Set_LogInfo(BlackBox_MediumType_List medium, BlackBox_LogType_List type, uint32_t size);
 
 #ifdef __cplusplus
