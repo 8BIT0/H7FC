@@ -171,7 +171,7 @@ void TaskTelemetry_Core(void const *arg)
             DataPipe_SendTo(&Receiver_Smp_DataPipe, &Receiver_hub_DataPipe);
         }
         
-        Telemetry_blink(RCSig.arm_state);
+        // Telemetry_blink(RCSig.arm_state);
         SrvOsCommon.precise_delay(&sys_time, TaskTelemetry_Period);
     }
 }

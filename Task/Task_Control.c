@@ -264,12 +264,7 @@ static float TaskControl_Convert_CtlData(uint8_t gimbal_percent, float range, fl
     float exp = 0.0f;
 
     exp = (gimbal_percent - 50.0f) / 50.0f;
-    if (exp >= 0)
-    {
-        exp *= range;
-    }
-    else
-        exp *= -range;
+    exp *= range;
     
     return exp *= rate;
 }
@@ -455,6 +450,9 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
             /* Controller Update */
             /* altitude control update */
             /* attitude control update */
+            /* test code */
+            ang_ctl_only = true;
+            /* test code */
             Controller.att_ctl(TaskControl_Monitor.ctl_para.att_mode, sys_ms, ang_ctl_only, att_ctl_exp, att_ctl_mea, &att_ctl_out);
 
             /* when when usb attached lock moto */
