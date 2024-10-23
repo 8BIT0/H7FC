@@ -385,27 +385,29 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             imu_data.throttle_percent = DataPipe_DataObj(LogCtl_Data).throttle_percent;
             baro_data.throttle_percent = DataPipe_DataObj(LogCtl_Data).throttle_percent;
 
-            if (DataPipe_DataObj(LogCtl_Data).control_mode == Attitude_Control)
-            {
-                att_ctl_data.time = DataPipe_DataObj(LogCtl_Data).time_stamp;
-                att_ctl_data.throttle_percent = DataPipe_DataObj(LogCtl_Data).throttle_percent;
-                att_ctl_data.exp_pitch = DataPipe_DataObj(LogCtl_Data).pitch;
-                att_ctl_data.exp_roll = DataPipe_DataObj(LogCtl_Data).roll;
-                att_ctl_data.exp_gyr_z = DataPipe_DataObj(LogCtl_Data).gyr_z;
-                att_ctl_data.pitch = att_alt_data.pitch;
-                att_ctl_data.roll = att_alt_data.roll;
-                att_ctl_data.gyr_z = imu_data.flt_gyr[Axis_Z];
-            }
-            else
+            /* test code */
+            // if (DataPipe_DataObj(LogCtl_Data).control_mode == Attitude_Control)
+            // {
+            //     att_ctl_data.time = DataPipe_DataObj(LogCtl_Data).time_stamp;
+            //     att_ctl_data.throttle_percent = DataPipe_DataObj(LogCtl_Data).throttle_percent;
+            //     att_ctl_data.exp_pitch = DataPipe_DataObj(LogCtl_Data).pitch;
+            //     att_ctl_data.exp_roll = DataPipe_DataObj(LogCtl_Data).roll;
+            //     att_ctl_data.exp_gyr_z = DataPipe_DataObj(LogCtl_Data).gyr_z;
+            //     att_ctl_data.pitch = att_alt_data.pitch;
+            //     att_ctl_data.roll = att_alt_data.roll;
+            //     att_ctl_data.gyr_z = imu_data.flt_gyr[Axis_Z];
+            // }
+            // else
+            /* test code */
             {
                 ang_ctl_data.time = DataPipe_DataObj(LogCtl_Data).time_stamp;
                 ang_ctl_data.throttle_percent = DataPipe_DataObj(LogCtl_Data).throttle_percent;
-                ang_ctl_data.exp_gyr[Axis_X] = DataPipe_DataObj(LogCtl_Data).gyr_x;
-                ang_ctl_data.exp_gyr[Axis_Y] = DataPipe_DataObj(LogCtl_Data).gyr_y;
-                ang_ctl_data.exp_gyr[Axis_Z] = DataPipe_DataObj(LogCtl_Data).gyr_z;
-                ang_ctl_data.gyr[Axis_X] = imu_data.flt_gyr[Axis_X];
-                ang_ctl_data.gyr[Axis_Y] = imu_data.flt_gyr[Axis_Y];
-                ang_ctl_data.gyr[Axis_Z] = imu_data.flt_gyr[Axis_Z];
+                ang_ctl_data.e_gyr[Axis_X] = DataPipe_DataObj(LogCtl_Data).gyr_x;
+                ang_ctl_data.e_gyr[Axis_Y] = DataPipe_DataObj(LogCtl_Data).gyr_y;
+                ang_ctl_data.e_gyr[Axis_Z] = DataPipe_DataObj(LogCtl_Data).gyr_z;
+                ang_ctl_data.m_gyr[Axis_X] = imu_data.flt_gyr[Axis_X];
+                ang_ctl_data.m_gyr[Axis_Y] = imu_data.flt_gyr[Axis_Y];
+                ang_ctl_data.m_gyr[Axis_Z] = imu_data.flt_gyr[Axis_Z];
             }
 
             ctl_update = true;
@@ -815,12 +817,13 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_CtlAng(Shell *p
     if (p_shell)
     {
         shellPrint(p_shell, "%d ", p_ang_ctl->time);
-        shellPrint(p_shell, "%f ", p_ang_ctl->exp_gyr[Axis_X]);
-        shellPrint(p_shell, "%f ", p_ang_ctl->exp_gyr[Axis_Y]);
-        shellPrint(p_shell, "%f ", p_ang_ctl->exp_gyr[Axis_Z]);
-        shellPrint(p_shell, "%f ", p_ang_ctl->gyr[Axis_X]);
-        shellPrint(p_shell, "%f ", p_ang_ctl->gyr[Axis_Y]);
-        shellPrint(p_shell, "%f\r\n", p_ang_ctl->gyr[Axis_Z]);
+        shellPrint(p_shell, "%d ", p_ang_ctl->throttle_percent);
+        shellPrint(p_shell, "%f ", p_ang_ctl->e_gyr[Axis_X]);
+        shellPrint(p_shell, "%f ", p_ang_ctl->e_gyr[Axis_Y]);
+        shellPrint(p_shell, "%f ", p_ang_ctl->e_gyr[Axis_Z]);
+        shellPrint(p_shell, "%f ", p_ang_ctl->m_gyr[Axis_X]);
+        shellPrint(p_shell, "%f ", p_ang_ctl->m_gyr[Axis_Y]);
+        shellPrint(p_shell, "%f\r\n", p_ang_ctl->m_gyr[Axis_Z]);
     }
 
     *p_data += sizeof(BlackBox_AngCtlData_TypeDef);
