@@ -609,7 +609,7 @@ static void TaskBlackBox_Set_Log(uint8_t medium, uint8_t type, uint32_t size)
 
     info.medium = medium;
     info.log_type = type;
-    info.log_size = size;   /* only when tf blackbox avaliable */
+    info.log_size = size;   /* only when if blackbox avaliable */
 
     search_out = Storage.search(Para_User, BlackBox_Storage_Name);
     if ((search_out.item_addr == 0) || \
@@ -684,6 +684,11 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_Header(Shell *p
 
         case BlackBox_Log_Alt_Att:
             if (*len < (BLACKBOX_HEADER_SIZE + BLACKBOX_ENDER_SIZE + sizeof(BlackBox_AttAltData_TypeDef)))
+                return BlackBox_Cnv_Size_Error;
+            break;
+
+        case BlackBox_AngularPID_Tune:
+            if (*len < (BLACKBOX_HEADER_SIZE + BLACKBOX_ENDER_SIZE + sizeof(BlackBox_AngCtlData_TypeDef)))
                 return BlackBox_Cnv_Size_Error;
             break;
 

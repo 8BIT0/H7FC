@@ -72,8 +72,8 @@ typedef struct
 {
     uint32_t time;
     uint8_t throttle_percent;
-    float gyr[Axis_Sum];
-    float exp_gyr[Axis_Sum];
+    float m_gyr[Axis_Sum];  /* measurement gyro */
+    float e_gyr[Axis_Sum];  /* expection gyro */
 } BlackBox_AngCtlData_TypeDef;
 
 typedef struct
