@@ -406,9 +406,9 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
                 ang_ctl_data.e_gyr[Axis_X] = DataPipe_DataObj(LogCtl_Data).gyr_x;
                 ang_ctl_data.e_gyr[Axis_Y] = DataPipe_DataObj(LogCtl_Data).gyr_y;
                 ang_ctl_data.e_gyr[Axis_Z] = DataPipe_DataObj(LogCtl_Data).gyr_z;
-                ang_ctl_data.m_gyr[Axis_X] = imu_data.flt_gyr[Axis_X];
-                ang_ctl_data.m_gyr[Axis_Y] = imu_data.flt_gyr[Axis_Y];
-                ang_ctl_data.m_gyr[Axis_Z] = imu_data.flt_gyr[Axis_Z];
+                ang_ctl_data.m_gyr[Axis_X] = imu_data.flt_gyr[Axis_X] / imu_data.gyr_scale;
+                ang_ctl_data.m_gyr[Axis_Y] = imu_data.flt_gyr[Axis_Y] / imu_data.gyr_scale;
+                ang_ctl_data.m_gyr[Axis_Z] = imu_data.flt_gyr[Axis_Z] / imu_data.gyr_scale;
             }
 
             ctl_update = true;
