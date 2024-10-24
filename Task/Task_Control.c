@@ -269,7 +269,6 @@ static float TaskControl_Convert_CtlData(uint8_t gimbal_percent, float range, fl
     return exp *= rate;
 }
 
-/* need to be optmize */
 static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, uint32_t sys_ms)
 {
     uint8_t axis = Axis_X;
