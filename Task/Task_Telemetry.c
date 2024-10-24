@@ -526,7 +526,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         RC_Input_obj->sig.control_mode = Telemetry_Toggle_Check(&RC_Input_obj->ControlMode_Toggle).pos;
 
         /* check control mode inedx range */
-        if ((RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_AUTO) || (RC_Input_obj->sig.control_mode < Telemetry_Control_Mode_ACRO))
+        if (RC_Input_obj->sig.control_mode > Telemetry_Control_Mode_STAB)
             RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
 
         if (RC_Input_obj->sig.arm_state == TELEMETRY_SET_ARM)
