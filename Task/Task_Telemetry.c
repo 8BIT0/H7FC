@@ -600,7 +600,7 @@ static Telemetry_RCSig_TypeDef Telemetry_RC_Sig_Update(Telemetry_RCInput_TypeDef
         RC_Input_obj->sig.failsafe = true;
         RC_Input_obj->sig.arm_state = TELEMETRY_SET_ARM;
         RC_Input_obj->sig.buzz_state = false;
-        // RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
+        RC_Input_obj->sig.control_mode = Telemetry_Control_Mode_Default;
 
         for (uint8_t i = Gimbal_Throttle; i < Gimbal_Sum; i++)
             RC_Input_obj->sig.gimbal_percent[i] = 0;
