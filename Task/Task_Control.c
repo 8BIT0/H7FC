@@ -402,8 +402,10 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
                         break;
 
                     case SrvIMU_Sample_Over_Angular_Accelerate:
+                        TaskControl_Monitor.angular_protect = true;
                         if(TaskControl_Monitor.angular_warning_cnt < OVER_ANGULAR_ACCELERATE_COUNT)
                         {
+                            TaskControl_Monitor.angular_protect = false;
                             TaskControl_Monitor.angular_warning_cnt++;
 
                             for(axis = Axis_X; axis < Axis_Sum; axis++)
@@ -412,8 +414,6 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
                                 TaskControl_Monitor.gyr[axis] = TaskControl_Monitor.gyr_lst[axis];
                             }
                         }
-                        else
-                            TaskControl_Monitor.angular_protect = true;
                         break;
                 }
             }
