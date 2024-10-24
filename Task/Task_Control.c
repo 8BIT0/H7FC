@@ -439,6 +439,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
             if (!exp_ctl_val->aux.bit.flip_over)
                 goto lock_moto;
 
+            /* still in developping */
             /* when drone is up side down and we want to flip over it by telemetry */
             /* reverse propeller spin dir to reverse the drone */
         }
