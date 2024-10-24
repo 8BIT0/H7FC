@@ -1,6 +1,10 @@
 #ifndef __STORAGE_BUS_PORT_H
 #define __STORAGE_BUS_PORT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -18,5 +22,9 @@ typedef struct
 } StorageBusApi_TypeDef;
 
 extern StorageBusApi_TypeDef StoragePort_Api;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

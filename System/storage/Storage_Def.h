@@ -1,6 +1,10 @@
 #ifndef __STORAGE_DEF_H
 #define __STORAGE_DEF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "util.h"
 #include "../../FCHW_Config.h"
 
@@ -41,5 +45,9 @@
 #define STORAGE_DATA_ALIGN              4
 #define STORAGE_MIN_BYTE_SIZE           1
 #define STORAGE_FREEITEM_NAME           "Item_Avaliable"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

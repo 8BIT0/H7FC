@@ -1,6 +1,10 @@
 #ifndef __STORAGE_DEV_PORT_H
 #define __STORAGE_DEV_PORT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <stdint.h>
@@ -59,5 +63,9 @@ typedef struct
 } StorageDevApi_TypeDef;
 
 extern StorageDevApi_TypeDef StorageDev;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
