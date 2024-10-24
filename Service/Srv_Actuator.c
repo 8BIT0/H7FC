@@ -52,10 +52,10 @@ const SrvActuator_PeriphSet_TypeDef SrvActuator_Periph_List[Actuator_PWM_SigSUM]
 };
 
 const uint8_t default_sig_serial[Actuator_PWM_SigSUM] = {
-    Actuator_PWM_Sig1,
-    Actuator_PWM_Sig2,
-    Actuator_PWM_Sig3,
     Actuator_PWM_Sig4,
+    Actuator_PWM_Sig2,
+    Actuator_PWM_Sig1,
+    Actuator_PWM_Sig3,
 
 #if defined BATEAT32F435_AIO 
     Actuator_PWM_Sig5,
