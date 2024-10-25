@@ -115,8 +115,12 @@ void TaskBlackBox_Init(void)
     if (Monitor.storage_search.item_addr == 0)
     {
         BlackBoxInfo.log_size = 0;
+#if (FLASH_CHIP_STATE == ON)
+        BlackBoxInfo.medium = BlackBox_Medium_Chip;
+#else
         BlackBoxInfo.medium = BlackBox_Medium_None;
-        BlackBoxInfo.log_type = BlackBox_Log_None;
+#endif
+        BlackBoxInfo.log_type = BlackBox_AngularPID_Tune;
         if (Storage.create(Para_User, BlackBox_Storage_Name, (uint8_t *)&BlackBoxInfo, sizeof(BlackBox_LogInfo_TypeDef)) != Storage_Error_None)
             return;
     }

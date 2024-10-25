@@ -213,12 +213,6 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
     /* current use default */
     SrvActuator_Obj.model = cfg.model;
 
-    /* test code */
-    // SrvActuator_Obj.drive_module.num.moto_cnt = cfg.moto_num;
-    // SrvActuator_Obj.drive_module.num.servo_cnt = cfg.servo_num;
-    // SrvActuator_Obj.drive_module.num.total_cnt = cfg.moto_num + cfg.servo_num;
-    /* test code */
-
     /* malloc dshot esc driver obj for using */
     SrvActuator_Obj.drive_module.obj_list = (SrvActuator_PWMOutObj_TypeDef *)Actuator_Malloc(sizeof(SrvActuator_PWMOutObj_TypeDef) * SrvActuator_Obj.drive_module.num.total_cnt);
 

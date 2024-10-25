@@ -1961,7 +1961,7 @@ static void Storage_Module_Format(void)
     else
         shellPrint(shell_obj, "\t[Flash Formatting Error]\r\n");
 }
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, Storage_Module_Format, Storage_Module_Format, Storage Format);
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, storage_format, Storage_Module_Format, Storage Format);
 
 static void Storage_Show_ModuleInfo(void)
 {

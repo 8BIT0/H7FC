@@ -158,13 +158,6 @@ static void TaskControl_Get_StoreParam(void)
     else if (TaskControl_Monitor.actuator_store_info.item_addr && \
              (Storage.get(Para_User, TaskControl_Monitor.actuator_store_info.item, (uint8_t *)&Actuator_Param, sizeof(SrvActuator_Setting_TypeDef)) == Storage_Error_None))
         TaskControl_Monitor.actuator_param = Actuator_Param;
-
-    /* test code */
-    TaskControl_Monitor.actuator_param.moto_map[0] = 3;
-    TaskControl_Monitor.actuator_param.moto_map[1] = 1;
-    TaskControl_Monitor.actuator_param.moto_map[2] = 0;
-    TaskControl_Monitor.actuator_param.moto_map[3] = 2;
-    /* test code */
 }
 
 static bool TaskControl_disarm_check(bool telemetry_arm, float pitch, float roll)
@@ -574,11 +567,11 @@ static void TaskControl_CLI_ShowModleInfo(void)
     shellPrint(shell_obj, "    Z angular speed control rate %f\r\n", TaskControl_Monitor.ctl_para.gz_rate);
     
     shellPrint(shell_obj, "--- control range ---\r\n");
-    shellPrint(shell_obj, "    pitch           range ±%d\r\n", TaskControl_Monitor.ctl_para.pitch_range);
-    shellPrint(shell_obj, "    roll            range ±%d\r\n", TaskControl_Monitor.ctl_para.roll_range);
-    shellPrint(shell_obj, "    X angular speed range ±%d\r\n", TaskControl_Monitor.ctl_para.gx_range);
-    shellPrint(shell_obj, "    Y angular speed range ±%d\r\n", TaskControl_Monitor.ctl_para.gy_range);
-    shellPrint(shell_obj, "    Z angular speed range ±%d\r\n", TaskControl_Monitor.ctl_para.gz_range);
+    shellPrint(shell_obj, "    pitch           range %f\r\n", TaskControl_Monitor.ctl_para.pitch_range);
+    shellPrint(shell_obj, "    roll            range %f\r\n", TaskControl_Monitor.ctl_para.roll_range);
+    shellPrint(shell_obj, "    X angular speed range %f\r\n", TaskControl_Monitor.ctl_para.gx_range);
+    shellPrint(shell_obj, "    Y angular speed range %f\r\n", TaskControl_Monitor.ctl_para.gy_range);
+    shellPrint(shell_obj, "    Z angular speed range %f\r\n", TaskControl_Monitor.ctl_para.gz_range);
     shellPrint(shell_obj, "--- attitude control mode ---\r\n");
     switch (TaskControl_Monitor.ctl_para.att_mode)
     {
