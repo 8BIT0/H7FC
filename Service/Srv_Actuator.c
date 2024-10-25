@@ -213,9 +213,9 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
     /* current use default */
     SrvActuator_Obj.model = cfg.model;
 
-    SrvActuator_Obj.drive_module.num.moto_cnt = cfg.moto_num;
-    SrvActuator_Obj.drive_module.num.servo_cnt = cfg.servo_num;
-    SrvActuator_Obj.drive_module.num.total_cnt = cfg.moto_num + cfg.servo_num;
+    // SrvActuator_Obj.drive_module.num.moto_cnt = cfg.moto_num;
+    // SrvActuator_Obj.drive_module.num.servo_cnt = cfg.servo_num;
+    // SrvActuator_Obj.drive_module.num.total_cnt = cfg.moto_num + cfg.servo_num;
 
     /* malloc dshot esc driver obj for using */
     SrvActuator_Obj.drive_module.obj_list = (SrvActuator_PWMOutObj_TypeDef *)Actuator_Malloc(sizeof(SrvActuator_PWMOutObj_TypeDef) * SrvActuator_Obj.drive_module.num.total_cnt);
@@ -225,51 +225,48 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
         Actuator_Free(SrvActuator_Obj.drive_module.obj_list);
         return false;
     }
-
-    if (SrvActuator_Obj.drive_module.num.moto_cnt)
+        
+    /* default init */
+    for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
     {
-        /* default init */
-        for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
+        switch (cfg.esc_type)
         {
-            switch (cfg.esc_type)
-            {
-                case Actuator_DevType_DShot150:
-                case Actuator_DevType_DShot300:
-                case Actuator_DevType_DShot600:
-                    SrvActuator_Obj.drive_module.obj_list[i].drv_type = cfg.esc_type;
-                    SrvActuator_Obj.drive_module.obj_list[i].ctl_val  = DSHOT_LOCK_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].min_val  = DSHOT_MIN_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].max_val  = DSHOT_MAX_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].idle_val = DSHOT_IDLE_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].lock_val = DSHOT_LOCK_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].drv_obj  = (DevDshotObj_TypeDef *)Actuator_Malloc(sizeof(DevDshotObj_TypeDef));
-                    break;
+            case Actuator_DevType_DShot150:
+            case Actuator_DevType_DShot300:
+            case Actuator_DevType_DShot600:
+                SrvActuator_Obj.drive_module.obj_list[i].drv_type = cfg.esc_type;
+                SrvActuator_Obj.drive_module.obj_list[i].ctl_val  = DSHOT_LOCK_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].min_val  = DSHOT_MIN_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].max_val  = DSHOT_MAX_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].idle_val = DSHOT_IDLE_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].lock_val = DSHOT_LOCK_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].drv_obj  = (DevDshotObj_TypeDef *)Actuator_Malloc(sizeof(DevDshotObj_TypeDef));
+                break;
 
-                case Actuator_DevType_Brush:
-                    SrvActuator_Obj.drive_module.obj_list[i].drv_type = cfg.esc_type;
-                    SrvActuator_Obj.drive_module.obj_list[i].ctl_val  = BRUSH_LOCK_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].min_val  = BRUSH_MIN_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].max_val  = BRUSH_MAX_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].idle_val = BRUSH_IDLE_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].lock_val = BRUSH_LOCK_THROTTLE;
-                    SrvActuator_Obj.drive_module.obj_list[i].drv_obj  = (DevBrushMotoObj_TypeDef *)Actuator_Malloc(sizeof(DevBrushMotoObj_TypeDef));
-                    break;
+            case Actuator_DevType_Brush:
+                SrvActuator_Obj.drive_module.obj_list[i].drv_type = cfg.esc_type;
+                SrvActuator_Obj.drive_module.obj_list[i].ctl_val  = BRUSH_LOCK_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].min_val  = BRUSH_MIN_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].max_val  = BRUSH_MAX_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].idle_val = BRUSH_IDLE_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].lock_val = BRUSH_LOCK_THROTTLE;
+                SrvActuator_Obj.drive_module.obj_list[i].drv_obj  = (DevBrushMotoObj_TypeDef *)Actuator_Malloc(sizeof(DevBrushMotoObj_TypeDef));
+                break;
 
-                default:
-                    Actuator_Free(SrvActuator_Obj.drive_module.obj_list);
-                    return false;
-            }
-
-            if (SrvActuator_Obj.drive_module.obj_list[i].drv_obj == NULL)
-            {
-                for (uint8_t j = 0; j < i; j++)
-                {
-                    Actuator_Free(SrvActuator_Obj.drive_module.obj_list[j].drv_obj);
-                }
-
+            default:
                 Actuator_Free(SrvActuator_Obj.drive_module.obj_list);
                 return false;
+        }
+
+        if (SrvActuator_Obj.drive_module.obj_list[i].drv_obj == NULL)
+        {
+            for (uint8_t j = 0; j < i; j++)
+            {
+                Actuator_Free(SrvActuator_Obj.drive_module.obj_list[j].drv_obj);
             }
+
+            Actuator_Free(SrvActuator_Obj.drive_module.obj_list);
+            return false;
         }
     }
 
