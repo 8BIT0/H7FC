@@ -93,16 +93,16 @@ static bool Controller_PID_AttControl_ParamLoad(void)
 
     /* test */
     /* set parameter */
-    pid_param.GyroX_Para.gP = 2.5;
+    pid_param.GyroX_Para.gP = 1.2;
     pid_param.GyroX_Para.base_diff = 500;
-    pid_param.GyroX_Para.gI = 0.0;
+    pid_param.GyroX_Para.gI = 2.0;
     pid_param.GyroX_Para.gI_Max = 200;
     pid_param.GyroX_Para.gI_Min = -200;
     pid_param.GyroX_Para.gD = 0.0;
 
-    pid_param.GyroY_Para.gP = 2.5;
+    pid_param.GyroY_Para.gP = 1.2;
     pid_param.GyroY_Para.base_diff = 500;
-    pid_param.GyroY_Para.gI = 0.0;
+    pid_param.GyroY_Para.gI = 2.0;
     pid_param.GyroY_Para.gI_Max = 200;
     pid_param.GyroY_Para.gI_Min = -200;
     pid_param.GyroY_Para.gD = 0.0;
