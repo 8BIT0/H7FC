@@ -357,7 +357,9 @@ typedef struct
 {
     SrvActuator_Model_List model;
     
+    uint8_t moto_num;
     uint8_t esc_type;
+    uint8_t servo_num;
     uint8_t moto_map[MAX_PWM_OUT]; /* pwm channel map [moto + servo] moto pwm channle at the head pos */
     uint8_t servo_map[MAX_PWM_OUT];
 } SrvActuator_Setting_TypeDef;

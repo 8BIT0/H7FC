@@ -295,13 +295,15 @@ static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
 static SrvActuator_Setting_TypeDef SrvActuator_Default_Setting(void)
 {
     SrvActuator_Setting_TypeDef default_setting;
+    SrvActuator_ModelComponentNum_TypeDef quad_setting = QUAD_CONTROL_COMPONENT;
+
     memset(&default_setting, 0, sizeof(SrvActuator_Setting_TypeDef));
 
     default_setting.model = Model_Quad;
     default_setting.esc_type = Actuator_DevType_DShot300;
 
-    default_setting.moto_num = 4;
-    default_setting.servo_num = 0;
+    default_setting.moto_num = quad_setting.moto_cnt;
+    default_setting.servo_num = quad_setting.servo_cnt;
 
     memcpy(default_setting.moto_map, default_sig_serial, 4);
 
