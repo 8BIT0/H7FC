@@ -367,6 +367,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
                 }
             }
 
+            TaskControl_Monitor.imu_none_update_cnt = 0;
             if(imu_err_code != SrvIMU_Sample_NoError)
             {
                 switch(imu_err_code)
@@ -417,10 +418,10 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
                             }
                         }
                         break;
+
+                    default: break;
                 }
             }
-            else
-                TaskControl_Monitor.imu_none_update_cnt = 0;
         }
         else
         {
