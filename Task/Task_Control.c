@@ -268,7 +268,7 @@ static float TaskControl_Convert_CtlData(uint8_t gimbal_percent, float range, fl
     exp = (gimbal_percent - 50.0f) / 50.0f;
     exp *= range;
     
-    return exp *= rate;
+    return exp * rate;
 }
 
 static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, uint32_t sys_ms)
