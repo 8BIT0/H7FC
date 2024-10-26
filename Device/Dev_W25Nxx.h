@@ -60,6 +60,13 @@ extern "C" {
 
 typedef enum
 {
+    Normal_Block = 0,
+    Bad_Block,
+    Block_Invalid,
+} DevW25Nxx_BlockState_TypeDef;
+
+typedef enum
+{
     BF_SRP_1 = 0,
     BF_WPE,
     BF_TB,

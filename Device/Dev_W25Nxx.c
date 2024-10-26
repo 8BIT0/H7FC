@@ -279,18 +279,28 @@ static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *de
     return DevW25Nxx_Busy;
 }
 
-static DevW25Nxx_Error_List DevW25Nxx_Read_BBLUT(DevW25NxxObj_TypeDef *dev)
+/* still in developping */
+static DevW25Nxx_Error_List DevW25Nxx_Read_BBLUT(DevW25NxxObj_TypeDef *dev, W25Nxx_BBLUT_TypeDef *p_lut, uint16_t lut_num)
 {
-    if (dev == NULL)
+    if ((dev == NULL) || \
+        (p_lut == NULL) || \
+        (lut_num == 0))
         return DevW25Nxx_Error;
     
     /* check write enable state */
-    if (!dev->write_en)
-        DevW25Nxx_WriteEn(dev, true);
+    if (!dev->write_en && (DevW25Nxx_WriteEn(dev, true) != DevW25Nxx_Ok))
+        return DevW25Nxx_Error;
+
+    /* wait for busy */
+    if (W25Nxx_Wait_Busy(dev) != DevW25Nxx_Ok)
+        return DevW25Nxx_Error;
+
+    /* check LUT */
 
     return DevW25Nxx_Ok;
 }
 
+/* still in developping */
 static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev)
 {
     uint8_t cmd[2] = {W25NXX_BB_MANAGEMENT};
@@ -324,6 +334,14 @@ static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev
     }
 
     return info;
+}
+
+/* still in developping */
+/* return false when current block is bad block else return true */
+static DevW25Nxx_BlockState_TypeDef DevW25Nxx_Check_CurBlock(DevW25NxxObj_TypeDef *dev)
+{
+    if (dev == NULL)
+        return Block_Invalid;
 }
 
 static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr)
