@@ -505,7 +505,7 @@ static SrvActuator_Model_List SrvActuator_GetModel(void)
  *   \  |  /
  *    \ | /
  *     \|/
- *      X-----pitch
+ *      x-----pitch
  *     / \
  *    /   \
  *   /     \
