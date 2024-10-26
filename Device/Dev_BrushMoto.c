@@ -1,3 +1,7 @@
+/*
+ *  Author:8_B!T0
+ *  still in developping
+ */
 #include "Dev_BrushMoto.h"
 
 #define BRUSH_TMR_CLK_FREQ  1000000
