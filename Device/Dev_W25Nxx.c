@@ -338,7 +338,7 @@ static DevW25Nxx_DeviceInfo_TypeDef DevW25Nxx_Get_Info(DevW25NxxObj_TypeDef *dev
 
 /* still in developping */
 /* return false when current block is bad block else return true */
-static DevW25Nxx_BlockState_TypeDef DevW25Nxx_Check_CurBlock(DevW25NxxObj_TypeDef *dev)
+static DevW25Nxx_BlockState_TypeDef DevW25Nxx_Check_CurBlock(DevW25NxxObj_TypeDef *dev, uint32_t black_addr)
 {
     if (dev == NULL)
         return Block_Invalid;
