@@ -18,6 +18,12 @@
 #define ConvertToSR1_RegFormat(x)   ((DevW25Nxx_SR1_TypeDef *)x)
 #define ConvertToSR2_RegFormat(x)   ((DevW25Nxx_SR2_TypeDef *)x)
 
+typedef struct
+{
+    uint16_t p_addr;    /* physical address */
+    uint16_t l_addr;    /* logic address */
+} W25Nxx_BBLUT_TypeDef;
+
 typedef union
 {
     uint16_t val;
@@ -39,6 +45,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *de
 static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev, bool en);
 static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field_index, uint8_t val);
 static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev); 
+static bool W25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev);
 
 /* external function */
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
@@ -173,6 +180,10 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
     if (!DevW25Nxx_Soft_Reset(dev))
         return DevW25Nxx_Error;
 
+    /* check bad block managent */
+
+    /* disable write protect */
+
     dev->delay_ms(100);
     dev->init_state = true;
 
@@ -190,6 +201,32 @@ static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev)
     memset(tx_tmp, 0, sizeof(tx_tmp));
     tx_tmp[0] = W25NXX_RESET_CMD;
     return DevW25Nxx_Write(dev, tx_tmp, sizeof(tx_tmp));
+}
+
+static bool W25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev)
+{
+    uint8_t time_out = 0;
+    DevW25Nxx_Error_List state = DevW25Nxx_Busy;
+
+    if ((dev == NULL) || \
+        (dev->delay_ms == NULL))
+        return false;
+
+    while (state == DevW25Nxx_Busy)
+    {
+        state = DevW25Nxx_Check_Read_Status(dev);
+        dev->delay_ms(1);
+    
+        if (time_out >= W25NXX_BUS_COMMU_TIMEOUT)
+            return false;
+
+        time_out ++;
+    }
+
+    if (state == DevW25Nxx_Ok)
+        return true;
+
+    return false;
 }
 
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev)
@@ -237,6 +274,14 @@ static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *de
         return DevW25Nxx_Ok;
 
     return DevW25Nxx_Busy;
+}
+
+static DevW25Nxx_Error_List DevW25Nxx_Read_BBLUT(DevW25NxxObj_TypeDef *dev)
+{
+    if (dev == NULL)
+        return DevW25Nxx_Error;
+        
+    return DevW25Nxx_Ok;
 }
 
 static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev)
