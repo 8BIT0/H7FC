@@ -501,12 +501,15 @@ static SrvActuator_Model_List SrvActuator_GetModel(void)
  * Y axis -> Pitch
  * Z axis -> Yaw
  *
- * M4    M3
- *   \  /
- *    \/
- *    /\
- *   /  \
- * M1    M2
+ * M4  Roll  M3
+ *   \  |  /
+ *    \ | /
+ *     \|/
+ *      X-----pitch
+ *     / \
+ *    /   \
+ *   /     \
+ * M1       M2
  *
  */
 static bool SrvActuator_QuadDrone_MotoMixControl(int16_t *ctl)
