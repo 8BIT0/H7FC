@@ -153,6 +153,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
         return DevW25Nxx_Error;
 
     dev->init_state = false;
+    dev->write_en = false;
 
     /* check read status */
     err = DevW25Nxx_Check_Read_Status(dev);
@@ -180,9 +181,11 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
     if (!DevW25Nxx_Soft_Reset(dev))
         return DevW25Nxx_Error;
 
-    /* check bad block managent */
-
     /* disable write protect */
+    if (DevW25Nxx_WriteEn(dev, true) != DevW25Nxx_Ok)
+        return DevW25Nxx_Error;
+
+    /* check bad block managent */
 
     dev->delay_ms(100);
     dev->init_state = true;
@@ -280,7 +283,11 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_BBLUT(DevW25NxxObj_TypeDef *dev)
 {
     if (dev == NULL)
         return DevW25Nxx_Error;
-        
+    
+    /* check write enable state */
+    if (!dev->write_en)
+        DevW25Nxx_WriteEn(dev, true);
+
     return DevW25Nxx_Ok;
 }
 
@@ -388,6 +395,7 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev, bool en
         !DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
         return DevW25Nxx_Error;
 
+    dev->write_en = en;
     return DevW25Nxx_Ok;
 }
 
