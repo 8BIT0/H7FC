@@ -342,6 +342,8 @@ static DevW25Nxx_BlockState_TypeDef DevW25Nxx_Check_CurBlock(DevW25NxxObj_TypeDe
 {
     if (dev == NULL)
         return Block_Invalid;
+
+    /* read first page in selected block */
 }
 
 static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr)
