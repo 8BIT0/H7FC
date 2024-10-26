@@ -57,7 +57,7 @@ DevW25Nxx_TypeDef DevW25Nxx = {
     .init = DevW25Nxx_Init,
     .info = DevW25Nxx_Get_Info,
     .get_page = DevW25Nxx_Get_Page,
-    .read = DevW25Nxx_Read_Page,
+    .read = ,
 };
 
 static bool DevW25Nxx_Write(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t len)
@@ -455,7 +455,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Write_Page(DevW25NxxObj_TypeDef *dev, uint
     return DevW25Nxx_Ok;
 }
 
-static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size)
+static DevW25Nxx_Error_List DevW25Nxx_Read_PageOnBlock(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size)
 {
     DevW25Nxx_Error_List err = DevW25Nxx_Ok;
     uint32_t sys_time = 0;
