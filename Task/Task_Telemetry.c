@@ -413,7 +413,7 @@ static void Telemetry_Enable_GimbalDeadZone(Telemetry_RCFuncMap_TypeDef *gimbal,
     {
         gimbal_channel = gimbal->combo_list.data;
 
-        if (gimbal_channel)
+        if (gimbal_channel == NULL)
             return;
 
         gimbal_channel->center_deadzone_scope = scope;

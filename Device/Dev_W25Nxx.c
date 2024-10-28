@@ -57,7 +57,7 @@ DevW25Nxx_TypeDef DevW25Nxx = {
     .init = DevW25Nxx_Init,
     .info = DevW25Nxx_Get_Info,
     .get_page = DevW25Nxx_Get_Page,
-    .read = ,
+    // .read = ,
 };
 
 static bool DevW25Nxx_Write(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t len)

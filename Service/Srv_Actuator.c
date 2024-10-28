@@ -534,10 +534,10 @@ static bool SrvActuator_QuadDrone_MotoMixControl(int16_t *ctl)
                   throttle_base_percent + SrvActuator_Obj.drive_module.obj_list[i].idle_val;
     }
 
-    tmp[0] = tmp[0] + ctl[Actuator_Ctl_GyrY] + ctl[Actuator_Ctl_GyrX] - ctl[Actuator_Ctl_GyrZ];
-    tmp[1] = tmp[1] + ctl[Actuator_Ctl_GyrY] - ctl[Actuator_Ctl_GyrX] + ctl[Actuator_Ctl_GyrZ];
-    tmp[2] = tmp[2] - ctl[Actuator_Ctl_GyrY] - ctl[Actuator_Ctl_GyrX] - ctl[Actuator_Ctl_GyrZ];
-    tmp[3] = tmp[3] - ctl[Actuator_Ctl_GyrY] + ctl[Actuator_Ctl_GyrX] + ctl[Actuator_Ctl_GyrZ];
+    tmp[0] = tmp[0] - ctl[Actuator_Ctl_GyrY] + ctl[Actuator_Ctl_GyrX] - ctl[Actuator_Ctl_GyrZ];
+    tmp[1] = tmp[1] - ctl[Actuator_Ctl_GyrY] - ctl[Actuator_Ctl_GyrX] + ctl[Actuator_Ctl_GyrZ];
+    tmp[2] = tmp[2] + ctl[Actuator_Ctl_GyrY] - ctl[Actuator_Ctl_GyrX] - ctl[Actuator_Ctl_GyrZ];
+    tmp[3] = tmp[3] + ctl[Actuator_Ctl_GyrY] + ctl[Actuator_Ctl_GyrX] + ctl[Actuator_Ctl_GyrZ];
 
     for (uint8_t i = 0; i < 4; i++)
     {

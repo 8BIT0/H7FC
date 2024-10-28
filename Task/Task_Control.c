@@ -258,9 +258,9 @@ static float TaskControl_Convert_CtlData(uint8_t gimbal_percent, float range, fl
 {
     float exp = 0.0f;
 
-    exp = (gimbal_percent - 50.0f) / 50.0f;
+    exp = (gimbal_percent - 50) / 50.0f;
     exp *= range;
-    
+
     return exp * rate;
 }
 
