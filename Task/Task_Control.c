@@ -642,7 +642,7 @@ static void TaskControl_CLI_SetMotoType(uint8_t type)
     }
 
     actuator_para_tmp.esc_type = type;
-    if (Storage.update(Para_User, TaskControl_Monitor.actuator_store_info.item_addr, (uint8_t *)&actuator_para_tmp, sizeof(SrvActuator_Setting_TypeDef)) != Storage_Error_None)
+    if (Storage.update(Para_User, TaskControl_Monitor.actuator_store_info.item.data_addr, (uint8_t *)&actuator_para_tmp, sizeof(SrvActuator_Setting_TypeDef)) != Storage_Error_None)
     {
         shellPrint(shell_obj, "Parameter update failed\r\n");
         return;
