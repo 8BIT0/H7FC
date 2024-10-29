@@ -338,6 +338,7 @@ typedef struct
 {
     SrvActuator_Model_List model;
     bool init;
+    uint16_t control_period;
     SrcActuatorCTL_Obj_TypeDef drive_module;
 } SrvActuatorObj_TypeDef;
 
@@ -367,7 +368,7 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)(SrvActuator_Setting_TypeDef cfg);
+    bool (*init)(SrvActuator_Setting_TypeDef cfg, uint16_t control_period);
     bool (*de_init)(void);
     SrvActuator_Setting_TypeDef (*default_param)(void);
     bool (*lock)(void);

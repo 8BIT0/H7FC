@@ -87,7 +87,7 @@ static void SrvActuator_PipeData(void);
 
 /* external function */
 static bool SrvActuator_DeInit(void);
-static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg);
+static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg, uint16_t control_period);
 static void SrvActuator_MotoControl(int16_t *p_val);
 static bool SrvActuator_TmpReversedMotoSpinDir(uint8_t component_index);
 static bool SrvActuator_Lock(void);
@@ -166,10 +166,15 @@ static bool SrvActuator_DeInit(void)
     return true;
 }
 
-static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg)
+static bool SrvActuator_Init(SrvActuator_Setting_TypeDef cfg, uint16_t control_period)
 {
     memset(&SrvActuator_Obj, 0, sizeof(SrvActuator_Obj));
     memset(&SrvActuator_ControlStream, 0, sizeof(SrvActuator_ControlStream));
+
+    if (control_period == 0)
+        return false;
+
+    SrvActuator_Obj.control_period = control_period;
 
     switch (cfg.model)
     {
@@ -332,8 +337,7 @@ static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg)
 
             case Actuator_DevType_Brush:
                 DevBrushMoto.init(To_BrushObj_Ptr(SrvActuator_Obj.drive_module.obj_list[i].drv_obj), \
-                                    periph_ptr->tim_base, periph_ptr->tim_channel, (void *)&(periph_ptr->pin), \
-                                    periph_ptr->dma, periph_ptr->dma_channel);
+                                    periph_ptr->tim_base, periph_ptr->tim_channel, (void *)&(periph_ptr->pin));
                 break;
 
             default: return;
@@ -631,13 +635,6 @@ static bool SrvActuator_Servo_DirectDrive(uint8_t index, uint16_t value)
 }
 
 /****************************************************** ESC Weak Function Implimentation *******************************************************/
-#if defined AT32F435_437
-void MotoDMA_Tran_Finish(void)
-{
-    if (SrvActuator_Sem)
-        osSemaphoreRelease(SrvActuator_Sem);
-}
-#endif
 /***************************************************************** pwm *************************************************************************/
 bool Brush_Port_DeInit(void *obj)
 {
@@ -647,18 +644,13 @@ bool Brush_Port_DeInit(void *obj)
     return false;
 }
 
-void Brush_Port_Trans(void *obj)
+void Brush_Port_Trans(void *obj, uint16_t val)
 {
     if ((obj == NULL) || \
         (To_BrushObj_Ptr(obj)->p_timer_obj == NULL))
         return;
 
-    BspTimer_PWM.dma_trans(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj));
-    
-#if defined AT32F435_437
-        if (SrvActuator_Sem)
-            osSemaphoreWait(SrvActuator_Sem, 1);
-#endif
+    BspTimer_PWM.pwm_trans(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj), val);
 }
 
 uint32_t Brush_Get_Timer_CLKFreq(void *obj)
@@ -666,7 +658,7 @@ uint32_t Brush_Get_Timer_CLKFreq(void *obj)
     return BspTimer_PWM.get_clock_freq(To_TimerPWMObj_Ptr(To_BrushObj_Ptr(obj)->p_timer_obj));
 }
 
-bool Brush_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t time_ch, void *pin, uint8_t dma, uint8_t stream)
+bool Brush_Port_Init(void *obj, uint32_t prescaler, uint32_t auto_reload, void *time_ins, uint32_t time_ch, void *pin)
 {
     if ((obj == NULL) || \
         (time_ins == NULL) || \
@@ -680,23 +672,9 @@ bool Brush_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
         return false;
     }
 
-#if defined AT32F435_437
-    if (SrvActuator_Sem == NULL)
-    {
-        osSemaphoreDef(DShot_Sem);
-        SrvActuator_Sem = osSemaphoreCreate(osSemaphore(DShot_Sem), 1);
-    }
-        
-    To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->send_callback = MotoDMA_Tran_Finish;
-#endif
-
     BspTimerPWMObj_TypeDef *p_tmr = To_BrushObj_Ptr(obj)->p_timer_obj;
-    if (!BspTimer_PWM.init(p_tmr, time_ins, time_ch, 1000, 0, *(BspGPIO_Obj_TypeDef *)pin, \
-                           dma, stream, (uint32_t)&(To_BrushObj_Ptr(obj)->ctl_val), BRUSH_BUFFER_SIZE))
-        return false;
-
-    BspTimer_PWM.set_dma_pwm((To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)));
-    return true; 
+    return BspTimer_PWM.init(p_tmr, time_ins, time_ch, auto_reload, prescaler * SrvActuator_Obj.control_period, *(BspGPIO_Obj_TypeDef *)pin, \
+                             Bsp_DMA_None, Bsp_DMA_Stream_None, 0, 0);
 }
 
 /**************************************************************** dshot ************************************************************************/
@@ -725,6 +703,14 @@ uint32_t DShot_Get_Timer_CLKFreq(void *obj)
 {
     return BspTimer_PWM.get_clock_freq(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj));
 }
+
+#if defined AT32F435_437
+void DShot_Tran_Finish(void)
+{
+    if (SrvActuator_Sem)
+        osSemaphoreRelease(SrvActuator_Sem);
+}
+#endif
 
 bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t time_ch, void *pin, uint8_t dma, uint8_t stream)
 {
@@ -766,7 +752,7 @@ bool DShot_Port_Init(void *obj, uint32_t prescaler, void *time_ins, uint32_t tim
         if (To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->dma_callback_obj == NULL)
             return false;
         
-        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->send_callback = MotoDMA_Tran_Finish;
+        To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj)->send_callback = DShot_Tran_Finish;
 #endif
 
         if (!BspTimer_PWM.init(To_TimerPWMObj_Ptr(To_DShotObj_Ptr(obj)->p_timr_obj), \

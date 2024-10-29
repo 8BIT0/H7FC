@@ -73,6 +73,9 @@ static uint32_t TaskControl_Period = 0;
 
 void TaskControl_Init(uint32_t period)
 {
+    if (period == 0)
+        return;
+
     /* init monitor */
     memset(&TaskControl_Monitor, 0, sizeof(TaskControl_Monitor));
     SrvDataHub.get_imu_init_state(&imu_init_state);
@@ -84,7 +87,7 @@ void TaskControl_Init(uint32_t period)
     
     /* Parametet Init */
     TaskControl_Get_StoreParam();
-    TaskControl_Monitor.init_state = SrvActuator.init(TaskControl_Monitor.actuator_param);
+    TaskControl_Monitor.init_state = SrvActuator.init(TaskControl_Monitor.actuator_param, period);
 
     osMessageQDef(MotoCLI_Data, 64, TaskControl_CLIData_TypeDef);
     TaskControl_Monitor.CLIMessage_ID = osMessageCreate(osMessageQ(MotoCLI_Data), NULL);

@@ -5,8 +5,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#define BRUSH_BUFFER_SIZE   2
-
 #define BRUSH_LOCK_THROTTLE 0
 #define BRUSH_MIN_THROTTLE  0
 #define BRUSH_IDLE_THROTTLE 100
@@ -21,14 +19,14 @@ typedef struct
 {
     bool init;
     void *p_timer_obj;
-    uint32_t ctl_val[BRUSH_BUFFER_SIZE];
+    uint32_t ctl_val;
 } DevBrushMotoObj_TypeDef;
 
 typedef struct
 {
-    bool (*init)(DevBrushMotoObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, int8_t dma, int8_t stream);
+    bool (*init)(DevBrushMotoObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin);
     bool (*de_init)(DevBrushMotoObj_TypeDef *obj);
-    void (*control)(DevBrushMotoObj_TypeDef *obj, uint32_t val);
+    void (*control)(DevBrushMotoObj_TypeDef *obj, uint16_t val);
 } DevBrushMoto_TypeDef;
 
 extern DevBrushMoto_TypeDef DevBrushMoto;
