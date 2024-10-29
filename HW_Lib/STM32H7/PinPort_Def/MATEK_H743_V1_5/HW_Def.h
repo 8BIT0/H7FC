@@ -333,6 +333,7 @@ void SecIMU_Dir_Tune(float *gyr, float *acc);
 #define BARO_BUS_TYPE SrvBaro_Bus_IIC
 #define Sample_Blinkly Led2
 #define Noti_LED_Ptr NULL
+#define BlackBox_Noti_Ptr NULL
 
 extern SPI_HandleTypeDef Baro_Bus_Instance;
 extern BspGPIO_Obj_TypeDef *p_Baro_CS;

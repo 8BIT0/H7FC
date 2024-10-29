@@ -508,6 +508,11 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
 bool TaskBlackBox_LogControl(void)
 {
     uint8_t time_out = 100; /* unit: ms */
+    DevLedObj_TypeDef BlackBox_Noti;
+
+    memset(&BlackBox_Noti, 0, sizeof(DevLedObj_TypeDef));
+    if (BlackBox_Noti_Ptr)
+        memcpy(&BlackBox_Noti, BlackBox_Noti_Ptr, sizeof(DevLedObj_TypeDef));
 
     if (Monitor.state != BlackBox_Log_Enable)
     {
@@ -527,12 +532,16 @@ bool TaskBlackBox_LogControl(void)
             }
 
             Monitor.state = BlackBox_Log_Enable;
-            DevLED.ctl(Led2, true);
+
+            if (BlackBox_Noti_Ptr)
+                DevLED.ctl(BlackBox_Noti, true);
         }
     }
     else
     {
-        DevLED.ctl(Led2, false);
+        if (BlackBox_Noti_Ptr)
+            DevLED.ctl(BlackBox_Noti, false);
+
         Monitor.state = BlackBox_Log_Disable;
     }
 

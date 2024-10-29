@@ -275,7 +275,7 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               BspGPIO_Obj_TypeDef pin,
                               uint8_t dma,
                               uint8_t stream,
-                              uint32_t buf_aadr,
+                              uint32_t buf_addr,
                               uint32_t buf_size)
 {
     tmr_output_config_type tmr_output_struct;
@@ -290,18 +290,23 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     }
 
     if ((obj == NULL) || \
-        (instance == NULL) || \
-        (buf_aadr == 0) || \
-        (buf_size == 0))
+        (instance == NULL))
         return false;
 
     if (!BspTimer_Clock_EnableCtl(instance, TRUE))
         return false;
 
-    obj->dma = dma;
-    obj->stream = stream;
-    obj->buffer_addr = buf_aadr;
-    obj->buffer_size = buf_size;
+    if ((dma != Bsp_DMA_None) && (stream != Bsp_DMA_Stream_None))
+    {
+        if ((buf_addr == 0) || (buf_size == 0))
+            return false;
+
+        obj->dma = dma;
+        obj->stream = stream;
+        obj->buffer_addr = buf_addr;
+        obj->buffer_size = buf_size;
+    }
+
     obj->instance = instance;
     obj->tim_channel = ch;
 
