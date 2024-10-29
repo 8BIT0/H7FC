@@ -32,21 +32,19 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               uint32_t auto_reload,
                               uint32_t prescale,
                               BspGPIO_Obj_TypeDef pin,
-                              uint8_t dma,
-                              uint8_t stream,
+                              int8_t dma,
+                              int8_t stream,
                               uint32_t buf_aadr,
                               uint32_t buf_size);
 static void BspTimer_PWM_Start(BspTimerPWMObj_TypeDef *obj);
 static void BspTimer_DMA_Start(BspTimerPWMObj_TypeDef *obj);
 static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj);
-static void BspTimer_PWM_Trans(BspTimerPWMObj_TypeDef *obj, uint16_t val);
 
 BspTimerPWM_TypeDef BspTimer_PWM = {
     .init = BspTimer_PWM_Init,
     .de_init = BspTimer_PWM_DeInit,
     .set_dma_pwm = BspTimer_PWM_Start,
     .dma_trans = BspTimer_DMA_Start,
-    .pwm_trans = BspTimer_PWM_Trans,
     .get_clock_freq = BspTimer_Get_Clock_Freq,
 };
 
@@ -273,8 +271,8 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
                               uint32_t auto_reload,
                               uint32_t prescale,
                               BspGPIO_Obj_TypeDef pin,
-                              uint8_t dma,
-                              uint8_t stream,
+                              int8_t dma,
+                              int8_t stream,
                               uint32_t buf_addr,
                               uint32_t buf_size)
 {
@@ -296,7 +294,8 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
     if (!BspTimer_Clock_EnableCtl(instance, TRUE))
         return false;
 
-    if ((dma != Bsp_DMA_None) && (stream != Bsp_DMA_Stream_None))
+    if ((dma != Bsp_DMA_None) && \
+        (stream != Bsp_DMA_Stream_None))
     {
         if ((buf_addr == 0) || (buf_size == 0))
             return false;
@@ -349,23 +348,11 @@ static bool BspTimer_PWM_Init(BspTimerPWMObj_TypeDef *obj,
 
         dma_channel_enable(To_DMA_Handle_Ptr(obj->dma_hdl), FALSE);
     }
-    
+
     tmr_counter_value_set(To_Timer_Instance(obj->instance), 0);
     tmr_output_enable(To_Timer_Instance(obj->instance), FALSE);
 
     return true;
-}
-
-static void BspTimer_PWM_Trans(BspTimerPWMObj_TypeDef *obj, uint16_t val)
-{
-    if (obj == NULL)
-        return;
-
-    if (val > obj->auto_reload)
-        val = obj->auto_reload;
-
-    tmr_output_enable(To_Timer_Instance(obj->instance), TRUE);
-    tmr_channel_value_set(obj->instance, obj->tim_channel, val);
 }
 
 static uint32_t BspTimer_Get_Clock_Freq(BspTimerPWMObj_TypeDef *obj)

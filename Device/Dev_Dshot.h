@@ -72,7 +72,7 @@ typedef struct
 
 typedef struct
 {
-    bool (*init)(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, uint8_t dma, uint8_t stream);
+    bool (*init)(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, int8_t dma, int8_t stream);
     bool (*de_init)(DevDshotObj_TypeDef *obj);
     void (*command)(DevDshotObj_TypeDef *obj, uint16_t cmd);
     void (*control)(DevDshotObj_TypeDef *obj, uint16_t val);

@@ -7,7 +7,7 @@ __attribute__((weak)) void DShot_Port_Trans(void *obj){return;}
 __attribute__((weak)) uint32_t DShot_Get_Timer_CLKFreq(void *obj){return 0;}
 
 /* external function */
-static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, uint8_t dma, uint8_t stream);
+static bool DevDshot_Init(DevDshotObj_TypeDef *obj, void *timer_ins, uint32_t ch, void *pin, int8_t dma, int8_t stream);
 static bool DevDshot_DeInit(DevDshotObj_TypeDef *obj);
 static void DevDshot_Control(DevDshotObj_TypeDef *obj, uint16_t value);
 static void DevDshot_Command(DevDshotObj_TypeDef *obj, uint16_t cmd);
@@ -49,8 +49,8 @@ static bool DevDshot_Init(DevDshotObj_TypeDef *obj,
                           void *timer_ins,
                           uint32_t ch,
                           void *pin,
-                          uint8_t dma,
-                          uint8_t stream)
+                          int8_t dma,
+                          int8_t stream)
 {
     float DShot_Timer_ClkFreq = (float)DShot_Get_Timer_CLKFreq(obj) - 1;
     uint32_t prescaler = 0;
