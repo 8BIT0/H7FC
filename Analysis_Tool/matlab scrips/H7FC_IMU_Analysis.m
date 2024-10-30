@@ -31,7 +31,7 @@ plot(UsRtDiff);grid on;hold on;legend('UsRtDiff');
 % FFT
 FFT_GyrX = fft(GyrX);
 FFT_GyrX_Abs = abs(FFT_GyrX(1:1:DataLen/2))*2/DataLen;
-Freq_GyrX = (0:DataLen/2 - 1)'*Fs/DataLen;
+Freq_GyrX = (0:DataLen/2 - 1)*Fs/DataLen;
 
 figure(4)
 plot(Freq_GyrX,FFT_GyrX_Abs);grid on;hold on;

@@ -9,6 +9,13 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 
+typedef struct
+{
+    uint8_t BitSize;
+    uint8_t ByteSize;
+    uint32_t UID[8];
+} Kernel_UID_TypeDef;
+
 void Kernel_reboot(void);
 bool Kernel_Init(void);
 bool Kernel_EnableTimer_IRQ(void);

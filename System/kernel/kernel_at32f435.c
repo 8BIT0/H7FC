@@ -1,21 +1,20 @@
 #include "at32f435_437.h"
 #include "at32f435_437_clock.h"
+#include "kernel.h"
 #include <stdbool.h>
 
 #define Kernel_DisableIRQ() __asm("cpsid i")
 #define Kernel_EnableIRQ() __asm("cpsie i")
 
+#define Kernel_UID_BitSize 96
+
 static bool Kernel_TickTimer_Init = false;
-typedef struct
-{
-    uint32_t UID[3];
-    /* UID Address 1 0x1FFFF7E8 */
-    /* UID Address 2 0x1FFFF7EC */
-    /* UID Address 3 0x1FFFF7F0 */
-} MCU_UID_TypeDef;
+static Kernel_UID_TypeDef UID;
 
 extern uint32_t __rom_s;
 extern uint32_t __boot_e;
+
+void Kernel_Read_UID(void);
 
 bool Kernel_Init(void)
 {
@@ -74,9 +73,33 @@ bool Kernel_Init(void)
     /* enable tmr1 */
     tmr_counter_enable(TMR20, TRUE);
 
+    /* get UID */
+    Kernel_Read_UID();
+
     Kernel_TickTimer_Init = true;
 
     return true;
+}
+
+void Kernel_Read_UID(void)
+{
+    volatile uint32_t *UID_Addr_tmp;
+
+    memset(&UID, 0, sizeof(Kernel_UID_TypeDef));
+    UID.BitSize = Kernel_UID_BitSize;
+    UID.ByteSize = (UID.BitSize / 8) + (UID.BitSize % 8);
+
+    /* UID Address 1 0x1FFFF7E8 */
+    /* UID Address 2 0x1FFFF7EC */
+    /* UID Address 3 0x1FFFF7F0 */
+    UID_Addr_tmp = 0x1FFFF7E8;
+    UID.UID[0] = *(uint32_t *)UID_Addr_tmp;
+
+    UID_Addr_tmp = 0x1FFFF7EC;
+    UID.UID[1] = *(uint32_t *)UID_Addr_tmp;
+
+    UID_Addr_tmp = 0x1FFFF7F0;
+    UID.UID[2] = *(uint32_t *)UID_Addr_tmp;
 }
 
 void Kernel_reboot(void)

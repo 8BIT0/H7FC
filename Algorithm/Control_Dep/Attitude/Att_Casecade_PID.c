@@ -43,35 +43,30 @@ static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void)
 
     memset(&para, 0, sizeof(AttCaseCadePID_Param_TypeDef));
 
-    para.Pitch_Para.base_diff   = 25;
     para.Pitch_Para.gP          = 1.2;
     para.Pitch_Para.gI          = 0.2;
     para.Pitch_Para.gI_Max      = 10;
     para.Pitch_Para.gI_Min      = -10;
     para.Pitch_Para.gD          = 0.5;
 
-    para.Roll_Para.base_diff    = 25;
     para.Roll_Para.gP           = 1.2;
     para.Roll_Para.gI           = 0.2;
     para.Roll_Para.gI_Max       = 10;
     para.Roll_Para.gI_Min       = -10;
     para.Roll_Para.gD           = 0.5;
 
-    para.GyroX_Para.base_diff   = 200;
     para.GyroX_Para.gP          = 1.3;
     para.GyroX_Para.gI          = 1.6;
     para.GyroX_Para.gI_Max      = 50;
     para.GyroX_Para.gI_Min      = -50;
     para.GyroX_Para.gD          = 1.0;
 
-    para.GyroY_Para.base_diff   = 200;
     para.GyroY_Para.gP          = 1.3;
     para.GyroY_Para.gI          = 1.6;
     para.GyroY_Para.gI_Max      = 50;
     para.GyroY_Para.gI_Min      = -50;
     para.GyroY_Para.gD          = 1.0;
 
-    para.GyroZ_Para.base_diff   = 50;
     para.GyroZ_Para.gP          = 0.8;
     para.GyroZ_Para.gI          = 0.6;
     para.GyroZ_Para.gI_Max      = 50;
@@ -104,8 +99,6 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     ProcessPara.pitch.gD = para.Pitch_Para.gD;
     ProcessPara.pitch.gI_Max = ATTITUDE_INTEGRAL_RANGE;
     ProcessPara.pitch.gI_Min = -ATTITUDE_INTEGRAL_RANGE;
-    ProcessPara.pitch.diff_max = para.Pitch_Para.base_diff;
-    ProcessPara.pitch.diff_min = -para.Pitch_Para.base_diff;
 
     /* attitude pid roll parameter set */
     /* invalid Roll P gain input */
@@ -120,8 +113,6 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     ProcessPara.roll.gD = para.Roll_Para.gD;
     ProcessPara.roll.gI_Max = ATTITUDE_INTEGRAL_RANGE;
     ProcessPara.roll.gI_Min = -ATTITUDE_INTEGRAL_RANGE;
-    ProcessPara.roll.diff_max = para.Roll_Para.base_diff;
-    ProcessPara.roll.diff_min = -para.Roll_Para.base_diff;
 
     /* angular axis X parameter set */
     if (PARA_AMPLIFICATE(para.GyroX_Para.gP) == 0)
@@ -133,8 +124,6 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     ProcessPara.g_x.gP = para.GyroX_Para.gP;
     ProcessPara.g_x.gI = para.GyroX_Para.gI;
     ProcessPara.g_x.gD = para.GyroX_Para.gD;
-    ProcessPara.g_x.diff_max = para.GyroX_Para.base_diff;
-    ProcessPara.g_x.diff_min = -para.GyroX_Para.base_diff;
     
     /* angular axis Y parameter set */
     if (PARA_AMPLIFICATE(para.GyroY_Para.gP) == 0)
@@ -146,8 +135,6 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     ProcessPara.g_y.gP = para.GyroY_Para.gP;
     ProcessPara.g_y.gI = para.GyroY_Para.gI;
     ProcessPara.g_y.gD = para.GyroY_Para.gD;
-    ProcessPara.g_y.diff_max = para.GyroY_Para.base_diff;
-    ProcessPara.g_y.diff_min = -para.GyroY_Para.base_diff;
                    
     /* angular axis Z parameter set */
     if (PARA_AMPLIFICATE(para.GyroZ_Para.gP) == 0)
@@ -159,8 +146,6 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     ProcessPara.g_z.gP = para.GyroZ_Para.gP;
     ProcessPara.g_z.gI = para.GyroZ_Para.gI;
     ProcessPara.g_z.gD = para.GyroZ_Para.gD;
-    ProcessPara.g_z.diff_max = para.GyroZ_Para.base_diff;
-    ProcessPara.g_z.diff_min = -para.GyroZ_Para.base_diff;
 
     RCParam_Tmp.f_cut = ATT_DTRIM_RC_F_CUT;
     PID_Init(&ProcessPara.pitch, RCParam_Tmp);

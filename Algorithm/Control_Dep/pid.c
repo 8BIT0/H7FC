@@ -66,23 +66,11 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float mea_in, c
 
 static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
-    float diff_tmp = 0.0f;
-
     if(p_PIDObj)
     {
         /* limit diff range */
         /* check integer first */
-        diff_tmp = diff;
-        if((int16_t)diff >= (int16_t)p_PIDObj->diff_max)
-        {
-            diff_tmp = p_PIDObj->diff_max;
-        }
-        else if((int16_t)diff <= (int16_t)p_PIDObj->diff_min)
-        {
-            diff_tmp = p_PIDObj->diff_min;
-        }
-
-        p_PIDObj->P_out = diff_tmp * p_PIDObj->gP;
+        p_PIDObj->P_out = diff * p_PIDObj->gP;
         return true;
     }
 

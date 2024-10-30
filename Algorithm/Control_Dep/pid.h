@@ -12,8 +12,6 @@ extern "C" {
 
 typedef struct
 {
-    float base_diff;
-
     float gP;
 
     float gI;
@@ -27,8 +25,6 @@ typedef struct
 {
     float in;       /* input measurement data in physical */
     float exp;      /* expect physical data */
-    float diff_max;
-    float diff_min;
     float fout;
 
     /* add member in this section */
