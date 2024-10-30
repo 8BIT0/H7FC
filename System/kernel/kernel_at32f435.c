@@ -6,6 +6,10 @@
 #define Kernel_EnableIRQ() __asm("cpsie i")
 
 static bool Kernel_TickTimer_Init = false;
+typedef struct
+{
+    uint32_t UID[3];
+} MCU_UID_TypeDef;
 
 extern uint32_t __rom_s;
 extern uint32_t __boot_e;
@@ -35,6 +39,34 @@ bool Kernel_Init(void)
     
     nvic_vector_table_set(NVIC_VECTTAB_FLASH, ((uint32_t)&__boot_e - (uint32_t)&__rom_s));
     __enable_irq();
+
+    /* noticed */
+    /* when use Betaflight Configurator tool IAP flight controller with all disk erase selection on */
+    /* this project will fall into hardfault somehow when procedure on libc_init_array */
+    /* this because ram address been change when doing full disk erase */
+    /* all we need to do is temporary modify .ld file as */                        
+    /* RAM (xrw)       : ORIGIN = 0x20010000, LENGTH = 128K */
+    /* re-compile the project and download to ur flight controller */
+    /* when system boot up successed */
+    /* we can modify RAM Origin address back to default 0x20000000 and length as 384k */
+    /* RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 384K */
+
+    volatile uint8_t *SRAM_Setting = 0x1FFFC010;
+    volatile uint8_t Data = 0b10; /* set as sram 384k */
+    
+    /* data in SRAM_Setting address */
+    /* 0b000：on chip SRAM 512K Byte + ZW 128K Byte */
+    /* 0b001：on chip SRAM 448K Byte + ZW 192K Byte */
+    /* 0b010：on chip SRAM 384K Byte + ZW 256K Byte */
+    /* 0b011：on chip SRAM 320K Byte + ZW 320K Byte */
+    /* 0b100：on chip SRAM 256K Byte + ZW 384K Byte */
+    /* 0b101：on chip SRAM 192K Byte + ZW 448K Byte */
+
+    flash_unlock();
+    flash_user_system_data_erase();
+    flash_user_system_data_program(0x1FFFC010, 0b10);
+    flash_lock();
+    /* noticed */
 
     /* enable tmr1 */
     tmr_counter_enable(TMR20, TRUE);
