@@ -34,71 +34,60 @@ bool PID_Update(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float mea_in, c
     float diff = mea_in - exp_in;
     float out_tmp = 0.0f;
 
-    if(p_PIDObj)
-    {
-        p_PIDObj->in = mea_in;
-        p_PIDObj->exp = exp_in;
+    if (p_PIDObj == NULL)
+        return false;
+    
+    p_PIDObj->in = mea_in;
+    p_PIDObj->exp = exp_in;
 
-        /* feed foward is essential? */
+    /* feed foward is essential? */
 
-        /* if P stage error then PID can`t be use in other progress */
-        if(PID_P_Progress(p_PIDObj, diff))
-        {
-            out_tmp += p_PIDObj->P_out;
-            
-            if(PID_I_Progress(p_PIDObj, diff))
-            {
-                out_tmp += p_PIDObj->I_out;
-            }
+    /* if P stage error then PID can`t be use in other progress */
+    if (!PID_P_Progress(p_PIDObj, diff))
+        return false;
 
-            if(PID_D_Progress(p_PIDObj, sys_ms, diff))
-            {
-                out_tmp += p_PIDObj->D_out;
-            }
+    out_tmp += p_PIDObj->P_out;
+    if(PID_I_Progress(p_PIDObj, diff))
+        out_tmp += p_PIDObj->I_out;
 
-            p_PIDObj->fout = out_tmp;
-            return true;
-        }
-    }
+    if(PID_D_Progress(p_PIDObj, sys_ms, diff))
+        out_tmp += p_PIDObj->D_out;
 
-    return false;
+    p_PIDObj->fout = out_tmp;
+    return true;
 }
 
 static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
-    if(p_PIDObj)
-    {
-        /* limit diff range */
-        /* check integer first */
-        p_PIDObj->P_out = diff * p_PIDObj->gP;
-        return true;
-    }
-
-    return false;
+    if (p_PIDObj == NULL)
+        return false;
+        
+    /* limit diff range */
+    /* check integer first */
+    p_PIDObj->P_out = diff * p_PIDObj->gP;
+    return true;
 }
 
 static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
-    if(p_PIDObj)
+    if (p_PIDObj == NULL)
+        return false;
+        
+    p_PIDObj->Integral += diff;
+
+    /* limit Integral */
+    /* check integer first */
+    if ((int16_t)p_PIDObj->Integral >= (int16_t)p_PIDObj->gI_Max)
     {
-        p_PIDObj->Integral += diff;
-
-        /* limit Integral */
-        /* check integer first */
-        if((int16_t)p_PIDObj->Integral >= (int16_t)p_PIDObj->gI_Max)
-        {
-            p_PIDObj->Integral = p_PIDObj->gI_Max;
-        }
-        else if((int16_t)p_PIDObj->Integral <= (int16_t)p_PIDObj->gI_Min)
-        {
-            p_PIDObj->Integral = p_PIDObj->gI_Min;
-        }
-
-        p_PIDObj->I_out = p_PIDObj->gI * p_PIDObj->Integral;
-        return true;
+        p_PIDObj->Integral = p_PIDObj->gI_Max;
+    }
+    else if ((int16_t)p_PIDObj->Integral <= (int16_t)p_PIDObj->gI_Min)
+    {
+        p_PIDObj->Integral = p_PIDObj->gI_Min;
     }
 
-    return false;
+    p_PIDObj->I_out = p_PIDObj->gI * p_PIDObj->Integral;
+    return true;
 }
 
 static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float diff)
@@ -108,14 +97,11 @@ static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const floa
     float derivative = diff - p_PIDObj->lst_diff;
     // derivative = RCFilter.update((RC_Object_Handle)&(p_PIDObj->Dtrim_RC), derivative);
 
-    if(p_PIDObj)
-    {
-        p_PIDObj->D_out = p_PIDObj->gD * derivative;
-
-        p_PIDObj->lst_diff = diff;
-        return true;
-    }
-
-    return false;
+    if (p_PIDObj == NULL)
+        return false;
+    
+    p_PIDObj->D_out = p_PIDObj->gD * derivative;
+    p_PIDObj->lst_diff = diff;
+    return true;
 }
 
