@@ -9,6 +9,9 @@ static bool Kernel_TickTimer_Init = false;
 typedef struct
 {
     uint32_t UID[3];
+    /* UID Address 1 0x1FFFF7E8 */
+    /* UID Address 2 0x1FFFF7EC */
+    /* UID Address 3 0x1FFFF7F0 */
 } MCU_UID_TypeDef;
 
 extern uint32_t __rom_s;
