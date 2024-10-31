@@ -25,6 +25,7 @@ bool Kernel_Set_SysTimer_TickUnit(uint32_t unit);
 uint32_t Kernel_Get_SysTimer_TickUnit(void);
 uint32_t Kernel_Get_PeriodValue(void);
 uint32_t Kernel_TickVal_To_Us(void);
+Kernel_UID_TypeDef Kernel_Get_UID(void);
 
 #ifdef __cplusplus
 }

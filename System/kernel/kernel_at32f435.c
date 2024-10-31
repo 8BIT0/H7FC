@@ -102,6 +102,11 @@ void Kernel_Read_UID(void)
     UID.UID[2] = *(uint32_t *)UID_Addr_tmp;
 }
 
+Kernel_UID_TypeDef Kernel_Get_UID(void)
+{
+    return UID;
+}
+
 void Kernel_reboot(void)
 {
     __set_FAULTMASK(1);
