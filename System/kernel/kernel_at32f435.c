@@ -53,8 +53,9 @@ bool Kernel_Init(void)
     /* we can modify RAM Origin address back to default 0x20000000 and length as 384k */
     /* RAM (xrw)       : ORIGIN = 0x20000000, LENGTH = 384K */
 
-    volatile uint8_t *SRAM_Setting = 0x1FFFC010;
-    volatile uint8_t Data = 0b10; /* set as sram 384k */
+    /* volatile uint8_t *SRAM_Setting = 0x1FFFC010; */
+    /* set as sram 384k */
+    /* volatile uint8_t Data = 0b10; */
     
     /* data in SRAM_Setting address */
     /* 0b000：on chip SRAM 512K Byte + ZW 128K Byte */
