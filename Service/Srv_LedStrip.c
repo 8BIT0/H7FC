@@ -9,18 +9,40 @@
 #define SrvLedStrip_Malloc(size) SrvOsCommon.malloc(size)
 #define SrvLedStrip_Free(ptr) SrvOsCommon.free(ptr)
 
+/* internal function */
+static bool Srv_LedStrip_PortInit(void *obj);
+static bool Srv_LedStrip_Trans(void *port_obj);
+
+typedef struct
+{
+    bool init;
 #if defined AT32F435_437
-osSemaphoreId SrvLedStrip_Sem = NULL;
+    osSemaphoreId Sem;
 #endif
+    uint8_t num;
+} SrvLedStrip_Monitor_TypeDef;
+
+static SrvLedStrip_Monitor_TypeDef Monitor = {
+#if defined AT32F435_437
+    .Sem = NULL,
+#endif
+    .init = false,
+    .num = 0,
+};
 
 static DevWS2812Obj_TypeDef WS2812Obj = {
     .bus = WS2812_Bus_Timer,
     .port_Obj = NULL,
-    .num = 6,
 };
 
-static bool Srv_LedStrip_Init(void)
+static bool Srv_LedStrip_Init(uint8_t led_num)
 {
+    if (led_num == 0)
+        return false;
+
+    Monitor.num = led_num;
+    Monitor.init = false;
+
     WS2812Obj.p_malloc = SrvOsCommon.malloc;
     WS2812Obj.p_free = SrvOsCommon.free;
 
@@ -32,8 +54,22 @@ static bool Srv_LedStrip_Init(void)
 
 #if defined AT32F435_437
     osSemaphoreDef(LedStrip_Sem);
-    SrvLedStrip_Sem = osSemaphoreCreate(osSemaphore(LedStrip_Sem), 1);
+    Monitor.Sem = osSemaphoreCreate(osSemaphore(LedStrip_Sem), 1);
+
+    if (Monitor.Sem == NULL)
+    {
+        SrvLedStrip_Free(To_TimerPWMObj_Ptr(WS2812Obj.port_Obj)->dma_callback_obj);
+        SrvLedStrip_Free(To_TimerPWMObj_Ptr(WS2812Obj.port_Obj));
+        SrvLedStrip_Free(WS2812Obj.port_Obj);
+        return false;
+    }
 #endif
+    
+    WS2812Obj.port_init = Srv_LedStrip_PortInit;
+    WS2812Obj.port_send = Srv_LedStrip_Trans;
+
+    Monitor.init = true;
+    return true;
 }
 
 static void Srv_LedStrip_Polling(void)
@@ -41,15 +77,28 @@ static void Srv_LedStrip_Polling(void)
 
 }
 
+/********************************** Timer Port Init ******************************** */
 #if defined AT32F435_437
 static void Srv_LedStrip_TransFin(void)
 {
-    if (SrvLedStrip_Sem)
-        osSemaphoreRelease(SrvLedStrip_Sem);
+    if (Monitor.Sem)
+        osSemaphoreRelease(Monitor.Sem);
 }
 #endif
 
-/********************************** Timer Port Init ******************************** */
+static bool Srv_LedStrip_Trans(void *port_obj)
+{
+    if (port_obj == NULL)
+        return false;
+
+    BspTimer_PWM.dma_trans(To_TimerPWMObj_Ptr(port_obj));
+#if defined AT32F435_437
+    if (Monitor.Sem)
+        osSemaphoreWait(Monitor.Sem, 1);
+#endif
+    return true;
+}
+
 static bool Srv_LedStrip_PortInit(void *obj)
 {
     BspGPIO_Obj_TypeDef strip_pin;
@@ -58,7 +107,6 @@ static bool Srv_LedStrip_PortInit(void *obj)
     if (To_WS2812Obj_Ptr(obj)->bus == WS2812_Bus_Timer)
     {
         uint32_t perscaler = 0;
-        uint32_t auto_reload = 0;
         BspTimerPWMObj_TypeDef *pwm_obj_tmp = NULL;
         volatile uint32_t tmr_clock = 0;
 
@@ -70,6 +118,7 @@ static bool Srv_LedStrip_PortInit(void *obj)
         }
 
         pwm_obj_tmp = To_TimerPWMObj_Ptr(To_WS2812Obj_Ptr(obj)->port_Obj);
+#if defined AT32F435_437
         pwm_obj_tmp->dma_callback_obj = SrvLedStrip_Malloc(sizeof(BspDMA_IrqCall_Obj_TypeDef));
         if (pwm_obj_tmp->dma_callback_obj == NULL)
         {
@@ -77,7 +126,9 @@ static bool Srv_LedStrip_PortInit(void *obj)
             SrvLedStrip_Free(pwm_obj_tmp);
             return false;
         }
-        
+        pwm_obj_tmp->send_callback = Srv_LedStrip_TransFin;
+#endif
+
         tmr_clock = BspTimer_PWM.get_clock_freq(pwm_obj_tmp);
         if (tmr_clock < WS2812_CLOCK)
         {
@@ -104,3 +155,4 @@ static bool Srv_LedStrip_PortInit(void *obj)
 
     return false;
 }
+
