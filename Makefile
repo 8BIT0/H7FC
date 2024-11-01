@@ -83,6 +83,7 @@ Device/Dev_ICM426xx.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
 Device/Dev_W25Nxx.c \
+Device/Dev_WS2812.c \
 Device/Dev_Sbus.c \
 Device/Dev_CRSF.c \
 Device/Dev_Dshot.c \
@@ -100,6 +101,7 @@ Service/Srv_Upgrade.c \
 Service/Srv_BlackBox_Chip.c \
 Service/Srv_BlackBox_Card.c \
 Service/Srv_BlackBox_Port.c \
+Service/Srv_LedStrip.c \
 DataStructure/Data_Convert_Util.c \
 DataStructure/CusQueue.c \
 DataStructure/linked_list.c \

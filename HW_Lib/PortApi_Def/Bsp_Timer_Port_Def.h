@@ -13,6 +13,7 @@ typedef void (*BspTimer_Tick_Callback)(const uint32_t tick);
 typedef void (*BspTimer_DMA_SendCallback)(void);
 
 #define To_TimerPWMObj_Ptr(x) ((BspTimerPWMObj_TypeDef *) x)
+#define TimerPWMObj_Size sizeof(BspTimerPWMObj_TypeDef)
 
 typedef union
 {
