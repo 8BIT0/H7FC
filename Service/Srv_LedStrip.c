@@ -83,12 +83,12 @@ static bool Srv_LedStrip_Init(uint8_t led_num)
     WS2812Obj.port_send = Srv_LedStrip_Trans;
 
     Monitor.init = true;
-    DevWS2812.write(&WS2812Obj, WS2812_GHOSTWHITE);
-    DevWS2812.write(&WS2812Obj, WS2812_TEST);
-    DevWS2812.write(&WS2812Obj, WS2812_TEST);
-    DevWS2812.write(&WS2812Obj, WS2812_TEST);
-    DevWS2812.write(&WS2812Obj, WS2812_TEST);
-    DevWS2812.write(&WS2812Obj, WS2812_TEST);
+    DevWS2812.write(&WS2812Obj, WS2812_SNOWWHITE);
+    DevWS2812.write(&WS2812Obj, WS2812_NONE);
+    DevWS2812.write(&WS2812Obj, WS2812_NONE);
+    DevWS2812.write(&WS2812Obj, WS2812_NONE);
+    DevWS2812.write(&WS2812Obj, WS2812_NONE);
+    DevWS2812.write(&WS2812Obj, WS2812_NONE);
     return true;
 }
 
