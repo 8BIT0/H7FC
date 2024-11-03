@@ -1,5 +1,6 @@
 #include "Srv_OsCommon.h"
 #include "Srv_LedStrip.h"
+#include "Srv_DataHub.h"
 #include "Dev_WS2812.h"
 #include "Bsp_Timer.h"
 #include "Bsp_GPIO.h"
@@ -22,6 +23,7 @@ typedef struct
     uint8_t num;
 } SrvLedStrip_Monitor_TypeDef;
 
+/* internal vriable */
 static SrvLedStrip_Monitor_TypeDef Monitor = {
 #if defined AT32F435_437
     .Sem = NULL,
@@ -35,6 +37,16 @@ static DevWS2812Obj_TypeDef WS2812Obj = {
     .port_Obj = NULL,
 };
 
+/* external function */
+static bool Srv_LedStrip_Init(uint8_t led_num);
+static void Srv_LedStrip_Polling(void);
+
+/* external vriable */
+SrvLedStrip_TypeDef SrvLedStrip = {
+    .init = Srv_LedStrip_Init,
+    .polling = Srv_LedStrip_Polling,
+};
+
 static bool Srv_LedStrip_Init(uint8_t led_num)
 {
     if (led_num == 0)
@@ -45,6 +57,8 @@ static bool Srv_LedStrip_Init(uint8_t led_num)
 
     WS2812Obj.p_malloc = SrvOsCommon.malloc;
     WS2812Obj.p_free = SrvOsCommon.free;
+    WS2812Obj.port_init = Srv_LedStrip_PortInit;
+    WS2812Obj.port_send = Srv_LedStrip_Trans;
 
     if (!DevWS2812.init(&WS2812Obj))
     {
@@ -69,12 +83,24 @@ static bool Srv_LedStrip_Init(uint8_t led_num)
     WS2812Obj.port_send = Srv_LedStrip_Trans;
 
     Monitor.init = true;
+    DevWS2812.write(&WS2812Obj, WS2812_GHOSTWHITE);
+    DevWS2812.write(&WS2812Obj, WS2812_TEST);
+    DevWS2812.write(&WS2812Obj, WS2812_TEST);
+    DevWS2812.write(&WS2812Obj, WS2812_TEST);
+    DevWS2812.write(&WS2812Obj, WS2812_TEST);
+    DevWS2812.write(&WS2812Obj, WS2812_TEST);
     return true;
 }
 
 static void Srv_LedStrip_Polling(void)
 {
+    if (!Monitor.init || \
+        (DevWS2812.write == NULL))
+        return;
 
+    for (uint8_t i = 0; i < Monitor.num; i ++)
+    {
+    }
 }
 
 /********************************** Timer Port Init ******************************** */

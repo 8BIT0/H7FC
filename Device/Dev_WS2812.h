@@ -7,11 +7,15 @@
 
 #define WS2812_DATA_SIZE    24
 #define WS2812_CLOCK        100000000.0 /* unit: Hz */
-#define WS2812_PERIOD       1000        /* unit: ns */
+#define WS2812_PERIOD       100         /* unit: ns */
 
 #define WS2812_BLACK        (RGB_TypeDef){10, 255, 255, 255}
 #define WS2812_GHOSTWHITE   (RGB_TypeDef){10, 248, 248, 255}
 #define WS2812_SNOWWHITE    (RGB_TypeDef){10, 255, 250, 250}
+#define WS2812_TEST         (RGB_TypeDef){10, 0,   0,   0}
+
+#define WS2812_T0H          25
+#define WS2812_T1H          75
 
 /* reset period at least 280us */
 /* T0L 580ns ~ 1us   -> choose 750ns */
@@ -73,7 +77,7 @@ typedef struct
 typedef struct
 {
     bool (*init)(DevWS2812Obj_TypeDef *p_obj);
-    bool (*write)(DevWS2812Obj_TypeDef *p_obj, uint8_t id,  RGB_TypeDef rgb);
+    bool (*write)(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb);
 } DevWS2812_TypeDef;
 
 extern DevWS2812_TypeDef DevWS2812;

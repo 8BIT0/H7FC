@@ -12,6 +12,7 @@
 #include "DiskIO.h"
 #include "Srv_ComProto.h"
 #include "Srv_OsCommon.h"
+#include "Srv_LedStrip.h"
 #include "../DataPipe/DataPipe.h"
 #include "shell_port.h"
 #include "Storage.h"
@@ -106,9 +107,9 @@ void Task_Manager_CreateTask(void const *arg)
             DEBUG_INFO("Sys Time: %d\r\n", sys_time);
 
             DataPipe_Init();
-
             Storage.init(storage_ExtFlashObj);
             SrvUpgrade.init();
+            SrvLedStrip.init(6);
             SrvComProto.init(SrvComProto_Type_MAV, NULL);
             
             TaskSample_Init(TaskSample_Period_Def);
@@ -149,6 +150,8 @@ void Task_Manager_CreateTask(void const *arg)
 
             init = true;
         }
+
+        SrvLedStrip.polling();
 
         /* run system statistic in this task */
         osDelay(10);

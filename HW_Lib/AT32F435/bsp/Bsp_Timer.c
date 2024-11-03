@@ -52,7 +52,17 @@ BspTimerPWM_TypeDef BspTimer_PWM = {
 
 static bool BspTimer_Clock_EnableCtl(void *instance, confirm_state state)
 {
-    if (To_Timer_Instance(instance) == TMR2)
+    if (To_Timer_Instance(instance) == TMR1)
+    {
+        if (!monitor.clk_en.bit.tim1)
+        {
+            crm_periph_clock_enable(CRM_TMR1_PERIPH_CLOCK, state);
+            monitor.clk_en.bit.tim1 = true;
+        }
+    
+        return true;
+    }
+    else if (To_Timer_Instance(instance) == TMR2)
     {
         if (!monitor.clk_en.bit.tim2)
         {
@@ -100,6 +110,21 @@ static dmamux_requst_id_sel_type BspTimer_Get_DMA_MuxSeq(BspTimerPWMObj_TypeDef 
 {
     if (obj)
     {
+        if (To_Timer_Instance(obj->instance) == TMR1)
+        {
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_1)
+                return DMAMUX_DMAREQ_ID_TMR1_CH1;
+            
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_2)
+                return DMAMUX_DMAREQ_ID_TMR1_CH2;
+            
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_3)
+                return DMAMUX_DMAREQ_ID_TMR1_CH3;
+            
+            if (obj->tim_channel == TMR_SELECT_CHANNEL_4)
+                return DMAMUX_DMAREQ_ID_TMR1_CH4;
+        }
+
         if (To_Timer_Instance(obj->instance) == TMR2)
         {
             if (obj->tim_channel == TMR_SELECT_CHANNEL_1)
