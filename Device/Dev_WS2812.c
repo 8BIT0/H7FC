@@ -1,7 +1,15 @@
 #include "Dev_WS2812.h"
 
+/* external function */
 static bool Dev_WS2812_Init(DevWS2812Obj_TypeDef *p_obj);
 static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb);
+
+/* internal function */
+static bool Dev_WS2812_Set_Bright(DevWS2812Obj_TypeDef *p_obj);
+static float find_min(float a, float b, float c);
+static float find_max(float a, float b, float c);
+void rgb2hsv(unsigned char  r, unsigned char  g, unsigned char  b, float  *h, float  *s, float  *v);
+void hsv2rgb(float  h, float  s, float  v, unsigned char  *r, unsigned char  *g, unsigned char  *b);
 
 DevWS2812_TypeDef DevWS2812 = {
     .init = Dev_WS2812_Init,
@@ -32,6 +40,12 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb)
         return false;
 
     p_obj->RGB = rgb;
+    if (p_obj->RGB.bright > WS2812_MAX_BRIGHT)
+        p_obj->RGB.bright = WS2812_MAX_BRIGHT;
+
+    if (!Dev_WS2812_Set_Bright(p_obj))
+        return false;
+
     data[0] = p_obj->RGB.G;
     data[1] = p_obj->RGB.R;
     data[2] = p_obj->RGB.B;
@@ -47,4 +61,109 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb)
 
     return p_obj->port_send(p_obj->port_Obj);
 }
+
+static bool Dev_WS2812_Set_Bright(DevWS2812Obj_TypeDef *p_obj)
+{
+    if (p_obj == NULL)
+        return false;
+
+    return true;
+}
+
+static float find_min(float a, float b, float c)
+{
+	float m;
+	
+	m = a < b ? a : b;
+	return (m < c ? m : c); 
+}
+
+static float find_max(float a, float b, float c)
+{
+	float m;
+	
+	m = a > b ? a : b;
+	return (m > c ? m : c); 
+}
+  
+void rgb2hsv(unsigned char  r, unsigned char  g, unsigned char  b, float  *h, float  *s, float  *v)
+{
+	float  red, green ,blue;
+	float  cmax, cmin, delta;
+	
+	red = (float)r / UINT8_MAX;
+	green = (float)g / UINT8_MAX;
+	blue = (float)b / UINT8_MAX;
+	
+	cmax = find_max(red, green, blue);
+	cmin = find_min(red, green, blue);
+	delta = cmax - cmin;
+	
+	/* H */
+	if (delta == 0)
+	{
+		*h = 0;
+	}
+	else
+	{
+		if (cmax == red)
+		{
+			if (green >= blue)
+			{
+				*h = 60 * ((green - blue) / delta);
+			}
+			else
+			{
+				*h = 60 * ((green - blue) / delta) + 360;
+			}
+		}
+		else if (cmax == green)
+		{
+			*h = 60 * ((blue - red) / delta + 2);
+		}
+		else if (cmax == blue) 
+		{
+			*h = 60 * ((red - green) / delta + 4);
+		}
+	}
+	
+	/* S */
+	if (cmax == 0)
+	{
+		*s = 0;
+	}
+	else
+		*s = delta / cmax;
+	
+	/* V */
+	*v = cmax;
+}
+
+static void cnv2rgb(float gain1, float gain2, float gain3, uint8_t *r, uint8_t *g, uint8_t *b)
+{
+    *r = UINT8_MAX * gain1;
+    *g = UINT8_MAX * gain2;
+    *b = UINT8_MAX * gain3;
+}
+
+void hsv2rgb(float  h, float  s, float  v, uint8_t *r, uint8_t *g, uint8_t *b)
+{
+    int  hi = ((int)h / 60) % 6;
+    float  f = h * 1.0 / 60 - hi;
+    float  p = v * (1 - s);
+    float  q = v * (1 - f * s);
+    float  t = v * (1- (1 - f) * s);
+
+    switch (hi)
+	{
+        case 0: cnv2rgb(v, t, p, r, g, b); break;
+        case 1: cnv2rgb(q, v, p, r, g, b); break;
+        case 2: cnv2rgb(p, v, t, r, g, b); break;
+        case 3: cnv2rgb(p, q, v, r, g, b); break;
+        case 4: cnv2rgb(t, p, v, r, g, b); break;
+        case 5: cnv2rgb(v, p, q, r, g, b); break;
+        default: break;
+    }
+}
+
 

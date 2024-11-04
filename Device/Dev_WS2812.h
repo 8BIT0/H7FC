@@ -8,6 +8,7 @@
 #define WS2812_DATA_SIZE    24
 #define WS2812_CLOCK        100000000.0 /* unit: Hz */
 #define WS2812_PERIOD       99          /* unit: ns */
+#define WS2812_MAX_BRIGHT   100
 
 #define WS2812_BLACK        (RGB_TypeDef){10, 255, 255, 255}
 #define WS2812_GHOSTWHITE   (RGB_TypeDef){10, 248, 248, 255}
@@ -15,8 +16,8 @@
 #define WS2812_GREEN        (RGB_TypeDef){10, 10,  10,  10}
 #define WS2812_NONE         (RGB_TypeDef){10, 0,   0,   0}
 
-#define WS2812_T0H          24
-#define WS2812_T1H          74
+#define WS2812_T0H          29
+#define WS2812_T1H          69
 
 /* reset period at least 280us */
 /* T0L 580ns ~ 1us   -> choose 750ns */
