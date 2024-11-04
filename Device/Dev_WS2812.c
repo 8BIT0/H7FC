@@ -8,8 +8,8 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb);
 static bool Dev_WS2812_Set_Bright(DevWS2812Obj_TypeDef *p_obj);
 static float find_min(float a, float b, float c);
 static float find_max(float a, float b, float c);
-void rgb2hsv(unsigned char  r, unsigned char  g, unsigned char  b, float  *h, float  *s, float  *v);
-void hsv2rgb(float  h, float  s, float  v, unsigned char  *r, unsigned char  *g, unsigned char  *b);
+void rgb2hsv(uint8_t r, uint8_t g, uint8_t b, float  *h, float  *s, float  *v);
+void hsv2rgb(float  h, float  s, float  v, uint8_t *r, uint8_t *g, uint8_t *b);
 
 DevWS2812_TypeDef DevWS2812 = {
     .init = Dev_WS2812_Init,
@@ -50,6 +50,9 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb)
     data[1] = p_obj->RGB.R;
     data[2] = p_obj->RGB.B;
 
+    /* convert to HSV */
+    rgb2hsv(p_obj->RGB.R, p_obj->RGB.G, p_obj->RGB.B, &p_obj->HSV.H, &p_obj->HSV.S, &p_obj->HSV.V);
+
     for (uint8_t i = 0; i < WS2812_DATA_SIZE; i ++)
     {
         bit = 0x00;
@@ -86,7 +89,7 @@ static float find_max(float a, float b, float c)
 	return (m > c ? m : c); 
 }
   
-void rgb2hsv(unsigned char  r, unsigned char  g, unsigned char  b, float  *h, float  *s, float  *v)
+void rgb2hsv(uint8_t r, uint8_t g, uint8_t b, float  *h, float  *s, float  *v)
 {
 	float  red, green ,blue;
 	float  cmax, cmin, delta;

@@ -64,9 +64,17 @@ typedef struct
 
 typedef struct
 {
+    float H;
+    float S;
+    float V;
+} HSV_TypeDef;
+
+typedef struct
+{
     WS2812Bus_Type_List bus;
 
     RGB_TypeDef RGB;
+    HSV_TypeDef HSV;
     uint32_t ctl_data[WS2812_DATA_SIZE];
 
     void *port_Obj;
