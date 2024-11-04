@@ -128,12 +128,9 @@ void rgb2hsv(unsigned char  r, unsigned char  g, unsigned char  b, float  *h, fl
 	}
 	
 	/* S */
+    *s = delta / cmax;
 	if (cmax == 0)
-	{
 		*s = 0;
-	}
-	else
-		*s = delta / cmax;
 	
 	/* V */
 	*v = cmax;
