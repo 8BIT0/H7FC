@@ -108,14 +108,9 @@ void rgb2hsv(unsigned char  r, unsigned char  g, unsigned char  b, float  *h, fl
 	{
 		if (cmax == red)
 		{
+            *h = 60 * ((green - blue) / delta) + 360;
 			if (green >= blue)
-			{
 				*h = 60 * ((green - blue) / delta);
-			}
-			else
-			{
-				*h = 60 * ((green - blue) / delta) + 360;
-			}
 		}
 		else if (cmax == green)
 		{
