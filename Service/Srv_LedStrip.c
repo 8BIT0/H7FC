@@ -55,6 +55,7 @@ static bool Srv_LedStrip_Init(uint8_t led_num)
     Monitor.num = led_num;
     Monitor.init = false;
 
+    WS2812Obj.led_num = led_num;
     WS2812Obj.p_malloc = SrvOsCommon.malloc;
     WS2812Obj.p_free = SrvOsCommon.free;
     WS2812Obj.port_init = Srv_LedStrip_PortInit;
@@ -81,7 +82,7 @@ static bool Srv_LedStrip_Init(uint8_t led_num)
     
     WS2812Obj.port_init = Srv_LedStrip_PortInit;
     WS2812Obj.port_send = Srv_LedStrip_Trans;
-
+    
     Monitor.init = true;
     return true;
 }
@@ -89,13 +90,21 @@ static bool Srv_LedStrip_Init(uint8_t led_num)
 static void Srv_LedStrip_Polling(void)
 {
     if (!Monitor.init || \
-        (DevWS2812.write == NULL))
+        (DevWS2812.set == NULL) || \
+        (DevWS2812.trans == NULL))
         return;
 
     // for (uint8_t i = 0; i < Monitor.num; i ++)
     // {
-        DevWS2812.write(&WS2812Obj, WS2812_SNOWWHITE);
+        DevWS2812.set(&WS2812Obj, 0, WS2812_SNOWWHITE);
+        DevWS2812.set(&WS2812Obj, 1, WS2812_NONE);
+        DevWS2812.set(&WS2812Obj, 2, WS2812_SNOWWHITE);
+        DevWS2812.set(&WS2812Obj, 3, WS2812_NONE);
+        DevWS2812.set(&WS2812Obj, 4, WS2812_NONE);
+        DevWS2812.set(&WS2812Obj, 5, WS2812_SNOWWHITE);
     // }
+
+    DevWS2812.trans(&WS2812Obj);
 }
 
 /********************************** Timer Port Init ******************************** */
@@ -167,7 +176,7 @@ static bool Srv_LedStrip_PortInit(void *obj)
         if (!BspTimer_PWM.init(pwm_obj_tmp, LED_STRIP_TIM, LED_STRIP_TIM_CHANNEL,\
                                WS2812_PERIOD, perscaler, strip_pin,\
                                LED_STRIP_DMA, LED_STRIP_DMA_CHANNEL, \
-                               (uint32_t)To_WS2812Obj_Ptr(obj)->ctl_data, WS2812_DATA_SIZE))
+                               (uint32_t)To_WS2812Obj_Ptr(obj)->buff, WS2812_DATA_SIZE * To_WS2812Obj_Ptr(obj)->led_num))
             return false;
 
         BspTimer_PWM.set_dma_pwm(pwm_obj_tmp);

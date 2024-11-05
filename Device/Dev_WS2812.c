@@ -2,7 +2,8 @@
 
 /* external function */
 static bool Dev_WS2812_Init(DevWS2812Obj_TypeDef *p_obj);
-static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb);
+static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, uint8_t index, RGB_TypeDef rgb);
+static bool Dev_WS2812_Trans(DevWS2812Obj_TypeDef *p_obj);
 
 /* internal function */
 static bool Dev_WS2812_Set_Bright(DevWS2812Obj_TypeDef *p_obj);
@@ -13,16 +14,26 @@ void hsv2rgb(float  h, float  s, float  v, uint8_t *r, uint8_t *g, uint8_t *b);
 
 DevWS2812_TypeDef DevWS2812 = {
     .init = Dev_WS2812_Init,
-    .write = Dev_WS2812_Write,
+    .set = Dev_WS2812_Write,
+    .trans = Dev_WS2812_Trans,
 };
 
 static bool Dev_WS2812_Init(DevWS2812Obj_TypeDef *p_obj)
 {
     if ((p_obj == NULL) || \
+        (p_obj->led_num == NULL) || \
         (p_obj->port_init == NULL) || \
         (p_obj->port_send == NULL) || \
-        !p_obj->port_init(p_obj))
+        (p_obj->p_malloc == NULL) || \
+        (p_obj->p_free == NULL))
         return false;
+
+    p_obj->buff = p_obj->p_malloc(sizeof(WS2812_CtlData_TypeDef) * p_obj->led_num);
+    if ((p_obj->buff == NULL) || !p_obj->port_init(p_obj))
+    {
+        p_obj->p_free(p_obj->buff);
+        return false;
+    }
 
     /* set default color */
     p_obj->RGB = WS2812_GHOSTWHITE;
@@ -30,14 +41,16 @@ static bool Dev_WS2812_Init(DevWS2812Obj_TypeDef *p_obj)
     return true;
 }
 
-static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb)
+static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, uint8_t index, RGB_TypeDef rgb)
 {
     uint8_t data[3] = {0};
     uint8_t bit = 0x00;
     float bright_pct = 0.0f;
 
     if ((p_obj == NULL) || \
-        (p_obj->port_send == NULL))
+        (p_obj->port_send == NULL) || \
+        (p_obj->buff == NULL) || \
+        (index >= p_obj->led_num))
         return false;
 
     p_obj->RGB = rgb;
@@ -61,11 +74,22 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb)
     for (uint8_t i = 0; i < WS2812_DATA_SIZE; i ++)
     {
         bit = 0x00;
-        p_obj->ctl_data[i] = WS2812_T0H;
+        p_obj->buff[index].ctl_data[i] = WS2812_T0H;
         bit |= 1 << (7 - (i % 8));
         if (data[i / 8] & bit)
-            p_obj->ctl_data[i] = WS2812_T1H;
+            p_obj->buff[index].ctl_data[i] = WS2812_T1H;
     }
+
+    return true;
+}
+
+static bool Dev_WS2812_Trans(DevWS2812Obj_TypeDef *p_obj)
+{
+    if ((p_obj == NULL) || \
+        (p_obj->led_num == NULL) || \
+        (p_obj->buff == NULL) || \
+        (p_obj->port_send == NULL))
+        return false;
 
     return p_obj->port_send(p_obj->port_Obj);
 }
