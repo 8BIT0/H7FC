@@ -54,10 +54,7 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, uint8_t index, RGB_Typ
         return false;
 
     p_obj->RGB = rgb;
-    if (p_obj->RGB.bright > WS2812_MAX_BRIGHT)
-        p_obj->RGB.bright = WS2812_MAX_BRIGHT;
-
-    bright_pct = p_obj->RGB.bright / (float)WS2812_MAX_BRIGHT;
+    bright_pct = (float)(p_obj->RGB.bright / UINT8_MAX);
 
     if (!Dev_WS2812_Set_Bright(p_obj))
         return false;

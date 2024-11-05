@@ -8,7 +8,6 @@
 #define WS2812_DATA_SIZE        24
 #define WS2812_CLOCK            144000000.0 /* unit: Hz */
 #define WS2812_PERIOD           130         /* unit: ns */
-#define WS2812_MAX_BRIGHT       100
 
 #define WS2812_BLACK            (RGB_TypeDef){100, 255, 255, 255}
 #define WS2812_GHOSTWHITE       (RGB_TypeDef){100, 248, 248, 255}
@@ -55,7 +54,7 @@ typedef enum
 
 typedef struct
 {
-    uint16_t bright;
+    uint8_t bright;
 
     uint8_t R;
     uint8_t G;
