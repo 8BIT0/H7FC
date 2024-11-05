@@ -65,7 +65,7 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, uint8_t index, RGB_Typ
 
     /* convert to HSV */
     rgb2hsv(p_obj->RGB.R, p_obj->RGB.G, p_obj->RGB.B, &p_obj->HSV.H, &p_obj->HSV.S, &p_obj->HSV.V);
-    p_obj->HSV.V *= bright_pct;
+    p_obj->HSV.V = bright_pct;
     hsv2rgb(p_obj->HSV.H, p_obj->HSV.S, p_obj->HSV.V, &p_obj->RGB.R, &p_obj->RGB.G, &p_obj->RGB.B);
 
     for (uint8_t i = 0; i < WS2812_DATA_SIZE; i ++)
