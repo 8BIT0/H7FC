@@ -34,6 +34,7 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb)
 {
     uint8_t data[3] = {0};
     uint8_t bit = 0x00;
+    float bright_pct = 0.0f;
 
     if ((p_obj == NULL) || \
         (p_obj->port_send == NULL))
@@ -42,6 +43,8 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb)
     p_obj->RGB = rgb;
     if (p_obj->RGB.bright > WS2812_MAX_BRIGHT)
         p_obj->RGB.bright = WS2812_MAX_BRIGHT;
+
+    bright_pct = p_obj->RGB.bright / (float)WS2812_MAX_BRIGHT;
 
     if (!Dev_WS2812_Set_Bright(p_obj))
         return false;
@@ -52,6 +55,8 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, RGB_TypeDef rgb)
 
     /* convert to HSV */
     rgb2hsv(p_obj->RGB.R, p_obj->RGB.G, p_obj->RGB.B, &p_obj->HSV.H, &p_obj->HSV.S, &p_obj->HSV.V);
+    p_obj->HSV.V *= bright_pct;
+    hsv2rgb(p_obj->HSV.H, p_obj->HSV.S, p_obj->HSV.V, &p_obj->RGB.R, &p_obj->RGB.G, &p_obj->RGB.B);
 
     for (uint8_t i = 0; i < WS2812_DATA_SIZE; i ++)
     {
@@ -119,7 +124,7 @@ void rgb2hsv(uint8_t r, uint8_t g, uint8_t b, float  *h, float  *s, float  *v)
 		{
 			*h = 60 * ((blue - red) / delta + 2);
 		}
-		else if (cmax == blue) 
+		else if (cmax == blue)
 		{
 			*h = 60 * ((red - green) / delta + 4);
 		}

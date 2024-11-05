@@ -6,18 +6,18 @@
 #include <stdbool.h>
 
 #define WS2812_DATA_SIZE    24
-#define WS2812_CLOCK        100000000.0 /* unit: Hz */
-#define WS2812_PERIOD       99          /* unit: ns */
+#define WS2812_CLOCK        144000000.0 /* unit: Hz */
+#define WS2812_PERIOD       98          /* unit: ns */
 #define WS2812_MAX_BRIGHT   100
 
-#define WS2812_BLACK        (RGB_TypeDef){10, 255, 255, 255}
-#define WS2812_GHOSTWHITE   (RGB_TypeDef){10, 248, 248, 255}
-#define WS2812_SNOWWHITE    (RGB_TypeDef){10, 255, 250, 250}
-#define WS2812_GREEN        (RGB_TypeDef){10, 10,  10,  10}
-#define WS2812_NONE         (RGB_TypeDef){10, 0,   0,   0}
+#define WS2812_BLACK        (RGB_TypeDef){100, 255, 255, 255}
+#define WS2812_GHOSTWHITE   (RGB_TypeDef){100, 248, 248, 255}
+#define WS2812_SNOWWHITE    (RGB_TypeDef){100, 255, 250, 250}
+#define WS2812_GREEN        (RGB_TypeDef){100, 10,  10,  10}
+#define WS2812_NONE         (RGB_TypeDef){100, 0,   0,   0}
 
-#define WS2812_T0H          29
-#define WS2812_T1H          69
+#define WS2812_T0H          38
+#define WS2812_T1H          75
 
 /* reset period at least 280us */
 /* T0L 580ns ~ 1us   -> choose 750ns */

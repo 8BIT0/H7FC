@@ -83,12 +83,6 @@ static bool Srv_LedStrip_Init(uint8_t led_num)
     WS2812Obj.port_send = Srv_LedStrip_Trans;
 
     Monitor.init = true;
-    DevWS2812.write(&WS2812Obj, WS2812_NONE);
-    DevWS2812.write(&WS2812Obj, WS2812_NONE);
-    DevWS2812.write(&WS2812Obj, WS2812_SNOWWHITE);
-    DevWS2812.write(&WS2812Obj, WS2812_NONE);
-    DevWS2812.write(&WS2812Obj, WS2812_NONE);
-    DevWS2812.write(&WS2812Obj, WS2812_NONE);
     return true;
 }
 
@@ -98,9 +92,10 @@ static void Srv_LedStrip_Polling(void)
         (DevWS2812.write == NULL))
         return;
 
-    for (uint8_t i = 0; i < Monitor.num; i ++)
-    {
-    }
+    // for (uint8_t i = 0; i < Monitor.num; i ++)
+    // {
+        DevWS2812.write(&WS2812Obj, WS2812_SNOWWHITE);
+    // }
 }
 
 /********************************** Timer Port Init ******************************** */
@@ -168,7 +163,7 @@ static bool Srv_LedStrip_PortInit(void *obj)
         strip_pin.port = LED_STRIP_PORT;
         strip_pin.init_state = 0;
 
-        perscaler = lrintf(tmr_clock / WS2812_CLOCK);
+        perscaler = lrintf((tmr_clock - 1) / (WS2812_CLOCK - 1));
         if (!BspTimer_PWM.init(pwm_obj_tmp, LED_STRIP_TIM, LED_STRIP_TIM_CHANNEL,\
                                WS2812_PERIOD, perscaler, strip_pin,\
                                LED_STRIP_DMA, LED_STRIP_DMA_CHANNEL, \
