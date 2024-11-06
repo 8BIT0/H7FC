@@ -46,6 +46,7 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, uint8_t index, RGB_Typ
     uint8_t data[3] = {0};
     uint8_t bit = 0x00;
     float bright_pct = 0.0f;
+    HSV_TypeDef HSV;
 
     if ((p_obj == NULL) || \
         (p_obj->port_send == NULL) || \
@@ -54,7 +55,7 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, uint8_t index, RGB_Typ
         return false;
 
     p_obj->RGB = rgb;
-    bright_pct = (float)(p_obj->RGB.bright / UINT8_MAX);
+    bright_pct = ((float)p_obj->RGB.bright / UINT8_MAX);
 
     if (!Dev_WS2812_Set_Bright(p_obj))
         return false;
@@ -64,11 +65,21 @@ static bool Dev_WS2812_Write(DevWS2812Obj_TypeDef *p_obj, uint8_t index, RGB_Typ
     data[2] = p_obj->RGB.B;
 
     /* convert to HSV */
-    rgb2hsv(p_obj->RGB.R, p_obj->RGB.G, p_obj->RGB.B, &p_obj->HSV.H, &p_obj->HSV.S, &p_obj->HSV.V);
-    p_obj->HSV.V = bright_pct;
-    hsv2rgb(p_obj->HSV.H, p_obj->HSV.S, p_obj->HSV.V, &p_obj->RGB.R, &p_obj->RGB.G, &p_obj->RGB.B);
+    rgb2hsv(p_obj->RGB.R, p_obj->RGB.G, p_obj->RGB.B, &HSV.H, &HSV.S, &HSV.V);
+    HSV.V = bright_pct;
+    hsv2rgb(HSV.H, HSV.S, HSV.V, &p_obj->RGB.R, &p_obj->RGB.G, &p_obj->RGB.B);
 
-    for (uint8_t i = 0; i < WS2812_DATA_SIZE; i ++)
+    p_obj->buff[index].ctl_data[0] = 0;
+    p_obj->buff[index].ctl_data[1] = 0;
+    p_obj->buff[index].ctl_data[2] = 0;
+    p_obj->buff[index].ctl_data[3] = 0;
+    
+    p_obj->buff[index].ctl_data[WS2812_DATA_SIZE - 1] = 0;
+    p_obj->buff[index].ctl_data[WS2812_DATA_SIZE - 2] = 0;
+    p_obj->buff[index].ctl_data[WS2812_DATA_SIZE - 3] = 0;
+    p_obj->buff[index].ctl_data[WS2812_DATA_SIZE - 4] = 0;
+
+    for (uint8_t i = 4; i < WS2812_VALID_DATA_SIZE + 4; i ++)
     {
         bit = 0x00;
         p_obj->buff[index].ctl_data[i] = WS2812_T0H;

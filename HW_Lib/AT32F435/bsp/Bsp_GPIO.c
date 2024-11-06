@@ -292,7 +292,7 @@ static bool BspGPIO_Altnate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode)
         return false;
 
     gpio_initstructure.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
-    gpio_initstructure.gpio_pull = GPIO_PULL_UP;
+    gpio_initstructure.gpio_pull = GPIO_PULL_DOWN;
     gpio_initstructure.gpio_mode = GPIO_MODE_MUX;
     gpio_initstructure.gpio_pins = IO_Obj.pin;
     gpio_initstructure.gpio_out_type = af_mode;

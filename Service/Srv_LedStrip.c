@@ -83,8 +83,54 @@ static bool Srv_LedStrip_Init(uint8_t led_num)
     WS2812Obj.port_init = Srv_LedStrip_PortInit;
     WS2812Obj.port_send = Srv_LedStrip_Trans;
     
+    for (uint8_t i = 0; i < led_num; i++)
+        DevWS2812.set(&WS2812Obj, i, WS2812_NONE);
+
     Monitor.init = true;
     return true;
+}
+
+static void Srv_LedStrip_Breath_Test(void)
+{
+    uint8_t bright = 0;
+    static uint32_t sys_time = 0;
+    static RGB_TypeDef rgb;
+    const uint8_t interval = 100;   /* 100ms */
+    static bool dec = false;
+    static uint8_t i = 0;
+
+    if (!Monitor.init || \
+        (DevWS2812.set == NULL) || \
+        (DevWS2812.trans == NULL))
+        return;
+
+    DevWS2812.set(&WS2812Obj, 0, WS2812_NONE);
+    DevWS2812.set(&WS2812Obj, 1, WS2812_NONE);
+    DevWS2812.set(&WS2812Obj, 2, WS2812_NONE);
+    DevWS2812.set(&WS2812Obj, 3, WS2812_NONE);
+    DevWS2812.set(&WS2812Obj, 4, WS2812_NONE);
+    DevWS2812.set(&WS2812Obj, 5, WS2812_NONE);
+    
+    if (sys_time == 0)
+    {
+        rgb = WS2812_GHOSTWHITE;
+        sys_time = SrvOsCommon.get_os_ms();
+        return;
+    }
+
+    if ((SrvOsCommon.get_os_ms() - sys_time) < interval)
+        return;
+
+    sys_time = SrvOsCommon.get_os_ms();
+    rgb.bright ++;
+    
+    DevWS2812.set(&WS2812Obj, i, rgb);
+
+    i ++;
+    if (i >= Monitor.num)
+        i = 0;
+    
+    DevWS2812.trans(&WS2812Obj);
 }
 
 static void Srv_LedStrip_Polling(void)
@@ -96,15 +142,16 @@ static void Srv_LedStrip_Polling(void)
 
     // for (uint8_t i = 0; i < Monitor.num; i ++)
     // {
-        DevWS2812.set(&WS2812Obj, 0, WS2812_SNOWWHITE);
-        DevWS2812.set(&WS2812Obj, 1, WS2812_NONE);
-        DevWS2812.set(&WS2812Obj, 2, WS2812_SNOWWHITE);
-        DevWS2812.set(&WS2812Obj, 3, WS2812_NONE);
-        DevWS2812.set(&WS2812Obj, 4, WS2812_NONE);
-        DevWS2812.set(&WS2812Obj, 5, WS2812_SNOWWHITE);
+    //     DevWS2812.set(&WS2812Obj, 0, WS2812_SNOWWHITE);
+    //     DevWS2812.set(&WS2812Obj, 1, WS2812_NONE);
+    //     DevWS2812.set(&WS2812Obj, 2, WS2812_SNOWWHITE);
+    //     DevWS2812.set(&WS2812Obj, 3, WS2812_NONE);
+    //     DevWS2812.set(&WS2812Obj, 4, WS2812_NONE);
+    //     DevWS2812.set(&WS2812Obj, 5, WS2812_SNOWWHITE);
     // }
-
-    DevWS2812.trans(&WS2812Obj);
+    
+    // DevWS2812.trans(&WS2812Obj);
+    Srv_LedStrip_Breath_Test();
 }
 
 /********************************** Timer Port Init ******************************** */

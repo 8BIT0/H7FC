@@ -5,7 +5,8 @@
 #include <string.h>
 #include <stdbool.h>
 
-#define WS2812_DATA_SIZE        24
+#define WS2812_DATA_SIZE        32
+#define WS2812_VALID_DATA_SIZE  24
 #define WS2812_CLOCK            144000000.0 /* unit: Hz */
 #define WS2812_PERIOD           130         /* unit: ns */
 
@@ -79,7 +80,6 @@ typedef struct
     uint8_t led_num;
 
     RGB_TypeDef RGB;
-    HSV_TypeDef HSV;
     WS2812_CtlData_TypeDef *buff;
 
     void *port_Obj;
