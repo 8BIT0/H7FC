@@ -1,7 +1,10 @@
 #include "controller.h"
 #include "../../System/storage/Storage.h"
-#include "shell_port.h"
 #include "Att_Casecade_PID.h"
+
+/* test code */
+#include "shell_port.h"
+/* test code */
 
 #define ATTITUDE_PID_PARAM_SEC_NAME "pid_att"
 #define ALTITUDE_PID_PARAM_SEC_NAME "pid_alt"
@@ -10,6 +13,8 @@ typedef struct
 {
     Storage_ItemSearchOut_TypeDef Att_SSO;  /* attitude control parameter section search out */
     Storage_ItemSearchOut_TypeDef Alt_SSO;  /* altitude control parameter section search out */
+
+    ControlMode_List att_ctl_mode;
 } ControllerMonitor_TypeDef;
 
 /* internanl vriable */
@@ -44,6 +49,7 @@ static bool Controller_Att_Init(ControlMode_List mode)
         default: return false;
     }
 
+    ControllerMonitor.att_ctl_mode = mode;
     return false;
 }
 

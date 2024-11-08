@@ -30,9 +30,11 @@ static ProcessParam_TypeDef ProcessPara = {
 static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para);
 static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out);
 static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void);
+static bool Att_PID_Param_Set(AttCaseCadePID_Param_TypeDef para);
 
 AttCasecadePID_TypeDef Att_CasecadePID_Controller = {
     .init = Att_CheckParam_Validation,
+    .set = Att_PID_Param_Set,
     .process = Att_Casecade_PID,
     .default_param = Att_Casecade_PID_DefaultPara,
 };
@@ -76,16 +78,8 @@ static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void)
     return para;
 }
 
-static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
+static bool Att_PID_Param_Set(AttCaseCadePID_Param_TypeDef para)
 {
-    RC_Filter_Param_TypeDef RCParam_Tmp;
-
-    if (!ProcessPara.init)
-    {
-        memset(&ProcessPara, 0, sizeof(ProcessParam_TypeDef));
-        ProcessPara.init = true;
-    }
-
     /* attitude pid pitch parameter set */
     /* invalid Pitch P gain input */
     if (PARA_AMPLIFICATE(para.Pitch_Para.gP) == 0)
@@ -147,6 +141,23 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     ProcessPara.g_z.gI = para.GyroZ_Para.gI;
     ProcessPara.g_z.gD = para.GyroZ_Para.gD;
 
+    return true;
+}
+
+static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
+{
+    RC_Filter_Param_TypeDef RCParam_Tmp;
+    bool state = true;
+
+    if (!ProcessPara.init)
+        memset(&ProcessPara, 0, sizeof(ProcessParam_TypeDef));
+
+    if (!Att_PID_Param_Set(para))
+    {
+        para = Att_Casecade_PID_DefaultPara(); 
+        state = false;
+    }
+
     RCParam_Tmp.f_cut = ATT_DTRIM_RC_F_CUT;
     PID_Init(&ProcessPara.pitch, RCParam_Tmp);
     PID_Init(&ProcessPara.roll,  RCParam_Tmp);
@@ -155,8 +166,9 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
     PID_Init(&ProcessPara.g_x, RCParam_Tmp);
     PID_Init(&ProcessPara.g_y, RCParam_Tmp);
     PID_Init(&ProcessPara.g_z, RCParam_Tmp);
-
-    return true;
+    
+    ProcessPara.init = true;
+    return state;
 }
 
 static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out)
