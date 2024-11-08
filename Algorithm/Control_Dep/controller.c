@@ -39,6 +39,33 @@ Control_TypeDef Controller = {
     .att_ctl = Controller_AttControl,
 };
 
+static bool Controller_Get_AttParam(ControlMode_List *cur_mode, uint8_t *p_data, uint16_t *para_len)
+{
+    if ((cur_mode == NULL) || \
+        (p_data == NULL) || \
+        (para_len == NULL))
+        return false;
+
+    *cur_mode = ControllerMonitor.att_ctl_mode;
+
+    return false;
+}
+
+static bool Controller_Set_AttParam(ControlMode_List mode, uint8_t *p_data, uint16_t len)
+{
+    if ((p_data == NULL) || \
+        (len == 0))
+        return false;
+
+    switch (mode)
+    {
+        case CtlM_PID: /* attitude casecade pid tunning */ return true;
+        default: return false;
+    }
+
+    return false;
+}
+
 static bool Controller_Att_Init(ControlMode_List mode)
 {
     memset(&ControllerMonitor.Att_SSO, 0, sizeof(Storage_ItemSearchOut_TypeDef));
@@ -49,7 +76,6 @@ static bool Controller_Att_Init(ControlMode_List mode)
         default: return false;
     }
 
-    ControllerMonitor.att_ctl_mode = mode;
     return false;
 }
 
@@ -60,7 +86,7 @@ static bool Controller_AttControl(ControlMode_List mode, uint32_t sys_ms, bool a
         case CtlM_PID: return Att_CasecadePID_Controller.process(sys_ms, angular_only, exp, mea, out);
         default: return false;
     }
-
+    ControllerMonitor.att_ctl_mode = mode;
     return false;
 }
 
