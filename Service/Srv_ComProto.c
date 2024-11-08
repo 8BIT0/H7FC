@@ -120,9 +120,6 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
     case MAV_CompoID_MotoCtl:
         break;
 
-    case MAV_CompoID_ServoCtl:
-        break;
-
     default:
         SrvOsCommon.free(msg->msg_obj);
         msg->lock_proto = false;

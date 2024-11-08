@@ -29,7 +29,6 @@ typedef enum
 {
     MAV_SysID_Drone = 1,
     MAV_SysID_Cfg,
-    MAV_SysID_OPC,   /* On plane computer data input */
     MAV_SysID_Radio,
 } SrvComProto_SysID_List;
 
@@ -53,8 +52,7 @@ typedef enum
     MAV_CompoID_Altitude,
     MAV_CompoID_RC_Channel,
     MAV_CompoID_MotoCtl,
-    MAV_CompoID_ServoCtl,
-
+    
     /* input to drone from on plane computer */
     MAV_CompoID_Ctl_Gyro,
     MAV_CompoID_Ctl_Attitude,
@@ -68,14 +66,6 @@ typedef enum
     MAV_CompoID_Ctl_PIDPara_Roll,
     MAV_CompoID_Ctl_PIDPata_Pitch,
 } SrvComProto_ComponentID_List;
-
-typedef enum
-{
-    MAV_ActuatorPort_Servo = 0,
-    MAV_ActuatorPort_ServoDir,
-    MAV_ActuatorPort_Moto,
-    MAV_ActuatorPort_MotoDir,
-} SrvComProto_ActuatorPort_List;
 
 typedef enum
 {
