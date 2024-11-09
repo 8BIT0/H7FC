@@ -8,7 +8,8 @@ extern "C" {
 #include "pid.h"
 #include "Att_Control_Base.h"
 
-#define ATT_CASECADE_PID_PARAM_SIZE sizeof(AttCaseCadePID_Param_TypeDef)
+#define ATT_CASECADE_PID_PARAM_SIZE     sizeof(AttCaseCadePID_Param_TypeDef)
+#define TO_ATT_CASECADE_PID_PARA_PTR(x) ((AttCaseCadePID_Param_TypeDef *)x)
 
 #pragma pack(1)
 typedef struct

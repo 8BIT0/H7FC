@@ -212,7 +212,8 @@
                 "bsp_sdram.h": "c",
                 "bsp_sdram_def.h": "c",
                 "dev_ws2812.h": "c",
-                "srv_ledstrip.h": "c"
+                "srv_ledstrip.h": "c",
+                "controller.h": "c"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

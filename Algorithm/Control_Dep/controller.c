@@ -23,11 +23,13 @@ ControllerMonitor_TypeDef ControllerMonitor;
 /* internal function */
 /* PID controller section */
 static bool Controller_PID_AttControl_ParamLoad(void);
+static bool Controller_PID_AttParam_Set(uint8_t *p_param, uint16_t size);
 
 /* external function */
 /* attitude section */
 static bool Controller_Att_Init(ControlMode_List mode);
 static bool Controller_AttControl(ControlMode_List mode, uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out);
+static bool Controller_Set_Param(bool ARM, ControlTarget_List target, ControlMode_List mode, uint8_t *p_param, uint16_t size);
 
 /* altitude section */
 static bool Controller_Alt_Init(ControlMode_List mode);
@@ -36,6 +38,8 @@ Control_TypeDef Controller = {
     .att_ctl_init = Controller_Att_Init,
     .alt_ctl_init = Controller_Alt_Init,
     
+    .att_param_set = Controller_Set_Param,
+
     .att_ctl = Controller_AttControl,
 };
 
@@ -90,7 +94,50 @@ static bool Controller_AttControl(ControlMode_List mode, uint32_t sys_ms, bool a
     return false;
 }
 
+static bool Controller_Set_Param(bool ARM, ControlTarget_List target, ControlMode_List mode, uint8_t *p_param, uint16_t size)
+{
+    /* noticed: only when drone is under ARM state, parameter is setable */
+    /* check drone state */
+    if (!ARM || \
+        (target > CtlT_Altitude) || \
+        (mode >= CtlM_All) || \
+        (p_param == NULL) || \
+        (size == 0))
+        return false;
+
+    if (target == CtlT_Attitude)
+    {
+        switch (mode)
+        {
+            case CtlM_PID: return Controller_PID_AttParam_Set(p_param, size);
+            default: return false;
+        }
+    }
+    else if (target == CtlT_Altitude)
+    {
+        /* still in developping */
+        return false;
+    }
+
+    return false;
+}
+
 /****************************************************************** pid controller section *****************************************************************************/
+static bool Controller_PID_AttParam_Set(uint8_t *p_param, uint16_t size)
+{
+    if (size != ATT_CASECADE_PID_PARAM_SIZE)
+        return false;
+    
+    if (!Att_CasecadePID_Controller.set(*TO_ATT_CASECADE_PID_PARA_PTR(p_param)))
+        return false;
+            
+    /* storage parameter */
+    if (Storage.update(Para_User, ControllerMonitor.Att_SSO.item_addr, p_param, size) != Storage_Error_None)
+        return false;
+
+    return true;
+}
+
 static bool Controller_PID_AttControl_ParamLoad(void)
 {
     Storage_ErrorCode_List stor_err = Storage_Error_None;
