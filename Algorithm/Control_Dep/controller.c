@@ -3,11 +3,21 @@
 #include "Att_Casecade_PID.h"
 
 /* test code */
+#include "Srv_DataHub.h"
 #include "shell_port.h"
 /* test code */
 
 #define ATTITUDE_PID_PARAM_SEC_NAME "pid_att"
 #define ALTITUDE_PID_PARAM_SEC_NAME "pid_alt"
+
+typedef enum
+{
+    TP_Pitch = 0,
+    TP_Roll,
+    TP_GyroX,
+    TP_GyroY,
+    TP_GyroZ,
+} ControllerTunningPart_List;
 
 typedef struct
 {
@@ -194,13 +204,128 @@ static bool Controller_Alt_Init(ControlMode_List mode)
 }
 
 /****************************************************************** CLI section *****************************************************************************/
-static void Controller_AttPID_Tune_CLI(uint8_t part, float para1, float para2, float para3)
+static void Controller_Show_PID_Param(Shell *obj, PID_Param_TypeDef param)
+{
+    if (obj == NULL)
+        return;
+
+    shellPrint(obj, "\tP: %f\r\n", param.gP);
+    shellPrint(obj, "\tI: %f\r\n", param.gI);
+    shellPrint(obj, "\tD: %f\r\n", param.gD);
+}
+
+static void Controller_Show_AttPID_Param(Shell *obj, AttCaseCadePID_Param_TypeDef param)
+{
+    if (obj == NULL)
+        return;
+
+    shellPrint(obj, "[ ---- Pitch Parameter ---- ]\r\n");
+    Controller_Show_PID_Param(obj, param.Pitch_Para);
+
+    shellPrint(obj, "[ ---- Roll Parameter ---- ]\r\n");
+    Controller_Show_PID_Param(obj, param.Roll_Para);
+
+    shellPrint(obj, "[ ---- GyroX Parameter ---- ]\r\n");
+    Controller_Show_PID_Param(obj, param.GyroX_Para);
+
+    shellPrint(obj, "[ ---- GyroY Parameter ---- ]\r\n");
+    Controller_Show_PID_Param(obj, param.GyroY_Para);
+
+    shellPrint(obj, "[ ---- GyroZ Parameter ---- ]\r\n");
+    Controller_Show_PID_Param(obj, param.GyroZ_Para);
+}
+
+static void Controller_AttPID_Tune_CLI(uint8_t part, float P, float I, float D)
 {
     Shell *shell_obj = Shell_GetInstence();
+    AttCaseCadePID_Param_TypeDef inuse;
+    AttCaseCadePID_Param_TypeDef inuse_lst;
+    PID_Param_TypeDef *selected = NULL;
 
     if (shell_obj == NULL)
         return;
 
+    memset(&inuse, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+    memset(&inuse_lst, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+ 
+    inuse = Att_CasecadePID_Controller.cur_param();
+    inuse_lst = inuse;
+
     shellPrint(shell_obj, "[ ---- Attitude Casecade PID Tunning ---- ]\r\n");
+    shellPrint(shell_obj, "[ 1st parameter 1ndicate to selecetd part ]\r\n");
+    shellPrint(shell_obj, "  ---- Part 0 ----- Pitch Param\r\n");
+    shellPrint(shell_obj, "  ---- Part 1 ----- Roll  Param\r\n");
+    shellPrint(shell_obj, "  ---- Part 2 ----- GyroX Param\r\n");
+    shellPrint(shell_obj, "  ---- Part 3 ----- GyroY Param\r\n");
+    shellPrint(shell_obj, "  ---- Part 4 ----- GyroZ Param\r\n");
+
+    switch (part)
+    {
+        case TP_Pitch:
+            shellPrint(shell_obj, " ---- Pitch is selected\r\n");
+            selected = &inuse.Pitch_Para;
+            break;
+
+        case TP_Roll:
+            shellPrint(shell_obj, " ---- Roll is selected\r\n");
+            selected = &inuse.Roll_Para;
+            break;
+
+        case TP_GyroX:
+            shellPrint(shell_obj, " ---- GyroX is selected\r\n");
+            selected = &inuse.GyroX_Para;
+            break;
+
+        case TP_GyroY:
+            shellPrint(shell_obj, " ---- GyroY is selected\r\n");
+            selected = &inuse.GyroY_Para;
+            break;
+
+        case TP_GyroZ:
+            shellPrint(shell_obj, " ----- GyroZ is selected\r\n");
+            selected = &inuse.GyroZ_Para;
+            break;
+
+        default: shellPrint(shell_obj, "[ ---- Invalid Part ---- ]\r\n"); return;
+    }
+
+    /* show input parameter */
+    shellPrint(shell_obj, " ---- Input P: %f\r\n", P);
+    shellPrint(shell_obj, " ---- Input I: %f\r\n", I);
+    shellPrint(shell_obj, " ---- Input D: %f\r\n", D);
+
+    selected->gP = P;
+    selected->gI = I;
+    selected->gD = D;
+
+    if (!Att_CasecadePID_Controller.set(inuse))
+    {
+        shellPrint(shell_obj, "[ ---- parameter set failed ---- ]\r\n");
+        Att_CasecadePID_Controller.set(inuse_lst);
+        return;
+    }
+
+    /* storage parameter */
+    if (!Controller_PID_AttParam_Set((uint8_t *)&inuse, sizeof(AttCaseCadePID_Param_TypeDef)))
+    {
+        shellPrint(shell_obj, "[ ---- parameter save failed ---- ]\r\n");
+        return;
+    }
+
+    /* display inuse parameter */
+    memset(&inuse, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+    shellPrint(shell_obj, "[ ---- get inuse parameter ---- ]\r\n");
+    inuse = Att_CasecadePID_Controller.cur_param();
+    Controller_Show_AttPID_Param(shell_obj, inuse);
+
+    /* display storaged paramter */
+    memset(&inuse, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+    shellPrint(shell_obj, "[ ---- get storaged parameter ---- ]\r\n");
+    if (Storage.get(Para_User, ControllerMonitor.Att_SSO.item, (uint8_t *)&inuse, sizeof(AttCaseCadePID_Param_TypeDef)) != Storage_Error_None)
+    {
+        shellPrint(shell_obj, "[ ---- read storage error ---- ]\r\n");
+        return;
+    }
+    Controller_Show_AttPID_Param(shell_obj, inuse);
 }
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, tune_att, Controller_AttPID_Tune_CLI, tune attitude control parameter);
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, tune_att_pid, Controller_AttPID_Tune_CLI, tune attitude control parameter);
