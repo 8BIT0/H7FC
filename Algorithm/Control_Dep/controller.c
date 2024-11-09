@@ -185,7 +185,7 @@ static bool Controller_PID_AttControl_ParamLoad(void)
     pid_param.GyroY_Para.gD = 0.0;//2.8;
     /* test code */
 
-    return Att_CasecadePID_Controller.init(pid_param);
+    return Att_CasecadePID_Controller.set(pid_param);
 }
 
 static bool Controller_Alt_Init(ControlMode_List mode)
@@ -193,3 +193,14 @@ static bool Controller_Alt_Init(ControlMode_List mode)
     return false;
 }
 
+/****************************************************************** CLI section *****************************************************************************/
+static void Controller_AttPID_Tune_CLI(uint8_t part, float para1, float para2, float para3)
+{
+    Shell *shell_obj = Shell_GetInstence();
+
+    if (shell_obj == NULL)
+        return;
+
+    shellPrint(shell_obj, "[ ---- Attitude Casecade PID Tunning ---- ]\r\n");
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, tune_att, Controller_AttPID_Tune_CLI, tune attitude control parameter);

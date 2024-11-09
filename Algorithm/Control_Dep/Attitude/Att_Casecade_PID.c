@@ -26,18 +26,49 @@ static ProcessParam_TypeDef ProcessPara = {
     .init = false,
 };
 
+/* internal function */
+static bool Att_PID_Param_Set(AttCaseCadePID_Param_TypeDef para);
+
 /* external function */
 static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para);
 static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out);
 static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void);
-static bool Att_PID_Param_Set(AttCaseCadePID_Param_TypeDef para);
+static AttCaseCadePID_Param_TypeDef Att_CaseCade_PID_InUse_Param(void);
 
 AttCasecadePID_TypeDef Att_CasecadePID_Controller = {
-    .init = Att_CheckParam_Validation,
-    .set = Att_PID_Param_Set,
+    .set = Att_CheckParam_Validation,
     .process = Att_Casecade_PID,
+    .cur_param = Att_CaseCade_PID_InUse_Param,
     .default_param = Att_Casecade_PID_DefaultPara,
 };
+
+static AttCaseCadePID_Param_TypeDef Att_CaseCade_PID_InUse_Param(void)
+{
+    AttCaseCadePID_Param_TypeDef in_use_para;
+    memset(&in_use_para, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+
+    in_use_para.Pitch_Para.gP = ProcessPara.pitch.gP;
+    in_use_para.Pitch_Para.gI = ProcessPara.pitch.gI;
+    in_use_para.Pitch_Para.gD = ProcessPara.pitch.gD;
+
+    in_use_para.Roll_Para.gP  = ProcessPara.roll.gP;
+    in_use_para.Roll_Para.gI  = ProcessPara.roll.gI;
+    in_use_para.Roll_Para.gD  = ProcessPara.roll.gD;
+     
+    in_use_para.GyroX_Para.gP = ProcessPara.g_x.gP;
+    in_use_para.GyroX_Para.gI = ProcessPara.g_x.gI;
+    in_use_para.GyroX_Para.gD = ProcessPara.g_x.gD;
+
+    in_use_para.GyroY_Para.gP = ProcessPara.g_y.gP;
+    in_use_para.GyroY_Para.gI = ProcessPara.g_y.gI;
+    in_use_para.GyroY_Para.gD = ProcessPara.g_y.gD;
+    
+    in_use_para.GyroZ_Para.gP = ProcessPara.g_z.gP;
+    in_use_para.GyroZ_Para.gI = ProcessPara.g_z.gI;
+    in_use_para.GyroZ_Para.gD = ProcessPara.g_z.gD;
+
+    return in_use_para;
+}
 
 static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void)
 {
