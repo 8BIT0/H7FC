@@ -126,14 +126,13 @@ extern const uint8_t HWVer[3];
 #define PWM_SIG_6_DMA_CHANNEL Bsp_DMA_Stream_2
 #define PWM_SIG_6_PIN_AF GPIO_MUX_1
 
-/* led strip */
-// #define PWM_SIG_7_TIM TMR4
-// #define PWM_SIG_7_TIM_CHANNEL TMR_SELECT_CHANNEL_1
-// #define PWM_SIG_7_PORT GPIOB
-// #define PWM_SIG_7_PIN GPIO_PINS_6
-// #define PWM_SIG_7_DMA Bsp_DMA_None
-// #define PWM_SIG_7_DMA_CHANNEL Bsp_DMA_Stream_None
-// #define PWM_SIG_7_PIN_AF GPIO_MUX_2
+#define LED_STRIP_TIM TMR4
+#define LED_STRIP_TIM_CHANNEL TMR_SELECT_CHANNEL_1
+#define LED_STRIP_PORT &LEDStrip_Port
+#define LED_STRIP_PIN GPIO_PINS_6
+#define LED_STRIP_DMA Bsp_DMA_2
+#define LED_STRIP_DMA_CHANNEL Bsp_DMA_Stream_3
+#define LED_STRIP_PIN_AF GPIO_MUX_2
 
 /* external flash storage */
 #if (FLASH_CHIP_STATE == ON)
@@ -251,6 +250,7 @@ extern BspGPIO_Port_TypeDef PWM_3_Port;
 extern BspGPIO_Port_TypeDef PWM_4_Port;
 extern BspGPIO_Port_TypeDef PWM_5_Port;
 extern BspGPIO_Port_TypeDef PWM_6_Port;
+extern BspGPIO_Port_TypeDef LEDStrip_Port;
 
 extern DebugPrintObj_TypeDef DebugPort;
 #define DEBUG_TAG "[ DEBUG INFO ] "

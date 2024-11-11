@@ -247,6 +247,10 @@ BspGPIO_Port_TypeDef PWM_6_Port = {
     .port = GPIOA,
 };
 
+BspGPIO_Port_TypeDef LEDStrip_Port = {
+    .port = GPIOB,
+};
+
 void PriIMU_Dir_Tune(float *gyr, float *acc)
 {
     double gyr_tmp[Axis_Sum] = {0.0};

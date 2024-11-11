@@ -148,8 +148,8 @@ static void TaskControl_Get_StoreParam(void)
     }
     
     /* controller load parameter from storage */
-    Controller.att_ctl_init(TaskControl_Monitor.ctl_para.att_mode);
     Controller.alt_ctl_init(TaskControl_Monitor.ctl_para.alt_mode);
+    Controller.att_ctl_init(TaskControl_Monitor.ctl_para.att_mode);
 
     /* get actuator parameter */
     /* set as default */

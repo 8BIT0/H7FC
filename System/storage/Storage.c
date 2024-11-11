@@ -46,6 +46,7 @@ static bool Storage_DeleteSingleDataSlot(uint32_t slot_addr, uint8_t *p_data, St
 static Storage_ErrorCode_List Storage_FreeSlot_CheckMerge(uint32_t slot_addr, Storage_FreeSlot_TypeDef *slot_info, Storage_BaseSecInfo_TypeDef *p_Sec);
 static bool Storage_Link_FreeSlot(uint32_t front_free_addr, uint32_t behind_free_addr, uint32_t new_free_addr, Storage_FreeSlot_TypeDef *new_free_slot);
 static Storage_ErrorCode_List Storage_ItemSlot_Update(uint32_t tab_addr, uint8_t item_index, Storage_BaseSecInfo_TypeDef *p_Sec, Storage_Item_TypeDef item);
+static void Storage_Module_Format(void);
 
 /* external function */
 static bool Storage_Init(StorageDevObj_TypeDef *ExtDev);
@@ -140,7 +141,6 @@ reinit_external_flash_module:
     /* set external flash device read write base address */
     Storage_Monitor.external_info.base_addr = ExtFlash_Start_Addr;
     Storage_Monitor.ExternalFlash_Format_cnt = Format_Retry_Cnt;
-                        
 reupdate_external_flash_info:
     /* get storage info */
     if (!Storage_Get_StorageInfo())

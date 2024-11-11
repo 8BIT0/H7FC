@@ -140,9 +140,10 @@ static bool Controller_PID_AttParam_Set(uint8_t *p_param, uint16_t size)
     
     if (!Att_CasecadePID_Controller.set(*TO_ATT_CASECADE_PID_PARA_PTR(p_param)))
         return false;
-            
+
     /* storage parameter */
-    if (Storage.update(Para_User, ControllerMonitor.Att_SSO.item_addr, p_param, size) != Storage_Error_None)
+    if ((ControllerMonitor.Att_SSO.item_addr == 0) || \
+        (Storage.update(Para_User, ControllerMonitor.Att_SSO.item.data_addr, p_param, size) != Storage_Error_None))
         return false;
 
     return true;
@@ -235,7 +236,89 @@ static void Controller_Show_AttPID_Param(Shell *obj, AttCaseCadePID_Param_TypeDe
     Controller_Show_PID_Param(obj, param.GyroZ_Para);
 }
 
-static void Controller_AttPID_Tune_CLI(uint8_t part, float P, float I, float D)
+static void Controller_Show_InusePID(void)
+{
+    AttCaseCadePID_Param_TypeDef inuse;
+    Shell *shell_obj = Shell_GetInstence();
+
+    if (shell_obj == NULL)
+        return;
+
+    /* display inuse parameter */
+    memset(&inuse, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+    shellPrint(shell_obj, "[ ---- inuse parameter ---- ]\r\n");
+    inuse = Att_CasecadePID_Controller.cur_param();
+    Controller_Show_AttPID_Param(shell_obj, inuse);
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, show_inuse_pid, Controller_Show_InusePID, show inuse control parameter);
+
+static void Controller_Show_StoredPID(void)
+{
+    AttCaseCadePID_Param_TypeDef stored;
+    Shell *shell_obj = Shell_GetInstence();
+
+    if (shell_obj == NULL)
+        return;
+
+    memset(&stored, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+
+    /* display storaged paramter */
+    memset(&stored, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+    shellPrint(shell_obj, "[ ---- storaged parameter ---- ]\r\n");
+    if (Storage.get(Para_User, ControllerMonitor.Att_SSO.item, (uint8_t *)&stored, sizeof(AttCaseCadePID_Param_TypeDef)) != Storage_Error_None)
+    {
+        shellPrint(shell_obj, "[ ---- read storage error ---- ]\r\n");
+        return;
+    }
+    Controller_Show_AttPID_Param(shell_obj, stored);
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, show_stored_pid, Controller_Show_InusePID, show stored control parameter);
+
+static float Controller_ConvertToFloat(const char* in)
+{
+    uint8_t point_num = 0;
+    bool match = false;
+    const char character[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '\0'};
+
+    if ((in == NULL) || (strlen(in) >= 5))
+        return 0.0f;
+
+    if ((in[0] != 'P') && (in[0] != 'p') && (in[0] != 'I') && (in[0] != 'i') && (in[0] != 'D') && (in[0] != 'd'))
+        return 0.0f;
+
+    for (uint8_t i = 1; i < strlen(in); i ++)
+    {
+        /* check start and end */
+        if ((in[1] == '.') || (in[strlen(in) - 1] == '.'))
+            return 0.0f;
+    
+        /* check '.' num */
+        if (in[i] == '.')
+        {
+            point_num ++;
+            if (point_num > 1)
+                return 0.0f;
+        }
+
+        /* check other character */
+        match = false;
+        for (uint8_t j = 0; j < strlen(character); j ++)
+        {
+            if (in[i] == character[j])
+            {
+                match = true;
+                break;
+            }
+        }
+
+        if (!match)
+            return 0.0f;
+    }
+
+    return atof(&in[1]);
+}
+
+static void Controller_AttPID_Tune_CLI(uint8_t part, const char* P_i, const char* I_i, const char* D_i)
 {
     Shell *shell_obj = Shell_GetInstence();
     AttCaseCadePID_Param_TypeDef inuse;
@@ -289,14 +372,14 @@ static void Controller_AttPID_Tune_CLI(uint8_t part, float P, float I, float D)
         default: shellPrint(shell_obj, "[ ---- Invalid Part ---- ]\r\n"); return;
     }
 
-    /* show input parameter */
-    shellPrint(shell_obj, " ---- Input P: %f\r\n", P);
-    shellPrint(shell_obj, " ---- Input I: %f\r\n", I);
-    shellPrint(shell_obj, " ---- Input D: %f\r\n", D);
+    selected->gP = Controller_ConvertToFloat(P_i);
+    selected->gI = Controller_ConvertToFloat(I_i);
+    selected->gD = Controller_ConvertToFloat(D_i);
 
-    selected->gP = P;
-    selected->gI = I;
-    selected->gD = D;
+    /* show input parameter */
+    shellPrint(shell_obj, " ---- Input P: %f\r\n", selected->gP);
+    shellPrint(shell_obj, " ---- Input I: %f\r\n", selected->gI);
+    shellPrint(shell_obj, " ---- Input D: %f\r\n", selected->gD);
 
     if (!Att_CasecadePID_Controller.set(inuse))
     {
@@ -312,20 +395,7 @@ static void Controller_AttPID_Tune_CLI(uint8_t part, float P, float I, float D)
         return;
     }
 
-    /* display inuse parameter */
-    memset(&inuse, 0, sizeof(AttCaseCadePID_Param_TypeDef));
-    shellPrint(shell_obj, "[ ---- get inuse parameter ---- ]\r\n");
-    inuse = Att_CasecadePID_Controller.cur_param();
-    Controller_Show_AttPID_Param(shell_obj, inuse);
-
-    /* display storaged paramter */
-    memset(&inuse, 0, sizeof(AttCaseCadePID_Param_TypeDef));
-    shellPrint(shell_obj, "[ ---- get storaged parameter ---- ]\r\n");
-    if (Storage.get(Para_User, ControllerMonitor.Att_SSO.item, (uint8_t *)&inuse, sizeof(AttCaseCadePID_Param_TypeDef)) != Storage_Error_None)
-    {
-        shellPrint(shell_obj, "[ ---- read storage error ---- ]\r\n");
-        return;
-    }
-    Controller_Show_AttPID_Param(shell_obj, inuse);
+    Controller_Show_InusePID();
+    Controller_Show_StoredPID();
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, tune_att_pid, Controller_AttPID_Tune_CLI, tune attitude control parameter);
