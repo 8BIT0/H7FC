@@ -181,21 +181,6 @@ static bool Controller_PID_AttControl_ParamLoad(void)
         }
     }
 
-    /* test code */
-    /* set parameter */
-    pid_param.GyroX_Para.gP = 2.4;
-    pid_param.GyroX_Para.gI = 0.0;
-    pid_param.GyroX_Para.gI_Max = 100;
-    pid_param.GyroX_Para.gI_Min = -100;
-    pid_param.GyroX_Para.gD = 0.0;//2.8;
-
-    pid_param.GyroY_Para.gP = 2.4;
-    pid_param.GyroY_Para.gI = 0.0;
-    pid_param.GyroY_Para.gI_Max = 100;
-    pid_param.GyroY_Para.gI_Min = -100;
-    pid_param.GyroY_Para.gD = 0.0;//2.8;
-    /* test code */
-
     return Att_CasecadePID_Controller.set(pid_param);
 }
 
