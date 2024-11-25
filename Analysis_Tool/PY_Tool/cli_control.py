@@ -40,3 +40,29 @@ class CLI_Ctl:
 
         return CLI_State.CLI_No_Error
 
+    def __Controller_Param(self):
+        # get controller type first
+        # get angular speed controller parameter
+        pass
+
+    def Get_Blackbox_Data(self):
+        if not self.port.is_open:
+            print("[COM port is not open]")
+            return CLI_State.CLI_Error
+
+        self.__Controller_Param(self)
+
+        # create a file
+        try:
+            print("[Creating Log file]")
+            log_file = open("log.txt", 'w')
+        except:
+            print("[Log file create filed]")
+            return
+
+        time.sleep(0.5)
+        self.port.write(b"blackbox_info\r\n")
+        pass
+
+    def Set_BlackBox_LogType(self):
+        pass
