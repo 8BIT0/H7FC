@@ -3,8 +3,10 @@ import sys
 import serial
 import serial.tools.list_ports
 import serial.tools.list_ports_common
+import threading
 from time import sleep
 from mav_parse import H7FC_Obj as Drone
+from cli_control import CLI_Ctl as CLI
 
 def Kb(size = 0):
     return size * 1024 * 1024
@@ -49,18 +51,17 @@ while (True):
         FC_port = serial.Serial(port_info.device, 460800, 5)
         if FC_port.is_open:
             print("[ Flight Controller Port Open Successed ]\r\n")
-            H7FC = Drone(FC_port.name)
 
-            # do mavlink and other frame parse
             # communicate with the flight controller
-            rec_size = 0
-            while FC_port.is_open:
-                # # have data receive
-                rec_size = FC_port.in_waiting
-                if rec_size > 0:
-                    print('[ receive size ]\t', rec_size)
-                    clear_consoel_dsp(1)
-                    H7FC.parse()
+            Cli_Ctl = CLI(FC_port)
+            Cli_Ctl.Into_CLI_Mode()
+                
+            while True:
+                tool_cli = input()
+                if tool_cli.find("quit"):
+                    FC_port.close()
+                    break
+
                 sleep(0.2)
 
             print("[ Flight Controller is disconnected ]")
