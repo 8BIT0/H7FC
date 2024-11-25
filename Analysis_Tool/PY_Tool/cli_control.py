@@ -1,6 +1,7 @@
 import serial
 import time
 import queue
+import pid_para
 from enum import Enum
 
 class CLI_State(Enum):
@@ -13,6 +14,9 @@ class CLI_Ctl:
     def __init__(self, port_obj):
         self.port = port_obj
         self.__rec_q = queue.Queue(8192)
+        self.GyrXPID_Para = pid_para.PID_Param()
+        self.GyrYPID_Para = pid_para.PID_Param()
+        self.GyrZPID_Para = pid_para.PID_Param()
 
     def Into_CLI_Mode(self):
         if not self.port.is_open:
@@ -42,6 +46,7 @@ class CLI_Ctl:
 
     def __Controller_Param(self):
         # get controller type first
+        # currently Attitude controller is CasecadePID
         # get angular speed controller parameter
         pass
 
