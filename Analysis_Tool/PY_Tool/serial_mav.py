@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import os
 import sys
 import serial
@@ -5,7 +6,6 @@ import serial.tools.list_ports
 import serial.tools.list_ports_common
 import threading
 from time import sleep
-from mav_parse import H7FC_Obj as Drone
 from cli_control import CLI_Ctl as CLI
 from cli_control import CLI_State
 
@@ -59,7 +59,7 @@ while (True):
                 
             while state == CLI_State.CLI_No_Error:
                 tool_cli = input()
-                if tool_cli.find("quit"):
+                if tool_cli.find("quit") == 0:
                     FC_port.close()
                     break
 

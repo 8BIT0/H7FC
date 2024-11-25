@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import serial
 import time
 import queue
@@ -9,6 +10,7 @@ class CLI_State(Enum):
     CLI_Sending     = 2
     CLI_Error       = 3
     CLI_Parsing     = 4
+    CLI_TimeOut     = 5
 
 class CLI_Ctl:
     def __init__(self, port_obj):
@@ -20,27 +22,34 @@ class CLI_Ctl:
 
     def Into_CLI_Mode(self):
         if not self.port.is_open:
-            print("[COM port is not open]")
+            print("[ COM port is not open ]")
             return CLI_State.CLI_Error
+        
+        for i in range(5):
+            print("[ Send CMD to switch drone`s protocol ]")
+            self.port.write(b"\r\n")
             
-        print("[Send CMD switch drone protocal into CLI mode]")
-        self.port.write(b"\r\n")
-
-        # after send \r\n wait for 1sec
-        time.sleep(1)
-
-        # check data reply from drone
-        while True:
-            buf = None
-            if self.port.in_waiting:
-                buf = self.port.readline()
-
-            if len(buf):
-                print(buf.decode("ASCII"))
-
-                # buf.decode("ASCII").find()
-
-        return CLI_State.CLI_No_Error
+            # after send \r\n wait for 1sec
+            time.sleep(1)
+            
+            sys_time = int(round(time.time()) * 1000)
+            # check data reply from drone
+            while True:
+                buf = None
+                if self.port.in_waiting:
+                    buf = self.port.readline()
+                
+                if len(buf):
+                    if buf.decode("ASCII").find("P.0.Wder Squad:/$") != -1:
+                        print("[ Current protocol mode on done is CLI ]")
+                        return CLI_State.CLI_No_Error
+                    
+                # check for time out
+                if int(round(time.time()) * 1000) - sys_time >= 1000:
+                    print("[ Drone protocol mode switch TIME OUT ]")
+                    break;
+        
+        return CLI_State.CLI_TimeOut
 
     def __Controller_Param(self):
         # get controller type first
