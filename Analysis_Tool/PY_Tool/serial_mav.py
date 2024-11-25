@@ -7,6 +7,7 @@ import threading
 from time import sleep
 from mav_parse import H7FC_Obj as Drone
 from cli_control import CLI_Ctl as CLI
+from cli_control import CLI_State
 
 def Kb(size = 0):
     return size * 1024 * 1024
@@ -54,9 +55,9 @@ while (True):
 
             # communicate with the flight controller
             Cli_Ctl = CLI(FC_port)
-            Cli_Ctl.Into_CLI_Mode()
+            state = Cli_Ctl.Into_CLI_Mode()
                 
-            while True:
+            while state == CLI_State.CLI_No_Error:
                 tool_cli = input()
                 if tool_cli.find("quit"):
                     FC_port.close()
@@ -64,8 +65,8 @@ while (True):
 
                 sleep(0.2)
 
+            FC_port.close()
             print("[ Flight Controller is disconnected ]")
-
         else :
             print("\t[ Flight Controller Port Open Failed ]")
     else :
