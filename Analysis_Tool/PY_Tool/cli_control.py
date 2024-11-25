@@ -53,7 +53,7 @@ class CLI_Ctl:
 
     def __Controller_Param(self):
         # get controller type first
-        # currently Attitude controller is CasecadePID
+        # currently Attitude controller only CasecadePID
         # get inuse angular speed controller parameter
         if not self.port.is_open:
             print("[COM port is not open]")

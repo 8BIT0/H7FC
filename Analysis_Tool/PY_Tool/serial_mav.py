@@ -59,7 +59,7 @@ while (True):
                 
             while state == CLI_State.CLI_No_Error:
                 tool_cli = input()
-                if tool_cli.find("quit") == 0:
+                if tool_cli.find("quit") != -1:
                     FC_port.close()
                     break
 
