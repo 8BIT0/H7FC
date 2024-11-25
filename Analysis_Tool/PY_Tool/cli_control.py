@@ -47,8 +47,16 @@ class CLI_Ctl:
     def __Controller_Param(self):
         # get controller type first
         # currently Attitude controller is CasecadePID
-        # get angular speed controller parameter
-        pass
+        # get inuse angular speed controller parameter
+        if not self.port.is_open:
+            print("[COM port is not open]")
+            return CLI_State.CLI_Error
+
+        self.port.write(b'show_inuse_pid\r\n')
+        # parse drone reply
+        while True:
+            if self.port.in_waiting:
+                pass
 
     def Get_Blackbox_Data(self):
         if not self.port.is_open:
