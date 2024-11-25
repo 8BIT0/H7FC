@@ -36,8 +36,6 @@ class CLI_Ctl:
                 buf = self.port.readline()
 
             if len(buf):
-                # chack data in queue
-                print("[Receive data from drone]")
                 print(buf.decode("ASCII"))
 
                 # buf.decode("ASCII").find()
