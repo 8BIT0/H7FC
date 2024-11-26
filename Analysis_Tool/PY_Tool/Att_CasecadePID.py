@@ -48,5 +48,16 @@ class Att_CaseCadePID:
                     return False
                 self.decode_progress = Decode_Progress.Decode_GyroZPart
 
+            if self.decode_progress == Decode_Progress.Decode_PitchPart:
+                pass
+            elif self.decode_progress == Decode_Progress.Decode_RollPart:
+                pass
+            elif self.decode_progress == Decode_Progress.Decode_GyroXPart:
+                pass
+            elif self.decode_progress == Decode_Progress.Decode_GyroYPart:
+                pass
+            elif self.decode_progress == Decode_Progress.Decode_GyroZPart:
+                pass
+
     def get(self):
         pass
