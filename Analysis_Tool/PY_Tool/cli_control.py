@@ -71,13 +71,17 @@ class CLI_Ctl:
                 buf = self.port.readline()
                 if len(buf) and not reply:
                     if buf.decode("ASCII").find("[ ---- inuse parameter ---- ]") != -1:
+                        print("[ Receiving controller parameter ]")
                         reply = True
                         continue
                 
                 if reply:
                     sys_time = self.__sys_ms()
-                    print(buf.decode("ASCII"))
-                    # self.Att_PID.parse(para)
+                    if not self.__ack_finish(buf):
+                        para.append(buf)
+                    else :
+                        print("[ Parsing controller parameter ]")
+                        self.Att_PID.parse(para)
                     # return True
             
             # check for receive time out (1S TimeOut)
