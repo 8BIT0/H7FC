@@ -47,7 +47,7 @@ class CLI_Ctl:
                 # check for time out
                 if int(round(time.time()) * 1000) - sys_time >= 1000:
                     print("[ Drone protocol mode switch TIME OUT ]")
-                    break;
+                    break
         
         return CLI_State.CLI_TimeOut
 
@@ -58,12 +58,13 @@ class CLI_Ctl:
         if not self.port.is_open:
             print("[COM port is not open]")
             return CLI_State.CLI_Error
-
+        
         self.port.write(b'show_inuse_pid\r\n')
+        
         # parse drone reply
         while True:
             if self.port.in_waiting:
-                pass
+                tmp_buf = self.port.readline()
 
     def Get_Blackbox_Data(self):
         if not self.port.is_open:

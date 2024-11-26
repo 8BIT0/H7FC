@@ -1,11 +1,15 @@
 class PID_Param:
-    def __init__(self):
+    def __init__(self, port):
         self.PID_Dict = {'P':0.0, 'I':0.0, 'D':0.0}
+        self.port = port
 
     def Set(self, P, I, D):
         self.PID_Dict['P'] = P
         self.PID_Dict['I'] = I
         self.PID_Dict['D'] = D
 
-    def Get(self):
+    def parse(self, bytes):
+        if len(bytes):
+            pass
+
         return self.PID_Dict
