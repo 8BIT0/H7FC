@@ -32,7 +32,8 @@ while (True):
 
     if len(avaliable_port):
         for port_info in avaliable_port:
-            if (port_info.description == 'H7FC') or (port_info.manufacturer == '8_B!T0'):
+            print(port_info)
+            if (port_info.description.find('H7FC') >= 0) or (port_info.manufacturer.find('8_B!T0') >= 0):
                 FC_Found = True
                 print("\t[ Flight Controller Found ]")
                 print("\t[ --- PORT INFO --- ]")
