@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import serial
 import time
-import pid_para
 import Att_CasecadePID
 from enum import Enum
 
@@ -30,6 +29,7 @@ class CLI_Ctl:
             print("[ COM port is not open ]")
             return CLI_State.CLI_Error
         
+        # 5 times retry
         for i in range(5):
             print("[ Send CMD to switch drone`s protocol ]")
             self.port.write(b"\r\n")
@@ -60,47 +60,51 @@ class CLI_Ctl:
         # currently Attitude controller only CasecadePID
         # get inuse angular speed controller parameter        
         para = []
-        sys_time = self.__sys_ms()
         self.port.write(b'show_inuse_pid\r\n')
         time.sleep(1)
         
         # parse drone reply
+        sys_time = self.__sys_ms()
+        reply = False
         while True:
             if self.port.in_waiting:
                 buf = self.port.readline()
-                if len(buf):
-                    if not self.__ack_finish():
-                        para.append(buf)
-                    else:
-                        # match to the end already
-                        # parse data on string type
-                        print(para)
-                        self.Att_PID.parse(para)
-                        return True
+                if len(buf) and not reply:
+                    if buf.decode("ASCII").find("[ ---- inuse parameter ---- ]") != -1:
+                        reply = True
+                        continue
+                
+                if reply:
+                    sys_time = self.__sys_ms()
+                    print(buf.decode("ASCII"))
+                    # self.Att_PID.parse(para)
+                    # return True
             
             # check for receive time out (1S TimeOut)
             if self.__sys_ms() - sys_time > 1000:
                 print("[ Drone controller parameter reply time out ]")
                 return False
+            
+            time.sleep(0.01)
 
     def Get_Blackbox_Data(self):
         if not self.port.is_open:
             print("[COM port is not open]")
             return CLI_State.CLI_Error
 
-        self.__Controller_Param(self)
+        self.__Controller_Param()
 
         # create a file
-        try:
-            print("[Creating Log file]")
-            log_file = open("log.txt", 'w')
+        # try:
+        #     print("[Creating Log file]")
+        #     log_file = open("log.txt", 'w')
 
-            self.port.write(b"blackbox_info\r\n")
-            time.sleep(0.5)
+        #     self.port.write(b"blackbox_info\r\n")
+        #     time.sleep(0.5)
         
-        except:
-            print("[Log file create filed]")
-            return
+        # except:
+        #     print("[Log file create filed]")
+        #     return
  
     def Set_BlackBox_LogType(self):
         pass

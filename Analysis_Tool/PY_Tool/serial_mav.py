@@ -4,16 +4,9 @@ import sys
 import serial
 import serial.tools.list_ports
 import serial.tools.list_ports_common
-import threading
 from time import sleep
 from cli_control import CLI_Ctl as CLI
 from cli_control import CLI_State
-
-def Kb(size = 0):
-    return size * 1024 * 1024
-
-def Mb(size = 0):
-    return size * 1024 * Kb(1)
 
 def clear_consoel_dsp(line = 0):
     for i in range(line):
@@ -29,7 +22,8 @@ while (True):
     print("[ detected port number ] -------- ", len(avaliable_port))
 
     FC_Found = False
-
+    
+    # if your operation system is windows make sure you install AT32 and STM32 VCP driver already
     if len(avaliable_port):
         for port_info in avaliable_port:
             print(port_info)
@@ -63,6 +57,8 @@ while (True):
                 if tool_cli.find("quit") != -1:
                     FC_port.close()
                     break
+                elif tool_cli.find("PID") != -1:
+                    Cli_Ctl.Get_Blackbox_Data()
 
                 sleep(0.2)
 
