@@ -16,12 +16,16 @@ class PID_Param:
         match = False
         if len(bytes):
             self.__parse_state = PID_Parse_State.Parsing
-            if bytes.find("P: "):
+            if bytes.decode("ASCII").find("P: ") != -1:
+                print("[ Parsing P ]")
                 match = True
-            elif bytes.find("I: "):
+            elif bytes.decode("ASCII").find("I: ") != -1:
+                print("[ Parsing I ]")
                 match = True
-            elif bytes.find("D: "):
+            elif bytes.decode("ASCII").find("D: ") != -1:
+                print("[ Parsing D ]")
                 match = True
+                print("[ Parsing finish ]\r\n")
                 self.__parse_state = PID_Parse_State.Parse_Fin
         
         if not match:

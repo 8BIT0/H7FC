@@ -81,7 +81,8 @@ class CLI_Ctl:
                         para.append(buf)
                     else :
                         print("[ Parsing controller parameter ]")
-                        self.Att_PID.parse(para)
+                        if not self.Att_PID.parse(para):
+                            return False
                     # return True
             
             # check for receive time out (1S TimeOut)
