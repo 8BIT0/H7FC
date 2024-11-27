@@ -97,6 +97,7 @@ class Att_CaseCadePID:
                 parse_state = self.GyrZPID_Para.parse(i)
                 if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
+                    return True
                 elif parse_state == single_state.Parse_Error:
                     print("[ Gyro Z parameter decode error ]")
                     return False

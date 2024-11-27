@@ -1,4 +1,5 @@
 from enum import Enum
+import struct
 
 class PID_Parse_State(Enum):
     Parse_None = 0
@@ -12,18 +13,21 @@ class PID_Param:
         self.PID_Dict = {'P':0.0, 'I':0.0, 'D':0.0}
 
     def parse(self, bytes):
-        data = 0
+        str_data = None
         match = False
         if len(bytes):
             self.__parse_state = PID_Parse_State.Parsing
             if bytes.decode("ASCII").find("P: ") != -1:
-                print("[ Parsing P ]")
+                str_data = bytes.decode("ASCII").rstrip("\r\n").split("P: ")[1]
+                print("[ Parsing P ]", str_data)
                 match = True
             elif bytes.decode("ASCII").find("I: ") != -1:
-                print("[ Parsing I ]")
+                str_data = bytes.decode("ASCII").rstrip("\r\n").split("I: ")[1]
+                print("[ Parsing I ]", str_data)
                 match = True
             elif bytes.decode("ASCII").find("D: ") != -1:
-                print("[ Parsing D ]")
+                str_data = bytes.decode("ASCII").rstrip("\r\n").split("D: ")[1]
+                print("[ Parsing D ]", str_data)
                 match = True
                 print("[ Parsing finish ]\r\n")
                 self.__parse_state = PID_Parse_State.Parse_Fin

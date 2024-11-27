@@ -82,8 +82,11 @@ class CLI_Ctl:
                     else :
                         print("[ Parsing controller parameter ]")
                         if not self.Att_PID.parse(para):
+                            print("[ Controller parameter parsing error ]")
                             return False
-                    # return True
+                        else:
+                            print("[ Controller parameter parse successed ]")
+                            return True
             
             # check for receive time out (1S TimeOut)
             if self.__sys_ms() - sys_time > 1000:
