@@ -1,15 +1,33 @@
+from enum import Enum
+
+class PID_Parse_State(Enum):
+    Parse_None = 0
+    Parsing = 1
+    Parse_Error = 2
+    Parse_Fin = 3
+
 class PID_Param:
     def __init__(self):
-        self.decodeing = False
+        self.__parse_state = PID_Parse_State.Parse_None
         self.PID_Dict = {'P':0.0, 'I':0.0, 'D':0.0}
 
-    def __set(self, P, I, D):
-        self.PID_Dict['P'] = P
-        self.PID_Dict['I'] = I
-        self.PID_Dict['D'] = D
-
     def parse(self, bytes):
+        data = 0
+        match = False
         if len(bytes):
-            self.decodeing = True
+            self.__parse_state = PID_Parse_State.Parsing
+            if bytes.find("P: "):
+                match = True
+            elif bytes.find("I: "):
+                match = True
+            elif bytes.find("D: "):
+                match = True
+                self.__parse_state = PID_Parse_State.Parse_Fin
+        
+        if not match:
+            self.__parse_state = PID_Parse_State.Parse_Error
 
-        return self.PID_Dict
+        return self.__parse_state
+    
+    def get(self):
+        pass
