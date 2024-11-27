@@ -5,11 +5,12 @@ import Att_CasecadePID
 from enum import Enum
 
 class CLI_State(Enum):
-    CLI_No_Error    = 1
-    CLI_Sending     = 2
-    CLI_Error       = 3
-    CLI_Parsing     = 4
-    CLI_TimeOut     = 5
+    CLI_No_Error        = 1
+    CLI_Sending         = 2
+    CLI_Error           = 3
+    CLI_Parsing         = 4
+    CLI_TimeOut         = 5
+    CLI_Parsing_Error   = 6
 
 class CLI_Ctl:
     def __init__(self, port_obj):
@@ -100,7 +101,8 @@ class CLI_Ctl:
             print("[COM port is not open]")
             return CLI_State.CLI_Error
 
-        self.__Controller_Param()
+        if not self.__Controller_Param():
+            return CLI_State.CLI_Parsing_Error
 
         # create a file
         # try:
