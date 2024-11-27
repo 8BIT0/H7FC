@@ -55,22 +55,42 @@ class Att_CaseCadePID:
                     return False
                 self.decode_progress = Decode_Progress.Decode_GyroZPart
                 continue
-
+            
+            parse_state = single_state.Parse_None
             if self.decode_progress == Decode_Progress.Decode_PitchPart:
-                if self.PitchPID_Para.parse(i) == single_state.Parse_Fin:
+                parse_state = self.PitchPID_Para.parse(i)
+                if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
+                elif parse_state == single_state.Parse_Error:
+                    pass
+            
             elif self.decode_progress == Decode_Progress.Decode_RollPart:
-                if self.RollPID_Para.parse(i) == single_state.Parse_Fin:
+                parse_state = self.RollPID_Para.parse(i)
+                if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
+                elif parse_state == single_state.Parse_Error:
+                    pass
+
             elif self.decode_progress == Decode_Progress.Decode_GyroXPart:
-                if self.GyrXPID_Para.parse(i) == single_state.Parse_Fin:
+                parse_state = self.GyrXPID_Para.parse(i)
+                if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
+                elif parse_state == single_state.Parse_Error:
+                    pass
+
             elif self.decode_progress == Decode_Progress.Decode_GyroYPart:
-                if self.GyrYPID_Para.parse(i) == single_state.Parse_Fin:
+                parse_state = self.GyrYPID_Para.parse(i)
+                if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
+                elif parse_state == single_state.Parse_Error:
+                    pass
+
             elif self.decode_progress == Decode_Progress.Decode_GyroZPart:
-                if self.GyrZPID_Para.parse(i) == single_state.Parse_Fin:
+                parse_state = self.GyrZPID_Para.parse(i)
+                if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
+                elif parse_state == single_state.Parse_Error:
+                    pass
 
     def get(self):
         pass
