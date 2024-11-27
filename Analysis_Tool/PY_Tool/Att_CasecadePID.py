@@ -62,35 +62,40 @@ class Att_CaseCadePID:
                 if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
                 elif parse_state == single_state.Parse_Error:
-                    pass
-            
+                    print("[ Pitch parameter decode error ]")
+                    return False
+
             elif self.decode_progress == Decode_Progress.Decode_RollPart:
                 parse_state = self.RollPID_Para.parse(i)
                 if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
                 elif parse_state == single_state.Parse_Error:
-                    pass
+                    print("[ Roll parameter decode error ]")
+                    return False
 
             elif self.decode_progress == Decode_Progress.Decode_GyroXPart:
                 parse_state = self.GyrXPID_Para.parse(i)
                 if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
                 elif parse_state == single_state.Parse_Error:
-                    pass
+                    print("[ Gyro X parameter decode error ]")
+                    return False
 
             elif self.decode_progress == Decode_Progress.Decode_GyroYPart:
                 parse_state = self.GyrYPID_Para.parse(i)
                 if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
                 elif parse_state == single_state.Parse_Error:
-                    pass
+                    print("[ Gyro Y parameter decode error ]")
+                    return False
 
             elif self.decode_progress == Decode_Progress.Decode_GyroZPart:
                 parse_state = self.GyrZPID_Para.parse(i)
                 if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
                 elif parse_state == single_state.Parse_Error:
-                    pass
+                    print("[ Gyro Z parameter decode error ]")
+                    return False
 
     def get(self):
         pass
