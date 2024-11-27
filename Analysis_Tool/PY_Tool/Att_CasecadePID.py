@@ -26,31 +26,31 @@ class Att_CaseCadePID:
         
         self.full_str = bytes
         for i in bytes:
-            if i.find("Pitch"):
+            if i.find("Pitch") != -1:
                 if self.decode_progress != Decode_Progress.Decode_None:
                     return False
                 self.decode_progress = Decode_Progress.Decode_PitchPart
                 continue
 
-            if i.find("Roll"):
+            if i.find("Roll") != -1:
                 if self.decode_progress != Decode_Progress.Decode_None:
                     return False
                 self.decode_progress = Decode_Progress.Decode_RollPart
                 continue
 
-            if i.find("GyroX"):
+            if i.find("GyroX") != -1:
                 if self.decode_progress != Decode_Progress.Decode_None:
                     return False
                 self.decode_progress = Decode_Progress.Decode_GyroXPart
                 continue
             
-            if i.find("GyroY"):
+            if i.find("GyroY") != -1:
                 if self.decode_progress != Decode_Progress.Decode_None:
                     return False
                 self.decode_progress = Decode_Progress.Decode_GyroYPart
                 continue
 
-            if i.find("GyroZ"):
+            if i.find("GyroZ") != -1:
                 if self.decode_progress != Decode_Progress.Decode_None:
                     return False
                 self.decode_progress = Decode_Progress.Decode_GyroZPart
