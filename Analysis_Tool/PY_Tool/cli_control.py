@@ -105,16 +105,21 @@ class CLI_Ctl:
             return CLI_State.CLI_Parsing_Error
 
         # create a file
-        # try:
-        #     print("[Creating Log file]")
-        #     log_file = open("log.txt", 'w')
+        try:
+            print("[ Creating Log file ]")
+            log_file = open("log.txt", 'w')
+            print("[ Log file created ]")
 
-        #     self.port.write(b"blackbox_info\r\n")
-        #     time.sleep(0.5)
+            self.port.write(b"blackbox_info\r\n")
+            time.sleep(0.5)
         
-        # except:
-        #     print("[Log file create filed]")
-        #     return
+            while True:
+                # receiving black box log data
+                pass
+
+        except:
+            print("[ Log file create filed ]")
+            return
  
     def Set_BlackBox_LogType(self):
         pass
