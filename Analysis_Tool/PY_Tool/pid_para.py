@@ -45,7 +45,7 @@ class PID_Param:
         if self.__parse_num == 0:
             return ""
         
-        str =  "P =" + str(self.PID_Dict["P"]) + "\r\n"
-        str += "I =" + str(self.PID_Dict["I"]) + "\r\n"
+        str =  "P =" + str(self.PID_Dict["P"]) + "\t\t"
+        str += "I =" + str(self.PID_Dict["I"]) + "\t\t"
         str += "D =" + str(self.PID_Dict["D"]) + "\r\n"
         return str
