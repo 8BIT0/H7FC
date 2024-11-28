@@ -109,7 +109,7 @@ class Att_CaseCadePID:
             return ""
         
         str = "[ ---- PITCH ---- ]\t" + self.PitchPID_Para.format_str()
-        str += "[ ---- ROLL ---- ]\t" + self.RollPID_Para.format_str()
+        str += "[ ---- ROLL ----- ]\t" + self.RollPID_Para.format_str()
         str += "[ ---- GyroX ---- ]\t" + self.GyrXPID_Para.format_str()
         str += "[ ---- GyroY ---- ]\t" + self.GyrYPID_Para.format_str()
         str += "[ ---- GyroZ ---- ]\t" + self.GyrZPID_Para.format_str()

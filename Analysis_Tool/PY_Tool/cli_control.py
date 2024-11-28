@@ -22,7 +22,7 @@ class CLI_Ctl:
         return False
     
     def __sys_ms(self):
-        return int(round(time.time()) * 1000)        
+        return int(time.time() * 1000)        
 
     def Into_CLI_Mode(self):
         if not self.port.is_open:
@@ -95,12 +95,6 @@ class CLI_Ctl:
             
             time.sleep(0.01)
 
-    def __format_angular_controller_param_str(self):
-        pass
-
-    def __format_attitude_controller_param_str(self):
-        pass
-
     def Get_Blackbox_Data(self):
         if not self.port.is_open:
             print("[COM port is not open]")
@@ -124,39 +118,60 @@ class CLI_Ctl:
             if self.port.in_waiting:
                 log_type = self.port.readline()
                 if log_type.decode("ASCII").find("[ BlackBox ] log type: ") != -1:
-                    type_str = "_" + log_type.decode("ASCII").rstrip("\r\n").split("[ BlackBox ] log type: ")[1] + "_"
+                    type_str = log_type.decode("ASCII").rstrip("\r\n").split("[ BlackBox ] log type: ")[1]
                     print("[ BlackBox Log Type", type_str, "]")
                     break
 
         # create a file
-        try:
-            print("[ Creating Log file ]")
-            log_file = open("log" + type_str + date + ".txt", 'w')
-            print("[ Log file created ]")
+        print("[ Creating Log file ]")
+        log_file = open("log_" + type_str + "_" + date + ".txt", 'w')
+        print("[ Log file created ]")
 
-            # write parameter into file
-            if not log_file.writable():
-                print("[ log file not avaliable ]")
-                return
+        # write parameter into file
+        if not log_file.writable():
+            print("[ log file not avaliable ]")
+            return
             
-            if type_str.find("AttitudePID") != -1:
-                format_str = self.__format_attitude_controller_param_str()
-            elif type_str.find("AngularPID") != -1:
-                format_str = self.__format_angular_controller_param_str()
-            
-            self.port.write(b"blackbox_info\r\n")
-            time.sleep(0.5)
-        
-            while True:
-                if self.port.in_waiting:
-                    pass
+        if type_str.find("AttitudePID") != -1 or type_str.find("AngularPID") != -1:
+            format_para = self.Att_PID.format_str()
+            print(format_para)
+            log_file.write(format_para)
+            log_file.write("[ ---- Type ----- ]\t" + type_str + "\r\n")
+            log_file.write("-----------------------------------------------------------------------------\r\n")
+
+        self.port.write(b"blackbox_info\r\n")
+        time.sleep(0.5)
+
+        sys_time = self.__sys_ms()
+        log_start = False
+        lines = []
+        while True:
+            # check for time out
+            if self.__sys_ms() - sys_time >= 1000:
+                print("[ BlackBox data read time out ]")
+                break
+
+            if self.port.in_waiting:
+                sys_time = self.__sys_ms()
+                log_str = self.port.readline()
+                if log_str.decode("ASCII").find("[ BlackBox ] service log size:") != -1:
+                    log_start = True
+                    continue
+
                 # receiving black box log data
                 # if matched "[ BlackBox ] Log End" then finished
-                pass
+                if log_str.decode("ASCII").find("[ BlackBox ] Log End") != -1:
+                    print("[ BlackBox log end ]")
+                    log_file.writelines(lines)
+                    log_start = False
+                    break
 
-        except:
-            print("[ Log file create filed ]")
-            return
- 
-    def Set_BlackBox_LogType(self):
-        pass
+                if log_start:
+                    print(log_str)
+                    if log_str.decode("ASCII").find("[ BlackBox ] ender error") != -1:
+                        lines.pop()
+                    else:
+                        lines.append(log_str.decode("ASCII"))
+
+        print("[ Close log file ]")
+        log_file.close()
