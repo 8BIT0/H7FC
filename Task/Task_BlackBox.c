@@ -885,6 +885,29 @@ static BlackBox_ConvertError_List TaskBlackBox_ConvertLogData_To_CtlAtt(Shell *p
     return BlackBox_Cnv_None_Error;
 }
 
+static const char* TaskBlackBox_Get_LogType_Str(void)
+{
+    switch (Monitor.log_type)
+    {
+        case BlackBox_Log_None:         return "Log_None";
+        case BlackBox_Imu_Filted:       return "Filted_IMU";
+        case BlackBox_Log_Alt_Att:      return "Alt_Att";
+        case BlackBox_AngularPID_Tune:  return "AngularPID";
+        case BlackBox_AttitudePID_Tune: return "AttitudePID";
+        default: return "unknow log type";
+    }
+}
+
+static void TaskBlackBox_GetLogType(void)
+{
+    Shell *shell_obj = Shell_GetInstence();
+    if (shell_obj == NULL)
+        return;
+    
+    shellPrint(shell_obj, "[ BlackBox ] log type: %s\r\n", TaskBlackBox_Get_LogType_Str());
+}
+SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, blackbox_type, TaskBlackBox_GetLogType, blackbox log type);
+
 static void TaskBlackBox_GetLogInfo(void)
 {
     Shell *shell_obj = Shell_GetInstence();
@@ -921,6 +944,7 @@ static void TaskBlackBox_GetLogInfo(void)
         return;
     }
 
+    shellPrint(shell_obj, "[ BlackBox ] log type:               %s\r\n", TaskBlackBox_Get_LogType_Str());
     shellPrint(shell_obj, "[ BlackBox ] task log success count: %d\r\n", Monitor.log_cnt);
     shellPrint(shell_obj, "[ BlackBox ] service log count:      %d\r\n", log_cnt);
     shellPrint(shell_obj, "[ BlackBox ] service log size:       %d\r\n", log_size);
@@ -1146,5 +1170,6 @@ static void TaskBlackBox_GetLogInfo(void)
             break;
         }
     }
+    shellPrint(shell_obj, "[ BlackBox ] Log End\r\n");
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, blackbox_info, TaskBlackBox_GetLogInfo, blackbox log info);

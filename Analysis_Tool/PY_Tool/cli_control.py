@@ -96,6 +96,12 @@ class CLI_Ctl:
             
             time.sleep(0.01)
 
+    def __format_angular_controller_param_str(self):
+        pass
+
+    def __format_attitude_controller_param_str(self):
+        pass
+
     def Get_Blackbox_Data(self):
         if not self.port.is_open:
             print("[COM port is not open]")
@@ -104,17 +110,49 @@ class CLI_Ctl:
         if not self.__Controller_Param():
             return CLI_State.CLI_Parsing_Error
 
+        # get date
+        date = time.strftime("%y-%m-%d", time.localtime())
+        
+        # get log data type
+        self.port.write(b"blackbox_type\r\n")
+        time.sleep(0.5)
+        sys_time = self.__sys_ms()
+        while True:
+            # check for time out
+            if self.__sys_ms() - sys_time >= 1000:
+                return
+            
+            if self.port.in_waiting:
+                log_type = self.port.readline()
+                if log_type.decode("ASCII").find("[ BlackBox ] log type: ") != -1:
+                    type_str = "_" + log_type.decode("ASCII").rstrip("\r\n").split("[ BlackBox ] log type: ")[1] + "_"
+                    print("[ BlackBox Log Type", type_str, "]")
+                    break
+
         # create a file
         try:
             print("[ Creating Log file ]")
-            log_file = open("log.txt", 'w')
+            log_file = open("log" + type_str + date + ".txt", 'w')
             print("[ Log file created ]")
+
+            # write parameter into file
+            if not log_file.writable():
+                print("[ log file not avaliable ]")
+                return
+
+            if type_str.find("AngularPID") != -1:
+                self.__format_angular_controller_param_str()
+            elif type_str.find("AttitudePID") != -1:
+                self.__format_attitude_controller_param_str()
 
             self.port.write(b"blackbox_info\r\n")
             time.sleep(0.5)
         
             while True:
+                if self.port.in_waiting:
+                    pass
                 # receiving black box log data
+                # if matched "[ BlackBox ] Log End" then finished
                 pass
 
         except:
