@@ -12,6 +12,8 @@ class Decode_Progress(Enum):
 
 class Att_CaseCadePID:
     def __init__(self):
+        self.__full_str = None
+        self.__parse_num = 0
         self.decode_progress = Decode_Progress.Decode_None
         self.PitchPID_Para = single_pid()
         self.RollPID_Para = single_pid()
@@ -95,6 +97,8 @@ class Att_CaseCadePID:
                 parse_state = self.GyrZPID_Para.parse(i)
                 if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
+                    self.__full_str = bytes
+                    self.__parse_num += 1
                     return True
                 elif parse_state == single_state.Parse_Error:
                     print("[ Gyro Z parameter decode error ]")
