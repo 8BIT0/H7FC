@@ -12,7 +12,6 @@ class Decode_Progress(Enum):
 
 class Att_CaseCadePID:
     def __init__(self):
-        self.full_str = []
         self.decode_progress = Decode_Progress.Decode_None
         self.PitchPID_Para = single_pid()
         self.RollPID_Para = single_pid()
@@ -24,7 +23,6 @@ class Att_CaseCadePID:
         if len(bytes) == 0:
             return False
         
-        self.full_str = bytes
         for i in bytes:
             if i.decode("ASCII").find("Pitch") != -1:
                 if self.decode_progress != Decode_Progress.Decode_None:
