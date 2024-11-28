@@ -8,6 +8,7 @@ class PID_Parse_State(Enum):
 
 class PID_Param:
     def __init__(self):
+        self.__parse_num = 0
         self.__parse_state = PID_Parse_State.Parse_None
         self.PID_Dict = {'P':0.0, 'I':0.0, 'D':0.0}
 
@@ -31,6 +32,7 @@ class PID_Param:
                 self.PID_Dict['D'] = float(str_data)
                 print("[ Parsing D ]", self.PID_Dict['D'])
                 match = True
+                self.__parse_num += 1
                 print("[ Parsing finish ]\r\n")
                 self.__parse_state = PID_Parse_State.Parse_Fin
         
@@ -39,5 +41,11 @@ class PID_Param:
 
         return self.__parse_state
     
-    def get(self):
-        pass
+    def format_str(self):
+        if self.__parse_num == 0:
+            return ""
+        
+        str =  "P -" + str(self.PID_Dict["P"]) + "\r\n"
+        str += "I -" + str(self.PID_Dict["I"]) + "\r\n"
+        str += "D -" + str(self.PID_Dict["D"]) + "\r\n"
+        return str

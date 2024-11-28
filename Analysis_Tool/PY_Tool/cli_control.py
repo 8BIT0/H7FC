@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import serial
 import time
 import Att_CasecadePID
 from enum import Enum
@@ -139,12 +138,12 @@ class CLI_Ctl:
             if not log_file.writable():
                 print("[ log file not avaliable ]")
                 return
-
-            if type_str.find("AngularPID") != -1:
-                self.__format_angular_controller_param_str()
-            elif type_str.find("AttitudePID") != -1:
-                self.__format_attitude_controller_param_str()
-
+            
+            if type_str.find("AttitudePID") != -1:
+                format_str = self.__format_attitude_controller_param_str()
+            elif type_str.find("AngularPID") != -1:
+                format_str = self.__format_angular_controller_param_str()
+            
             self.port.write(b"blackbox_info\r\n")
             time.sleep(0.5)
         

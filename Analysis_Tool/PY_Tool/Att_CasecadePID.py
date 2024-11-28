@@ -102,5 +102,5 @@ class Att_CaseCadePID:
                     print("[ Gyro Z parameter decode error ]")
                     return False
 
-    def get(self):
+    def format_str(self):
         pass
