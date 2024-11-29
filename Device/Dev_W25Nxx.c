@@ -12,6 +12,7 @@
 #define W25NXX_INFO(fmt, ...) Debug_Print(&DebugPort, W25NXX_TAG, fmt, ##__VA_ARGS__)
 /* test code */
 
+#define W25NXX_SET_SINGLE_BIT(x)    (x = true)
 #define W25NXX_BUS_COMMU_TIMEOUT    100 /* unit: ms */
 #define ConvertPageFormat(x)        ((x / W25NXX_PAGE_PRE_BLOCK) << 6) | (x %  W25NXX_PAGE_PRE_BLOCK)
 #define ConvertToSR0_RegFormat(x)   ((DevW25Nxx_SR0_TypeDef *)x)
@@ -43,7 +44,7 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev, bool en);
-static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field_index, uint8_t val);
+static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field);
 static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev); 
 static bool W25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev);
 
@@ -196,6 +197,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev)
 {
     uint8_t tx_tmp[2] = {0};
+    uint8_t field = 0x00;
 
     if ((dev == NULL) || \
         (dev->cs_ctl == NULL))
@@ -203,7 +205,21 @@ static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev)
 
     memset(tx_tmp, 0, sizeof(tx_tmp));
     tx_tmp[0] = W25NXX_RESET_CMD;
-    return DevW25Nxx_Write(dev, tx_tmp, sizeof(tx_tmp));
+    if (DevW25Nxx_Write(dev, tx_tmp, sizeof(tx_tmp)) != DevW25Nxx_Ok)
+        return false;
+
+    // wait for w25n01 ready
+    if (!W25Nxx_Wait_Busy(dev))
+        return false;
+
+    // no protection WP-E off
+    field |= BF_WPE;
+    DevW25Nxx_WriteReg_Set(dev, W25NXX_SR0_ADDR, field);
+    
+    // enable buffered read mode (BUF = 1) ECC enabled (ECC = 1)
+    field |= BF_BUF;
+    field |= BF_ECC_E;
+    DevW25Nxx_WriteReg_Set(dev, W25NXX_SR1_ADDR, field);
 }
 
 static bool W25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev)
@@ -358,7 +374,7 @@ static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr)
     return (addr / W25N01GV_PAGE_SIZE);
 }
 
-static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field_index, uint8_t val)
+static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field)
 {
     uint8_t cmd[3] = {W25NXX_WRITE_STATUS_CMD, reg_addr};
 
@@ -372,30 +388,46 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, ui
 
     if (reg_addr == W25NXX_SR0_ADDR)
     {
-        switch (field_index)
-        {
-            case BF_SRP_1: ConvertToSR0_RegFormat(&cmd[2])->bit.SRP_1 = val; break;
-            case BF_WPE:   ConvertToSR0_RegFormat(&cmd[2])->bit.WPE   = val; break;
-            case BF_TB:    ConvertToSR0_RegFormat(&cmd[2])->bit.TB    = val; break;
-            case BF_BP_0:  ConvertToSR0_RegFormat(&cmd[2])->bit.BP_0  = val; break;
-            case BF_BP_1:  ConvertToSR0_RegFormat(&cmd[2])->bit.BP_1  = val; break;
-            case BF_BP_2:  ConvertToSR0_RegFormat(&cmd[2])->bit.BP_2  = val; break;
-            case BF_BP_3:  ConvertToSR0_RegFormat(&cmd[2])->bit.BP_3  = val; break;
-            case BF_SRP_0: ConvertToSR0_RegFormat(&cmd[2])->bit.SRP_0 = val; break;
-            default: return DevW25Nxx_Error;
-        }
+        if (field & BF_SRP_1)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.SRP_1);
+        
+        if (field & BF_WPE) 
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.WPE);
+
+        if (field & BF_TB)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.TB);
+
+        if (field & BF_BP_0)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.BP_0);
+
+        if (field & BF_BP_1)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.BP_1);
+
+        if (field & BF_BP_2)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.BP_2);
+
+        if (field & BF_BP_3)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.BP_3);
+
+        if (field & BF_SRP_0)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.SRP_0);
     }
     else if (reg_addr == W25NXX_SR1_ADDR)
     {
-        switch (field_index)
-        {
-            case BF_BUF:   ConvertToSR1_RegFormat(&cmd[2])->bit.BUF   = val; break;
-            case BF_ECC_E: ConvertToSR1_RegFormat(&cmd[2])->bit.ECC_E = val; break;
-            case BF_SR1_L: ConvertToSR1_RegFormat(&cmd[2])->bit.SR1_L = val; break;
-            case BF_OTP_E: ConvertToSR1_RegFormat(&cmd[2])->bit.OTP_E = val; break;
-            case BF_OTP_L: ConvertToSR1_RegFormat(&cmd[2])->bit.OTP_L = val; break;
-            default: return DevW25Nxx_Error;
-        }
+        if (field & BF_BUF)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&cmd[2])->bit.BUF);
+        
+        if (field & BF_ECC_E)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&cmd[2])->bit.ECC_E);
+
+        if (field & BF_SR1_L)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&cmd[2])->bit.SR1_L);
+        
+        if (field & BF_OTP_E)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&cmd[2])->bit.OTP_E);
+        
+        if (field & BF_OTP_L)
+            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&cmd[2])->bit.OTP_L);
     }
     
     if (!DevW25Nxx_Write(dev, cmd, sizeof(cmd)))

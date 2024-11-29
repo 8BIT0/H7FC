@@ -67,24 +67,24 @@ typedef enum
 
 typedef enum
 {
-    BF_SRP_1 = 0,
-    BF_WPE,
-    BF_TB,
-    BF_BP_0,
-    BF_BP_1,
-    BF_BP_2,
-    BF_BP_3,
-    BF_SRP_0,
+    BF_SRP_1    = (1 << 0),
+    BF_WPE      = (1 << 1),
+    BF_TB       = (1 << 2),
+    BF_BP_0     = (1 << 3),
+    BF_BP_1     = (1 << 4),
+    BF_BP_2     = (1 << 5),
+    BF_BP_3     = (1 << 6),
+    BF_SRP_0    = (1 << 7),
 } DevW25Nxx_SR0_BitField_TypeDef;
 
 typedef enum
 {
-    BF_RES_SR1 = 0,
-    BF_BUF,
-    BF_ECC_E,
-    BF_SR1_L,
-    BF_OTP_E,
-    BF_OTP_L,
+    BF_RES_SR1  = (1 << 0),
+    BF_BUF      = (1 << 1),
+    BF_ECC_E    = (1 << 2),
+    BF_SR1_L    = (1 << 3),
+    BF_OTP_E    = (1 << 4),
+    BF_OTP_L    = (1 << 5),
 } DevW25Nxx_SR1_BitField_TypeDef;
 
 typedef enum
