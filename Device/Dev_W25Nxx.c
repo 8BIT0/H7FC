@@ -13,6 +13,7 @@
 /* test code */
 
 #define W25NXX_SET_SINGLE_BIT(x)    (x = true)
+#define W25NXX_EXTENSION_DATA_INDEX 2048
 #define W25NXX_BUS_COMMU_TIMEOUT    100 /* unit: ms */
 #define ConvertPageFormat(x)        ((x / W25NXX_PAGE_PRE_BLOCK) << 6) | (x %  W25NXX_PAGE_PRE_BLOCK)
 #define ConvertToSR0_RegFormat(x)   ((DevW25Nxx_SR0_TypeDef *)x)
@@ -42,12 +43,12 @@ static bool DevW25Nxx_Trans_Receive(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, ui
 static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev);
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
-static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev);
+static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t *reg);
 static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev, bool en);
 static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field);
 static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev); 
-static bool W25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev);
-static DevW25Nxx_Error_List DevW25Nxx_Send_PageAddrRead_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr);
+static bool DevW25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev);
+static DevW25Nxx_Error_List DevW25Nxx_Send_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr);
 
 /* external function */
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
@@ -159,21 +160,8 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
     dev->cur_page_index = UINT32_MAX;
 
     /* check read status */
-    err = DevW25Nxx_Check_Read_Status(dev);
-    if (err == DevW25Nxx_Error)
+    if (!DevW25Nxx_Wait_Busy(dev))
         return DevW25Nxx_Error;
-    
-    sys_time = dev->systick();
-    while (err == DevW25Nxx_Busy)
-    {
-        if ((dev->systick() - sys_time) >= W25NXX_BUS_COMMU_TIMEOUT)
-            return DevW25Nxx_TimeOut;
-
-        dev->delay_ms(1);
-        err = DevW25Nxx_Check_Read_Status(dev);
-        if (err == DevW25Nxx_Error)
-            return DevW25Nxx_Error;
-    }
 
     /* get product id */
     dev->prod_type = DevW25Nxx_Get_ProductID(dev);
@@ -224,28 +212,30 @@ static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev)
     DevW25Nxx_WriteReg_Set(dev, W25NXX_SR1_ADDR, field);
 }
 
-static bool W25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev)
+static bool DevW25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev)
 {
     uint8_t time_out = 0;
     DevW25Nxx_Error_List state = DevW25Nxx_Busy;
+    DevW25Nxx_SR2_TypeDef sr2;
 
+    sr2.val = 0x00;
     if ((dev == NULL) || \
         (dev->delay_ms == NULL))
         return false;
 
     while (state == DevW25Nxx_Busy)
     {
-        state = DevW25Nxx_Check_Read_Status(dev);
+        state = DevW25Nxx_Check_Read_Status(dev, W25NXX_SR2_ADDR, &sr2.val);
+
+        if ((state == DevW25Nxx_Ok) && (sr2.bit.BUSY == 0))
+            return true;
+
         dev->delay_ms(1);
-    
         if (time_out >= W25NXX_BUS_COMMU_TIMEOUT)
             return false;
 
         time_out ++;
     }
-
-    if (state == DevW25Nxx_Ok)
-        return true;
 
     return false;
 }
@@ -280,21 +270,19 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
     return DevW25N_None;
 }
 
-static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev)
+static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t *reg)
 {
-    uint8_t cmd[3] = {W25NXX_READ_STATUS_CMD, W25NXX_SR2_ADDR, 0};
+    uint8_t cmd[3] = {W25NXX_READ_STATUS_CMD, reg_addr, 0};
     uint8_t reg_val[3] = {0, 0, 0};
     DevW25Nxx_SR2_TypeDef sr2;
 
     if ((dev == NULL) || \
+        (reg == NULL) || \
         !DevW25Nxx_Trans_Duplex(dev, cmd, reg_val, sizeof(cmd)))
         return DevW25Nxx_Error;
 
-    sr2.val = reg_val[2];
-    if (sr2.bit.BUSY == 0)
-        return DevW25Nxx_Ok;
-
-    return DevW25Nxx_Busy;
+    *reg = reg_val[2];
+    return DevW25Nxx_Ok;
 }
 
 /* still in developping */
@@ -489,7 +477,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Write_Page(DevW25NxxObj_TypeDef *dev, uint
     return DevW25Nxx_Ok;
 }
 
-static DevW25Nxx_Error_List DevW25Nxx_Send_PageAddrRead_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr)
+static DevW25Nxx_Error_List DevW25Nxx_Send_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr)
 {
     uint32_t page = 0;
     uint8_t buf[4];
@@ -531,24 +519,10 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_PageOnBlock(DevW25NxxObj_TypeDef *dev
     for (uint8_t i = 0; i < read_num; i++)
     {
         start_page = DevW25Nxx_Get_Page(dev, addr);
-
-        /* get chip status */
-        err = DevW25Nxx_Check_Read_Status(dev);
-        if (err == DevW25Nxx_Error)
-            return DevW25Nxx_Error;
+        if (!W25Nxx_Wait_Busy(dev))
+            break;
         
-        sys_time = dev->systick();
-        while (err == DevW25Nxx_Busy)
-        {
-            if ((dev->systick() - sys_time) >= W25NXX_BUS_COMMU_TIMEOUT)
-                return DevW25Nxx_TimeOut;
-
-            err = DevW25Nxx_Check_Read_Status(dev);
-            if (err == DevW25Nxx_Error)
-                return DevW25Nxx_Error;
-        }
-        
-        // static DevW25Nxx_Error_List DevW25Nxx_Send_PageAddrRead_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr)
+        // static DevW25Nxx_Error_List DevW25Nxx_Send_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr)
     }
 
     return DevW25Nxx_Error;
@@ -556,8 +530,21 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_PageOnBlock(DevW25NxxObj_TypeDef *dev
 
 static DevW25Nxx_Error_List DevW25Nxx_Read_ExtensionOnBlock(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size)
 {
-    if ((dev == NULL) || (p_data == NULL) || (size == 0))
+    DevW25Nxx_Error_List err;
+    uint32_t sys_time = 0;
+    uint8_t cmd[4];
+
+    if ((dev == NULL) || (p_data == NULL) || (size == 0) || (size > 64))
         return DevW25Nxx_Error;
 
-    return DevW25Nxx_Ok;
+    cmd[0] = W25NXX_READ;
+    cmd[1] = (W25NXX_EXTENSION_DATA_INDEX >> 8) & 0xFF;
+    cmd[2] = (W25NXX_EXTENSION_DATA_INDEX >> 0) & 0xFF;
+    cmd[3] = 0;
+
+    /* check read status */
+    if (!W25Nxx_Wait_Busy(dev))
+        return DevW25Nxx_Error;
+
+    return DevW25Nxx_Trans_Duplex(dev, cmd, p_data, size) ? DevW25Nxx_Ok : DevW25Nxx_Error;
 }
