@@ -162,14 +162,14 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
     /* check read status */
     if (!DevW25Nxx_Wait_Busy(dev))
         return DevW25Nxx_Error;
+    
+    /* soft reset */
+    if (!DevW25Nxx_Soft_Reset(dev))
+        return DevW25Nxx_Error;
 
     /* get product id */
     dev->prod_type = DevW25Nxx_Get_ProductID(dev);
     if (dev->prod_type == DevW25N_None)
-        return DevW25Nxx_Error;
-
-    /* soft reset */
-    if (!DevW25Nxx_Soft_Reset(dev))
         return DevW25Nxx_Error;
 
     /* disable write protect */
