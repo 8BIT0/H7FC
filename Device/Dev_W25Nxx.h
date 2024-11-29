@@ -182,6 +182,8 @@ typedef struct
     uint32_t cur_page_index;
     uint8_t *tmp_buf;
     bool write_en;
+
+    /* W25N01 has 1024 block 64bit * 16 = 1024bit each bit represent a block, a set bit represent a bad block */
     uint64_t bolck_tag[16];
 
     uint16_t (*bus_tx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
