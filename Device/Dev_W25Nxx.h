@@ -179,6 +179,7 @@ typedef struct
 {
     DevW25Nxx_ProdType_List prod_type;
     uint32_t prod_code;
+    uint32_t cur_page_index;
     uint8_t *tmp_buf;
     bool write_en;
 

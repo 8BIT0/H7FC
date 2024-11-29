@@ -47,6 +47,7 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev, bool en
 static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field);
 static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev); 
 static bool W25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev);
+static DevW25Nxx_Error_List DevW25Nxx_Send_PageAddrRead_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr);
 
 /* external function */
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
@@ -155,6 +156,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
 
     dev->init_state = false;
     dev->write_en = false;
+    dev->cur_page_index = UINT32_MAX;
 
     /* check read status */
     err = DevW25Nxx_Check_Read_Status(dev);
@@ -487,6 +489,25 @@ static DevW25Nxx_Error_List DevW25Nxx_Write_Page(DevW25NxxObj_TypeDef *dev, uint
     return DevW25Nxx_Ok;
 }
 
+static DevW25Nxx_Error_List DevW25Nxx_Send_PageAddrRead_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr)
+{
+    uint32_t page = 0;
+    uint8_t buf[4];
+
+    memset(cmd, 0, sizeof(cmd));
+
+    if (dev == NULL)
+        return DevW25Nxx_Error;
+
+    page = DevW25Nxx_Get_Page(dev, addr);
+    buf[0] = cmd;
+    buf[1] = 0x00;
+    buf[2] = (page >> 8) & 0xFF;
+    buf[3] = (page >> 0) & 0xFF;
+
+    return DevW25Nxx_Write(dev, buf, sizeof(buf)) ? DevW25Nxx_Ok : DevW25Nxx_Error;
+}
+
 static DevW25Nxx_Error_List DevW25Nxx_Read_PageOnBlock(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size)
 {
     DevW25Nxx_Error_List err = DevW25Nxx_Ok;
@@ -526,21 +547,17 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_PageOnBlock(DevW25NxxObj_TypeDef *dev
             if (err == DevW25Nxx_Error)
                 return DevW25Nxx_Error;
         }
-
-        /* read page */
-        // cmd[0] = W25NXX_PAGE_DATA_READ;
-        // cmd[1] = ;
-        // cmd[2] = ;
-        // cmd[3] = ;
-
-        dev->cs_ctl(false);
-        state = dev->bus_tx(cmd, sizeof(cmd), W25NXX_BUS_COMMU_TIMEOUT);  /* send cmd */
-        // state &= dev->bus_rx();
-        dev->cs_ctl(true);
-
-        if (!state)
-            return DevW25Nxx_Error;
+        
+        // static DevW25Nxx_Error_List DevW25Nxx_Send_PageAddrRead_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr)
     }
 
     return DevW25Nxx_Error;
+}
+
+static DevW25Nxx_Error_List DevW25Nxx_Read_ExtensionOnBlock(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size)
+{
+    if ((dev == NULL) || (p_data == NULL) || (size == 0))
+        return DevW25Nxx_Error;
+
+    return DevW25Nxx_Ok;
 }
