@@ -182,6 +182,7 @@ typedef struct
     uint32_t cur_page_index;
     uint8_t *tmp_buf;
     bool write_en;
+    uint64_t bolck_tag[16];
 
     uint16_t (*bus_tx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
     uint16_t (*bus_rx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
