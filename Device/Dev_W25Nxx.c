@@ -37,9 +37,6 @@ typedef union
 } DevW25Nx_PageAddr_TypeDef;
 
 /* internal function */
-static bool DevW25Nxx_Write(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t len);
-static bool DevW25Nxx_Read(DevW25NxxObj_TypeDef *dev, uint8_t *p_rx, uint16_t len);
-static bool DevW25Nxx_Trans_Receive(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t tx_len, uint8_t *p_rx, uint16_t rx_len);
 static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev);
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
@@ -61,69 +58,6 @@ DevW25Nxx_TypeDef DevW25Nxx = {
     .get_page = DevW25Nxx_Get_Page,
     // .read = ,
 };
-
-static bool DevW25Nxx_Write(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t len)
-{
-    uint16_t tx_out = 0;
-
-    if ((dev == NULL) || \
-        (dev->bus_tx == NULL) || \
-        (dev->cs_ctl == NULL) || \
-        (p_tx == NULL) || \
-        (len == 0))
-        return false;
-
-    dev->cs_ctl(false);
-    tx_out = dev->bus_tx(p_tx, len, W25NXX_BUS_COMMU_TIMEOUT);
-    dev->cs_ctl(true);
-
-    return tx_out ? true : false;
-}
-
-static bool DevW25Nxx_Read(DevW25NxxObj_TypeDef *dev, uint8_t *p_rx, uint16_t len)
-{
-    uint16_t rx_out = 0;
-
-    if ((dev == NULL) || \
-        (dev->bus_rx == NULL) || \
-        (dev->cs_ctl) || \
-        (p_rx == NULL) || \
-        (len == 0))
-        return false;
-
-    dev->cs_ctl(false);
-    rx_out = dev->bus_rx(p_rx, len, W25NXX_BUS_COMMU_TIMEOUT);
-    dev->cs_ctl(true);
-
-    return rx_out ? true : false;
-}
-
-static bool DevW25Nxx_Trans_Receive(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t tx_len, uint8_t *p_rx, uint16_t rx_len)
-{
-    uint16_t tx_out = 0;
-    uint16_t rx_out = 0;
-
-    if ((dev == NULL) || \
-        (dev->bus_rx == NULL) || \
-        (dev->bus_tx == NULL) || \
-        (dev->cs_ctl) || \
-        (p_rx == NULL) || \
-        (p_tx == NULL) || \
-        (tx_len == 0) || \
-        (rx_len == 0))
-        return false;
-
-    dev->cs_ctl(false);
-    tx_out = dev->bus_tx(p_tx, tx_len, W25NXX_BUS_COMMU_TIMEOUT);
-    rx_out = dev->bus_rx(p_rx, rx_len, W25NXX_BUS_COMMU_TIMEOUT);
-    dev->cs_ctl(true);
-
-    if ((tx_out == 0) || \
-        (rx_out == 0))
-        return false;
-
-    return true;
-}
 
 static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
 {
@@ -184,16 +118,18 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
 
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev)
 {
-    uint8_t tx_tmp[2] = {0};
+    uint8_t tx_tmp[2] = {0, 0};
+    uint8_t rx_tmp[2] = {0, 0};
     uint8_t field = 0x00;
 
     if ((dev == NULL) || \
         (dev->cs_ctl == NULL))
         return false;
 
+    W25NXX_INFO(" Resetting\r\n");
     memset(tx_tmp, 0, sizeof(tx_tmp));
     tx_tmp[0] = W25NXX_RESET_CMD;
-    if (!DevW25Nxx_Write(dev, tx_tmp, sizeof(tx_tmp)))
+    if (!DevW25Nxx_Trans_Duplex(dev, tx_tmp, rx_tmp, sizeof(tx_tmp)))
         return false;
 
     // wait for w25n01 ready
@@ -202,16 +138,23 @@ static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev)
 
     // no protection WP-E off
     field |= BF_WPE;
-    if (!DevW25Nxx_WriteReg_Set(dev, W25NXX_SR0_ADDR, field) != DevW25Nxx_Ok)
+    if (DevW25Nxx_WriteReg_Set(dev, W25NXX_SR0_ADDR, field) != DevW25Nxx_Ok)
+    {
         W25NXX_INFO(" WP-E set error\r\n");
-    
+        return false;
+    }
+
     // enable buffered read mode (BUF = 1) ECC enabled (ECC = 1)
+    field = 0;
     field |= BF_BUF;
     field |= BF_ECC_E;
-    if (!DevW25Nxx_WriteReg_Set(dev, W25NXX_SR1_ADDR, field) != DevW25Nxx_Ok)
+    if (DevW25Nxx_WriteReg_Set(dev, W25NXX_SR1_ADDR, field) != DevW25Nxx_Ok)
+    {
         W25NXX_INFO(" BUF and ECC_E set error\r\n");
+        return false;
+    }
 
-    W25NXX_INFO(" reset done\r\n");
+    W25NXX_INFO(" Reset done\r\n");
     return true;
 }
 
@@ -240,7 +183,7 @@ static bool DevW25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev)
         time_out ++;
     }
     
-    W25NXX_INFO(" device busy\r\n");
+    W25NXX_INFO(" Device busy\r\n");
     return false;
 }
 
@@ -335,65 +278,124 @@ static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr)
     return (addr / W25N01GV_PAGE_SIZE);
 }
 
+static void DevW25Nxx_Print_Reg(uint8_t reg_addr, uint8_t val)
+{
+    if (reg_addr == W25NXX_SR0_ADDR)
+    {
+        DevW25Nxx_SR0_TypeDef SR0_data;
+        SR0_data.val = val;
+
+        W25NXX_INFO(" Reg SR0\r\n");
+        W25NXX_INFO(" SRP_1  %s\r\n", SR0_data.bit.SRP_1 ? "set" : "reset");
+        W25NXX_INFO(" WP-E   %s\r\n", SR0_data.bit.WPE   ? "set" : "reset");
+        W25NXX_INFO(" TB     %s\r\n", SR0_data.bit.TB    ? "set" : "reset");
+        W25NXX_INFO(" BP_0   %s\r\n", SR0_data.bit.BP_0  ? "set" : "reset");
+        W25NXX_INFO(" BP_1   %s\r\n", SR0_data.bit.BP_1  ? "set" : "reset");
+        W25NXX_INFO(" BP_2   %s\r\n", SR0_data.bit.BP_2  ? "set" : "reset");
+        W25NXX_INFO(" BP_3   %s\r\n", SR0_data.bit.BP_3  ? "set" : "reset");
+        W25NXX_INFO(" SRP_0  %s\r\n", SR0_data.bit.SRP_0 ? "set" : "reset");
+
+        return;
+    }
+    else if (reg_addr == W25NXX_SR1_ADDR)
+    {
+        DevW25Nxx_SR1_TypeDef SR1_data;
+        SR1_data.val = val;
+
+        W25NXX_INFO(" Reg SR1\r\n");
+        W25NXX_INFO(" BUF   %s\r\n", SR1_data.bit.BUF ? "set" : "reset");
+        W25NXX_INFO(" ECC_E %s\r\n", SR1_data.bit.ECC_E ? "set" : "reset");
+        W25NXX_INFO(" SR1_L %s\r\n", SR1_data.bit.SR1_L ? "set" : "reset");
+        W25NXX_INFO(" OTP_E %s\r\n", SR1_data.bit.OTP_E ? "set" : "reset");
+        W25NXX_INFO(" OTP_L %s\r\n", SR1_data.bit.OTP_L ? "set" : "reset");
+        return;
+    }
+    W25NXX_INFO(" \r\n");
+
+    W25NXX_INFO(" Unknow reg\r\n");
+}
+
 static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field)
 {
-    uint8_t cmd[3] = {W25NXX_WRITE_STATUS_CMD, reg_addr};
+    uint8_t tx[3] = {W25NXX_WRITE_STATUS_CMD, reg_addr};
+    uint8_t rx[3] = {0, 0, 0};
+    uint8_t set_val = 0;
 
     if ((dev == NULL) || \
         ((reg_addr != W25NXX_SR0_ADDR) && \
          (reg_addr != W25NXX_SR1_ADDR)))
         return DevW25Nxx_Error;
 
-    if (!DevW25Nxx_Read(dev, cmd, sizeof(cmd)))
-        return DevW25Nxx_Error;
-
     if (reg_addr == W25NXX_SR0_ADDR)
     {
+        W25NXX_INFO(" Set SR0\r\n");
+
         if (field & BF_SRP_1)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.SRP_1);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&set_val)->bit.SRP_1);
         
         if (field & BF_WPE) 
-            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.WPE);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&set_val)->bit.WPE);
 
         if (field & BF_TB)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.TB);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&set_val)->bit.TB);
 
         if (field & BF_BP_0)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.BP_0);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&set_val)->bit.BP_0);
 
         if (field & BF_BP_1)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.BP_1);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&set_val)->bit.BP_1);
 
         if (field & BF_BP_2)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.BP_2);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&set_val)->bit.BP_2);
 
         if (field & BF_BP_3)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.BP_3);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&set_val)->bit.BP_3);
 
         if (field & BF_SRP_0)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&cmd[2])->bit.SRP_0);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR0_RegFormat(&set_val)->bit.SRP_0);
     }
     else if (reg_addr == W25NXX_SR1_ADDR)
     {
+        W25NXX_INFO(" Set SR1\r\n");
+        
         if (field & BF_BUF)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&cmd[2])->bit.BUF);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&set_val)->bit.BUF);
         
         if (field & BF_ECC_E)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&cmd[2])->bit.ECC_E);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&set_val)->bit.ECC_E);
 
         if (field & BF_SR1_L)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&cmd[2])->bit.SR1_L);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&set_val)->bit.SR1_L);
         
         if (field & BF_OTP_E)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&cmd[2])->bit.OTP_E);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&set_val)->bit.OTP_E);
         
         if (field & BF_OTP_L)
-            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&cmd[2])->bit.OTP_L);
+            W25NXX_SET_SINGLE_BIT(ConvertToSR1_RegFormat(&set_val)->bit.OTP_L);
     }
     
-    if (!DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
+    tx[0] = W25NXX_WRITE_STATUS_CMD;
+    tx[2] = set_val;
+    if (!DevW25Nxx_Trans_Duplex(dev, tx, rx, sizeof(tx)))
     {
         W25NXX_INFO(" Failed on reg setting\r\n");
+        return DevW25Nxx_Error;
+    }
+
+    if (!DevW25Nxx_Wait_Busy(dev))
+        return DevW25Nxx_Error;
+
+    tx[0] = W25NXX_READ_STATUS_CMD;
+    tx[2] = 0;
+    if (!DevW25Nxx_Trans_Duplex(dev, tx, rx, sizeof(tx)))
+        return DevW25Nxx_Error;
+
+    if (set_val != rx[2])
+    {
+        W25NXX_INFO(" set val\r\n");
+        DevW25Nxx_Print_Reg(reg_addr, set_val);
+        W25NXX_INFO(" reg val\r\n");
+        DevW25Nxx_Print_Reg(reg_addr, rx[2]);
         return DevW25Nxx_Error;
     }
 
@@ -404,12 +406,13 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, ui
 static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev, bool en)
 {
     uint8_t cmd[2] = {W25NXX_WRITE_DISABLE, 0};
+    uint8_t dummy[2] = {0, 0};
 
     if (en)
         cmd[0] = W25NXX_WRITE_ENABLE;
 
     if ((dev == NULL) || \
-        !DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
+        !DevW25Nxx_Trans_Duplex(dev, cmd, dummy, sizeof(cmd)))
         return DevW25Nxx_Error;
 
     dev->write_en = en;
