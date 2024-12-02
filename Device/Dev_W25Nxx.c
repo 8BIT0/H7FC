@@ -154,8 +154,6 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
         (dev->systick == NULL))
         return DevW25Nxx_Error;
     
-    W25NXX_INFO(" Module initializing\r\n");
-    
     dev->init_state = false;
     dev->write_en = false;
     dev->cur_addr = UINT32_MAX;
