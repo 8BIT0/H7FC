@@ -43,6 +43,7 @@ typedef union
 
 /* internal function */
 static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len);
+static bool DevW25Nxx_Trans_Recevice(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t tx_len, uint8_t *p_rx, uint16_t rx_len);
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev);
 static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t *reg);
@@ -64,6 +65,29 @@ DevW25Nxx_TypeDef DevW25Nxx = {
     .get_page = DevW25Nxx_Get_Page,
     // .read = ,
 };
+
+static bool DevW25Nxx_Trans_Recevice(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint16_t tx_len, uint8_t *p_rx, uint16_t rx_len)
+{
+    bool state = false;
+
+    if ((dev == NULL) || \
+        (dev->cs_ctl == NULL) || \
+        (dev->bus_tx == NULL) || \
+        (dev->bus_rx == NULL))
+        return false;
+
+    dev->cs_ctl(false);
+
+    if (p_tx && tx_len)
+        state = dev->bus_tx(p_tx, tx_len, W25NXX_BUS_COMMU_TIMEOUT) ? true : false;
+
+    if (p_rx && rx_len)
+        state |= dev->bus_rx(p_rx, rx_len, W25NXX_BUS_COMMU_TIMEOUT) ? true : false;
+
+    dev->cs_ctl(true);
+
+    return state;
+}
 
 static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uint8_t *p_rx, uint16_t len)
 {
@@ -173,6 +197,20 @@ static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev)
 
     W25NXX_INFO(" Reset done\r\n");
     return true;
+}
+
+static DevW25Nxx_Error_List DevW25Nxx_Check_ECC(DevW25NxxObj_TypeDef *dev)
+{
+    DevW25Nxx_SR2_TypeDef sr2;
+    
+    sr2.val = 0;
+    
+    if ((dev == NULL) || \
+        (DevW25Nxx_Check_Read_Status(dev, W25NXX_SR2_ADDR, &sr2.val) != DevW25Nxx_Ok) || \
+        sr2.bit.ECC_1)
+        return DevW25Nxx_Error;
+
+    return DevW25Nxx_Ok;
 }
 
 static bool DevW25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev)
@@ -495,18 +533,25 @@ static DevW25Nxx_Error_List DevW25Nxx_ReadDataBuffer(DevW25NxxObj_TypeDef *dev, 
 {
     uint8_t tx_tmp[4] = {W25NXX_READ};
     uint8_t rx_tmp[4];
+    W25Nxx_FormatAddr_TypeDef for_addr; 
 
     memset(rx_tmp, 0, sizeof(rx_tmp));
+    memset(&for_addr, 0, sizeof(for_addr));
     if ((dev == NULL) || \
         (p_buf == NULL) || \
         (size == 0) || \
         !DevW25Nxx_Wait_Busy(dev))
         return DevW25Nxx_Error;
 
-    tx_tmp[1] = ;
-    tx_tmp[2] = ;
+    for_addr = DevW25Nxx_FormatAddr(addr);
+    tx_tmp[1] = for_addr.addr_h;
+    tx_tmp[2] = for_addr.addr_l;
+    tx_tmp[3] = 0x00;
 
-    return DevW25Nxx_Ok;
+    if (DevW25Nxx_Trans_Recevice(dev, tx_tmp, sizeof(tx_tmp), p_buf, size))
+        return DevW25Nxx_Ok;
+
+    return DevW25Nxx_Error;
 }
 
 static DevW25Nxx_Error_List DevW25Nxx_Read_PageOnBlock(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size)
@@ -560,11 +605,4 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_ExtensionOnBlock(DevW25NxxObj_TypeDef
         return DevW25Nxx_Error;
 
     return DevW25Nxx_Trans_Duplex(dev, cmd, p_data, size) ? DevW25Nxx_Ok : DevW25Nxx_Error;
-}
-
-/* still in developping */
-static DevW25Nxx_Error_List DevW25Nxx_Check_ECC(DevW25NxxObj_TypeDef *dev, uint32_t addr)
-{
-    if (dev == NULL)
-        return DevW25Nxx_Error;
 }

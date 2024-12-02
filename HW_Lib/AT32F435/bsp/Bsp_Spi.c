@@ -2,7 +2,7 @@
 #include "Bsp_GPIO.h"
 #include "at32f435_437.h"
 
-#define Dummy_Byte 0xFF
+#define Dummy_Byte 0x00//0xFF
 #define To_SPI_Instance(x) ((spi_type *)x)
 
 /* internal function */

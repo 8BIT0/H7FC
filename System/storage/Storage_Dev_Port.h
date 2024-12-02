@@ -31,7 +31,7 @@ typedef enum
 typedef struct
 {
     Storage_ExtFlashChipType_List chip_type;
-    Storage_ExtFlashClass_List class;
+    Storage_ExtFlashClass_List chip_class;
     
     uint32_t start_addr;
     uint32_t total_size;

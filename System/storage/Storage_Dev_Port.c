@@ -109,7 +109,7 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
         return false;
 
     ext_dev->chip_type = Storage_Chip_None;
-    ext_dev->class = Storage_ChipClass_None;
+    ext_dev->chip_class = Storage_ChipClass_None;
     if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
     {
         if ((To_DevW25Qxx_API(ext_dev->api)->init == NULL) || \
@@ -127,7 +127,7 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
         ext_dev->total_size  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).flash_size;
         ext_dev->page_num    = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_num;
         ext_dev->page_size   = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_size;
-        ext_dev->class       = Storage_ChipClass_Nor;
+        ext_dev->chip_class  = Storage_ChipClass_Nor;
 
         return ((DevW25Qxx_Error_List)init_state == DevW25Qxx_Ok) ? true : false;
     }
@@ -146,7 +146,7 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
         ext_dev->total_size  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).flash_size;
         ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
         ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;
-        ext_dev->class       = Storage_ChipClass_Nand;
+        ext_dev->chip_class  = Storage_ChipClass_Nand;
 
         return ((DevW25Nxx_Error_List)init_state == DevW25Nxx_Ok) ? true : false;
     }
