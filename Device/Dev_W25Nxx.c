@@ -15,7 +15,6 @@
 #define W25NXX_SET_SINGLE_BIT(x)    (x = true)
 #define W25NXX_EXTENSION_DATA_INDEX 2048
 #define W25NXX_BUS_COMMU_TIMEOUT    100 /* unit: ms */
-#define ConvertPageFormat(x)        ((x / W25NXX_PAGE_PRE_BLOCK) << 6) | (x %  W25NXX_PAGE_PRE_BLOCK)
 #define ConvertToSR0_RegFormat(x)   ((DevW25Nxx_SR0_TypeDef *)x)
 #define ConvertToSR1_RegFormat(x)   ((DevW25Nxx_SR1_TypeDef *)x)
 #define ConvertToSR2_RegFormat(x)   ((DevW25Nxx_SR2_TypeDef *)x)
@@ -25,6 +24,12 @@ typedef struct
     uint16_t p_addr;    /* physical address */
     uint16_t l_addr;    /* logic address */
 } W25Nxx_BBLUT_TypeDef;
+
+typedef struct
+{
+    uint8_t addr_h;
+    uint8_t addr_l;
+} W25Nxx_FormatAddr_TypeDef;
 
 typedef union
 {
@@ -45,6 +50,7 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev, bool en
 static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field);
 static bool DevW25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_Send_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr);
+static W25Nxx_FormatAddr_TypeDef DevW25Nxx_FormatAddr(uint32_t addr);
 
 /* external function */
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
@@ -76,6 +82,17 @@ static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uin
     dev->cs_ctl(true);
 
     return trans_out ? true : false;
+}
+
+static W25Nxx_FormatAddr_TypeDef DevW25Nxx_FormatAddr(uint32_t addr)
+{
+    uint8_t *p_addr = (uint8_t *)&addr;
+    W25Nxx_FormatAddr_TypeDef for_addr;
+    memset(&for_addr, 0, sizeof(W25Nxx_FormatAddr_TypeDef));
+
+    for_addr.addr_h = p_addr[3];
+    for_addr.addr_l = p_addr[2];
+    return for_addr;
 }
 
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
@@ -472,6 +489,24 @@ static DevW25Nxx_Error_List DevW25Nxx_Send_CMD(DevW25NxxObj_TypeDef *dev, uint8_
     buf[3] = (page >> 0) & 0xFF;
 
     return DevW25Nxx_Write(dev, buf, sizeof(buf)) ? DevW25Nxx_Ok : DevW25Nxx_Error;
+}
+
+static DevW25Nxx_Error_List DevW25Nxx_ReadDataBuffer(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_buf, uint32_t size)
+{
+    uint8_t tx_tmp[4] = {W25NXX_READ};
+    uint8_t rx_tmp[4];
+
+    memset(rx_tmp, 0, sizeof(rx_tmp));
+    if ((dev == NULL) || \
+        (p_buf == NULL) || \
+        (size == 0) || \
+        !DevW25Nxx_Wait_Busy(dev))
+        return DevW25Nxx_Error;
+
+    tx_tmp[1] = ;
+    tx_tmp[2] = ;
+
+    return DevW25Nxx_Ok;
 }
 
 static DevW25Nxx_Error_List DevW25Nxx_Read_PageOnBlock(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size)
