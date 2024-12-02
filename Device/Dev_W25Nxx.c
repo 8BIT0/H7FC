@@ -46,7 +46,6 @@ static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t *reg);
 static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev, bool en);
 static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, uint8_t reg_addr, uint8_t field);
-static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev); 
 static bool DevW25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev);
 static DevW25Nxx_Error_List DevW25Nxx_Send_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr);
 
@@ -154,10 +153,12 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
         (dev->delay_ms == NULL) || \
         (dev->systick == NULL))
         return DevW25Nxx_Error;
-
+    
+    W25NXX_INFO(" Module initializing\r\n");
+    
     dev->init_state = false;
     dev->write_en = false;
-    dev->cur_page_index = UINT32_MAX;
+    dev->cur_addr = UINT32_MAX;
 
     /* check read status */
     if (!DevW25Nxx_Wait_Busy(dev))
@@ -176,10 +177,9 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
     if (DevW25Nxx_WriteEn(dev, true) != DevW25Nxx_Ok)
         return DevW25Nxx_Error;
 
-    /* check bad block managent */
-
     dev->delay_ms(100);
     dev->init_state = true;
+    dev->cur_addr = 0;
 
     return DevW25Nxx_Ok;
 }
@@ -195,21 +195,26 @@ static bool DevW25Nxx_Soft_Reset(DevW25NxxObj_TypeDef *dev)
 
     memset(tx_tmp, 0, sizeof(tx_tmp));
     tx_tmp[0] = W25NXX_RESET_CMD;
-    if (DevW25Nxx_Write(dev, tx_tmp, sizeof(tx_tmp)) != DevW25Nxx_Ok)
+    if (!DevW25Nxx_Write(dev, tx_tmp, sizeof(tx_tmp)))
         return false;
 
     // wait for w25n01 ready
-    if (!W25Nxx_Wait_Busy(dev))
+    if (!DevW25Nxx_Wait_Busy(dev))
         return false;
 
     // no protection WP-E off
     field |= BF_WPE;
-    DevW25Nxx_WriteReg_Set(dev, W25NXX_SR0_ADDR, field);
+    if (!DevW25Nxx_WriteReg_Set(dev, W25NXX_SR0_ADDR, field) != DevW25Nxx_Ok)
+        W25NXX_INFO(" WP-E set error\r\n");
     
     // enable buffered read mode (BUF = 1) ECC enabled (ECC = 1)
     field |= BF_BUF;
     field |= BF_ECC_E;
-    DevW25Nxx_WriteReg_Set(dev, W25NXX_SR1_ADDR, field);
+    if (!DevW25Nxx_WriteReg_Set(dev, W25NXX_SR1_ADDR, field) != DevW25Nxx_Ok)
+        W25NXX_INFO(" BUF and ECC_E set error\r\n");
+
+    W25NXX_INFO(" reset done\r\n");
+    return true;
 }
 
 static bool DevW25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev)
@@ -236,14 +241,15 @@ static bool DevW25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev)
 
         time_out ++;
     }
-
+    
+    W25NXX_INFO(" device busy\r\n");
     return false;
 }
 
 static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev)
 {
-    uint8_t tx_tmp[2] = {0};
-    uint8_t rx_tmp[3] = {0};
+    uint8_t tx_tmp[5] = {0};
+    uint8_t rx_tmp[5] = {0};
 
     if ((dev == NULL) || \
         (dev->cs_ctl == NULL))
@@ -253,18 +259,18 @@ static DevW25Nxx_ProdType_List DevW25Nxx_Get_ProductID(DevW25NxxObj_TypeDef *dev
     memset(rx_tmp, 0, sizeof(rx_tmp));
     tx_tmp[0] = W25NXX_JEDEC_ID;
 
-    if (!DevW25Nxx_Trans_Receive(dev, tx_tmp, sizeof(tx_tmp), rx_tmp, sizeof(rx_tmp)))
+    if (!DevW25Nxx_Trans_Duplex(dev, tx_tmp, rx_tmp, sizeof(rx_tmp)))
         return DevW25N_None;
 
     ((uint8_t *)&dev->prod_code)[3] = 0;
-    ((uint8_t *)&dev->prod_code)[2] = rx_tmp[0];
-    ((uint8_t *)&dev->prod_code)[1] = rx_tmp[1];
-    ((uint8_t *)&dev->prod_code)[0] = rx_tmp[2];
-    
+    ((uint8_t *)&dev->prod_code)[2] = rx_tmp[2];
+    ((uint8_t *)&dev->prod_code)[1] = rx_tmp[3];
+    ((uint8_t *)&dev->prod_code)[0] = rx_tmp[4];
+    W25NXX_INFO(" W25N01 reading ID: 0x%08X\r\n", dev->prod_code);
     switch (dev->prod_code)
     {
-        case W25N01GVZEIG_ID: return DevW25N_01;
-        default: return DevW25N_None;
+        case W25N01GVZEIG_ID: W25NXX_INFO(" W25N01 found\r\n"); return DevW25N_01;
+        default: W25NXX_INFO("No W25Nxx serial module found\r\n"); return DevW25N_None;
     }
 
     return DevW25N_None;
@@ -282,39 +288,6 @@ static DevW25Nxx_Error_List DevW25Nxx_Check_Read_Status(DevW25NxxObj_TypeDef *de
         return DevW25Nxx_Error;
 
     *reg = reg_val[2];
-    return DevW25Nxx_Ok;
-}
-
-/* still in developping */
-static DevW25Nxx_Error_List DevW25Nxx_Read_BBLUT(DevW25NxxObj_TypeDef *dev, W25Nxx_BBLUT_TypeDef *p_lut, uint16_t lut_num)
-{
-    if ((dev == NULL) || \
-        (p_lut == NULL) || \
-        (lut_num == 0))
-        return DevW25Nxx_Error;
-    
-    /* check write enable state */
-    if (!dev->write_en && (DevW25Nxx_WriteEn(dev, true) != DevW25Nxx_Ok))
-        return DevW25Nxx_Error;
-
-    /* wait for busy */
-    if (W25Nxx_Wait_Busy(dev) != DevW25Nxx_Ok)
-        return DevW25Nxx_Error;
-
-    /* check LUT */
-
-    return DevW25Nxx_Ok;
-}
-
-/* still in developping */
-static DevW25Nxx_Error_List DevW25Nxx_BadBlock_Managemnet(DevW25NxxObj_TypeDef *dev)
-{
-    uint8_t cmd[2] = {W25NXX_BB_MANAGEMENT};
-
-    if ((dev == NULL) || \
-        DevW25Nxx_Read(dev, cmd, sizeof(cmd)) != DevW25Nxx_Ok)
-        return DevW25Nxx_Error;
-
     return DevW25Nxx_Ok;
 }
 
@@ -421,8 +394,12 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, ui
     }
     
     if (!DevW25Nxx_Write(dev, cmd, sizeof(cmd)))
+    {
+        W25NXX_INFO(" Failed on reg setting\r\n");
         return DevW25Nxx_Error;
+    }
 
+    W25NXX_INFO(" Reg set successed\r\n");
     return DevW25Nxx_Ok;
 }
 
@@ -519,7 +496,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_PageOnBlock(DevW25NxxObj_TypeDef *dev
     for (uint8_t i = 0; i < read_num; i++)
     {
         start_page = DevW25Nxx_Get_Page(dev, addr);
-        if (!W25Nxx_Wait_Busy(dev))
+        if (!DevW25Nxx_Wait_Busy(dev))
             break;
         
         // static DevW25Nxx_Error_List DevW25Nxx_Send_CMD(DevW25NxxObj_TypeDef *dev, uint8_t cmd, uint32_t addr)
@@ -543,8 +520,15 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_ExtensionOnBlock(DevW25NxxObj_TypeDef
     cmd[3] = 0;
 
     /* check read status */
-    if (!W25Nxx_Wait_Busy(dev))
+    if (!DevW25Nxx_Wait_Busy(dev))
         return DevW25Nxx_Error;
 
     return DevW25Nxx_Trans_Duplex(dev, cmd, p_data, size) ? DevW25Nxx_Ok : DevW25Nxx_Error;
+}
+
+/* still in developping */
+static DevW25Nxx_Error_List DevW25Nxx_Check_ECC(DevW25NxxObj_TypeDef *dev, uint32_t addr)
+{
+    if (dev == NULL)
+        return DevW25Nxx_Error;
 }

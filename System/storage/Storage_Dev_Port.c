@@ -4,9 +4,16 @@
 #include "Dev_W25Qxx.h"
 #include "Dev_W25Nxx.h"
 
+#include "HW_Def.h"
+#include "debug_util.h"
+
 #define Storage_Dev_GetSstsTick SrvOsCommon.get_os_ms
 #define Storage_Dev_Malloc(x)   SrvOsCommon.malloc(x)
 #define Storage_Dev_Free(x)     SrvOsCommon.free(x)
+
+/* debug */
+#define STORAGE_DEV_TAG                     "[ STORAGE DEV INFO ] "
+#define STORAGE_DEV_INFO(fmt, ...)          Debug_Print(&DebugPort, STORAGE_DEV_TAG, fmt, ##__VA_ARGS__)
 
 /* internal vriable */
 static uint8_t read_tmp[Storage_TabSize * 2] __attribute__((aligned(4))) __attribute__((section(".Perph_Section"))) = {0};
@@ -71,6 +78,7 @@ static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev)
         To_DevW25Qxx_OBJ(ext_dev->obj)->bus_trans = StoragePort_Api.bus_trans;
         To_DevW25Qxx_OBJ(ext_dev->obj)->delay_ms  = SrvOsCommon.delay_ms;
 
+        STORAGE_DEV_INFO(" W25Qxx selected\r\n");
         return true;
     }
     else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
@@ -86,6 +94,7 @@ static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev)
         To_DevW25Nxx_OBJ(ext_dev->obj)->bus_trans = StoragePort_Api.bus_trans;
         To_DevW25Nxx_OBJ(ext_dev->obj)->delay_ms  = SrvOsCommon.delay_ms;
 
+        STORAGE_DEV_INFO(" W25Nxx selected\r\n");
         return true;
     }
     
@@ -105,6 +114,7 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
             (To_DevW25Qxx_API(ext_dev->api)->info == NULL))
             return false;
 
+        STORAGE_DEV_INFO(" W25Qxx initializing\r\n");
         init_state = To_DevW25Qxx_API(ext_dev->api)->init(To_DevW25Qxx_OBJ(ext_dev->obj));
         *p_type = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_type;
         *p_code = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_code;
@@ -124,6 +134,7 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
             (To_DevW25Nxx_API(ext_dev->api)->info == NULL))
             return false;
 
+        STORAGE_DEV_INFO(" W25Nxx initializing\r\n");
         init_state = To_DevW25Nxx_API(ext_dev->api)->init(To_DevW25Nxx_OBJ(ext_dev->obj));
         *p_type = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_type;
         *p_code = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_code;

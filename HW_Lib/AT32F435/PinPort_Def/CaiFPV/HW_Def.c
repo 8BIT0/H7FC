@@ -281,6 +281,10 @@ BspGPIO_Port_TypeDef PWM_4_Port = {
     .port = GPIOB,
 };
 
+BspGPIO_Port_TypeDef LEDStrip_Port = {
+    .port = GPIOA,
+};
+
 /* I2c 2 SCL H02 */
 static BspGPIO_Port_TypeDef I2c2_SCL_Port = {
     .port = GPIOH,
