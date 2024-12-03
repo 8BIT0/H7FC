@@ -496,7 +496,7 @@ static DevW25Nxx_Error_List DevW25Nxx_Write_Page(DevW25NxxObj_TypeDef *dev, uint
         (len == 0))
         return DevW25Nxx_Error;
 
-    /* DO NOT WRITE DATA INTO SQARE ARSE !!! */
+    /* DO NOT WRITE DATA INTO SQARE AREA !!! */
 
     /* set write enable */
     if (DevW25Nxx_WriteEn(dev, true) == DevW25Nxx_Error)
