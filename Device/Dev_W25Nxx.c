@@ -574,7 +574,7 @@ static DevW25Nxx_Error_List DevW25Nxx_ReadDataBuffer(DevW25NxxObj_TypeDef *dev, 
 }
 
 /* still in developping */
-static DevW25Nxx_Error_List DevW25Nxx_Read_PageOnBlock(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size)
+static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size)
 {
     uint32_t page_addr = addr;
     uint32_t column_addr = 0;
