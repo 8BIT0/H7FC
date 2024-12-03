@@ -496,22 +496,6 @@ static DevW25Nxx_Error_List DevW25Nxx_Write_Page(DevW25NxxObj_TypeDef *dev, uint
         (len == 0))
         return DevW25Nxx_Error;
 
-    /* check write protect status */
-    cmd[0] = W25NXX_READ_STATUS_CMD;
-    cmd[1] = W25NXX_SR0_ADDR;
-
-    if (!DevW25Nxx_Trans_Recevice(dev, cmd, 2, &sr0.val, 1))
-        return DevW25Nxx_Error;
-
-    if (sr0.bit.WPE)
-    {
-        /* clear write protect */
-        sr0.bit.WPE = false;
-        cmd[2] = sr0.val;
-        if (!DevW25Nxx_Trans(dev, cmd, sizeof(cmd)))
-            return DevW25Nxx_Error;
-    }
-
     /* set write enable */
     if (DevW25Nxx_WriteEn(dev, true) == DevW25Nxx_Error)
         return DevW25Nxx_Error;
