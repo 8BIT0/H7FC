@@ -577,6 +577,7 @@ static DevW25Nxx_Error_List DevW25Nxx_ReadDataBuffer(DevW25NxxObj_TypeDef *dev, 
 static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size)
 {
     uint32_t page_addr = addr;
+    uint32_t read_addr = 0;
     uint32_t column_addr = 0;
     uint16_t read_cnt = 0;
     uint8_t *p_data_tmp = p_data;
@@ -594,26 +595,41 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
         (size < (W25NXX_PAGE_SIZE + W25N0GV_ECC_INFO_SIZE)))
         return DevW25Nxx_Error;
 
-    read_cnt = DevW25Nxx_Get_Page(dev, addr + size) * W25N01GV_PAGE_SIZE;
-    read_cnt -= DevW25Nxx_Get_Page(dev, addr) * W25N01GV_PAGE_SIZE;
-    read_cnt /= W25N01GV_PAGE_SIZE;
+    read_cnt = DevW25Nxx_Get_Page(dev, addr + size) * W25NXX_PAGE_SIZE;
+    read_cnt -= DevW25Nxx_Get_Page(dev, addr) * W25NXX_PAGE_SIZE;
+    read_cnt /= W25NXX_PAGE_SIZE;
 
     for (uint8_t i = 0; i < read_cnt; i++)
     {
         column_addr = DevW25Nxx_Get_Column(dev, page_addr);
-        page_addr = DevW25Nxx_Get_Page(dev, page_addr);
+        read_addr = DevW25Nxx_Get_Page(dev, page_addr);
+
+        if (read_remain == size)
+        {
+            /* first time read */
+            read_size = W25NXX_PAGE_SIZE - column_addr; 
+        }
+        else if (read_remain >= W25NXX_PAGE_SIZE)
+        {
+            read_size = W25NXX_PAGE_SIZE;
+        }
+        else
+            read_size = read_remain;
 
         /* send target page read cmd */
         /* read buffer data */
         if (!DevW25Nxx_Wait_Busy(dev) || \
-            (DevW25Nxx_Send_CMD(dev, W25NXX_PAGE_DATA_READ, page_addr) != DevW25Nxx_Ok) || \
+            (DevW25Nxx_Send_CMD(dev, W25NXX_PAGE_DATA_READ, read_addr) != DevW25Nxx_Ok) || \
             (DevW25Nxx_ReadDataBuffer(dev, column_addr, p_data_tmp, read_size) != DevW25Nxx_Ok))
             break;
 
         /* after read, shift page address and read buffer address */
-        page_addr ++;
-        column_addr = 0;
         read_remain -= read_size;
+        if (read_remain == 0)
+            return DevW25Nxx_Ok;
+        
+        page_addr += W25NXX_PAGE_SIZE;
+        column_addr = 0;
     }
 
     return DevW25Nxx_Error;
