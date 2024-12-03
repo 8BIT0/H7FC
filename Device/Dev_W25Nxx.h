@@ -156,7 +156,10 @@ typedef enum
 {
     DevW25Nxx_Ok = 0,
     DevW25Nxx_Error,
+    DevW25Nxx_Send_Command_Error,
+    DevW25Nxx_Read_Status_Error,
     DevW25Nxx_Busy,
+    DevW25Nxx_ECC_Error,
     DevW25Nxx_TimeOut,
 } DevW25Nxx_Error_List;
 
@@ -179,7 +182,6 @@ typedef struct
 {
     DevW25Nxx_ProdType_List prod_type;
     uint32_t prod_code;
-    uint32_t cur_addr;
     uint8_t *tmp_buf;
     bool write_en;
 

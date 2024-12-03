@@ -108,7 +108,6 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
     if (ext_dev == NULL)
         return false;
 
-    ext_dev->chip_type = Storage_Chip_None;
     ext_dev->chip_class = Storage_ChipClass_None;
     if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
     {
