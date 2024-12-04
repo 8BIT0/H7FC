@@ -54,6 +54,9 @@ static bool DevW25Nxx_Wait_Busy(DevW25NxxObj_TypeDef *dev);
 static W25Nxx_FormatAddr_TypeDef DevW25Nxx_FormatAddr(uint32_t addr);
 static DevW25Nxx_Error_List DevW25Nxx_Send_CMD(DevW25NxxObj_TypeDef *dev, uint8_t reg, uint32_t page_addr);
 static uint32_t DevW25Nxx_Get_Column(DevW25NxxObj_TypeDef *dev, uint32_t addr);
+static DevW25Nxx_Error_List DevW25Nxx_Read_ExtensionOnBlock(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size);
+static DevW25Nxx_Error_List DevW25Nxx_CheckBlock(DevW25NxxObj_TypeDef *dev, uint32_t block_index);
+static DevW25Nxx_Error_List DevW25Nxx_ReadDataBuffer(DevW25NxxObj_TypeDef *dev, uint32_t colum_addr, uint8_t *p_buf, uint32_t size);
 
 /* external function */
 static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev);
@@ -131,23 +134,22 @@ static bool DevW25Nxx_Trans_Duplex(DevW25NxxObj_TypeDef *dev, uint8_t *p_tx, uin
 static uint32_t DevW25Nxx_Get_Page(DevW25NxxObj_TypeDef *dev, uint32_t addr)
 {
     UNUSED(dev);
-    return (addr / W25N01GV_PAGE_SIZE);
+    return (addr / W25NXX_PAGE_SIZE);
 }
 
 static uint32_t DevW25Nxx_Get_Column(DevW25NxxObj_TypeDef *dev, uint32_t addr)
 {
     UNUSED(dev);
-    return (addr % W25N01GV_PAGE_SIZE);
+    return (addr % W25NXX_PAGE_SIZE);
 }
 
 static W25Nxx_FormatAddr_TypeDef DevW25Nxx_FormatAddr(uint32_t colum_addr)
 {
-    uint8_t *p_addr = (uint8_t *)&colum_addr;
     W25Nxx_FormatAddr_TypeDef for_addr;
     memset(&for_addr, 0, sizeof(W25Nxx_FormatAddr_TypeDef));
-
-    for_addr.addr_h = p_addr[3];
-    for_addr.addr_l = p_addr[2];
+    
+    for_addr.addr_h = ((uint8_t *)&colum_addr)[1];
+    for_addr.addr_l = ((uint8_t *)&colum_addr)[0];
     return for_addr;
 }
 
@@ -174,8 +176,25 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
 
     /* get product id */
     dev->prod_type = DevW25Nxx_Get_ProductID(dev);
-    if (dev->prod_type == DevW25N_None)
-        return DevW25Nxx_Error;
+    switch ((uint8_t)dev->prod_type)
+    {
+        case DevW25N_01:
+            dev->list_size = (W25N01GV_BLOCK_NUM / 64);
+            if (dev->list_size * 2 > (sizeof(dev->bb_list) / sizeof(dev->bb_list[0])))
+                return DevW25Nxx_Error;
+            
+            dev->state_list = dev->bb_list;
+            dev->check_list = dev->bb_list + dev->list_size;
+            for (uint16_t i = 0; i < dev->list_size; i ++)
+            {
+                dev->state_list[i] = UINT64_MAX;
+                dev->check_list[i] = 0;
+            }
+            break;
+
+        case DevW25N_None:
+        default: return DevW25Nxx_Error;
+    }
 
     /* disable write protect */
     if (DevW25Nxx_WriteEn(dev, true) != DevW25Nxx_Ok)
@@ -184,6 +203,16 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
     dev->delay_ms(100);
     dev->init_state = true;
 
+    /* test code */
+    W25NXX_INFO(" check bad block\r\n");
+    for (uint16_t i = 0; i < 1024; i ++)
+    {
+        DevW25Nxx_CheckBlock(dev, i);
+    }
+    W25NXX_INFO(" Bab block num %d\r\n", dev->bb_cnt);
+    /* test code */
+
+    W25NXX_INFO(" Init done\r\n");
     return DevW25Nxx_Ok;
 }
 
@@ -467,6 +496,90 @@ static DevW25Nxx_Error_List DevW25Nxx_WriteReg_Set(DevW25NxxObj_TypeDef *dev, ui
     return DevW25Nxx_Ok;
 }
 
+static DevW25Nxx_Error_List DevW25Nxx_Send_CMD(DevW25NxxObj_TypeDef *dev, uint8_t reg, uint32_t page_addr)
+{
+    uint8_t tx_tmp[4] = {reg, 0, 0, 0};
+    uint8_t rx_tmp[4] = {0, 0, 0, 0};
+
+    if (dev == NULL)
+        return DevW25Nxx_Error;
+
+    tx_tmp[2] = ((uint8_t *)&page_addr)[1];
+    tx_tmp[3] = ((uint8_t *)&page_addr)[0];
+
+    if (!DevW25Nxx_Trans_Duplex(dev, tx_tmp, rx_tmp, sizeof(tx_tmp)))
+        return DevW25Nxx_Send_Command_Error;
+
+    return DevW25Nxx_Ok;
+}
+
+/****************************************************************** block check section ***************************************************************************/
+static DevW25Nxx_Error_List DevW25Nxx_Read_ExtensionOnBlock(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_buf, uint32_t size)
+{
+    W25Nxx_FormatAddr_TypeDef for_addr; 
+    uint8_t tx_tmp[4] = {W25NXX_READ};
+    uint32_t page_addr = DevW25Nxx_Get_Page(dev, addr);
+
+    if ((dev == NULL) || (p_buf == NULL) || (size == 0) || (size > W25NXX_EXT_DATA_SIZE))
+        return DevW25Nxx_Error;
+
+    memset(&for_addr, 0, sizeof(for_addr));
+    
+    /* check read status */
+    if (!DevW25Nxx_Wait_Busy(dev))
+        return DevW25Nxx_Error;
+
+    /* send read command */
+    if ((DevW25Nxx_Send_CMD(dev, W25NXX_PAGE_DATA_READ, page_addr) != DevW25Nxx_Ok) || \
+        (DevW25Nxx_ReadDataBuffer(dev, W25NXX_EXT_DATA_COLUMN, p_buf, size) != DevW25Nxx_Error))
+        return DevW25Nxx_Error;
+
+    return DevW25Nxx_Ok;
+}
+
+static DevW25Nxx_Error_List DevW25Nxx_CheckBlock(DevW25NxxObj_TypeDef *dev, uint32_t block_index)
+{
+    uint16_t list_index = 0;
+    uint64_t check_bit = 0;
+    uint32_t block_sum = 0;
+    bool update_list = false;
+    uint8_t ECC_buf[W25NXX_EXT_DATA_SIZE];
+    uint32_t addr = block_index * W25NXX_BLOCK_SIZE;
+
+    memset(ECC_buf, 0, W25NXX_EXT_DATA_SIZE);
+    if (dev == NULL)
+        return DevW25Nxx_Error;
+
+    list_index = block_index / 64;
+    check_bit = (uint64_t)(1 << (block_index % 64));
+
+    /* check list first */
+    if (dev->list_size)
+    {
+        if ((dev->check_list[list_index] & check_bit) == 0)
+        {
+            /* block none checked */
+            update_list = true;
+        }
+        else if (dev->state_list[list_index] & check_bit)
+            /* block checked */
+            return DevW25Nxx_Bad_Block;
+    }
+
+    /* read extension data */
+    if (!DevW25Nxx_Read_ExtensionOnBlock(dev, addr, ECC_buf, W25NXX_EXT_DATA_SIZE) != DevW25Nxx_Ok)
+        return DevW25Nxx_Error;
+
+    /* the first byte on ECC arse is bad block marker */
+    if (ECC_buf[0] != 0xFF)
+        dev->bb_cnt ++;
+
+    /* update check and state list */
+
+    return DevW25Nxx_Ok;
+}
+
+/****************************************************************** write section ***************************************************************************/
 static DevW25Nxx_Error_List DevW25Nxx_WriteEn(DevW25NxxObj_TypeDef *dev, bool en)
 {
     uint8_t cmd[2] = {W25NXX_WRITE_DISABLE, 0};
@@ -505,30 +618,12 @@ static DevW25Nxx_Error_List DevW25Nxx_Write_Page(DevW25NxxObj_TypeDef *dev, uint
     return DevW25Nxx_Ok;
 }
 
-static DevW25Nxx_Error_List DevW25Nxx_Send_CMD(DevW25NxxObj_TypeDef *dev, uint8_t reg, uint32_t page_addr)
-{
-    uint8_t tx_tmp[4] = {reg, 0, 0, 0};
-    uint8_t rx_tmp[4] = {0, 0, 0, 0};
-
-    if (dev == NULL)
-        return DevW25Nxx_Error;
-
-    tx_tmp[2] = ((uint8_t *)&page_addr)[3];
-    tx_tmp[3] = ((uint8_t *)&page_addr)[2];
-
-    if (!DevW25Nxx_Trans_Duplex(dev, tx_tmp, rx_tmp, sizeof(tx_tmp)))
-        return DevW25Nxx_Send_Command_Error;
-
-    return DevW25Nxx_Ok;
-}
-
+/****************************************************************** read section ***************************************************************************/
 static DevW25Nxx_Error_List DevW25Nxx_ReadDataBuffer(DevW25NxxObj_TypeDef *dev, uint32_t colum_addr, uint8_t *p_buf, uint32_t size)
 {
     W25Nxx_FormatAddr_TypeDef for_addr; 
     uint8_t tx_tmp[4] = {W25NXX_READ};
-    uint8_t rx_tmp[4];
 
-    memset(rx_tmp, 0, sizeof(rx_tmp));
     memset(&for_addr, 0, sizeof(for_addr));
     if ((dev == NULL) || \
         (p_buf == NULL) || \
@@ -613,21 +708,3 @@ static DevW25Nxx_Error_List DevW25Nxx_Read_Page(DevW25NxxObj_TypeDef *dev, uint3
     return sr2.bit.ECC_1 ? DevW25Nxx_ECC_Error : DevW25Nxx_Ok;
 }
 
-static DevW25Nxx_Error_List DevW25Nxx_Read_ExtensionOnBlock(DevW25NxxObj_TypeDef *dev, uint32_t addr, uint8_t *p_data, uint32_t size)
-{
-    uint8_t cmd[4];
-
-    if ((dev == NULL) || (p_data == NULL) || (size == 0) || (size > 64))
-        return DevW25Nxx_Error;
-
-    cmd[0] = W25NXX_READ;
-    cmd[1] = (W25NXX_EXTENSION_DATA_INDEX >> 8) & 0xFF;
-    cmd[2] = (W25NXX_EXTENSION_DATA_INDEX >> 0) & 0xFF;
-    cmd[3] = 0;
-
-    /* check read status */
-    if (!DevW25Nxx_Wait_Busy(dev))
-        return DevW25Nxx_Error;
-
-    return DevW25Nxx_Trans_Recevice(dev, cmd, sizeof(cmd), p_data, size) ? DevW25Nxx_Ok : DevW25Nxx_Error;
-}

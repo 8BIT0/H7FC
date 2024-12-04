@@ -60,7 +60,7 @@ void Debug_Print(DebugPrintObj_TypeDef *Obj, const char *tag, const char* fmt, .
 {
 	va_list ap;
     uint16_t length = 0;
-    char new_fmt[128];
+    char new_fmt[256];
 
     if (!Obj->init)
         return;

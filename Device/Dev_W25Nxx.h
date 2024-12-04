@@ -48,11 +48,13 @@ extern "C" {
 
 #define W25NXX_BASE_ADDRESS                     0x00000000
 #define W25NXX_EXT_DATA_SIZE                    0x40
+#define W25NXX_EXT_DATA_COLUMN                  0x800
 #define W25NXX_PAGE_SIZE                        0x800
 #define W25NXX_PAGE_PRE_BLOCK                   0x40
+#define W25NXX_BLOCK_SIZE                       0x20000
 
 #define W25N01GV_FLASH_SIZE                     0x8000000
-#define W25N01GV_BLOCK_SIZE                     0x20000
+#define W25N01GV_BLOCK_SIZE                     W25NXX_BLOCK_SIZE
 #define W25N01GV_BLOCK_NUM                      0x400
 #define W25N01GV_PAGE_SIZE                      W25NXX_PAGE_SIZE
 #define W25N01GV_PAGE_NUM                       65536
@@ -157,6 +159,7 @@ typedef enum
 {
     DevW25Nxx_Ok = 0,
     DevW25Nxx_Error,
+    DevW25Nxx_Bad_Block,
     DevW25Nxx_Send_Command_Error,
     DevW25Nxx_Read_Status_Error,
     DevW25Nxx_Busy,
@@ -179,11 +182,22 @@ typedef struct
     uint32_t block_size;
 } DevW25Nxx_DeviceInfo_TypeDef;
 
+typedef union
+{
+    uint64_t val;
+    uint8_t bit_map[8];
+} DevW25Nxx_BBItem_TypeDef;
+
 typedef struct
 {
+    uint64_t bb_list[64];
+    uint16_t bb_cnt;
     DevW25Nxx_ProdType_List prod_type;
     uint32_t prod_code;
     uint8_t *tmp_buf;
+    uint16_t list_size;
+    DevW25Nxx_BBItem_TypeDef *state_list;
+    DevW25Nxx_BBItem_TypeDef *check_list;
     bool write_en;
 
     uint16_t (*bus_tx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
