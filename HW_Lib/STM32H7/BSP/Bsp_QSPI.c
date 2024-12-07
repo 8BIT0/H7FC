@@ -155,12 +155,12 @@ static bool Bsp_QSPI_Recv(BspQSPI_Config_TypeDef *obj, uint32_t addr, uint32_t c
 	s_command.DdrMode           = QSPI_DDR_MODE_DISABLE;
 	s_command.DdrHoldHalfCycle  = QSPI_DDR_HHC_ANALOG_DELAY;
 	s_command.SIOOMode          = QSPI_SIOO_INST_EVERY_CMD;
-	s_command.AddressMode 		 = QSPI_ADDRESS_4_LINES;
-	s_command.DataMode    		 = QSPI_DATA_4_LINES;
-	s_command.DummyCycles 		 = 6;
-	s_command.NbData      		 = len;
-	s_command.Address     		 = addr;
-	s_command.Instruction 		 = cmd;
+	s_command.AddressMode 		= QSPI_ADDRESS_4_LINES;
+	s_command.DataMode    		= QSPI_DATA_4_LINES;
+	s_command.DummyCycles 		= 6;
+	s_command.NbData      		= len;
+	s_command.Address     		= addr;
+	s_command.Instruction 		= cmd;
 
     if ((HAL_QSPI_Command(obj->p_qspi, &s_command, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK) || \
         (HAL_QSPI_Receive(obj->p_qspi, p_data, HAL_QPSI_TIMEOUT_DEFAULT_VALUE) != HAL_OK))
