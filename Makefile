@@ -32,8 +32,8 @@ HW_CCRC_AT32_20 := 2
 HW_Cai_AIO_AT32 := 3
 
 # HARDWARE := $(HW_BETAFPV_AIO_AT32)
-# HARDWARE := $(HW_CCRC_AT32_20)
-HARDWARE := $(HW_Cai_AIO_AT32)
+HARDWARE := $(HW_CCRC_AT32_20)
+# HARDWARE := $(HW_Cai_AIO_AT32)
 endif
 
 ######################################
@@ -82,7 +82,6 @@ Device/Dev_ICM20602.c \
 Device/Dev_ICM426xx.c \
 Device/Dev_Led.c \
 Device/Dev_W25Qxx.c \
-Device/Dev_W25Nxx.c \
 Device/Dev_WS2812.c \
 Device/Dev_Sbus.c \
 Device/Dev_CRSF.c \
@@ -124,6 +123,7 @@ System/FreeRTOS/stream_buffer.c \
 System/FreeRTOS/tasks.c \
 System/FreeRTOS/timers.c \
 System/FreeRTOS/CMSIS_RTOS/cmsis_os.c
+# Device/Dev_W25Nxx.c
 ifeq ($(HARDWARE), $(HW_NEURE))
 C_SOURCES += \
 System/FreeRTOS/portable/MemMang/heap_5.c
