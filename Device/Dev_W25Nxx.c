@@ -220,10 +220,8 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
             }
 
             W25NXX_INFO(" check bad block\r\n");
-            W25NXX_INFO(" start time %d\r\n", dev->systick());
             for (uint16_t i = 0; i < W25N01GV_BLOCK_NUM; i ++)
                 DevW25Nxx_CheckBlock(dev, i);
-            W25NXX_INFO(" end   time %d\r\n", dev->systick());
             W25NXX_INFO(" Bab block num %d\r\n", dev->bb_cnt);
             break;
 
@@ -233,44 +231,6 @@ static DevW25Nxx_Error_List DevW25Nxx_Init(DevW25NxxObj_TypeDef *dev)
 
     dev->delay_ms(100);
     dev->init_state = true;
-
-    /* test code */
-    uint8_t tx_tmp[] = {'b', 'a', 'd', 'a', 's', 's', ' ', '8', 'b', 'i', 't', ' ', 't', 'e', 's', 't', ' ', '1', '\0'};
-    W25NXX_INFO(" start page erase time %d\r\n", dev->systick());
-    if (DevW25Nxx_Erase_PageOnBlock(dev, 0) != DevW25Nxx_Ok)
-        W25NXX_INFO(" Erase block error\r\n");
-    W25NXX_INFO(" end   page erase time %d\r\n", dev->systick());
-
-    W25NXX_INFO(" start write page time %d\r\n", dev->systick());
-    if (DevW25Nxx_Write_Page(dev, 0, tx_tmp, sizeof(tx_tmp)) != DevW25Nxx_Ok)
-        W25NXX_INFO(" Write page failed\r\n");
-    W25NXX_INFO(" end   write page time %d\r\n", dev->systick());
-
-    tx_tmp[strlen(tx_tmp) - 2] = '2';
-    if (DevW25Nxx_Write_Page(dev, 2048, tx_tmp, sizeof(tx_tmp)) != DevW25Nxx_Ok)
-        W25NXX_INFO(" Write page failed\r\n");
-
-    for (uint8_t i = 0; i < 2; i++)
-    {
-        if (DevW25Nxx_Read_Page(dev, i * W25NXX_PAGE_SIZE, rx_tmp, W25NXX_PAGE_SIZE) != DevW25Nxx_Ok)
-        {
-            W25NXX_INFO(" Read page failed\r\n");
-        }
-        else
-        {
-            for (uint8_t i = 0; i < 128; i ++)
-            {
-                W25NXX_INFO(" %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c %c\r\n", \
-                // W25NXX_INFO(" 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n",
-                            rx_tmp[i * 16 + 0],  rx_tmp[i * 16 + 1],  rx_tmp[i * 16 + 2],  rx_tmp[i * 16 + 3], \
-                            rx_tmp[i * 16 + 4],  rx_tmp[i * 16 + 5],  rx_tmp[i * 16 + 6],  rx_tmp[i * 16 + 7], \
-                            rx_tmp[i * 16 + 8],  rx_tmp[i * 16 + 9],  rx_tmp[i * 16 + 10], rx_tmp[i * 16 + 11], \
-                            rx_tmp[i * 16 + 12], rx_tmp[i * 16 + 13], rx_tmp[i * 16 + 14], rx_tmp[i * 16 + 15]);
-            }
-            W25NXX_INFO(" \r\n");
-        }
-    }
-    /* test code */
 
     W25NXX_INFO(" Init done\r\n");
     return DevW25Nxx_Ok;
