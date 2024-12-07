@@ -182,6 +182,7 @@ static bool BspGPIO_Alternate_Init(BspGPIO_Obj_TypeDef IO_Obj, uint32_t af_mode)
 
     cfg_structure.Pull = GPIO_NOPULL;
     cfg_structure.Speed = GPIO_SPEED_FREQ_HIGH;
+    // cfg_structure.Speed = GPIO_SPEED_FREQ_VERY_HIGH; /* WHEN QSPI IS AVAILABLE */
     cfg_structure.Alternate = IO_Obj.alternate;
 
     HAL_GPIO_Init(IO_Obj.port, &cfg_structure);
