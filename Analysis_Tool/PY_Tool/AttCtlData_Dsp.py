@@ -57,20 +57,23 @@ class ControlData_Display(object):
             ang_dict_list = self.__load_file(Dsp_Type.Dsp_Angular, file_name)
             plt.figure()
             plt.subplot(3, 1, 1)
-            plt.plot(ang_dict_list['T'], ang_dict_list['e_GX'])
-            plt.plot(ang_dict_list['T'], ang_dict_list['m_GX'])
-            plt.plot(ang_dict_list['T'], ang_dict_list['Throttle'])
+            plt.plot(ang_dict_list['e_GX'])
+            plt.plot(ang_dict_list['m_GX'])
+            plt.plot(ang_dict_list['Throttle'])
             plt.subplot(3, 1, 2)
-            plt.plot(ang_dict_list['T'], ang_dict_list['e_GY'])
-            plt.plot(ang_dict_list['T'], ang_dict_list['m_GY'])
-            plt.plot(ang_dict_list['T'], ang_dict_list['Throttle'])
+            plt.plot(ang_dict_list['e_GY'])
+            plt.plot(ang_dict_list['m_GY'])
+            plt.plot(ang_dict_list['Throttle'])
             plt.subplot(3, 1, 3)
-            plt.plot(ang_dict_list['T'], ang_dict_list['e_GZ'])
-            plt.plot(ang_dict_list['T'], ang_dict_list['m_GZ'])
-            plt.plot(ang_dict_list['T'], ang_dict_list['Throttle'])
-            plt.show()
+            plt.plot(ang_dict_list['e_GZ'])
+            plt.plot(ang_dict_list['m_GZ'])
+            plt.plot(ang_dict_list['Throttle'])
+        plt.show()
 
     def dsp_attitude_ctl(self):
+        pass
+
+    def __parse_PID_Para(self):
         pass
 
     def __load_file(self, type, file_name):
@@ -91,6 +94,9 @@ class ControlData_Display(object):
                 elif type == Dsp_Type.Dsp_Attitude:
                     DataDict_List = AttitudeControlData()
                 continue
+            else:
+                # pase controller parameter
+                pass
  
             data_list = line.split(' ')
             if para_end and len(data_list):
