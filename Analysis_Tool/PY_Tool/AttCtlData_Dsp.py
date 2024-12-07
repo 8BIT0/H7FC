@@ -87,6 +87,7 @@ class ControlData_Display(object):
         DataDict_List = None
         while True:
             if file.tell() >= eof:
+                file.close()
                 return DataDict_List.get()
 
             line = file.readline()
