@@ -19,6 +19,60 @@ BspQSpi_TypeDef BspQspi = {
     .tx      = Bsp_QSPI_Trans,
 };
 
+static bool Bsp_QSPI_PinInit(BspQSPI_Config_TypeDef *obj)
+{
+    bool pin_state = false;
+    BspGPIO_Obj_TypeDef pin_tmp;
+
+    memset(&pin_tmp, 0, sizeof(BspGPIO_Obj_TypeDef));
+    if ((obj == NULL) || \
+        (obj->pin.port_clk == NULL) || \
+        (obj->pin.port_ncs == NULL) || \
+        (obj->pin.port_io0 == NULL) || \
+        (obj->pin.port_io1 == NULL) || \
+        (obj->pin.port_io2 == NULL) || \
+        (obj->pin.port_io3 == NULL))
+        return false;
+
+    /* CLK */
+    pin_tmp.port = obj->pin.port_clk;
+    pin_tmp.pin = obj->pin.pin_clk;
+    pin_tmp.alternate = obj->pin.alt_clk;
+    pin_state = BspGPIO.alt_init(pin_tmp, GPIO_MODE_AF_PP);
+
+    /* NCS */
+    pin_tmp.port = obj->pin.port_ncs;
+    pin_tmp.pin = obj->pin.pin_ncs;
+    pin_tmp.alternate = obj->pin.alt_ncs;
+    pin_state &= BspGPIO.alt_init(pin_tmp, GPIO_MODE_AF_PP);
+
+    /* BK1_IO0 */
+    pin_tmp.port = obj->pin.port_io0;
+    pin_tmp.pin = obj->pin.pin_io0;
+    pin_tmp.alternate = obj->pin.alt_io0;
+    pin_state &= BspGPIO.alt_init(pin_tmp, GPIO_MODE_AF_PP);
+    
+    /* BK1_IO1 */
+    pin_tmp.port = obj->pin.port_io1;
+    pin_tmp.pin = obj->pin.pin_io1;
+    pin_tmp.alternate = obj->pin.alt_io1;
+    pin_state &= BspGPIO.alt_init(pin_tmp, GPIO_MODE_AF_PP);
+    
+    /* BK1_IO2 */
+    pin_tmp.port = obj->pin.port_io2;
+    pin_tmp.pin = obj->pin.pin_io2;
+    pin_tmp.alternate = obj->pin.alt_io2;
+    pin_state &= BspGPIO.alt_init(pin_tmp, GPIO_MODE_AF_PP);
+    
+    /* BK1_IO3 */
+    pin_tmp.port = obj->pin.port_io3;
+    pin_tmp.pin = obj->pin.pin_io3;
+    pin_tmp.alternate = obj->pin.alt_io3;
+    pin_state &= BspGPIO.alt_init(pin_tmp, GPIO_MODE_AF_PP);
+
+    return pin_state;
+}
+
 static bool Bsp_QSPI_Init(BspQSPI_Config_TypeDef *obj)
 {
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
@@ -35,10 +89,10 @@ static bool Bsp_QSPI_Init(BspQSPI_Config_TypeDef *obj)
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
         return false;
 
+    if (!Bsp_QSPI_PinInit(obj))
+        return false;
+
     __HAL_RCC_QSPI_CLK_ENABLE();
-
-    /* pin init */
-
 
     obj->p_qspi.Instance                = QUADSPI;
 	HAL_QSPI_DeInit(obj->p_qspi);
