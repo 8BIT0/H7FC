@@ -73,9 +73,6 @@ class ControlData_Display(object):
     def dsp_attitude_ctl(self):
         pass
 
-    def __parse_PID_Para(self):
-        pass
-
     def __load_file(self, type, file_name):
         file = open(file_name, 'r')
         eof = file.seek(0, 2)
