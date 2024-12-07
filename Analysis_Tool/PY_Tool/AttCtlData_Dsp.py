@@ -56,18 +56,24 @@ class ControlData_Display(object):
             print('file name', file_name)
             ang_dict_list = self.__load_file(Dsp_Type.Dsp_Angular, file_name)
             plt.figure()
+            
             plt.subplot(3, 1, 1)
-            plt.plot(ang_dict_list['e_GX'])
-            plt.plot(ang_dict_list['m_GX'])
+            plt.plot(ang_dict_list['e_GX'], label = 'e_GX')
+            plt.plot(ang_dict_list['m_GX'], label = 'm_GX')
             plt.plot(ang_dict_list['Throttle'])
+            plt.legend()
+            
             plt.subplot(3, 1, 2)
-            plt.plot(ang_dict_list['e_GY'])
-            plt.plot(ang_dict_list['m_GY'])
+            plt.plot(ang_dict_list['e_GY'], label = 'e_GY')
+            plt.plot(ang_dict_list['m_GY'], label = 'm_GY')
             plt.plot(ang_dict_list['Throttle'])
+            plt.legend()
+            
             plt.subplot(3, 1, 3)
-            plt.plot(ang_dict_list['e_GZ'])
-            plt.plot(ang_dict_list['m_GZ'])
+            plt.plot(ang_dict_list['e_GZ'], label = 'e_GZ')
+            plt.plot(ang_dict_list['m_GZ'], label = 'm_GZ')
             plt.plot(ang_dict_list['Throttle'])
+            plt.legend()
         plt.show()
 
     def dsp_attitude_ctl(self):
