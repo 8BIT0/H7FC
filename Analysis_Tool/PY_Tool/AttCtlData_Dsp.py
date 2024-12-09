@@ -1,5 +1,7 @@
 import os
 from enum import Enum
+import tkinter as tk
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 
 class Dsp_Type(Enum):
@@ -52,11 +54,12 @@ class ControlData_Display(object):
         self.attitude_file_list = [f for f in os.listdir(self.folder_dir) if f.endswith('.txt') and f.startswith('log_AttitudePID')]
 
     def dsp_angular_ctl(self):
+        root = tk.Tk()
         for file_name in self.angular_file_list:
             print('file name', file_name)
             ang_dict_list = self.__load_file(Dsp_Type.Dsp_Angular, file_name)
-            plt.figure()
-            
+            fig = plt.figure()
+            canvas = FigureCanvasTkAgg(fig, master=root)
             plt.subplot(3, 1, 1)
             plt.plot(ang_dict_list['e_GX'], label = 'e_GX')
             plt.plot(ang_dict_list['m_GX'], label = 'm_GX')
@@ -74,7 +77,10 @@ class ControlData_Display(object):
             plt.plot(ang_dict_list['m_GZ'], label = 'm_GZ')
             plt.plot(ang_dict_list['Throttle'])
             plt.legend()
-        plt.show()
+            canvas.draw()
+            canvas.get_tk_widget().grid(row=0, column=0)
+        # plt.show()
+        root.mainloop()
 
     def dsp_attitude_ctl(self):
         pass
