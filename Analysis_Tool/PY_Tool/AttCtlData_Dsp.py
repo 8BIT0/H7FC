@@ -11,7 +11,8 @@ class Dsp_Type(Enum):
 class AngularControlData(object):
     def __init__(self):
         self.AngularDict = {'T':[0], 'Throttle':[0], 'e_GX':[0.0], 'e_GY':[0.0], 'e_GZ':[0.0], 'm_GX':[0.0], 'm_GY':[0.0], 'm_GZ':[0.0], 'd_GX':[0.0], 'd_GY':[0.0], 'd_GZ':[0.0]}
-    
+        self.para_str = None
+
     def append(self, time, throttle, exp_GX, exp_GY, exp_GZ, mea_GX, mea_GY, mea_GZ):
         self.AngularDict['T'].append(time)
         self.AngularDict['Throttle'].append(throttle)
@@ -25,12 +26,19 @@ class AngularControlData(object):
         self.AngularDict['d_GY'].append(exp_GY - mea_GY)
         self.AngularDict['d_GZ'].append(exp_GZ - mea_GZ)
 
+    def set_para_str(self, str):
+        self.para_str = str
+
     def get(self):
         return self.AngularDict
+    
+    def get_para_str(self):
+        return self.para_str
 
 class AttitudeControlData(object):
     def __init__(self):
         self.AttitudeDict = {'T':[0], 'Throttle':[0], 'e_P':[0.0], 'e_R':[0.0], 'm_P':[0.0], 'm_R':[0.0], 'd_P':[0.0], 'd_R':[0.0]}
+        self.para_str = None
 
     def append(self, time, throttle, exp_pitch, exp_roll, mea_pitch, mea_roll):
         self.AttitudeDict['T'].append(time)
@@ -42,8 +50,14 @@ class AttitudeControlData(object):
         self.AttitudeDict['d_P'].append(exp_pitch - mea_pitch)
         self.AttitudeDict['d_R'].append(exp_roll - mea_roll)
 
+    def set_para_str(self, str):
+        self.para_str = str
+
     def get(self):
         return self.AttitudeDict
+    
+    def get_para_str(self):
+        return self.para_str
 
 class ControlData_Display(object):
     def __init__(self):
@@ -54,33 +68,39 @@ class ControlData_Display(object):
         self.attitude_file_list = [f for f in os.listdir(self.folder_dir) if f.endswith('.txt') and f.startswith('log_AttitudePID')]
 
     def dsp_angular_ctl(self):
-        root = tk.Tk()
         for file_name in self.angular_file_list:
             print('file name', file_name)
             ang_dict_list = self.__load_file(Dsp_Type.Dsp_Angular, file_name)
-            fig = plt.figure()
-            canvas = FigureCanvasTkAgg(fig, master=root)
+            fig_title = None
+            plt.figure(figsize=(8, 6))
             plt.subplot(3, 1, 1)
-            plt.plot(ang_dict_list['e_GX'], label = 'e_GX')
-            plt.plot(ang_dict_list['m_GX'], label = 'm_GX')
-            plt.plot(ang_dict_list['Throttle'])
+            plt.subplots_adjust(hspace=0.4)
+            fig_title = ang_dict_list.get_para_str()[2][:-1].split('\t')
+            fig_title = fig_title[1] + ' ,' + fig_title[3] + ',' + fig_title[5]
+            plt.title(fig_title)
+            plt.plot(ang_dict_list.get()['e_GX'], label = 'e_GX')
+            plt.plot(ang_dict_list.get()['m_GX'], label = 'm_GX')
+            plt.plot(ang_dict_list.get()['Throttle'])
             plt.legend()
             
             plt.subplot(3, 1, 2)
-            plt.plot(ang_dict_list['e_GY'], label = 'e_GY')
-            plt.plot(ang_dict_list['m_GY'], label = 'm_GY')
-            plt.plot(ang_dict_list['Throttle'])
+            fig_title = ang_dict_list.get_para_str()[3][:-1].split('\t')
+            fig_title = fig_title[1] + ' ,' + fig_title[3] + ',' + fig_title[5]
+            plt.title(fig_title)
+            plt.plot(ang_dict_list.get()['e_GY'], label = 'e_GY')
+            plt.plot(ang_dict_list.get()['m_GY'], label = 'm_GY')
+            plt.plot(ang_dict_list.get()['Throttle'])
             plt.legend()
             
             plt.subplot(3, 1, 3)
-            plt.plot(ang_dict_list['e_GZ'], label = 'e_GZ')
-            plt.plot(ang_dict_list['m_GZ'], label = 'm_GZ')
-            plt.plot(ang_dict_list['Throttle'])
+            fig_title = ang_dict_list.get_para_str()[4][:-1].split('\t')
+            fig_title = fig_title[1] + ' ,' + fig_title[3] + ',' + fig_title[5]
+            plt.title(fig_title)
+            plt.plot(ang_dict_list.get()['e_GZ'], label = 'e_GZ')
+            plt.plot(ang_dict_list.get()['m_GZ'], label = 'm_GZ')
+            plt.plot(ang_dict_list.get()['Throttle'])
             plt.legend()
-            canvas.draw()
-            canvas.get_tk_widget().grid(row=0, column=0)
-        # plt.show()
-        root.mainloop()
+        plt.show()
 
     def dsp_attitude_ctl(self):
         pass
@@ -91,22 +111,24 @@ class ControlData_Display(object):
         file.seek(0, 0)
         para_end = False
         DataDict_List = None
+        para_str = []
         while True:
             if file.tell() >= eof:
                 file.close()
-                return DataDict_List.get()
+                return DataDict_List
 
             line = file.readline()
-            if not para_end and (line.find('-----------------------------------------------------------------------------') != -1):
-                para_end = True
-                if type == Dsp_Type.Dsp_Angular:
-                    DataDict_List = AngularControlData()
-                elif type == Dsp_Type.Dsp_Attitude:
-                    DataDict_List = AttitudeControlData()
-                continue
-            else:
-                # pase controller parameter
-                pass
+            if not para_end:
+                if (line.find('-----------------------------------------------------------------------------') != -1):
+                    para_end = True
+                    if type == Dsp_Type.Dsp_Angular:
+                        DataDict_List = AngularControlData()
+                    elif type == Dsp_Type.Dsp_Attitude:
+                        DataDict_List = AttitudeControlData()
+                    DataDict_List.set_para_str(para_str)
+                    continue
+                else:
+                    para_str.append(line)
  
             data_list = line.split(' ')
             if para_end and len(data_list):
