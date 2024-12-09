@@ -76,7 +76,7 @@ class ControlData_Display(object):
             plt.subplot(3, 1, 1)
             plt.subplots_adjust(hspace=0.4)
             fig_title = ang_dict_list.get_para_str()[2][:-1].split('\t')
-            fig_title = fig_title[1] + ' ,' + fig_title[3] + ',' + fig_title[5]
+            fig_title = fig_title[0] + ' ' + fig_title[1] + ' ,' + fig_title[3] + ',' + fig_title[5]
             plt.title(fig_title)
             plt.plot(ang_dict_list.get()['e_GX'], label = 'e_GX')
             plt.plot(ang_dict_list.get()['m_GX'], label = 'm_GX')
@@ -85,7 +85,7 @@ class ControlData_Display(object):
             
             plt.subplot(3, 1, 2)
             fig_title = ang_dict_list.get_para_str()[3][:-1].split('\t')
-            fig_title = fig_title[1] + ' ,' + fig_title[3] + ',' + fig_title[5]
+            fig_title = fig_title[0] + ' ' + fig_title[1] + ' ,' + fig_title[3] + ',' + fig_title[5]
             plt.title(fig_title)
             plt.plot(ang_dict_list.get()['e_GY'], label = 'e_GY')
             plt.plot(ang_dict_list.get()['m_GY'], label = 'm_GY')
@@ -94,7 +94,7 @@ class ControlData_Display(object):
             
             plt.subplot(3, 1, 3)
             fig_title = ang_dict_list.get_para_str()[4][:-1].split('\t')
-            fig_title = fig_title[1] + ' ,' + fig_title[3] + ',' + fig_title[5]
+            fig_title = fig_title[0] + ' ' + fig_title[1] + ' ,' + fig_title[3] + ',' + fig_title[5]
             plt.title(fig_title)
             plt.plot(ang_dict_list.get()['e_GZ'], label = 'e_GZ')
             plt.plot(ang_dict_list.get()['m_GZ'], label = 'm_GZ')
