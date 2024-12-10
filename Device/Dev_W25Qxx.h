@@ -23,21 +23,23 @@ extern "C" {
 /* 16mb, the range of address:0~0xFFFFFF */
 #define W25Q128_DEV_ID                          0xEF17
 
-#define W25Q64FV_FLASH_SIZE                     0x800000            /* 64 MBits => 8MBytes */
 #define W25Q64FV_BLOCK_SIZE                     W25QXX_BLOCK_SIZE   /* 128 block of 64KBytes */
 #define W25Q64FV_SECTOR_SIZE                    W25QXX_SECTOR_SIZE  /* 2048 sectors of 4kBytes */
 #define W25Q64FV_PAGE_SIZE                      W25QXX_PAGE_SIZE    /* 32767 pages of 256 bytes */
 #define W25Q64FV_BLOCK_NUM                      128
 #define W25Q64FV_SECTOR_NUM                     2048
 #define W25Q64FV_PAGE_NUM                       32768
+                                                                    /* 64 MBits => 8MBytes */
+#define W25Q64FV_FLASH_SIZE                     W25Q64FV_BLOCK_NUM * W25QXX_BLOCK_SIZE
 
-#define W25Q128FV_FLASH_SIZE                    0x1000000           /* 128 MBits => 16MBytes */
 #define W25Q128FV_BLOCK_SIZE                    W25QXX_BLOCK_SIZE   /* 256 block of 64KBytes */
 #define W25Q128FV_SECTOR_SIZE                   W25QXX_SECTOR_SIZE  /* 4096 sectors of 4kBytes */
 #define W25Q128FV_PAGE_SIZE                     W25QXX_PAGE_SIZE    /* 65536 pages of 256 bytes */
 #define W25Q128FV_BLOCK_NUM                     256
 #define W25Q128FV_SECTOR_NUM                    4096
 #define W25Q128FV_PAGE_NUM                      65535
+                                                                    /* 128 MBits => 16MBytes */
+#define W25Q128FV_FLASH_SIZE                     W25Q128FV_BLOCK_NUM * W25QXX_BLOCK_SIZE
 
 #define W25Q128FV_DUMMY_CYCLES_READ             4
 #define W25Q128FV_DUMMY_CYCLES_READ_QUAD        10
