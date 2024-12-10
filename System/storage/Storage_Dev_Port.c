@@ -81,22 +81,22 @@ static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev)
         STORAGE_DEV_INFO(" W25Qxx selected\r\n");
         return true;
     }
-    else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
-    {
-        ext_dev->obj = Storage_Dev_Malloc(sizeof(DevW25NxxObj_TypeDef));
-        if (ext_dev->obj == NULL)
-            return false;
+    // else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
+    // {
+    //     ext_dev->obj = Storage_Dev_Malloc(sizeof(DevW25NxxObj_TypeDef));
+    //     if (ext_dev->obj == NULL)
+    //         return false;
         
-        To_DevW25Nxx_OBJ(ext_dev->obj)->systick   = Storage_Dev_GetSstsTick;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->cs_ctl    = StoragePort_Api.cs_ctl;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_tx    = StoragePort_Api.bus_tx;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_rx    = StoragePort_Api.bus_rx;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->bus_trans = StoragePort_Api.bus_trans;
-        To_DevW25Nxx_OBJ(ext_dev->obj)->delay_ms  = SrvOsCommon.delay_ms;
+    //     To_DevW25Nxx_OBJ(ext_dev->obj)->systick   = Storage_Dev_GetSstsTick;
+    //     To_DevW25Nxx_OBJ(ext_dev->obj)->cs_ctl    = StoragePort_Api.cs_ctl;
+    //     To_DevW25Nxx_OBJ(ext_dev->obj)->bus_tx    = StoragePort_Api.bus_tx;
+    //     To_DevW25Nxx_OBJ(ext_dev->obj)->bus_rx    = StoragePort_Api.bus_rx;
+    //     To_DevW25Nxx_OBJ(ext_dev->obj)->bus_trans = StoragePort_Api.bus_trans;
+    //     To_DevW25Nxx_OBJ(ext_dev->obj)->delay_ms  = SrvOsCommon.delay_ms;
 
-        STORAGE_DEV_INFO(" W25Nxx selected\r\n");
-        return true;
-    }
+    //     STORAGE_DEV_INFO(" W25Nxx selected\r\n");
+    //     return true;
+    // }
     
     return false;
 }
@@ -130,25 +130,25 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
 
         return ((DevW25Qxx_Error_List)init_state == DevW25Qxx_Ok) ? true : false;
     }
-    else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
-    {
-        if ((To_DevW25Nxx_API(ext_dev->api)->init == NULL) || \
-            (To_DevW25Nxx_API(ext_dev->api)->info == NULL))
-            return false;
+    // else if (ext_dev->chip_type == Storage_ChipType_W25Nxx)
+    // {
+    //     if ((To_DevW25Nxx_API(ext_dev->api)->init == NULL) || \
+    //         (To_DevW25Nxx_API(ext_dev->api)->info == NULL))
+    //         return false;
 
-        STORAGE_DEV_INFO(" W25Nxx initializing\r\n");
-        init_state = To_DevW25Nxx_API(ext_dev->api)->init(To_DevW25Nxx_OBJ(ext_dev->obj));
-        *p_type = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_type;
-        *p_code = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_code;
+    //     STORAGE_DEV_INFO(" W25Nxx initializing\r\n");
+    //     init_state = To_DevW25Nxx_API(ext_dev->api)->init(To_DevW25Nxx_OBJ(ext_dev->obj));
+    //     *p_type = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_type;
+    //     *p_code = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).prod_code;
 
-        ext_dev->start_addr  = W25NXX_BASE_ADDRESS;
-        ext_dev->total_size  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).flash_size;
-        ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
-        ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;
-        ext_dev->chip_class  = Storage_ChipClass_Nand;
+    //     ext_dev->start_addr  = W25NXX_BASE_ADDRESS;
+    //     ext_dev->total_size  = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).flash_size;
+    //     ext_dev->page_num    = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_num;
+    //     ext_dev->page_size   = To_DevW25Nxx_API(ext_dev->api)->info(To_DevW25Nxx_OBJ(ext_dev->obj)).page_size;
+    //     ext_dev->chip_class  = Storage_ChipClass_Nand;
 
-        return ((DevW25Nxx_Error_List)init_state == DevW25Nxx_Ok) ? true : false;
-    }
+    //     return ((DevW25Nxx_Error_List)init_state == DevW25Nxx_Ok) ? true : false;
+    // }
 
     return false;
 }

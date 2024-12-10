@@ -16,7 +16,7 @@ typedef enum
 {
     Storage_Chip_None = 0,
     Storage_ChipType_W25Qxx,
-    Storage_ChipType_W25Nxx,
+    // Storage_ChipType_W25Nxx,
     Storage_ChipType_All,
 } Storage_ExtFlashChipType_List;
 

@@ -104,7 +104,8 @@ extern const uint8_t HWVer[3];
 #if (FLASH_CHIP_STATE == ON)
 #define ExtFlash_Bus_Type Storage_ChipBus_Spi
 #define ExtFlash_Bus_Clock_Div SPI_MCLK_DIV_4
-#define ExtFlash_Chip_Type Storage_ChipType_W25Nxx
+// #define ExtFlash_Chip_Type Storage_ChipType_W25Nxx
+#define ExtFlash_Chip_Type Storage_Chip_None
 #define ExtFlash_Bus_Api BspSPI
 #define ExtFLash_Bus_Instance (void *)SPI2
 #define ExtFlash_Bus_CLKPhase SPI_CLOCK_PHASE_2EDGE

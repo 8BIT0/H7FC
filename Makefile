@@ -123,7 +123,6 @@ System/FreeRTOS/stream_buffer.c \
 System/FreeRTOS/tasks.c \
 System/FreeRTOS/timers.c \
 System/FreeRTOS/CMSIS_RTOS/cmsis_os.c
-# Device/Dev_W25Nxx.c
 ifeq ($(HARDWARE), $(HW_NEURE))
 C_SOURCES += \
 System/FreeRTOS/portable/MemMang/heap_5.c
