@@ -9,11 +9,12 @@ extern "C" {
 #include <stdbool.h>
 #include <string.h>
 
-#define To_DevW25Qxx_API(x) ((DevW25Qxx_TypeDef *)x)
-#define To_DevW25Qxx_OBJ(x) ((DevW25QxxObj_TypeDef *)x)
+#define To_DevW25Qxx_API(x)                     ((DevW25Qxx_TypeDef *)x)
+#define To_DevW25Qxx_OBJ(x)                     ((DevW25QxxObj_TypeDef *)x)
 
 #define W25QXX_PAGE_SIZE                        0x100
 #define W25QXX_SECTOR_SIZE                      0x1000
+#define W25QXX_BLOCK_SIZE                       0x10000
 
 #define W25Q08_DEV_ID                           0xEF13
 #define W25Q16_DEV_ID                           0xEF14
@@ -23,7 +24,7 @@ extern "C" {
 #define W25Q128_DEV_ID                          0xEF17
 
 #define W25Q64FV_FLASH_SIZE                     0x800000            /* 64 MBits => 8MBytes */
-#define W25Q64FV_BLOCK_SIZE                     0x10000             /* 128 block of 64KBytes */
+#define W25Q64FV_BLOCK_SIZE                     W25QXX_BLOCK_SIZE   /* 128 block of 64KBytes */
 #define W25Q64FV_SECTOR_SIZE                    W25QXX_SECTOR_SIZE  /* 2048 sectors of 4kBytes */
 #define W25Q64FV_PAGE_SIZE                      W25QXX_PAGE_SIZE    /* 32767 pages of 256 bytes */
 #define W25Q64FV_BLOCK_NUM                      128
@@ -31,7 +32,7 @@ extern "C" {
 #define W25Q64FV_PAGE_NUM                       32768
 
 #define W25Q128FV_FLASH_SIZE                    0x1000000           /* 128 MBits => 16MBytes */
-#define W25Q128FV_BLOCK_SIZE                    0x10000             /* 256 block of 64KBytes */
+#define W25Q128FV_BLOCK_SIZE                    W25QXX_BLOCK_SIZE   /* 256 block of 64KBytes */
 #define W25Q128FV_SECTOR_SIZE                   W25QXX_SECTOR_SIZE  /* 4096 sectors of 4kBytes */
 #define W25Q128FV_PAGE_SIZE                     W25QXX_PAGE_SIZE    /* 65536 pages of 256 bytes */
 #define W25Q128FV_BLOCK_NUM                     256
@@ -141,7 +142,6 @@ typedef struct
 
     uint16_t (*bus_tx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
     uint16_t (*bus_rx)(uint8_t *p_data, uint16_t len, uint32_t time_out);
-    uint16_t (*bus_trans)(uint8_t *tx_data, uint8_t *rx_data, uint16_t len, uint32_t time_out);
     bool (*cs_ctl)(bool state);
     void (*delay_ms)(uint32_t ms);
     uint32_t (*systick)(void);

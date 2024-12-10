@@ -124,8 +124,7 @@ static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev)
     if ((dev == NULL) || \
         (dev->delay_ms == NULL) || \
         (dev->systick == NULL) || \
-        (dev->cs_ctl == NULL) || \
-        (dev->bus_trans == NULL))
+        (dev->cs_ctl == NULL))
         return DevW25Qxx_Error;
 
     dev->init_state = DevW25Qxx_Error;

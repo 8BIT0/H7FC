@@ -2030,7 +2030,6 @@ static void Storage_Show_ModuleInfo(void)
         shellPrint(shell_obj, "\t[dev_obj pointer %08x]\r\n", dev_obj);
         shellPrint(shell_obj, "\t[bus_rx     addr %08x]\r\n", To_DevW25Qxx_OBJ(dev_obj)->bus_rx);
         shellPrint(shell_obj, "\t[bus_tx     addr %08x]\r\n", To_DevW25Qxx_OBJ(dev_obj)->bus_tx);
-        shellPrint(shell_obj, "\t[bus_trans  addr %08x]\r\n", To_DevW25Qxx_OBJ(dev_obj)->bus_trans);
         shellPrint(shell_obj, "\t[cs_ctl     addr %08x]\r\n", To_DevW25Qxx_OBJ(dev_obj)->cs_ctl);
         shellPrint(shell_obj, "\t[sys_tick   addr %08x]\r\n", To_DevW25Qxx_OBJ(dev_obj)->systick);
     }
