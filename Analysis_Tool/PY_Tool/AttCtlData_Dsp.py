@@ -1,7 +1,5 @@
 import os
 from enum import Enum
-import tkinter as tk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 
 class Dsp_Type(Enum):
