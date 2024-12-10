@@ -8,7 +8,6 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 #include <stdint.h>
-#include "Storage_Bus_Port.h"
 
 #define To_StorageDevObj_Ptr(x) ((StorageDevObj_TypeDef *)x)
 
@@ -59,6 +58,7 @@ typedef struct
     bool (*set)(StorageDevObj_TypeDef *ext_dev);
     bool (*init)(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, uint16_t *p_code);
 
+    /* directly write data to physical section */
     bool (*write_phy_sec)(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint8_t *p_data, uint16_t len);
     bool (*read_phy_sec)(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint8_t *p_data, uint16_t len);
     bool (*erase_phy_sec)(StorageDevObj_TypeDef *p_dev, uint32_t addr, uint16_t len);
