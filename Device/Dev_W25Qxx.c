@@ -6,8 +6,8 @@ static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev,
 /* external function */
 static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev);
 static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef *dev);
-static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size);
-static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint8_t *pData, uint32_t Size);
+static DevW25Qxx_Error_List DevW25Qxx_WriteSector(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size);
+static DevW25Qxx_Error_List DevW25Qxx_ReadSector(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint8_t *pData, uint32_t Size);
 static DevW25Qxx_Error_List DevW25Qxx_EraseSector(DevW25QxxObj_TypeDef *dev, uint32_t Address);
 static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev);
 static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev);
@@ -15,8 +15,8 @@ static uint32_t DevW25Qxx_Get_Section_StartAddr(DevW25QxxObj_TypeDef *dev, uint3
 
 DevW25Qxx_TypeDef DevW25Qxx = {
     .init = DevW25Qxx_Init,
-    .write = DevW25Qxx_Write,
-    .read = DevW25Qxx_Read,
+    .write_sector = DevW25Qxx_WriteSector,
+    .read_sector = DevW25Qxx_ReadSector,
     .erase_sector = DevW25Qxx_EraseSector,
     .erase_chip = DevW25Qxx_EraseChip,
     .info = DevW25Qxx_Get_Info,
@@ -193,19 +193,23 @@ static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev,
     return DevW25Q_None;
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint8_t *pData, uint32_t Size)
+/* read entire data in one sector */
+static DevW25Qxx_Error_List DevW25Qxx_ReadSector(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint8_t *pData, uint32_t Size)
 {
-    uint8_t cmd[4];
+    uint8_t cmd[4] = {READ_CMD, 0, 0, 0};
     bool read_state = false;
 
+    if ((dev == NULL) || \
+        (dev->cs_ctl == NULL) || \
+        (pData == NULL) || \
+        (ReadAddr % W25QXX_SECTOR_SIZE) || \
+        (Size != W25QXX_SECTOR_SIZE))
+        return DevW25Qxx_Error;
+
     /* Configure the command */
-    cmd[0] = READ_CMD;
     cmd[1] = (uint8_t)(ReadAddr >> 16);
     cmd[2] = (uint8_t)(ReadAddr >> 8);
     cmd[3] = (uint8_t)(ReadAddr);
-
-    if ((dev == NULL) || (dev->cs_ctl == NULL) || (pData == NULL) || (Size == 0))
-        return DevW25Qxx_Error;
 
     dev->cs_ctl(false);
     read_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) & DevW25Qxx_BusReceive(dev, pData, Size);
@@ -217,67 +221,108 @@ static DevW25Qxx_Error_List DevW25Qxx_Read(DevW25QxxObj_TypeDef *dev, uint32_t R
     return DevW25Qxx_Error; 
 }
 
-static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size)
+/* write entire sector in one sector */
+static DevW25Qxx_Error_List DevW25Qxx_WriteSector(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size)
 {
-    uint8_t cmd[4];
-    uint32_t end_addr, current_size, current_addr;
+    uint8_t cmd[4] = {PAGE_PROG_CMD, 0, 0, 0};
     uint32_t tickstart = 0;
 
-    if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL) || (pData == NULL) || (Size == 0))
+    if ((dev == NULL) || \
+        (dev->cs_ctl == NULL) || \
+        (dev->systick == NULL) || \
+        (pData == NULL) || \
+        (Size != W25QXX_SECTOR_SIZE) || \
+        (WriteAddr % W25QXX_SECTOR_SIZE))
         return DevW25Qxx_Error;
 
-    /* Calculation of the size between the write address and the end of the page */
-    current_addr = 0;
+    /* Configure the command */
+    cmd[1] = (uint8_t)(WriteAddr >> 16);
+    cmd[2] = (uint8_t)(WriteAddr >> 8);
+    cmd[3] = (uint8_t)(WriteAddr);
 
-    while (current_addr <= WriteAddr)
-        current_addr += W25Q128FV_PAGE_SIZE;
-    current_size = current_addr - WriteAddr;
+    /* Enable write operations */
+    if (DevW25Qxx_WriteEnableCtl(dev, true) != DevW25Qxx_Ok)
+        return DevW25Qxx_Error;
 
-    /* Check if the size of the data is less than the remaining place in the page */
-    if (current_size > Size)
-        current_size = Size;
+    /* Send the command Transmission of the data */
+    dev->cs_ctl(false);
+    DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+    DevW25Qxx_BusTrans(dev, pData, Size);
+    dev->cs_ctl(true);
 
-    /* Initialize the adress variables */
-    current_addr = WriteAddr;
-    end_addr = WriteAddr + Size;
-
+    /* Wait the end of Flash writing */
     tickstart = dev->systick();
-
-    /* Perform the write page by page */
-    do
+    while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
     {
-        /* Configure the command */
-        cmd[0] = PAGE_PROG_CMD;
-        cmd[1] = (uint8_t)(current_addr >> 16);
-        cmd[2] = (uint8_t)(current_addr >> 8);
-        cmd[3] = (uint8_t)(current_addr);
-
-        /* Enable write operations */
-        if (DevW25Qxx_WriteEnableCtl(dev, true) != DevW25Qxx_Ok)
-            return DevW25Qxx_Error;
-
-        /* Send the command Transmission of the data */
-        dev->cs_ctl(false);
-        DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
-        DevW25Qxx_BusTrans(dev, pData, current_size);
-        dev->cs_ctl(true);
-
-        /* Wait the end of Flash writing */
-        while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
-        {
-            /* Check for the Timeout */
-            if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
-                return DevW25Qxx_TimeOut;
-        }
-
-        /* Update the address and size variables for next page programming */
-        current_addr += current_size;
-        pData += current_size;
-        current_size = ((current_addr + W25Q128FV_PAGE_SIZE) > end_addr) ? (end_addr - current_addr) : W25Q128FV_PAGE_SIZE;
-    } while (current_addr < end_addr);
+        /* Check for the Timeout */
+        if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
+            return DevW25Qxx_TimeOut;
+    }
 
     return DevW25Qxx_Ok;
 }
+
+// static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size)
+// {
+//     uint8_t cmd[4];
+//     uint32_t end_addr, current_size, current_addr;
+//     uint32_t tickstart = 0;
+
+//     if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL) || (pData == NULL) || (Size == 0))
+//         return DevW25Qxx_Error;
+
+//     /* Calculation of the size between the write address and the end of the page */
+//     current_addr = 0;
+
+//     while (current_addr <= WriteAddr)
+//         current_addr += W25Q128FV_PAGE_SIZE;
+//     current_size = current_addr - WriteAddr;
+
+//     /* Check if the size of the data is less than the remaining place in the page */
+//     if (current_size > Size)
+//         current_size = Size;
+
+//     /* Initialize the adress variables */
+//     current_addr = WriteAddr;
+//     end_addr = WriteAddr + Size;
+
+//     tickstart = dev->systick();
+
+//     /* Perform the write page by page */
+//     do
+//     {
+//         /* Configure the command */
+//         cmd[0] = PAGE_PROG_CMD;
+//         cmd[1] = (uint8_t)(current_addr >> 16);
+//         cmd[2] = (uint8_t)(current_addr >> 8);
+//         cmd[3] = (uint8_t)(current_addr);
+
+//         /* Enable write operations */
+//         if (DevW25Qxx_WriteEnableCtl(dev, true) != DevW25Qxx_Ok)
+//             return DevW25Qxx_Error;
+
+//         /* Send the command Transmission of the data */
+//         dev->cs_ctl(false);
+//         DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+//         DevW25Qxx_BusTrans(dev, pData, current_size);
+//         dev->cs_ctl(true);
+
+//         /* Wait the end of Flash writing */
+//         while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
+//         {
+//             /* Check for the Timeout */
+//             if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
+//                 return DevW25Qxx_TimeOut;
+//         }
+
+//         /* Update the address and size variables for next page programming */
+//         current_addr += current_size;
+//         pData += current_size;
+//         current_size = ((current_addr + W25Q128FV_PAGE_SIZE) > end_addr) ? (end_addr - current_addr) : W25Q128FV_PAGE_SIZE;
+//     } while (current_addr < end_addr);
+
+//     return DevW25Qxx_Ok;
+// }
 
 static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
 {
@@ -313,15 +358,14 @@ static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
 
 static DevW25Qxx_Error_List DevW25Qxx_EraseSector(DevW25QxxObj_TypeDef *dev, uint32_t Address)
 {
-    uint8_t cmd[4];
+    uint8_t cmd[4] = {SECTOR_ERASE_CMD, 0, 0, 0};
     uint32_t tickstart = 0;
     bool erase_state = false;
-    cmd[0] = SECTOR_ERASE_CMD;
     cmd[1] = (uint8_t)(Address >> 16);
     cmd[2] = (uint8_t)(Address >> 8);
     cmd[3] = (uint8_t)(Address);
 
-    if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
+    if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL) || (Address % W25QXX_SECTOR_SIZE))
         return DevW25Qxx_Error;
 
     tickstart = dev->systick();
@@ -364,29 +408,23 @@ static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev
         switch ((uint8_t)(dev->prod_type))
         {
             case DevW25Q_64:
-                info.flash_size     = W25Q64FV_FLASH_SIZE;
-
-                info.page_num       = W25Q64FV_PAGE_NUM;
-                info.page_size      = W25Q64FV_PAGE_SIZE;
-
-                info.sector_num     = W25Q64FV_SECTOR_NUM;
-                info.sector_size    = W25Q64FV_SECTOR_SIZE;
-
-                info.subsector_num  = W25Q64FV_SUBSECTOR_NUM;
-                info.subsector_size = W25Q64FV_SUBSECTOR_SIZE;
+                info.flash_size  = W25Q64FV_FLASH_SIZE;
+                info.page_num    = W25Q64FV_PAGE_NUM;
+                info.page_size   = W25Q64FV_PAGE_SIZE;
+                info.block_num   = W25Q64FV_BLOCK_NUM;
+                info.block_size  = W25Q64FV_BLOCK_SIZE;
+                info.sector_num  = W25Q64FV_SECTOR_NUM;
+                info.sector_size = W25Q64FV_SECTOR_SIZE;
                 break;
 
             case DevW25Q_128:
-                info.flash_size     = W25Q128FV_FLASH_SIZE;
-                
-                info.page_num       = W25Q128FV_PAGE_NUM;
-                info.page_size      = W25Q128FV_PAGE_SIZE;
-
-                info.sector_num     = W25Q128FV_SECTOR_NUM;
-                info.sector_size    = W25Q128FV_SECTOR_SIZE;
-
-                info.subsector_num  = W25Q128FV_SUBSECTOR_NUM;
-                info.subsector_size = W25Q128FV_SUBSECTOR_SIZE;
+                info.flash_size  = W25Q128FV_FLASH_SIZE;
+                info.page_num    = W25Q128FV_PAGE_NUM;
+                info.page_size   = W25Q128FV_PAGE_SIZE;
+                info.block_num   = W25Q128FV_BLOCK_NUM;
+                info.block_size  = W25Q128FV_BLOCK_SIZE;
+                info.sector_num  = W25Q128FV_SECTOR_NUM;
+                info.sector_size = W25Q128FV_SECTOR_SIZE;
                 break;
 
             default:
@@ -400,7 +438,7 @@ static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev
 static uint32_t DevW25Qxx_Get_Section_StartAddr(DevW25QxxObj_TypeDef *dev, uint32_t addr)
 {
     if (dev && (dev->init_state == DevW25Qxx_Ok))
-        return (addr / W25Q64FV_SUBSECTOR_SIZE) * W25Q64FV_SUBSECTOR_SIZE;
+        return (addr / W25Q64FV_SECTOR_SIZE) * W25Q64FV_SECTOR_SIZE;
 
     return 0;
 }

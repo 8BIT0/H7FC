@@ -4,6 +4,8 @@
  * 
  * Bref: Use for storage parameter for drone
  *       can create search delete parameter section as user want
+ * 
+ * NOTICED: STORAGE MODULE ONLY SUPPORT NOR-FLASH
  */
 #include "Storage.h"
 #include "shell_port.h"
@@ -2420,7 +2422,7 @@ static void Storage_Dump_DataSection(Storage_ParaClassType_List class)
         ext_dev = To_StorageDevObj_Ptr(Storage_Monitor.ExtDev_ptr);
         if (ext_dev->chip_type == Storage_ChipType_W25Qxx)
         {
-            flash_sector_size = To_DevW25Qxx_API(ext_dev->api)->info(ext_dev->obj).subsector_size;
+            flash_sector_size = To_DevW25Qxx_API(ext_dev->api)->info(ext_dev->obj).sector_size;
         }
     }
 

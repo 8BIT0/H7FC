@@ -8,9 +8,15 @@ extern "C" {
 #include "util.h"
 #include "../../FCHW_Config.h"
 
-#define InternalFlash_BootDataSec_Size  (4 Kb)
-#define InternalFlash_SysDataSec_Size   (16 Kb)
-#define InternalFlash_UserDataSec_Size  (32 Kb)
+#if (FLASH_CHIP_STATE == ON)
+#define Flash_MaxRWSize                 (2 Kb)
+#define Flash_Storage_TabSize           (4 Kb)
+#define Flash_Storage_InfoPageSize      (1 Kb)
+#else
+#define Flash_MaxRWSize                 (0 Kb)
+#define Flash_Storage_TabSize           (0 Kb)
+#define Flash_Storage_InfoPageSize      (0 Kb)
+#endif
 
 #define Storage_TabSize                 Flash_Storage_TabSize
 #define Storage_InfoPageSize            Flash_Storage_InfoPageSize

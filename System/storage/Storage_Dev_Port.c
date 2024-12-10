@@ -122,8 +122,8 @@ static bool Storage_Dev_Init(StorageDevObj_TypeDef *ext_dev, uint16_t *p_type, u
         *p_code = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).prod_code;
     
         ext_dev->start_addr  = W25QXX_BASE_ADDRESS;
-        ext_dev->sector_num  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).subsector_num;
-        ext_dev->sector_size = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).subsector_size;
+        ext_dev->sector_num  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).sector_num;
+        ext_dev->sector_size = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).sector_size;
         ext_dev->total_size  = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).flash_size;
         ext_dev->page_num    = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_num;
         ext_dev->page_size   = To_DevW25Qxx_API(ext_dev->api)->info(To_DevW25Qxx_OBJ(ext_dev->obj)).page_size;
@@ -178,7 +178,7 @@ static bool Storage_Dev_Write_Section(StorageDevObj_TypeDef *p_dev, uint32_t add
             case Storage_ChipType_W25Qxx:
                 /* erase sector and update sector */
                 if ((To_DevW25Qxx_API(p_dev->api)->erase_sector(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp) != DevW25Qxx_Ok) || \
-                    (To_DevW25Qxx_API(p_dev->api)->write(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, p_dev->sector_size) != DevW25Qxx_Ok))
+                    (To_DevW25Qxx_API(p_dev->api)->write_sector(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, p_dev->sector_size) != DevW25Qxx_Ok))
                     return false;
                 break;
 
@@ -214,7 +214,7 @@ static bool Storage_Dev_Read_Section(StorageDevObj_TypeDef *p_dev, uint32_t addr
         {
             case Storage_ChipType_W25Qxx:
                 /* read sector */
-                if (To_DevW25Qxx_API(p_dev->api)->read(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, len) != DevW25Qxx_Ok)
+                if (To_DevW25Qxx_API(p_dev->api)->read_sector(To_DevW25Qxx_OBJ(p_dev->obj), addr_tmp, p_data, len) != DevW25Qxx_Ok)
                 {
                     memset(p_data, 0, len);
                     return false;
@@ -318,7 +318,7 @@ static bool Storage_Dev_Firmware_Read(StorageDevObj_TypeDef *p_dev, uint32_t bas
         {
             case Storage_ChipType_W25Qxx:
                 section_addr = To_DevW25Qxx_API(p_dev->api)->get_section_start_addr(To_DevW25Qxx_OBJ(p_dev->obj), read_addr);
-                if (To_DevW25Qxx_API(p_dev->api)->read(To_DevW25Qxx_OBJ(p_dev->obj), section_addr, read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
+                if (To_DevW25Qxx_API(p_dev->api)->read_sector(To_DevW25Qxx_OBJ(p_dev->obj), section_addr, read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
                     return false;
 
                 if ((read_addr + size) > (section_addr + Storage_TabSize))
@@ -370,7 +370,7 @@ static bool Storage_Dev_Firmware_Write(StorageDevObj_TypeDef *p_dev, uint32_t ba
 
                 /* read section first */
                 memset(read_tmp, 0, Storage_TabSize);
-                if (To_DevW25Qxx_API(p_dev->api)->read(To_DevW25Qxx_OBJ(p_dev->obj), section_addr, read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
+                if (To_DevW25Qxx_API(p_dev->api)->read_sector(To_DevW25Qxx_OBJ(p_dev->obj), section_addr, read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
                     return false;
 
                 /* erase whole section */
@@ -390,7 +390,7 @@ static bool Storage_Dev_Firmware_Write(StorageDevObj_TypeDef *p_dev, uint32_t ba
 
                 /* update to flash */
                 memcpy(&read_tmp[write_addr - section_addr], p_data, write_size);
-                if (To_DevW25Qxx_API(p_dev->api)->write(To_DevW25Qxx_OBJ(p_dev->obj), section_addr, read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
+                if (To_DevW25Qxx_API(p_dev->api)->write_sector(To_DevW25Qxx_OBJ(p_dev->obj), section_addr, read_tmp, Storage_TabSize) != DevW25Qxx_Ok)
                     return false;
 
                 /* update section address */
@@ -425,7 +425,7 @@ static bool Storage_Dev_Param_Read(StorageDevObj_TypeDef *p_dev, uint32_t base_a
     switch((uint8_t)p_dev->chip_type)
     {
         case Storage_ChipType_W25Qxx:
-            section_size = To_DevW25Qxx_API(p_dev->api)->info(To_DevW25Qxx_OBJ(p_dev->obj)).subsector_size;
+            section_size = To_DevW25Qxx_API(p_dev->api)->info(To_DevW25Qxx_OBJ(p_dev->obj)).sector_size;
             /* get w25qxx device info */
             /* address check */
             flash_end_addr = To_DevW25Qxx_API(p_dev->api)->info(To_DevW25Qxx_OBJ(p_dev->obj)).start_addr;
@@ -454,7 +454,7 @@ static bool Storage_Dev_Param_Read(StorageDevObj_TypeDef *p_dev, uint32_t base_a
                     read_len = section_size - read_offset;
 
                 /* read whole section */
-                if (To_DevW25Qxx_API(p_dev->api)->read(To_DevW25Qxx_OBJ(p_dev->obj), section_start_addr, read_tmp, section_size) != DevW25Qxx_Ok)
+                if (To_DevW25Qxx_API(p_dev->api)->read_sector(To_DevW25Qxx_OBJ(p_dev->obj), section_start_addr, read_tmp, section_size) != DevW25Qxx_Ok)
                     return false;
             
                 memcpy(p_data, read_tmp + read_offset, read_len);
@@ -501,7 +501,7 @@ static bool Storage_Dev_Param_Write(StorageDevObj_TypeDef *p_dev, uint32_t base_
     switch((uint8_t)p_dev->chip_type)
     {
         case Storage_ChipType_W25Qxx:
-            section_size = To_DevW25Qxx_API(p_dev->api)->info(To_DevW25Qxx_OBJ(p_dev->obj)).subsector_size;
+            section_size = To_DevW25Qxx_API(p_dev->api)->info(To_DevW25Qxx_OBJ(p_dev->obj)).sector_size;
             /* get w25qxx device info */
             /* address check */
             flash_end_addr = To_DevW25Qxx_API(p_dev->api)->info(To_DevW25Qxx_OBJ(p_dev->obj)).start_addr;
@@ -527,7 +527,7 @@ static bool Storage_Dev_Param_Write(StorageDevObj_TypeDef *p_dev, uint32_t base_
                 /* circumstances 2: store data size less than flash sector length but need to write from the end of the sector N to the start of the sector N + 1 */
                 /* circumstances 3: store data size large than flash sector length */
                 /* read whole section */
-                if (To_DevW25Qxx_API(p_dev->api)->read(To_DevW25Qxx_OBJ(p_dev->obj), section_start_addr, write_tmp, section_size) != DevW25Qxx_Ok)
+                if (To_DevW25Qxx_API(p_dev->api)->read_sector(To_DevW25Qxx_OBJ(p_dev->obj), section_start_addr, write_tmp, section_size) != DevW25Qxx_Ok)
                     return false;
 
                 /* erase whole section */
@@ -541,7 +541,7 @@ static bool Storage_Dev_Param_Write(StorageDevObj_TypeDef *p_dev, uint32_t base_
                 /* copy data to section data read out */
                 memcpy(write_tmp + write_offset, p_data, write_len);
 
-                DevW25Qxx_Error_List state = To_DevW25Qxx_API(p_dev->api)->write(To_DevW25Qxx_OBJ(p_dev->obj), section_start_addr, write_tmp, section_size);
+                DevW25Qxx_Error_List state = To_DevW25Qxx_API(p_dev->api)->write_sector(To_DevW25Qxx_OBJ(p_dev->obj), section_start_addr, write_tmp, section_size);
 
                 /* clear cache buff */
                 memset(write_tmp, 0, section_size);

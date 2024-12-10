@@ -24,10 +24,6 @@
 #define FLASH_CHIP_ENABLE_STATE OFF
 #define RADIO_NUM               1
 
-#define Flash_MaxRWSize (0 Kb)
-#define Flash_Storage_TabSize (0 Kb)
-#define Flash_Storage_InfoPageSize (0 Kb)
-
 #elif defined NEURE 
 
 #define IMU_CNT                 2
@@ -38,10 +34,6 @@
 #define FLASH_CHIP_ENABLE_STATE OFF
 #define RADIO_NUM               1
 
-#define Flash_MaxRWSize (2 Kb)
-#define Flash_Storage_TabSize (4 Kb)
-#define Flash_Storage_InfoPageSize (1 Kb)
-
 #elif defined BATEAT32F435_AIO || defined CCRC_AT32_20 || defined CAIFPV_AIO
 
 #define IMU_CNT                 1
@@ -51,11 +43,6 @@
 #define SDRAM_ENABLE_STATE      OFF
 #define FLASH_CHIP_ENABLE_STATE ON
 #define RADIO_NUM               1
-
-#define Flash_MaxRWSize (2 Kb)
-#define Flash_Storage_TabSize (4 Kb)
-#define Flash_Storage_InfoPageSize (1 Kb)
-
 #endif
 
 #define Storage_InfoPageSize Flash_Storage_InfoPageSize

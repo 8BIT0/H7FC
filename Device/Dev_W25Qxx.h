@@ -13,6 +13,7 @@ extern "C" {
 #define To_DevW25Qxx_OBJ(x) ((DevW25QxxObj_TypeDef *)x)
 
 #define W25QXX_PAGE_SIZE                        0x100
+#define W25QXX_SECTOR_SIZE                      0x1000
 
 #define W25Q08_DEV_ID                           0xEF13
 #define W25Q16_DEV_ID                           0xEF14
@@ -22,19 +23,19 @@ extern "C" {
 #define W25Q128_DEV_ID                          0xEF17
 
 #define W25Q64FV_FLASH_SIZE                     0x800000            /* 64 MBits => 8MBytes */
-#define W25Q64FV_SECTOR_SIZE                    0x10000             /* 128 sectors of 64KBytes */
-#define W25Q64FV_SUBSECTOR_SIZE                 0x1000              /* 2048 subsectors of 4kBytes */
+#define W25Q64FV_BLOCK_SIZE                     0x10000             /* 128 block of 64KBytes */
+#define W25Q64FV_SECTOR_SIZE                    W25QXX_SECTOR_SIZE  /* 2048 sectors of 4kBytes */
 #define W25Q64FV_PAGE_SIZE                      W25QXX_PAGE_SIZE    /* 32767 pages of 256 bytes */
-#define W25Q64FV_SECTOR_NUM                     128
-#define W25Q64FV_SUBSECTOR_NUM                  2048
+#define W25Q64FV_BLOCK_NUM                      128
+#define W25Q64FV_SECTOR_NUM                     2048
 #define W25Q64FV_PAGE_NUM                       32768
 
 #define W25Q128FV_FLASH_SIZE                    0x1000000           /* 128 MBits => 16MBytes */
-#define W25Q128FV_SECTOR_SIZE                   0x10000             /* 256 sectors of 64KBytes */
-#define W25Q128FV_SUBSECTOR_SIZE                0x1000              /* 4096 subsectors of 4kBytes */
+#define W25Q128FV_BLOCK_SIZE                    0x10000             /* 256 block of 64KBytes */
+#define W25Q128FV_SECTOR_SIZE                   W25QXX_SECTOR_SIZE  /* 4096 sectors of 4kBytes */
 #define W25Q128FV_PAGE_SIZE                     W25QXX_PAGE_SIZE    /* 65536 pages of 256 bytes */
-#define W25Q128FV_SECTOR_NUM                    256
-#define W25Q128FV_SUBSECTOR_NUM                 4096
+#define W25Q128FV_BLOCK_NUM                     256
+#define W25Q128FV_SECTOR_NUM                    4096
 #define W25Q128FV_PAGE_NUM                      65535
 
 #define W25Q128FV_DUMMY_CYCLES_READ             4
@@ -124,12 +125,12 @@ typedef struct
     uint32_t start_addr;
     uint32_t flash_size;
 
+    uint32_t block_size;
     uint32_t sector_size;
-    uint32_t subsector_size;
     uint16_t page_size;
 
+    uint16_t block_num;
     uint16_t sector_num;
-    uint16_t subsector_num;
     uint16_t page_num;
 } DevW25Qxx_DeviceInfo_TypeDef;
 
@@ -151,8 +152,8 @@ typedef struct
 typedef struct
 {
     DevW25Qxx_Error_List (*init)(DevW25QxxObj_TypeDef *dev);
-    DevW25Qxx_Error_List (*write)(DevW25QxxObj_TypeDef *dev, uint32_t addr, uint8_t *tx, uint32_t size);
-    DevW25Qxx_Error_List (*read)(DevW25QxxObj_TypeDef *dev, uint32_t addr, uint8_t *rx, uint32_t size);
+    DevW25Qxx_Error_List (*write_sector)(DevW25QxxObj_TypeDef *dev, uint32_t addr, uint8_t *tx, uint32_t size);
+    DevW25Qxx_Error_List (*read_sector)(DevW25QxxObj_TypeDef *dev, uint32_t addr, uint8_t *rx, uint32_t size);
     DevW25Qxx_Error_List (*erase_sector)(DevW25QxxObj_TypeDef *dev, uint32_t addr);
     DevW25Qxx_Error_List (*erase_chip)(DevW25QxxObj_TypeDef *dev);
     DevW25Qxx_DeviceInfo_TypeDef (*info)(DevW25QxxObj_TypeDef *dev);
