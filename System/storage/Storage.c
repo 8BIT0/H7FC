@@ -19,9 +19,6 @@
 #define STORAGE_TAG                     "[ STORAGE INFO ] "
 #define STORAGE_INFO(fmt, ...)          Debug_Print(&DebugPort, STORAGE_TAG, fmt, ##__VA_ARGS__)
 
-#define Storage_Malloc(size)            SrvOsCommon.malloc(size)
-#define Storage_Free(ptr)               SrvOsCommon.free(ptr)
-
 #define STORAGE_DEBUG                   1
 
 #define Item_Capacity_Per_Tab           (Storage_TabSize / sizeof(Storage_Item_TypeDef))
