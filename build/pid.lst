@@ -1,0 +1,651 @@
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"pid.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.PID_P_Progress,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	PID_P_Progress:
+  26              	.LVL0:
+  27              	.LFB10:
+  28              		.file 1 "Algorithm/Control_Dep/pid.c"
+   1:Algorithm/Control_Dep/pid.c **** /* Author: 8_B!T0
+   2:Algorithm/Control_Dep/pid.c ****  */
+   3:Algorithm/Control_Dep/pid.c **** #include "pid.h"
+   4:Algorithm/Control_Dep/pid.c **** 
+   5:Algorithm/Control_Dep/pid.c **** /* internal function */
+   6:Algorithm/Control_Dep/pid.c **** static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
+   7:Algorithm/Control_Dep/pid.c **** static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
+   8:Algorithm/Control_Dep/pid.c **** static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float diff);
+   9:Algorithm/Control_Dep/pid.c **** 
+  10:Algorithm/Control_Dep/pid.c **** bool PID_Init(PIDObj_TypeDef *p_PIDObj, RC_Filter_Param_TypeDef rc_para)
+  11:Algorithm/Control_Dep/pid.c **** {
+  12:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+  13:Algorithm/Control_Dep/pid.c ****         return false;
+  14:Algorithm/Control_Dep/pid.c **** 
+  15:Algorithm/Control_Dep/pid.c ****     p_PIDObj->in = 0.0f;
+  16:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = 0.0f;
+  17:Algorithm/Control_Dep/pid.c ****     p_PIDObj->fout = 0.0f;
+  18:Algorithm/Control_Dep/pid.c **** 
+  19:Algorithm/Control_Dep/pid.c ****     p_PIDObj->P_out = 0.0f;
+  20:Algorithm/Control_Dep/pid.c ****     p_PIDObj->I_out = 0.0f;
+  21:Algorithm/Control_Dep/pid.c ****     p_PIDObj->D_out = 0.0f;
+  22:Algorithm/Control_Dep/pid.c **** 
+  23:Algorithm/Control_Dep/pid.c ****     p_PIDObj->Integral = 0.0f;
+  24:Algorithm/Control_Dep/pid.c ****     p_PIDObj->lst_diff = 0.0f;
+  25:Algorithm/Control_Dep/pid.c **** 
+  26:Algorithm/Control_Dep/pid.c ****     if (RCFilter.init(&p_PIDObj->Dtrim_RC) == 0)
+  27:Algorithm/Control_Dep/pid.c ****         return false;
+  28:Algorithm/Control_Dep/pid.c **** 
+  29:Algorithm/Control_Dep/pid.c ****     return true;
+  30:Algorithm/Control_Dep/pid.c **** }
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 2
+
+
+  31:Algorithm/Control_Dep/pid.c **** 
+  32:Algorithm/Control_Dep/pid.c **** bool PID_Update(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float mea_in, const float exp_in)
+  33:Algorithm/Control_Dep/pid.c **** {
+  34:Algorithm/Control_Dep/pid.c ****     float diff = mea_in - exp_in;
+  35:Algorithm/Control_Dep/pid.c ****     float out_tmp = 0.0f;
+  36:Algorithm/Control_Dep/pid.c **** 
+  37:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+  38:Algorithm/Control_Dep/pid.c ****         return false;
+  39:Algorithm/Control_Dep/pid.c ****     
+  40:Algorithm/Control_Dep/pid.c ****     p_PIDObj->in = mea_in;
+  41:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = exp_in;
+  42:Algorithm/Control_Dep/pid.c **** 
+  43:Algorithm/Control_Dep/pid.c ****     /* feed foward is essential? */
+  44:Algorithm/Control_Dep/pid.c **** 
+  45:Algorithm/Control_Dep/pid.c ****     /* if P stage error then PID can`t be use in other progress */
+  46:Algorithm/Control_Dep/pid.c ****     if (!PID_P_Progress(p_PIDObj, diff))
+  47:Algorithm/Control_Dep/pid.c ****         return false;
+  48:Algorithm/Control_Dep/pid.c **** 
+  49:Algorithm/Control_Dep/pid.c ****     out_tmp += p_PIDObj->P_out;
+  50:Algorithm/Control_Dep/pid.c ****     if(PID_I_Progress(p_PIDObj, diff))
+  51:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->I_out;
+  52:Algorithm/Control_Dep/pid.c **** 
+  53:Algorithm/Control_Dep/pid.c ****     if(PID_D_Progress(p_PIDObj, sys_ms, diff))
+  54:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->D_out;
+  55:Algorithm/Control_Dep/pid.c **** 
+  56:Algorithm/Control_Dep/pid.c ****     p_PIDObj->fout = out_tmp;
+  57:Algorithm/Control_Dep/pid.c ****     return true;
+  58:Algorithm/Control_Dep/pid.c **** }
+  59:Algorithm/Control_Dep/pid.c **** 
+  60:Algorithm/Control_Dep/pid.c **** static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
+  61:Algorithm/Control_Dep/pid.c **** {
+  29              		.loc 1 61 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  62:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+  34              		.loc 1 62 5 view .LVU1
+  35              		.loc 1 62 8 is_stmt 0 view .LVU2
+  36 0000 38B1     		cbz	r0, .L3
+  63:Algorithm/Control_Dep/pid.c ****         return false;
+  64:Algorithm/Control_Dep/pid.c ****         
+  65:Algorithm/Control_Dep/pid.c ****     /* limit diff range */
+  66:Algorithm/Control_Dep/pid.c ****     /* check integer first */
+  67:Algorithm/Control_Dep/pid.c ****     p_PIDObj->P_out = diff * p_PIDObj->gP;
+  37              		.loc 1 67 5 is_stmt 1 view .LVU3
+  38              		.loc 1 67 38 is_stmt 0 view .LVU4
+  39 0002 D0ED037A 		vldr.32	s15, [r0, #12]
+  40              		.loc 1 67 28 view .LVU5
+  41 0006 27EE800A 		vmul.f32	s0, s15, s0
+  42              	.LVL1:
+  43              		.loc 1 67 21 view .LVU6
+  44 000a 80ED040A 		vstr.32	s0, [r0, #16]
+  68:Algorithm/Control_Dep/pid.c ****     return true;
+  45              		.loc 1 68 5 is_stmt 1 view .LVU7
+  46              		.loc 1 68 12 is_stmt 0 view .LVU8
+  47 000e 0120     		movs	r0, #1
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 3
+
+
+  48              	.LVL2:
+  49              		.loc 1 68 12 view .LVU9
+  50 0010 7047     		bx	lr
+  51              	.LVL3:
+  52              	.L3:
+  63:Algorithm/Control_Dep/pid.c ****         return false;
+  53              		.loc 1 63 16 view .LVU10
+  54 0012 0020     		movs	r0, #0
+  55              	.LVL4:
+  69:Algorithm/Control_Dep/pid.c **** }
+  56              		.loc 1 69 1 view .LVU11
+  57 0014 7047     		bx	lr
+  58              		.cfi_endproc
+  59              	.LFE10:
+  61              		.section	.text.PID_I_Progress,"ax",%progbits
+  62              		.align	1
+  63              		.syntax unified
+  64              		.thumb
+  65              		.thumb_func
+  67              	PID_I_Progress:
+  68              	.LVL5:
+  69              	.LFB11:
+  70:Algorithm/Control_Dep/pid.c **** 
+  71:Algorithm/Control_Dep/pid.c **** static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
+  72:Algorithm/Control_Dep/pid.c **** {
+  70              		.loc 1 72 1 is_stmt 1 view -0
+  71              		.cfi_startproc
+  72              		@ args = 0, pretend = 0, frame = 0
+  73              		@ frame_needed = 0, uses_anonymous_args = 0
+  74              		@ link register save eliminated.
+  73:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+  75              		.loc 1 73 5 view .LVU13
+  76              		.loc 1 73 8 is_stmt 0 view .LVU14
+  77 0000 0246     		mov	r2, r0
+  78 0002 58B3     		cbz	r0, .L8
+  74:Algorithm/Control_Dep/pid.c ****         return false;
+  75:Algorithm/Control_Dep/pid.c ****         
+  76:Algorithm/Control_Dep/pid.c ****     p_PIDObj->Integral += diff;
+  79              		.loc 1 76 5 is_stmt 1 view .LVU15
+  80              		.loc 1 76 24 is_stmt 0 view .LVU16
+  81 0004 D0ED087A 		vldr.32	s15, [r0, #32]
+  82 0008 30EE270A 		vadd.f32	s0, s0, s15
+  83              	.LVL6:
+  84              		.loc 1 76 24 view .LVU17
+  85 000c 80ED080A 		vstr.32	s0, [r0, #32]
+  77:Algorithm/Control_Dep/pid.c **** 
+  78:Algorithm/Control_Dep/pid.c ****     /* limit Integral */
+  79:Algorithm/Control_Dep/pid.c ****     /* check integer first */
+  80:Algorithm/Control_Dep/pid.c ****     if ((int16_t)p_PIDObj->Integral >= (int16_t)p_PIDObj->gI_Max)
+  86              		.loc 1 80 5 is_stmt 1 view .LVU18
+  87              		.loc 1 80 9 is_stmt 0 view .LVU19
+  88 0010 BDEEC00A 		vcvt.s32.f32	s0, s0
+  89 0014 10EE103A 		vmov	r3, s0	@ int
+  90 0018 1BB2     		sxth	r3, r3
+  91              		.loc 1 80 57 view .LVU20
+  92 001a 90ED077A 		vldr.32	s14, [r0, #28]
+  93              		.loc 1 80 40 view .LVU21
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 4
+
+
+  94 001e FDEEC77A 		vcvt.s32.f32	s15, s14
+  95 0022 17EE901A 		vmov	r1, s15	@ int
+  96 0026 09B2     		sxth	r1, r1
+  97              		.loc 1 80 8 view .LVU22
+  98 0028 8B42     		cmp	r3, r1
+  99 002a 0BDB     		blt	.L6
+  81:Algorithm/Control_Dep/pid.c ****     {
+  82:Algorithm/Control_Dep/pid.c ****         p_PIDObj->Integral = p_PIDObj->gI_Max;
+ 100              		.loc 1 82 9 is_stmt 1 view .LVU23
+ 101              		.loc 1 82 28 is_stmt 0 view .LVU24
+ 102 002c 80ED087A 		vstr.32	s14, [r0, #32]
+ 103              	.L7:
+  83:Algorithm/Control_Dep/pid.c ****     }
+  84:Algorithm/Control_Dep/pid.c ****     else if ((int16_t)p_PIDObj->Integral <= (int16_t)p_PIDObj->gI_Min)
+  85:Algorithm/Control_Dep/pid.c ****     {
+  86:Algorithm/Control_Dep/pid.c ****         p_PIDObj->Integral = p_PIDObj->gI_Min;
+  87:Algorithm/Control_Dep/pid.c ****     }
+  88:Algorithm/Control_Dep/pid.c **** 
+  89:Algorithm/Control_Dep/pid.c ****     p_PIDObj->I_out = p_PIDObj->gI * p_PIDObj->Integral;
+ 104              		.loc 1 89 5 is_stmt 1 view .LVU25
+ 105              		.loc 1 89 31 is_stmt 0 view .LVU26
+ 106 0030 D2ED057A 		vldr.32	s15, [r2, #20]
+ 107              		.loc 1 89 46 view .LVU27
+ 108 0034 92ED087A 		vldr.32	s14, [r2, #32]
+ 109              		.loc 1 89 36 view .LVU28
+ 110 0038 67EE877A 		vmul.f32	s15, s15, s14
+ 111              		.loc 1 89 21 view .LVU29
+ 112 003c C2ED097A 		vstr.32	s15, [r2, #36]
+  90:Algorithm/Control_Dep/pid.c ****     return true;
+ 113              		.loc 1 90 5 is_stmt 1 view .LVU30
+ 114              		.loc 1 90 12 is_stmt 0 view .LVU31
+ 115 0040 0120     		movs	r0, #1
+ 116              	.LVL7:
+ 117              		.loc 1 90 12 view .LVU32
+ 118 0042 7047     		bx	lr
+ 119              	.LVL8:
+ 120              	.L6:
+  84:Algorithm/Control_Dep/pid.c ****     {
+ 121              		.loc 1 84 10 is_stmt 1 view .LVU33
+  84:Algorithm/Control_Dep/pid.c ****     {
+ 122              		.loc 1 84 62 is_stmt 0 view .LVU34
+ 123 0044 90ED067A 		vldr.32	s14, [r0, #24]
+  84:Algorithm/Control_Dep/pid.c ****     {
+ 124              		.loc 1 84 45 view .LVU35
+ 125 0048 FDEEC77A 		vcvt.s32.f32	s15, s14
+ 126 004c 17EE901A 		vmov	r1, s15	@ int
+ 127 0050 09B2     		sxth	r1, r1
+  84:Algorithm/Control_Dep/pid.c ****     {
+ 128              		.loc 1 84 13 view .LVU36
+ 129 0052 8B42     		cmp	r3, r1
+ 130 0054 ECDC     		bgt	.L7
+  86:Algorithm/Control_Dep/pid.c ****     }
+ 131              		.loc 1 86 9 is_stmt 1 view .LVU37
+  86:Algorithm/Control_Dep/pid.c ****     }
+ 132              		.loc 1 86 28 is_stmt 0 view .LVU38
+ 133 0056 80ED087A 		vstr.32	s14, [r0, #32]
+ 134 005a E9E7     		b	.L7
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 5
+
+
+ 135              	.LVL9:
+ 136              	.L8:
+  74:Algorithm/Control_Dep/pid.c ****         
+ 137              		.loc 1 74 16 view .LVU39
+ 138 005c 0020     		movs	r0, #0
+ 139              	.LVL10:
+  91:Algorithm/Control_Dep/pid.c **** }
+ 140              		.loc 1 91 1 view .LVU40
+ 141 005e 7047     		bx	lr
+ 142              		.cfi_endproc
+ 143              	.LFE11:
+ 145              		.section	.text.PID_D_Progress,"ax",%progbits
+ 146              		.align	1
+ 147              		.syntax unified
+ 148              		.thumb
+ 149              		.thumb_func
+ 151              	PID_D_Progress:
+ 152              	.LVL11:
+ 153              	.LFB12:
+  92:Algorithm/Control_Dep/pid.c **** 
+  93:Algorithm/Control_Dep/pid.c **** static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float diff)
+  94:Algorithm/Control_Dep/pid.c **** {
+ 154              		.loc 1 94 1 is_stmt 1 view -0
+ 155              		.cfi_startproc
+ 156              		@ args = 0, pretend = 0, frame = 0
+ 157              		@ frame_needed = 0, uses_anonymous_args = 0
+ 158              		@ link register save eliminated.
+  95:Algorithm/Control_Dep/pid.c ****     /* one stage filter is needed */
+  96:Algorithm/Control_Dep/pid.c ****     /* because high frequence noise on input error will influence D stage */
+  97:Algorithm/Control_Dep/pid.c ****     float derivative = diff - p_PIDObj->lst_diff;
+ 159              		.loc 1 97 5 view .LVU42
+ 160              		.loc 1 97 39 is_stmt 0 view .LVU43
+ 161 0000 D0ED0B7A 		vldr.32	s15, [r0, #44]
+ 162              		.loc 1 97 11 view .LVU44
+ 163 0004 70EE677A 		vsub.f32	s15, s0, s15
+ 164              	.LVL12:
+  98:Algorithm/Control_Dep/pid.c ****     // derivative = RCFilter.update((RC_Object_Handle)&(p_PIDObj->Dtrim_RC), derivative);
+  99:Algorithm/Control_Dep/pid.c **** 
+ 100:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+ 165              		.loc 1 100 5 is_stmt 1 view .LVU45
+ 166              		.loc 1 100 8 is_stmt 0 view .LVU46
+ 167 0008 48B1     		cbz	r0, .L11
+ 101:Algorithm/Control_Dep/pid.c ****         return false;
+ 102:Algorithm/Control_Dep/pid.c ****     
+ 103:Algorithm/Control_Dep/pid.c ****     p_PIDObj->D_out = p_PIDObj->gD * derivative;
+ 168              		.loc 1 103 5 is_stmt 1 view .LVU47
+ 169              		.loc 1 103 31 is_stmt 0 view .LVU48
+ 170 000a 90ED0A7A 		vldr.32	s14, [r0, #40]
+ 171              		.loc 1 103 36 view .LVU49
+ 172 000e 67EE277A 		vmul.f32	s15, s14, s15
+ 173              	.LVL13:
+ 174              		.loc 1 103 21 view .LVU50
+ 175 0012 C0ED0C7A 		vstr.32	s15, [r0, #48]
+ 104:Algorithm/Control_Dep/pid.c ****     p_PIDObj->lst_diff = diff;
+ 176              		.loc 1 104 5 is_stmt 1 view .LVU51
+ 177              		.loc 1 104 24 is_stmt 0 view .LVU52
+ 178 0016 80ED0B0A 		vstr.32	s0, [r0, #44]
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 6
+
+
+ 179              	.LVL14:
+ 105:Algorithm/Control_Dep/pid.c ****     return true;
+ 180              		.loc 1 105 5 is_stmt 1 view .LVU53
+ 181              		.loc 1 105 12 is_stmt 0 view .LVU54
+ 182 001a 0120     		movs	r0, #1
+ 183              	.LVL15:
+ 184              		.loc 1 105 12 view .LVU55
+ 185 001c 7047     		bx	lr
+ 186              	.LVL16:
+ 187              	.L11:
+ 101:Algorithm/Control_Dep/pid.c ****         return false;
+ 188              		.loc 1 101 16 view .LVU56
+ 189 001e 0020     		movs	r0, #0
+ 190              	.LVL17:
+ 106:Algorithm/Control_Dep/pid.c **** }
+ 191              		.loc 1 106 1 view .LVU57
+ 192 0020 7047     		bx	lr
+ 193              		.cfi_endproc
+ 194              	.LFE12:
+ 196              		.section	.text.PID_Init,"ax",%progbits
+ 197              		.align	1
+ 198              		.global	PID_Init
+ 199              		.syntax unified
+ 200              		.thumb
+ 201              		.thumb_func
+ 203              	PID_Init:
+ 204              	.LVL18:
+ 205              	.LFB8:
+  11:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+ 206              		.loc 1 11 1 is_stmt 1 view -0
+ 207              		.cfi_startproc
+ 208              		@ args = 20, pretend = 16, frame = 0
+ 209              		@ frame_needed = 0, uses_anonymous_args = 0
+  11:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+ 210              		.loc 1 11 1 is_stmt 0 view .LVU59
+ 211 0000 84B0     		sub	sp, sp, #16
+ 212              	.LCFI0:
+ 213              		.cfi_def_cfa_offset 16
+ 214 0002 08B5     		push	{r3, lr}
+ 215              	.LCFI1:
+ 216              		.cfi_def_cfa_offset 24
+ 217              		.cfi_offset 3, -24
+ 218              		.cfi_offset 14, -20
+ 219 0004 0DF10C0C 		add	ip, sp, #12
+ 220 0008 8CE80E00 		stm	ip, {r1, r2, r3}
+  12:Algorithm/Control_Dep/pid.c ****         return false;
+ 221              		.loc 1 12 5 is_stmt 1 view .LVU60
+  12:Algorithm/Control_Dep/pid.c ****         return false;
+ 222              		.loc 1 12 8 is_stmt 0 view .LVU61
+ 223 000c 90B1     		cbz	r0, .L14
+  15:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = 0.0f;
+ 224              		.loc 1 15 5 is_stmt 1 view .LVU62
+  15:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = 0.0f;
+ 225              		.loc 1 15 18 is_stmt 0 view .LVU63
+ 226 000e 0022     		movs	r2, #0
+ 227 0010 0260     		str	r2, [r0]	@ float
+  16:Algorithm/Control_Dep/pid.c ****     p_PIDObj->fout = 0.0f;
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 7
+
+
+ 228              		.loc 1 16 5 is_stmt 1 view .LVU64
+  16:Algorithm/Control_Dep/pid.c ****     p_PIDObj->fout = 0.0f;
+ 229              		.loc 1 16 19 is_stmt 0 view .LVU65
+ 230 0012 4260     		str	r2, [r0, #4]	@ float
+  17:Algorithm/Control_Dep/pid.c **** 
+ 231              		.loc 1 17 5 is_stmt 1 view .LVU66
+  17:Algorithm/Control_Dep/pid.c **** 
+ 232              		.loc 1 17 20 is_stmt 0 view .LVU67
+ 233 0014 8260     		str	r2, [r0, #8]	@ float
+  19:Algorithm/Control_Dep/pid.c ****     p_PIDObj->I_out = 0.0f;
+ 234              		.loc 1 19 5 is_stmt 1 view .LVU68
+  19:Algorithm/Control_Dep/pid.c ****     p_PIDObj->I_out = 0.0f;
+ 235              		.loc 1 19 21 is_stmt 0 view .LVU69
+ 236 0016 0261     		str	r2, [r0, #16]	@ float
+  20:Algorithm/Control_Dep/pid.c ****     p_PIDObj->D_out = 0.0f;
+ 237              		.loc 1 20 5 is_stmt 1 view .LVU70
+  20:Algorithm/Control_Dep/pid.c ****     p_PIDObj->D_out = 0.0f;
+ 238              		.loc 1 20 21 is_stmt 0 view .LVU71
+ 239 0018 4262     		str	r2, [r0, #36]	@ float
+  21:Algorithm/Control_Dep/pid.c **** 
+ 240              		.loc 1 21 5 is_stmt 1 view .LVU72
+  21:Algorithm/Control_Dep/pid.c **** 
+ 241              		.loc 1 21 21 is_stmt 0 view .LVU73
+ 242 001a 0263     		str	r2, [r0, #48]	@ float
+  23:Algorithm/Control_Dep/pid.c ****     p_PIDObj->lst_diff = 0.0f;
+ 243              		.loc 1 23 5 is_stmt 1 view .LVU74
+  23:Algorithm/Control_Dep/pid.c ****     p_PIDObj->lst_diff = 0.0f;
+ 244              		.loc 1 23 24 is_stmt 0 view .LVU75
+ 245 001c 0262     		str	r2, [r0, #32]	@ float
+  24:Algorithm/Control_Dep/pid.c **** 
+ 246              		.loc 1 24 5 is_stmt 1 view .LVU76
+  24:Algorithm/Control_Dep/pid.c **** 
+ 247              		.loc 1 24 24 is_stmt 0 view .LVU77
+ 248 001e C262     		str	r2, [r0, #44]	@ float
+  26:Algorithm/Control_Dep/pid.c ****         return false;
+ 249              		.loc 1 26 5 is_stmt 1 view .LVU78
+  26:Algorithm/Control_Dep/pid.c ****         return false;
+ 250              		.loc 1 26 17 is_stmt 0 view .LVU79
+ 251 0020 064A     		ldr	r2, .L17
+ 252 0022 1268     		ldr	r2, [r2]
+  26:Algorithm/Control_Dep/pid.c ****         return false;
+ 253              		.loc 1 26 9 view .LVU80
+ 254 0024 3430     		adds	r0, r0, #52
+ 255              	.LVL19:
+  26:Algorithm/Control_Dep/pid.c ****         return false;
+ 256              		.loc 1 26 9 view .LVU81
+ 257 0026 9047     		blx	r2
+ 258              	.LVL20:
+  26:Algorithm/Control_Dep/pid.c ****         return false;
+ 259              		.loc 1 26 8 view .LVU82
+ 260 0028 30B1     		cbz	r0, .L15
+  29:Algorithm/Control_Dep/pid.c **** }
+ 261              		.loc 1 29 12 view .LVU83
+ 262 002a 0120     		movs	r0, #1
+ 263              	.L13:
+  30:Algorithm/Control_Dep/pid.c **** 
+ 264              		.loc 1 30 1 view .LVU84
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 8
+
+
+ 265 002c BDE80840 		pop	{r3, lr}
+ 266              	.LCFI2:
+ 267              		.cfi_remember_state
+ 268              		.cfi_restore 14
+ 269              		.cfi_restore 3
+ 270              		.cfi_def_cfa_offset 16
+ 271 0030 04B0     		add	sp, sp, #16
+ 272              	.LCFI3:
+ 273              		.cfi_def_cfa_offset 0
+ 274 0032 7047     		bx	lr
+ 275              	.LVL21:
+ 276              	.L14:
+ 277              	.LCFI4:
+ 278              		.cfi_restore_state
+  13:Algorithm/Control_Dep/pid.c **** 
+ 279              		.loc 1 13 16 view .LVU85
+ 280 0034 0020     		movs	r0, #0
+ 281              	.LVL22:
+  13:Algorithm/Control_Dep/pid.c **** 
+ 282              		.loc 1 13 16 view .LVU86
+ 283 0036 F9E7     		b	.L13
+ 284              	.L15:
+  27:Algorithm/Control_Dep/pid.c **** 
+ 285              		.loc 1 27 16 view .LVU87
+ 286 0038 0020     		movs	r0, #0
+ 287 003a F7E7     		b	.L13
+ 288              	.L18:
+ 289              		.align	2
+ 290              	.L17:
+ 291 003c 00000000 		.word	RCFilter
+ 292              		.cfi_endproc
+ 293              	.LFE8:
+ 295              		.section	.text.PID_Update,"ax",%progbits
+ 296              		.align	1
+ 297              		.global	PID_Update
+ 298              		.syntax unified
+ 299              		.thumb
+ 300              		.thumb_func
+ 302              	PID_Update:
+ 303              	.LVL23:
+ 304              	.LFB9:
+  33:Algorithm/Control_Dep/pid.c ****     float diff = mea_in - exp_in;
+ 305              		.loc 1 33 1 is_stmt 1 view -0
+ 306              		.cfi_startproc
+ 307              		@ args = 0, pretend = 0, frame = 0
+ 308              		@ frame_needed = 0, uses_anonymous_args = 0
+  33:Algorithm/Control_Dep/pid.c ****     float diff = mea_in - exp_in;
+ 309              		.loc 1 33 1 is_stmt 0 view .LVU89
+ 310 0000 70B5     		push	{r4, r5, r6, lr}
+ 311              	.LCFI5:
+ 312              		.cfi_def_cfa_offset 16
+ 313              		.cfi_offset 4, -16
+ 314              		.cfi_offset 5, -12
+ 315              		.cfi_offset 6, -8
+ 316              		.cfi_offset 14, -4
+ 317 0002 2DED028B 		vpush.64	{d8}
+ 318              	.LCFI6:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 9
+
+
+ 319              		.cfi_def_cfa_offset 24
+ 320              		.cfi_offset 80, -24
+ 321              		.cfi_offset 81, -20
+  34:Algorithm/Control_Dep/pid.c ****     float out_tmp = 0.0f;
+ 322              		.loc 1 34 5 is_stmt 1 view .LVU90
+  34:Algorithm/Control_Dep/pid.c ****     float out_tmp = 0.0f;
+ 323              		.loc 1 34 11 is_stmt 0 view .LVU91
+ 324 0006 30EE608A 		vsub.f32	s16, s0, s1
+ 325              	.LVL24:
+  35:Algorithm/Control_Dep/pid.c **** 
+ 326              		.loc 1 35 5 is_stmt 1 view .LVU92
+  37:Algorithm/Control_Dep/pid.c ****         return false;
+ 327              		.loc 1 37 5 view .LVU93
+  37:Algorithm/Control_Dep/pid.c ****         return false;
+ 328              		.loc 1 37 8 is_stmt 0 view .LVU94
+ 329 000a 68B3     		cbz	r0, .L23
+ 330 000c 0D46     		mov	r5, r1
+ 331 000e 0446     		mov	r4, r0
+  40:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = exp_in;
+ 332              		.loc 1 40 5 is_stmt 1 view .LVU95
+  40:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = exp_in;
+ 333              		.loc 1 40 18 is_stmt 0 view .LVU96
+ 334 0010 80ED000A 		vstr.32	s0, [r0]
+  41:Algorithm/Control_Dep/pid.c **** 
+ 335              		.loc 1 41 5 is_stmt 1 view .LVU97
+  41:Algorithm/Control_Dep/pid.c **** 
+ 336              		.loc 1 41 19 is_stmt 0 view .LVU98
+ 337 0014 C0ED010A 		vstr.32	s1, [r0, #4]
+  46:Algorithm/Control_Dep/pid.c ****         return false;
+ 338              		.loc 1 46 5 is_stmt 1 view .LVU99
+  46:Algorithm/Control_Dep/pid.c ****         return false;
+ 339              		.loc 1 46 10 is_stmt 0 view .LVU100
+ 340 0018 B0EE480A 		vmov.f32	s0, s16
+ 341              	.LVL25:
+  46:Algorithm/Control_Dep/pid.c ****         return false;
+ 342              		.loc 1 46 10 view .LVU101
+ 343 001c FFF7FEFF 		bl	PID_P_Progress
+ 344              	.LVL26:
+  46:Algorithm/Control_Dep/pid.c ****         return false;
+ 345              		.loc 1 46 8 view .LVU102
+ 346 0020 0646     		mov	r6, r0
+ 347 0022 18B9     		cbnz	r0, .L25
+ 348              	.LVL27:
+ 349              	.L20:
+  58:Algorithm/Control_Dep/pid.c **** 
+ 350              		.loc 1 58 1 view .LVU103
+ 351 0024 3046     		mov	r0, r6
+ 352 0026 BDEC028B 		vldm	sp!, {d8}
+ 353              	.LCFI7:
+ 354              		.cfi_remember_state
+ 355              		.cfi_restore 80
+ 356              		.cfi_restore 81
+ 357              		.cfi_def_cfa_offset 16
+ 358              	.LVL28:
+  58:Algorithm/Control_Dep/pid.c **** 
+ 359              		.loc 1 58 1 view .LVU104
+ 360 002a 70BD     		pop	{r4, r5, r6, pc}
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 10
+
+
+ 361              	.LVL29:
+ 362              	.L25:
+ 363              	.LCFI8:
+ 364              		.cfi_restore_state
+  49:Algorithm/Control_Dep/pid.c ****     if(PID_I_Progress(p_PIDObj, diff))
+ 365              		.loc 1 49 5 is_stmt 1 view .LVU105
+  49:Algorithm/Control_Dep/pid.c ****     if(PID_I_Progress(p_PIDObj, diff))
+ 366              		.loc 1 49 24 is_stmt 0 view .LVU106
+ 367 002c D4ED048A 		vldr.32	s17, [r4, #16]
+  49:Algorithm/Control_Dep/pid.c ****     if(PID_I_Progress(p_PIDObj, diff))
+ 368              		.loc 1 49 13 view .LVU107
+ 369 0030 DFED0E7A 		vldr.32	s15, .L26
+ 370 0034 78EEA78A 		vadd.f32	s17, s17, s15
+ 371              	.LVL30:
+  50:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->I_out;
+ 372              		.loc 1 50 5 is_stmt 1 view .LVU108
+  50:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->I_out;
+ 373              		.loc 1 50 8 is_stmt 0 view .LVU109
+ 374 0038 B0EE480A 		vmov.f32	s0, s16
+ 375 003c 2046     		mov	r0, r4
+ 376 003e FFF7FEFF 		bl	PID_I_Progress
+ 377              	.LVL31:
+  50:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->I_out;
+ 378              		.loc 1 50 7 view .LVU110
+ 379 0042 18B1     		cbz	r0, .L21
+  51:Algorithm/Control_Dep/pid.c **** 
+ 380              		.loc 1 51 9 is_stmt 1 view .LVU111
+  51:Algorithm/Control_Dep/pid.c **** 
+ 381              		.loc 1 51 28 is_stmt 0 view .LVU112
+ 382 0044 D4ED097A 		vldr.32	s15, [r4, #36]
+  51:Algorithm/Control_Dep/pid.c **** 
+ 383              		.loc 1 51 17 view .LVU113
+ 384 0048 78EEA78A 		vadd.f32	s17, s17, s15
+ 385              	.LVL32:
+ 386              	.L21:
+  53:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->D_out;
+ 387              		.loc 1 53 5 is_stmt 1 view .LVU114
+  53:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->D_out;
+ 388              		.loc 1 53 8 is_stmt 0 view .LVU115
+ 389 004c B0EE480A 		vmov.f32	s0, s16
+ 390 0050 2946     		mov	r1, r5
+ 391 0052 2046     		mov	r0, r4
+ 392 0054 FFF7FEFF 		bl	PID_D_Progress
+ 393              	.LVL33:
+  53:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->D_out;
+ 394              		.loc 1 53 7 view .LVU116
+ 395 0058 18B1     		cbz	r0, .L22
+  54:Algorithm/Control_Dep/pid.c **** 
+ 396              		.loc 1 54 9 is_stmt 1 view .LVU117
+  54:Algorithm/Control_Dep/pid.c **** 
+ 397              		.loc 1 54 28 is_stmt 0 view .LVU118
+ 398 005a D4ED0C7A 		vldr.32	s15, [r4, #48]
+  54:Algorithm/Control_Dep/pid.c **** 
+ 399              		.loc 1 54 17 view .LVU119
+ 400 005e 78EEA78A 		vadd.f32	s17, s17, s15
+ 401              	.LVL34:
+ 402              	.L22:
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 11
+
+
+  56:Algorithm/Control_Dep/pid.c ****     return true;
+ 403              		.loc 1 56 5 is_stmt 1 view .LVU120
+  56:Algorithm/Control_Dep/pid.c ****     return true;
+ 404              		.loc 1 56 20 is_stmt 0 view .LVU121
+ 405 0062 C4ED028A 		vstr.32	s17, [r4, #8]
+  57:Algorithm/Control_Dep/pid.c **** }
+ 406              		.loc 1 57 5 is_stmt 1 view .LVU122
+  57:Algorithm/Control_Dep/pid.c **** }
+ 407              		.loc 1 57 12 is_stmt 0 view .LVU123
+ 408 0066 DDE7     		b	.L20
+ 409              	.LVL35:
+ 410              	.L23:
+  38:Algorithm/Control_Dep/pid.c ****     
+ 411              		.loc 1 38 16 view .LVU124
+ 412 0068 0026     		movs	r6, #0
+ 413 006a DBE7     		b	.L20
+ 414              	.L27:
+ 415              		.align	2
+ 416              	.L26:
+ 417 006c 00000000 		.word	0
+ 418              		.cfi_endproc
+ 419              	.LFE9:
+ 421              		.text
+ 422              	.Letext0:
+ 423              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 424              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\10 2021.10\\arm-none-eabi\\include\\
+ 425              		.file 4 "Algorithm/Filter_Dep/filter.h"
+ 426              		.file 5 "Algorithm/Control_Dep/pid.h"
+ARM GAS  C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s 			page 12
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 pid.c
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:20     .text.PID_P_Progress:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:25     .text.PID_P_Progress:00000000 PID_P_Progress
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:62     .text.PID_I_Progress:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:67     .text.PID_I_Progress:00000000 PID_I_Progress
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:146    .text.PID_D_Progress:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:151    .text.PID_D_Progress:00000000 PID_D_Progress
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:197    .text.PID_Init:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:203    .text.PID_Init:00000000 PID_Init
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:291    .text.PID_Init:0000003c $d
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:296    .text.PID_Update:00000000 $t
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:302    .text.PID_Update:00000000 PID_Update
+C:\Users\8bit\AppData\Local\Temp\ccSD7Az6.s:417    .text.PID_Update:0000006c $d
+
+UNDEFINED SYMBOLS
+RCFilter

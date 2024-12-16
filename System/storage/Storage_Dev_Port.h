@@ -19,19 +19,11 @@ typedef enum
     Storage_ChipType_All,
 } Storage_ExtFlashChipType_List;
 
-typedef enum
-{
-    Storage_ChipClass_None = 0,
-    Storage_ChipClass_Nor,
-    Storage_ChipClass_Nand,
-} Storage_ExtFlashClass_List;
-
 /* hadware flash chip info */
 typedef struct
 {
     Storage_ExtFlashChipType_List chip_type;
-    Storage_ExtFlashClass_List chip_class;
-    
+
     uint32_t start_addr;
     uint32_t total_size;
 
@@ -46,8 +38,6 @@ typedef struct
 
     uint32_t sector_num;
     uint32_t sector_size;
-
-    uint32_t bad_block_num;
 
     void *obj;
     void *api;
