@@ -56,10 +56,13 @@ while (True):
             while state == CLI_State.CLI_No_Error:
                 tool_cli = input()
                 if tool_cli.find("quit") != -1:
+                    Cli_Ctl.Quit_CLI()
                     FC_port.close()
                     break
-                elif tool_cli.find("PID") != -1:
+                elif tool_cli.find("BB") != -1:
                     Cli_Ctl.Get_Blackbox_Data()
+                elif tool_cli.find("tune") != -1:
+                    pass
 
                 sleep(0.2)
 

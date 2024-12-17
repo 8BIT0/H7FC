@@ -31,8 +31,8 @@ HW_BETAFPV_AIO_AT32 := 1
 HW_CCRC_AT32_20 := 2
 HW_Cai_AIO_AT32 := 3
 
-# HARDWARE := $(HW_BETAFPV_AIO_AT32)
-HARDWARE := $(HW_CCRC_AT32_20)
+HARDWARE := $(HW_BETAFPV_AIO_AT32)
+# HARDWARE := $(HW_CCRC_AT32_20)
 # HARDWARE := $(HW_Cai_AIO_AT32)
 endif
 
@@ -507,7 +507,7 @@ ifeq ($(PLATFORM), $(PLATFORM_STM32H7))
 OPENOCD := openocd -f interface/stlink.cfg \
         -f target/stm32h7x.cfg 
 else ifeq ($(PLATFORM), $(PLATFORM_AT32))
-OPENOCD := openocd -f interface/stlink.cfg \
+OPENOCD := openocd_at32 -f interface/stlink.cfg \
         -f target/at32f435xG.cfg 
 endif
 

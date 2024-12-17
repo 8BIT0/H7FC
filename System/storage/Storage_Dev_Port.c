@@ -8,7 +8,7 @@
 #include "HW_Def.h"
 #include "debug_util.h"
 
-#define Storage_Dev_GetSstsTick SrvOsCommon.get_os_ms
+#define Storage_Dev_GetSysTick  SrvOsCommon.get_os_ms
 #define Storage_Dev_Malloc(x)   SrvOsCommon.malloc(x)
 #define Storage_Dev_Free(x)     SrvOsCommon.free(x)
 
@@ -72,7 +72,7 @@ static bool Storage_Dev_Set(StorageDevObj_TypeDef *ext_dev)
         if (ext_dev->obj == NULL)
             return false;
 
-        To_DevW25Qxx_OBJ(ext_dev->obj)->systick   = Storage_Dev_GetSstsTick;
+        To_DevW25Qxx_OBJ(ext_dev->obj)->systick   = Storage_Dev_GetSysTick;
         To_DevW25Qxx_OBJ(ext_dev->obj)->cs_ctl    = StoragePort_Api.cs_ctl;
         To_DevW25Qxx_OBJ(ext_dev->obj)->bus_tx    = StoragePort_Api.bus_tx;
         To_DevW25Qxx_OBJ(ext_dev->obj)->bus_rx    = StoragePort_Api.bus_rx;

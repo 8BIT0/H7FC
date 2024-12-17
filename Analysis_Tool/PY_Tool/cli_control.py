@@ -2,6 +2,7 @@
 import time
 import Att_CasecadePID
 from enum import Enum
+import tkinter as TK
 
 class CLI_State(Enum):
     CLI_No_Error        = 1
@@ -15,6 +16,7 @@ class CLI_Ctl:
     def __init__(self, port_obj):
         self.port = port_obj
         self.Att_PID = Att_CasecadePID.Att_CaseCadePID()
+        self.tune_widget = False
 
     def __ack_finish(self, bytes):
         if len(bytes) and bytes.decode("ASCII").find("P.0.Wder Squad:/$") != -1:
@@ -23,6 +25,13 @@ class CLI_Ctl:
     
     def __sys_ms(self):
         return int(time.time() * 1000)        
+
+    def Quit_CLI(self):
+        if not self.port.is_open:
+            print("[ COM port is not open ]")
+            return CLI_State.CLI_Errors
+        self.port.write(b"CLI_Disable\r\n")
+        return CLI_State.CLI_No_Error
 
     def Into_CLI_Mode(self):
         if not self.port.is_open:
@@ -175,3 +184,12 @@ class CLI_Ctl:
 
         print("[ Close log file ]")
         log_file.close()
+
+    def __tune_UI(self):
+        if not self.tune_widget:
+            # create UI widget
+            pass
+        pass
+
+    def Tune_Controller(self):
+        pass

@@ -27,36 +27,29 @@ static void* Storage_External_Chip_Bus_Init(StorageBus_Malloc_Callback p_malloc,
 {
     void *obj = NULL;
 
-    if ((p_malloc == NULL) || \
-        (p_free == NULL))
+    if ((p_malloc == NULL) || (p_free == NULL))
         return NULL;
 
 #if (ExtFlash_Bus_Type == Storage_ChipBus_Spi)
-        /* malloc bus object */
-        obj = p_malloc(sizeof(BspSPI_Config_TypeDef));
-        if (obj == NULL)
-            return NULL;
+    /* malloc bus object */
+    obj = p_malloc(sizeof(BspSPI_Config_TypeDef));
+    if (obj == NULL)
+        return NULL;
 
-        memset(obj, 0, sizeof(BspSPI_Config_TypeDef));
+    memset(obj, 0, sizeof(BspSPI_Config_TypeDef));
 
-        To_NormalSPI_ObjPtr(obj)->BaudRatePrescaler = ExtFlash_Bus_Clock_Div;
-        To_NormalSPI_ObjPtr(obj)->CLKPhase = ExtFlash_Bus_CLKPhase;
-        To_NormalSPI_ObjPtr(obj)->CLKPolarity = ExtFlash_Bus_CLKPolarity;
-        To_NormalSPI_ObjPtr(obj)->Instance = ExtFLash_Bus_Instance;
-        To_NormalSPI_ObjPtr(obj)->Pin = ExtFlash_Bus_Pin;
-        To_NormalSPI_ObjPtr(obj)->work_mode = BspSPI_Mode_Master;
+    To_NormalSPI_ObjPtr(obj)->BaudRatePrescaler = ExtFlash_Bus_Clock_Div;
+    To_NormalSPI_ObjPtr(obj)->CLKPhase = ExtFlash_Bus_CLKPhase;
+    To_NormalSPI_ObjPtr(obj)->CLKPolarity = ExtFlash_Bus_CLKPolarity;
+    To_NormalSPI_ObjPtr(obj)->Instance = ExtFLash_Bus_Instance;
+    To_NormalSPI_ObjPtr(obj)->Pin = ExtFlash_Bus_Pin;
+    To_NormalSPI_ObjPtr(obj)->work_mode = BspSPI_Mode_Master;
 
-        if (!ExtFlash_Bus_Api.init(To_NormalSPI_Obj(obj), &ExtFlash_Bus_InstObj) || \
-            !BspGPIO.out_init(ExtFlash_CS_Pin))
-            return NULL;
-
+    if (ExtFlash_Bus_Api.init(To_NormalSPI_Obj(obj), &ExtFlash_Bus_InstObj) && \
+        BspGPIO.out_init(ExtFlash_CS_Pin))
         return obj;
-#elif (ExtFlash_Bus_Type == Storage_ChipBus_QSpi)
-    /* still in developping */
-    return NULL;
-#else
-    return NULL;
 #endif
+    
     return NULL;
 }
 
