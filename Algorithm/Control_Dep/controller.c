@@ -153,12 +153,12 @@ static bool Controller_PID_AttControl_ParamLoad(void)
 {
     Storage_ErrorCode_List stor_err = Storage_Error_None;
     AttCaseCadePID_Param_TypeDef pid_param;
-    bool state = false;
 
     if (Att_CasecadePID_Controller.default_param == NULL)
-        goto set_controller_para;
+        return false;
 
     pid_param = Att_CasecadePID_Controller.default_param();
+    Att_CasecadePID_Controller.set(pid_param);
 
     /* load parameter */
     ControllerMonitor.Att_SSO = Storage.search(Para_User, ATTITUDE_PID_PARAM_SEC_NAME);
@@ -168,23 +168,17 @@ static bool Controller_PID_AttControl_ParamLoad(void)
         /* create pid attitude controller parameter section in storage */
         stor_err = Storage.create(Para_User, ATTITUDE_PID_PARAM_SEC_NAME, (uint8_t *)&pid_param, ATT_CASECADE_PID_PARAM_SIZE);
         if (stor_err != Storage_Error_None)
-            goto set_controller_para;
+            return false;
     }
     else
     {
         /* section found */
         stor_err = Storage.get(Para_User, ControllerMonitor.Att_SSO.item, (uint8_t *)&pid_param, ATT_CASECADE_PID_PARAM_SIZE);
         if (stor_err != Storage_Error_None)
-        {
-            /* set parameter as default */
-            pid_param = Att_CasecadePID_Controller.default_param();
-            goto set_controller_para;
-        }
+            return false;
     }
 
-    state = true;
-set_controller_para:
-    return (Att_CasecadePID_Controller.set(pid_param) & state);
+    return Att_CasecadePID_Controller.set(pid_param);
 }
 
 static bool Controller_Alt_Init(ControlMode_List mode)
