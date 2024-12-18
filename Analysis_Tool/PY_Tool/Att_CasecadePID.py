@@ -1,4 +1,5 @@
 from enum import Enum
+import time
 from pid_para import PID_Param as single_pid
 from pid_para import PID_Parse_State as single_state
 
@@ -10,9 +11,16 @@ class Decode_Progress(Enum):
     Decode_GyroYPart    = 4
     Decode_GyroZPart    = 5
 
+class ParaItem_Index(Enum):
+    Item_Pitch  = 0
+    Item_Roll   = 1
+    Item_GyroX  = 2
+    Item_GyroY  = 3
+    Item_GyroZ  = 4
+
 class Att_CaseCadePID:
-    def __init__(self):
-        self.__full_str = None
+    def __init__(self, port):
+        self.__port = port
         self.__parse_num = 0
         self.decode_progress = Decode_Progress.Decode_None
         self.PitchPID_Para = single_pid()
@@ -21,7 +29,15 @@ class Att_CaseCadePID:
         self.GyrYPID_Para = single_pid()
         self.GyrZPID_Para = single_pid()
 
-    def parse(self, bytes):
+    def __sys_ms(self):
+        return int(time.time() * 1000)
+
+    def __ack_finish(self, bytes):
+        if len(bytes) and bytes.decode("ASCII").find("P.0.Wder Squad:/$") != -1:
+            return True
+        return False
+
+    def __parse(self, bytes):
         if len(bytes) == 0:
             return False
         
@@ -97,7 +113,6 @@ class Att_CaseCadePID:
                 parse_state = self.GyrZPID_Para.parse(i)
                 if parse_state == single_state.Parse_Fin:
                     self.decode_progress = Decode_Progress.Decode_None
-                    self.__full_str = bytes
                     self.__parse_num += 1
                     return True
                 elif parse_state == single_state.Parse_Error:
@@ -114,3 +129,52 @@ class Att_CaseCadePID:
         str += "[ ---- GyroY ---- ]\t" + self.GyrYPID_Para.format_str()
         str += "[ ---- GyroZ ---- ]\t" + self.GyrZPID_Para.format_str()
         return str
+    
+    def get_value(self):
+        para_list = []
+        para_list.append(self.PitchPID_Para.get_val())
+        para_list.append(self.RollPID_Para.get_val())
+        para_list.append(self.GyrXPID_Para.get_val())
+        para_list.append(self.GyrYPID_Para.get_val())
+        para_list.append(self.GyrZPID_Para.get_val())
+        return para_list
+
+    def parse_para(self):
+        # get controller type first
+        # currently Attitude controller only CasecadePID
+        # get inuse angular speed controller parameter        
+        para = []
+        self.__port.write(b'show_inuse_pid\r\n')
+        time.sleep(1)
+        
+        # parse drone reply
+        sys_time = self.__sys_ms()
+        reply = False
+        while True:
+            if self.__port.in_waiting:
+                buf = self.__port.readline()
+                if len(buf) and not reply:
+                    if buf.decode("ASCII").find("[ ---- inuse parameter ---- ]") != -1:
+                        print("[ Receiving controller parameter ]")
+                        reply = True
+                        continue
+                
+                if reply:
+                    sys_time = self.__sys_ms()
+                    if not self.__ack_finish(buf):
+                        para.append(buf)
+                    else :
+                        print("[ Parsing controller parameter ]")
+                        if not self.__parse(para):
+                            print("[ Controller parameter parsing error ]")
+                            return False
+                        else:
+                            print("[ Controller parameter parse successed ]")
+                            return True
+            
+            # check for receive time out (1S TimeOut)
+            if self.__sys_ms() - sys_time > 1000:
+                print("[ Drone controller parameter reply time out ]")
+                return False
+            
+            time.sleep(0.01)

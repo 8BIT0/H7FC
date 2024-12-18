@@ -2,7 +2,7 @@
 import time
 import Att_CasecadePID
 from enum import Enum
-import tkinter as tk
+from controller_tune import Controller_Tune_AttPID as tune_pid
 
 class CLI_State(Enum):
     CLI_No_Error        = 1
@@ -15,7 +15,7 @@ class CLI_State(Enum):
 class CLI_Ctl:
     def __init__(self, port_obj):
         self.port = port_obj
-        self.Att_PID = Att_CasecadePID.Att_CaseCadePID()
+        self.Att_PID = Att_CasecadePID.Att_CaseCadePID(port_obj)
 
     def __ack_finish(self, bytes):
         if len(bytes) and bytes.decode("ASCII").find("P.0.Wder Squad:/$") != -1:
@@ -23,7 +23,7 @@ class CLI_Ctl:
         return False
     
     def __sys_ms(self):
-        return int(time.time() * 1000)        
+        return int(time.time() * 1000)
 
     def Quit_CLI(self):
         if not self.port.is_open:
@@ -63,52 +63,12 @@ class CLI_Ctl:
         
         return CLI_State.CLI_TimeOut
 
-    def __Controller_Param(self):
-        # get controller type first
-        # currently Attitude controller only CasecadePID
-        # get inuse angular speed controller parameter        
-        para = []
-        self.port.write(b'show_inuse_pid\r\n')
-        time.sleep(1)
-        
-        # parse drone reply
-        sys_time = self.__sys_ms()
-        reply = False
-        while True:
-            if self.port.in_waiting:
-                buf = self.port.readline()
-                if len(buf) and not reply:
-                    if buf.decode("ASCII").find("[ ---- inuse parameter ---- ]") != -1:
-                        print("[ Receiving controller parameter ]")
-                        reply = True
-                        continue
-                
-                if reply:
-                    sys_time = self.__sys_ms()
-                    if not self.__ack_finish(buf):
-                        para.append(buf)
-                    else :
-                        print("[ Parsing controller parameter ]")
-                        if not self.Att_PID.parse(para):
-                            print("[ Controller parameter parsing error ]")
-                            return False
-                        else:
-                            print("[ Controller parameter parse successed ]")
-                            return True
-            
-            # check for receive time out (1S TimeOut)
-            if self.__sys_ms() - sys_time > 1000:
-                print("[ Drone controller parameter reply time out ]")
-                return False
-            
-            time.sleep(0.01)
-
     def Get_Blackbox_Data(self):
         if not self.port.is_open:
             print("[COM port is not open]")
             return CLI_State.CLI_Error
 
-        if not self.__Controller_Param():
+        if not self.Att_PID.parse_para():
             return CLI_State.CLI_Parsing_Error
 
         # get date
@@ -184,66 +144,6 @@ class CLI_Ctl:
         print("[ Close log file ]")
         log_file.close()
 
-    def __Tune_Button_Release(self):
-        print("send")
-
     def Tune_Controller(self):
-        self.UI = tk.Tk()
-        self.UI.title("Controller Tune")
-        self.UI.geometry("240x480")
-
-        Pitch_label = tk.Label(self.UI, text = "Pitch")
-        Pitch_P_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-        Pitch_I_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-        Pitch_D_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-
-        Roll_label = tk.Label(self.UI, text = "Roll")
-        Roll_P_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-        Roll_I_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-        Roll_D_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-
-        GyroX_label = tk.Label(self.UI, text = "GyroX")
-        GX_P_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-        GX_I_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-        GX_D_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+        tune = tune_pid(self.port)
         
-        GyroY_label = tk.Label(self.UI, text = "GyroY")
-        GY_P_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-        GY_I_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-        GY_D_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-                             
-        GyroZ_label = tk.Label(self.UI, text = "GyroZ")
-        GZ_P_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-        GZ_I_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-        GZ_D_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
-
-        send_button = tk.Button(self.UI, text = "send", command = self.__Tune_Button_Release)
-        
-        Pitch_label.pack()
-        Pitch_P_Entry.pack()
-        Pitch_I_Entry.pack()
-        Pitch_D_Entry.pack()
-            
-        Roll_label.pack()
-        Roll_P_Entry.pack()
-        Roll_I_Entry.pack()
-        Roll_D_Entry.pack()
-
-        GyroX_label.pack()
-        GX_P_Entry.pack()
-        GX_I_Entry.pack()
-        GX_D_Entry.pack()
-
-        GyroY_label.pack()
-        GY_P_Entry.pack()
-        GY_I_Entry.pack()
-        GY_D_Entry.pack()
-
-        GyroZ_label.pack()
-        GZ_P_Entry.pack()
-        GZ_I_Entry.pack()
-        GZ_D_Entry.pack()
-
-        send_button.pack()
-        
-        self.UI.mainloop()
