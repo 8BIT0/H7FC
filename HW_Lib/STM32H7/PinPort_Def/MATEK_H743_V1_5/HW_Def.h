@@ -257,16 +257,7 @@ extern BspIICObj_TypeDef Baro_BusCfg;
 #if (FLASH_CHIP_STATE == OFF)
 #define ExtFlash_Bus_Type Storage_ChipBus_None
 
-#define Boot_Firmware_Addr 0
-#define Boot_Firmware_Size (0 Kb)
-
-#define Block_Addr Boot_Firmware_Size + Boot_Firmware_Addr
-#define Block_Size (0 Kb)
-
-#define Reserve_Addr (Block_Addr + Block_Size)
-#define Reserve_Size ((0 Mb) - Block_Size)
-
-#define App_Firmware_Addr (Reserve_Addr + Reserve_Size)
+#define App_Firmware_Addr 0
 #define App_Firmware_Size (0 Mb)
 
 #define ExtFlash_Dev_Api NULL

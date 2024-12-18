@@ -146,16 +146,7 @@ extern const uint8_t HWVer[3];
 #define ExtFlash_CS_Pin ExtFlash_CSPin
 #define ExtFlash_Bus_Pin ExtFlash_SPIPin
 
-#define Boot_Firmware_Addr W25QXX_BASE_ADDRESS
-#define Boot_Firmware_Size (256 Kb)
-
-#define Block_Addr Boot_Firmware_Size + Boot_Firmware_Addr
-#define Block_Size (4 Kb)
-
-#define Reserve_Addr (Block_Addr + Block_Size)
-#define Reserve_Size ((1 Mb) - Block_Size)
-
-#define App_Firmware_Addr (Reserve_Addr + Reserve_Size)
+#define App_Firmware_Addr W25QXX_BASE_ADDRESS
 #define App_Firmware_Size (1 Mb)
 
 #define ExtFlash_Dev_Api (void *)(&DevW25Qxx)
@@ -180,15 +171,6 @@ extern BspGPIO_Obj_TypeDef ExtFlash_CSPin;
 extern BspSPI_PinConfig_TypeDef ExtFlash_SPIPin;
 #else
 #define ExtFlash_Bus_Type Storage_ChipBus_None
-
-#define Boot_Firmware_Addr 0
-#define Boot_Firmware_Size (0 Kb)
-
-#define Block_Addr Boot_Firmware_Size + Boot_Firmware_Addr
-#define Block_Size (0 Kb)
-
-#define Reserve_Addr (Block_Addr + Block_Size)
-#define Reserve_Size ((0 Mb) - Block_Size)
 
 #define App_Firmware_Addr (Reserve_Addr + Reserve_Size)
 #define App_Firmware_Size (0 Mb)
