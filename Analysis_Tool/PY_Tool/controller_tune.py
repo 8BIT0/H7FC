@@ -27,6 +27,9 @@ class Controller_Tune_AttPID:
         self.__gZ_p = 0.0
         self.__gZ_i = 0.0
         self.__gZ_d = 0.0
+        self.__P_range = (0.01, 10)
+        self.__I_range = (0, 10)
+        self.__D_range = (0, 10)
 
         self.__para_init__()
         self.__UI_init__()
@@ -151,53 +154,69 @@ class Controller_Tune_AttPID:
         self.__send_button.pack()
         self.__get_button.pack()
 
-    def __spinbox_check(self, spinbox_in, ref):
+    def __spinbox_check(self, spinbox_in, range, ref):
         try:
             tmp = float(spinbox_in)
             if tmp < 0:
                 print("[ Error input ]")
                 return ref
             else:
+                if tmp > range[1] or tmp < range[0]:
+                    return ref
                 return tmp
         except ValueError:
             print("[ Error input ]")
             return ref
 
+    def __format_str(self, v_p, v_i, v_d):
+        format =  "P" + str(v_p) + " "
+        format += "I" + str(v_i) + " "
+        format += "D" + str(v_d) + "\r\n"
+        return format
+
     def __Send_Release(self):
-        CmdList = [['tune_att_pid 0 '],
-                   ['tune_att_pid 1 '], 
-                   ['tune_att_pid 2 '], 
-                   ['tune_att_pid 3 '], 
-                   ['tune_att_pid 4 ']]
+        CmdList = ['tune_att_pid 0 ',
+                   'tune_att_pid 1 ', 
+                   'tune_att_pid 2 ', 
+                   'tune_att_pid 3 ', 
+                   'tune_att_pid 4 ']
         
         # get data in spinbox
         # get pitch pid parameter
-        self.__pitch_p = self.__spinbox_check(self.__Pitch_P_sv.get(), self.__pitch_p)
-        self.__pitch_i = self.__spinbox_check(self.__Pitch_I_sv.get(), self.__pitch_i)
-        self.__pitch_d = self.__spinbox_check(self.__Pitch_D_sv.get(), self.__pitch_d)
-        
+        self.__pitch_p = self.__spinbox_check(self.__Pitch_P_sv.get(), self.__P_range, self.__pitch_p)
+        self.__pitch_i = self.__spinbox_check(self.__Pitch_I_sv.get(), self.__I_range, self.__pitch_i)
+        self.__pitch_d = self.__spinbox_check(self.__Pitch_D_sv.get(), self.__D_range, self.__pitch_d)
+        CmdList[ParaItem_Index.Item_Pitch.value] = CmdList[ParaItem_Index.Item_Pitch.value] + self.__format_str(self.__pitch_p, self.__pitch_i, self.__pitch_d)
+
         # get roll  pid parameter
-        self.__roll_p = self.__spinbox_check(self.__Roll_P_sv.get(), self.__roll_p)
-        self.__roll_i = self.__spinbox_check(self.__Roll_I_sv.get(), self.__roll_i)
-        self.__roll_d = self.__spinbox_check(self.__Roll_D_sv.get(), self.__roll_d)
-                                                         
+        self.__roll_p = self.__spinbox_check(self.__Roll_P_sv.get(), self.__P_range, self.__roll_p)
+        self.__roll_i = self.__spinbox_check(self.__Roll_I_sv.get(), self.__I_range, self.__roll_i)
+        self.__roll_d = self.__spinbox_check(self.__Roll_D_sv.get(), self.__D_range, self.__roll_d)
+        CmdList[ParaItem_Index.Item_Roll.value] = CmdList[ParaItem_Index.Item_Roll.value] + self.__format_str(self.__roll_p, self.__roll_i, self.__roll_d)
+        
         # get gyroX pid parameter
-        self.__gX_p = self.__spinbox_check(self.__GX_P_sv.get(), self.__gX_p)
-        self.__gX_i = self.__spinbox_check(self.__GX_I_sv.get(), self.__gX_i)
-        self.__gX_d = self.__spinbox_check(self.__GX_D_sv.get(), self.__gX_d)
+        self.__gX_p = self.__spinbox_check(self.__GX_P_sv.get(), self.__P_range, self.__gX_p)
+        self.__gX_i = self.__spinbox_check(self.__GX_I_sv.get(), self.__I_range, self.__gX_i)
+        self.__gX_d = self.__spinbox_check(self.__GX_D_sv.get(), self.__D_range, self.__gX_d)
+        CmdList[ParaItem_Index.Item_GyroX.value] = CmdList[ParaItem_Index.Item_GyroX.value] + self.__format_str(self.__gX_p, self.__gX_i, self.__gX_d)
 
         # get gyroY pid parameter
-        self.__gY_p = self.__spinbox_check(self.__GY_P_sv.get(), self.__gY_p)
-        self.__gY_i = self.__spinbox_check(self.__GY_I_sv.get(), self.__gY_i)
-        self.__gY_d = self.__spinbox_check(self.__GY_D_sv.get(), self.__gY_d)
+        self.__gY_p = self.__spinbox_check(self.__GY_P_sv.get(), self.__P_range, self.__gY_p)
+        self.__gY_i = self.__spinbox_check(self.__GY_I_sv.get(), self.__I_range, self.__gY_i)
+        self.__gY_d = self.__spinbox_check(self.__GY_D_sv.get(), self.__D_range, self.__gY_d)
+        CmdList[ParaItem_Index.Item_GyroY.value] = CmdList[ParaItem_Index.Item_GyroY.value] + self.__format_str(self.__gY_p, self.__gY_i, self.__gY_d)
  
         # get gyroZ pid parameter
-        self.__gZ_p = self.__spinbox_check(self.__GZ_P_sv.get(), self.__gZ_p)
-        self.__gZ_i = self.__spinbox_check(self.__GZ_I_sv.get(), self.__gZ_i)
-        self.__gZ_d = self.__spinbox_check(self.__GZ_D_sv.get(), self.__gZ_d)
+        self.__gZ_p = self.__spinbox_check(self.__GZ_P_sv.get(), self.__P_range, self.__gZ_p)
+        self.__gZ_i = self.__spinbox_check(self.__GZ_I_sv.get(), self.__I_range, self.__gZ_i)
+        self.__gZ_d = self.__spinbox_check(self.__GZ_D_sv.get(), self.__D_range, self.__gZ_d)
+        CmdList[ParaItem_Index.Item_GyroZ.value] = CmdList[ParaItem_Index.Item_GyroZ.value] + self.__format_str(self.__gZ_p, self.__gZ_i, self.__gZ_d)
 
-        # for i in CmdList:
-        #     time.sleep(0.5)
+        print("[ Send attitdue controller parameter to drone ]")
+        for i in CmdList:
+            print(i)
+            self.__port.write(i.encode("ASCII"))
+            time.sleep(0.5)
 
     def __Get_Release(self):
         pass

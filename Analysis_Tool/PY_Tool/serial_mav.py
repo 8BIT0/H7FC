@@ -59,10 +59,12 @@ while (True):
                     Cli_Ctl.Quit_CLI()
                     FC_port.close()
                     break
-                elif tool_cli.find("BB") != -1:
+                elif tool_cli.find("bb") != -1:
                     Cli_Ctl.Get_Blackbox_Data()
                 elif tool_cli.find("tune") != -1:
                     Cli_Ctl.Tune_Controller()
+                else:
+                    print("[ Unknown cli input ]")
 
                 sleep(0.2)
 

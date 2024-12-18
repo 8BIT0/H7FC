@@ -139,6 +139,8 @@ class CLI_Ctl:
                     if log_str.decode("ASCII").find("[ BlackBox ] ender error") != -1:
                         lines.pop()
                     else:
+                        if log_str.decode("ASCII").find("\r\n") != -1:
+                            log_str.decode("ASCII").split("\r\n")[0]
                         lines.append(log_str.decode("ASCII"))
 
         print("[ Close log file ]")
