@@ -63,7 +63,6 @@ while (True):
                     Cli_Ctl.Get_Blackbox_Data()
                 elif tool_cli.find("tune") != -1:
                     Cli_Ctl.Tune_Controller()
-                    pass
 
                 sleep(0.2)
 

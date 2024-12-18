@@ -193,29 +193,29 @@ class CLI_Ctl:
         self.UI.geometry("240x480")
 
         Pitch_label = tk.Label(self.UI, text = "Pitch")
-        Pitch_P_Entry = tk.Entry(self.UI)
-        Pitch_I_Entry = tk.Entry(self.UI)
-        Pitch_D_Entry = tk.Entry(self.UI)
+        Pitch_P_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+        Pitch_I_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+        Pitch_D_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
 
         Roll_label = tk.Label(self.UI, text = "Roll")
-        Roll_P_Entry = tk.Entry(self.UI)
-        Roll_I_Entry = tk.Entry(self.UI)
-        Roll_D_Entry = tk.Entry(self.UI)       
+        Roll_P_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+        Roll_I_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+        Roll_D_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
 
         GyroX_label = tk.Label(self.UI, text = "GyroX")
-        GX_P_Entry = tk.Entry(self.UI)
-        GX_I_Entry = tk.Entry(self.UI)
-        GX_D_Entry = tk.Entry(self.UI)
+        GX_P_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+        GX_I_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+        GX_D_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
         
         GyroY_label = tk.Label(self.UI, text = "GyroY")
-        GY_P_Entry = tk.Entry(self.UI)
-        GY_I_Entry = tk.Entry(self.UI)
-        GY_D_Entry = tk.Entry(self.UI)
-        
+        GY_P_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+        GY_I_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+        GY_D_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+                             
         GyroZ_label = tk.Label(self.UI, text = "GyroZ")
-        GZ_P_Entry = tk.Entry(self.UI)
-        GZ_I_Entry = tk.Entry(self.UI)
-        GZ_D_Entry = tk.Entry(self.UI)
+        GZ_P_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+        GZ_I_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
+        GZ_D_Entry = tk.Spinbox(self.UI, from_ = 0, to = 10)
 
         send_button = tk.Button(self.UI, text = "send", command = self.__Tune_Button_Release)
         
