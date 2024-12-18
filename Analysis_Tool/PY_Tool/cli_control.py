@@ -2,7 +2,7 @@
 import time
 import Att_CasecadePID
 from enum import Enum
-import tkinter as TK
+import tkinter as tk
 
 class CLI_State(Enum):
     CLI_No_Error        = 1
@@ -16,7 +16,6 @@ class CLI_Ctl:
     def __init__(self, port_obj):
         self.port = port_obj
         self.Att_PID = Att_CasecadePID.Att_CaseCadePID()
-        self.tune_widget = False
 
     def __ack_finish(self, bytes):
         if len(bytes) and bytes.decode("ASCII").find("P.0.Wder Squad:/$") != -1:
@@ -185,11 +184,66 @@ class CLI_Ctl:
         print("[ Close log file ]")
         log_file.close()
 
-    def __tune_UI(self):
-        if not self.tune_widget:
-            # create UI widget
-            pass
-        pass
+    def __Tune_Button_Release(self):
+        print("send")
 
     def Tune_Controller(self):
-        pass
+        self.UI = tk.Tk()
+        self.UI.title("Controller Tune")
+        self.UI.geometry("240x480")
+
+        Pitch_label = tk.Label(self.UI, text = "Pitch")
+        Pitch_P_Entry = tk.Entry(self.UI)
+        Pitch_I_Entry = tk.Entry(self.UI)
+        Pitch_D_Entry = tk.Entry(self.UI)
+
+        Roll_label = tk.Label(self.UI, text = "Roll")
+        Roll_P_Entry = tk.Entry(self.UI)
+        Roll_I_Entry = tk.Entry(self.UI)
+        Roll_D_Entry = tk.Entry(self.UI)       
+
+        GyroX_label = tk.Label(self.UI, text = "GyroX")
+        GX_P_Entry = tk.Entry(self.UI)
+        GX_I_Entry = tk.Entry(self.UI)
+        GX_D_Entry = tk.Entry(self.UI)
+        
+        GyroY_label = tk.Label(self.UI, text = "GyroY")
+        GY_P_Entry = tk.Entry(self.UI)
+        GY_I_Entry = tk.Entry(self.UI)
+        GY_D_Entry = tk.Entry(self.UI)
+        
+        GyroZ_label = tk.Label(self.UI, text = "GyroZ")
+        GZ_P_Entry = tk.Entry(self.UI)
+        GZ_I_Entry = tk.Entry(self.UI)
+        GZ_D_Entry = tk.Entry(self.UI)
+
+        send_button = tk.Button(self.UI, text = "send", command = self.__Tune_Button_Release)
+        
+        Pitch_label.pack()
+        Pitch_P_Entry.pack()
+        Pitch_I_Entry.pack()
+        Pitch_D_Entry.pack()
+            
+        Roll_label.pack()
+        Roll_P_Entry.pack()
+        Roll_I_Entry.pack()
+        Roll_D_Entry.pack()
+
+        GyroX_label.pack()
+        GX_P_Entry.pack()
+        GX_I_Entry.pack()
+        GX_D_Entry.pack()
+
+        GyroY_label.pack()
+        GY_P_Entry.pack()
+        GY_I_Entry.pack()
+        GY_D_Entry.pack()
+
+        GyroZ_label.pack()
+        GZ_P_Entry.pack()
+        GZ_I_Entry.pack()
+        GZ_D_Entry.pack()
+
+        send_button.pack()
+        
+        self.UI.mainloop()
