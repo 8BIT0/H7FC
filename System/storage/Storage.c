@@ -1550,7 +1550,7 @@ static bool Storage_Build_StorageInfo(void)
     memcpy(&page_data_tmp[Storage_InfoPageSize - sizeof(crc)], &crc, sizeof(crc));
 
     /* write into flash chip */
-    if (!StorageDev.param_write(Storage_Monitor.ExtDev_ptr, Storage_Monitor.info.base_addr, addr_offset, page_data_tmp, sizeof(Info)))
+    if (!StorageDev.param_write(Storage_Monitor.ExtDev_ptr, Storage_Monitor.info.base_addr, addr_offset, page_data_tmp, Storage_InfoPageSize))
         return false;
 
     /* read out again */

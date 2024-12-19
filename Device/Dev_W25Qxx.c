@@ -217,13 +217,14 @@ static DevW25Qxx_Error_List DevW25Qxx_ReadSector(DevW25QxxObj_TypeDef *dev, uint
     if (read_state)
         return DevW25Qxx_Ok;
 
-    return DevW25Qxx_Error; 
+    return DevW25Qxx_Error;
 }
 
 /* write entire sector in one sector */
 static DevW25Qxx_Error_List DevW25Qxx_WriteSector(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size)
 {
-    uint8_t cmd[4] = {PAGE_PROG_CMD, 0, 0, 0};
+    uint8_t cmd[4];
+    uint32_t end_addr, current_size, current_addr;
     uint32_t tickstart = 0;
 
     if ((dev == NULL) || \
@@ -234,94 +235,58 @@ static DevW25Qxx_Error_List DevW25Qxx_WriteSector(DevW25QxxObj_TypeDef *dev, uin
         (WriteAddr % W25QXX_SECTOR_SIZE))
         return DevW25Qxx_Error;
 
-    /* Configure the command */
-    cmd[1] = (uint8_t)(WriteAddr >> 16);
-    cmd[2] = (uint8_t)(WriteAddr >> 8);
-    cmd[3] = (uint8_t)(WriteAddr);
+    /* Calculation of the size between the write address and the end of the page */
+    current_addr = 0;
 
-    /* Enable write operations */
-    if (DevW25Qxx_WriteEnableCtl(dev, true) != DevW25Qxx_Ok)
-        return DevW25Qxx_Error;
+    while (current_addr <= WriteAddr)
+        current_addr += W25Q128FV_PAGE_SIZE;
+    current_size = current_addr - WriteAddr;
 
-    /* Send the command Transmission of the data */
-    dev->cs_ctl(false);
-    DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
-    DevW25Qxx_BusTrans(dev, pData, Size);
-    dev->cs_ctl(true);
+    /* Check if the size of the data is less than the remaining place in the page */
+    if (current_size > Size)
+        current_size = Size;
 
-    /* Wait the end of Flash writing */
+    /* Initialize the adress variables */
+    current_addr = WriteAddr;
+    end_addr = WriteAddr + Size;
+
     tickstart = dev->systick();
-    while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
+
+    /* Perform the write page by page */
+    do
     {
-        /* Check for the Timeout */
-        if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
-            return DevW25Qxx_TimeOut;
-    }
+        /* Configure the command */
+        cmd[0] = PAGE_PROG_CMD;
+        cmd[1] = (uint8_t)(current_addr >> 16);
+        cmd[2] = (uint8_t)(current_addr >> 8);
+        cmd[3] = (uint8_t)(current_addr);
+
+        /* Enable write operations */
+        if (DevW25Qxx_WriteEnableCtl(dev, true) != DevW25Qxx_Ok)
+            return DevW25Qxx_Error;
+
+        /* Send the command Transmission of the data */
+        dev->cs_ctl(false);
+        DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+        DevW25Qxx_BusTrans(dev, pData, current_size);
+        dev->cs_ctl(true);
+
+        /* Wait the end of Flash writing */
+        while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
+        {
+            /* Check for the Timeout */
+            if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
+                return DevW25Qxx_TimeOut;
+        }
+
+        /* Update the address and size variables for next page programming */
+        current_addr += current_size;
+        pData += current_size;
+        current_size = ((current_addr + W25Q128FV_PAGE_SIZE) > end_addr) ? (end_addr - current_addr) : W25Q128FV_PAGE_SIZE;
+    } while (current_addr < end_addr);
 
     return DevW25Qxx_Ok;
 }
-
-// static DevW25Qxx_Error_List DevW25Qxx_Write(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, uint8_t *pData, uint32_t Size)
-// {
-//     uint8_t cmd[4];
-//     uint32_t end_addr, current_size, current_addr;
-//     uint32_t tickstart = 0;
-
-//     if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL) || (pData == NULL) || (Size == 0))
-//         return DevW25Qxx_Error;
-
-//     /* Calculation of the size between the write address and the end of the page */
-//     current_addr = 0;
-
-//     while (current_addr <= WriteAddr)
-//         current_addr += W25Q128FV_PAGE_SIZE;
-//     current_size = current_addr - WriteAddr;
-
-//     /* Check if the size of the data is less than the remaining place in the page */
-//     if (current_size > Size)
-//         current_size = Size;
-
-//     /* Initialize the adress variables */
-//     current_addr = WriteAddr;
-//     end_addr = WriteAddr + Size;
-
-//     tickstart = dev->systick();
-
-//     /* Perform the write page by page */
-//     do
-//     {
-//         /* Configure the command */
-//         cmd[0] = PAGE_PROG_CMD;
-//         cmd[1] = (uint8_t)(current_addr >> 16);
-//         cmd[2] = (uint8_t)(current_addr >> 8);
-//         cmd[3] = (uint8_t)(current_addr);
-
-//         /* Enable write operations */
-//         if (DevW25Qxx_WriteEnableCtl(dev, true) != DevW25Qxx_Ok)
-//             return DevW25Qxx_Error;
-
-//         /* Send the command Transmission of the data */
-//         dev->cs_ctl(false);
-//         DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
-//         DevW25Qxx_BusTrans(dev, pData, current_size);
-//         dev->cs_ctl(true);
-
-//         /* Wait the end of Flash writing */
-//         while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
-//         {
-//             /* Check for the Timeout */
-//             if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
-//                 return DevW25Qxx_TimeOut;
-//         }
-
-//         /* Update the address and size variables for next page programming */
-//         current_addr += current_size;
-//         pData += current_size;
-//         current_size = ((current_addr + W25Q128FV_PAGE_SIZE) > end_addr) ? (end_addr - current_addr) : W25Q128FV_PAGE_SIZE;
-//     } while (current_addr < end_addr);
-
-//     return DevW25Qxx_Ok;
-// }
 
 static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
 {

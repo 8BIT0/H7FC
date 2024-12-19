@@ -9,11 +9,9 @@ extern "C" {
 #include "../../FCHW_Config.h"
 
 #if (FLASH_CHIP_STATE == ON)
-#define Flash_MaxRWSize                 (2 Kb)
 #define Flash_Storage_TabSize           (4 Kb)
 #define Flash_Storage_InfoPageSize      (1 Kb)
 #else
-#define Flash_MaxRWSize                 (0 Kb)
 #define Flash_Storage_TabSize           (0 Kb)
 #define Flash_Storage_InfoPageSize      (0 Kb)
 #endif
