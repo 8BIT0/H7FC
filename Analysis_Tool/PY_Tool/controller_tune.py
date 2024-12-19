@@ -3,6 +3,13 @@ import time
 import Att_CasecadePID
 from Att_CasecadePID import ParaItem_Index
 from pid_para import PIDItem_Index
+from enum import Enum
+
+class TuneSet_Ack(Enum):
+    Tune_Wait = 0
+    Tune_Failed = 1
+    Tune_Done = 2
+    Tune_TimeOut = 3
 
 class Controller_Tune_AttPID:
     def __init__(self, port):
@@ -154,6 +161,19 @@ class Controller_Tune_AttPID:
         self.__send_button.pack()
         self.__get_button.pack()
 
+    def __sys_ms(self):
+        return int(time.time() * 1000)
+
+    def __check_set_ack(self, bytes):
+        if len(bytes):
+            if bytes.decode("ASCII").find("[ ---- parameter saved ---- ]"):
+                return TuneSet_Ack.Tune_Done
+            elif bytes.decode("ASCII").find("[ ---- parameter save failed ---- ]") or \
+                 bytes.decode("ASCII").find("[ ---- parameter set failed ---- ]"):
+                 return TuneSet_Ack.Tune_Failed
+            return TuneSet_Ack.Tune_Wait
+        return TuneSet_Ack.Tune_Wait
+
     def __spinbox_check(self, spinbox_in, range, ref):
         try:
             tmp = float(spinbox_in)
@@ -213,10 +233,32 @@ class Controller_Tune_AttPID:
         CmdList[ParaItem_Index.Item_GyroZ.value] = CmdList[ParaItem_Index.Item_GyroZ.value] + self.__format_str(self.__gZ_p, self.__gZ_i, self.__gZ_d)
 
         print("[ Send attitdue controller parameter to drone ]")
-        for i in CmdList:
-            print(i)
-            self.__port.write(i.encode("ASCII"))
-            time.sleep(0.5)
+
+        index = 0
+        sys_time = self.__sys_ms()
+        while True:
+            print(CmdList[index])
+            self.__port.write(CmdList[index].encode("ASCII"))
+            time.sleep(0.2)
+            ack_str = self.__port.readline()
+            state = self.__check_set_ack(ack_str)
+            if state == TuneSet_Ack.Tune_Done:
+                print("[ controller parameter set done ]")
+                # update sys time
+                sys_time = self.__sys_ms()
+                index += 1
+            elif state == TuneSet_Ack.Tune_Failed:
+                print("[ controller parameter set failed ]")
+                index += 1
+            elif state == TuneSet_Ack.Tune_Wait:
+                # check ack time out
+                if self.__sys_ms() - sys_time >= 1000:
+                    print("[ controller parameter set time out ]")
+                    # set next
+                    index += 1
+            if index > ParaItem_Index.Item_GyroZ.value:
+                print("[ controller parameter set finish ]")
+                return
 
     def __Get_Release(self):
         pass
