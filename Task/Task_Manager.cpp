@@ -118,9 +118,8 @@ void Task_Manager_CreateTask(void const *arg)
 #if (SD_CARD_ENABLE_STATE == ON)
             /* lagecy */
             // TaskLog_Init(TaslLog_Period_Def);
-#else
-            TaskBlackBox_Init();
 #endif
+            TaskBlackBox_Init();
             TaskNavi_Init(TaslNavi_Period_Def);
             TaskFrameCTL_Init(TaskFrameCTL_Period_Def);
 
