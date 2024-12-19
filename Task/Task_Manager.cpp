@@ -139,10 +139,9 @@ void Task_Manager_CreateTask(void const *arg)
             /* lagecy */
             // osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
             // TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
-#else
+#endif
             osThreadDef(BlackBoxTask, TaskBlackBox_Core, osPriorityNormal, 0, 4096);
             TaskLog_Handle = osThreadCreate(osThread(BlackBoxTask), NULL);
-#endif
 
             osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 1024);
             TaskFrameCTL_Handle = osThreadCreate(osThread(FrameCTLTask), NULL);
