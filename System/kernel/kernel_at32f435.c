@@ -39,7 +39,7 @@ bool Kernel_Init(void)
     nvic_priority_group_config(NVIC_PRIORITY_GROUP_4);
     nvic_irq_enable(TMR20_OVF_IRQn, 14, 0);
     
-    nvic_vector_table_set(NVIC_VECTTAB_FLASH, ((uint32_t)&__boot_e - (uint32_t)&__rom_s));
+    // nvic_vector_table_set(NVIC_VECTTAB_FLASH, ((uint32_t)&__boot_e - (uint32_t)&__rom_s));
     __enable_irq();
 
     /* noticed */

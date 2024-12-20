@@ -144,12 +144,17 @@ class Att_CaseCadePID:
         # currently Attitude controller only CasecadePID
         # get inuse angular speed controller parameter        
         para = []
-        self.__port.write(b'show_inuse_pid\r\n')
+        self.__port.write(b'show_stored_pid\r\n')
         time.sleep(1)
         
         # parse drone reply
         sys_time = self.__sys_ms()
         reply = False
+        self.PitchPID_Para.clear()
+        self.RollPID_Para.clear()
+        self.GyrXPID_Para.clear()
+        self.GyrYPID_Para.clear()
+        self.GyrZPID_Para.clear()
         while True:
             if self.__port.in_waiting:
                 buf = self.__port.readline()

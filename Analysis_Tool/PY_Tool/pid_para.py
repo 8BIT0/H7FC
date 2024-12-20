@@ -17,6 +17,11 @@ class PID_Param:
         self.__parse_state = PID_Parse_State.Parse_None
         self.__PID_Dict = {'P':0.0, 'I':0.0, 'D':0.0}
 
+    def clear(self):
+        self.__PID_Dict['P'] = 0.0
+        self.__PID_Dict['I'] = 0.0
+        self.__PID_Dict['D'] = 0.0
+
     def parse(self, bytes):
         str_data = None
         match = False

@@ -43,32 +43,7 @@ class Controller_Tune_AttPID:
 
     def __para_init__(self):
         self.att_pid = Att_CasecadePID.Att_CaseCadePID(self.__port)
-
-        # require controller parameter
-        if not self.att_pid.parse_para():
-            print("[ Attitude controller parameter get failed ]")
-        else:
-            # set attitude controller parameter
-            para_list = self.att_pid.get_value()
-            self.__pitch_p = para_list[ParaItem_Index.Item_Pitch.value][PIDItem_Index.PIDIndex_P.value]
-            self.__pitch_i = para_list[ParaItem_Index.Item_Pitch.value][PIDItem_Index.PIDIndex_I.value]
-            self.__pitch_d = para_list[ParaItem_Index.Item_Pitch.value][PIDItem_Index.PIDIndex_D.value]
-            
-            self.__roll_p = para_list[ParaItem_Index.Item_Roll.value][PIDItem_Index.PIDIndex_P.value]
-            self.__roll_i = para_list[ParaItem_Index.Item_Roll.value][PIDItem_Index.PIDIndex_I.value]
-            self.__roll_d = para_list[ParaItem_Index.Item_Roll.value][PIDItem_Index.PIDIndex_D.value]
-            
-            self.__gX_p = para_list[ParaItem_Index.Item_GyroX.value][PIDItem_Index.PIDIndex_P.value]
-            self.__gX_i = para_list[ParaItem_Index.Item_GyroX.value][PIDItem_Index.PIDIndex_I.value]
-            self.__gX_d = para_list[ParaItem_Index.Item_GyroX.value][PIDItem_Index.PIDIndex_D.value]
-            
-            self.__gY_p = para_list[ParaItem_Index.Item_GyroY.value][PIDItem_Index.PIDIndex_P.value]
-            self.__gY_i = para_list[ParaItem_Index.Item_GyroY.value][PIDItem_Index.PIDIndex_I.value]
-            self.__gY_d = para_list[ParaItem_Index.Item_GyroY.value][PIDItem_Index.PIDIndex_D.value]
-            
-            self.__gZ_p = para_list[ParaItem_Index.Item_GyroZ.value][PIDItem_Index.PIDIndex_P.value]
-            self.__gZ_i = para_list[ParaItem_Index.Item_GyroZ.value][PIDItem_Index.PIDIndex_I.value]
-            self.__gZ_d = para_list[ParaItem_Index.Item_GyroZ.value][PIDItem_Index.PIDIndex_D.value]
+        self.__get_para()
 
     def __UI_init__(self):
         self.__UI = Tk()
@@ -82,9 +57,6 @@ class Controller_Tune_AttPID:
         self.__Pitch_P_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__Pitch_P_sv)
         self.__Pitch_I_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__Pitch_I_sv)
         self.__Pitch_D_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__Pitch_D_sv)
-        self.__Pitch_P_sv.set(self.__pitch_p)
-        self.__Pitch_I_sv.set(self.__pitch_i)
-        self.__Pitch_D_sv.set(self.__pitch_d)
 
         self.__Roll_label = Label(self.__UI, text = "Roll")
         self.__Roll_P_sv = StringVar()
@@ -93,9 +65,6 @@ class Controller_Tune_AttPID:
         self.__Roll_P_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__Roll_P_sv)
         self.__Roll_I_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__Roll_I_sv)
         self.__Roll_D_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__Roll_D_sv)
-        self.__Roll_P_sv.set(self.__roll_p)
-        self.__Roll_I_sv.set(self.__roll_i)
-        self.__Roll_D_sv.set(self.__roll_d)
 
         self.__GyroX_label = Label(self.__UI, text = "GyroX")
         self.__GX_P_sv = StringVar()
@@ -104,9 +73,6 @@ class Controller_Tune_AttPID:
         self.__GX_P_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__GX_P_sv)
         self.__GX_I_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__GX_I_sv)
         self.__GX_D_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__GX_D_sv)
-        self.__GX_P_sv.set(self.__gX_p)
-        self.__GX_I_sv.set(self.__gX_i)
-        self.__GX_D_sv.set(self.__gX_d)
 
         self.__GyroY_label = Label(self.__UI, text = "GyroY")
         self.__GY_P_sv = StringVar()
@@ -115,9 +81,6 @@ class Controller_Tune_AttPID:
         self.__GY_P_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__GY_P_sv)
         self.__GY_I_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__GY_I_sv)
         self.__GY_D_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__GY_D_sv)
-        self.__GY_P_sv.set(self.__gY_p)
-        self.__GY_I_sv.set(self.__gY_i)
-        self.__GY_D_sv.set(self.__gY_d)
 
         self.__GyroZ_label = Label(self.__UI, text = "GyroZ")
         self.__GZ_P_sv = StringVar()
@@ -126,9 +89,6 @@ class Controller_Tune_AttPID:
         self.__GZ_P_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__GZ_P_sv)
         self.__GZ_I_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__GZ_I_sv)
         self.__GZ_D_Entry = Spinbox(self.__UI, from_ = 1, to = 10, textvariable = self.__GZ_D_sv)
-        self.__GZ_P_sv.set(self.__gZ_p)
-        self.__GZ_I_sv.set(self.__gZ_i)
-        self.__GZ_D_sv.set(self.__gZ_d)
 
         self.__send_button = Button(self.__UI, text = "-- send --", command = self.__Send_Release)
         self.__get_button = Button(self.__UI, text = "--- get --", command = self.__Get_Release)
@@ -160,6 +120,7 @@ class Controller_Tune_AttPID:
 
         self.__send_button.pack()
         self.__get_button.pack()
+        self.__para_dsp()
 
     def __sys_ms(self):
         return int(time.time() * 1000)
@@ -260,8 +221,76 @@ class Controller_Tune_AttPID:
                 print("[ controller parameter set finish ]")
                 return
 
+    def __clear_dsp(self):
+        self.__Pitch_P_sv.set(0.0)
+        self.__Pitch_I_sv.set(0.0)
+        self.__Pitch_D_sv.set(0.0)
+
+        self.__Roll_P_sv.set(0.0)
+        self.__Roll_I_sv.set(0.0)
+        self.__Roll_D_sv.set(0.0)
+
+        self.__GX_P_sv.set(0.0)
+        self.__GX_I_sv.set(0.0)
+        self.__GX_D_sv.set(0.0)
+
+        self.__GY_P_sv.set(0.0)
+        self.__GY_I_sv.set(0.0)
+        self.__GY_D_sv.set(0.0)
+        
+        self.__GZ_P_sv.set(0.0)
+        self.__GZ_I_sv.set(0.0)
+        self.__GZ_D_sv.set(0.0)
+
+    def __get_para(self):
+        # require controller parameter
+        if not self.att_pid.parse_para():
+            print("[ Attitude controller parameter get failed ]")
+        else:
+            # set attitude controller parameter
+            para_list = self.att_pid.get_value()
+            self.__pitch_p = para_list[ParaItem_Index.Item_Pitch.value][PIDItem_Index.PIDIndex_P.value]
+            self.__pitch_i = para_list[ParaItem_Index.Item_Pitch.value][PIDItem_Index.PIDIndex_I.value]
+            self.__pitch_d = para_list[ParaItem_Index.Item_Pitch.value][PIDItem_Index.PIDIndex_D.value]
+            
+            self.__roll_p = para_list[ParaItem_Index.Item_Roll.value][PIDItem_Index.PIDIndex_P.value]
+            self.__roll_i = para_list[ParaItem_Index.Item_Roll.value][PIDItem_Index.PIDIndex_I.value]
+            self.__roll_d = para_list[ParaItem_Index.Item_Roll.value][PIDItem_Index.PIDIndex_D.value]
+            
+            self.__gX_p = para_list[ParaItem_Index.Item_GyroX.value][PIDItem_Index.PIDIndex_P.value]
+            self.__gX_i = para_list[ParaItem_Index.Item_GyroX.value][PIDItem_Index.PIDIndex_I.value]
+            self.__gX_d = para_list[ParaItem_Index.Item_GyroX.value][PIDItem_Index.PIDIndex_D.value]
+            
+            self.__gY_p = para_list[ParaItem_Index.Item_GyroY.value][PIDItem_Index.PIDIndex_P.value]
+            self.__gY_i = para_list[ParaItem_Index.Item_GyroY.value][PIDItem_Index.PIDIndex_I.value]
+            self.__gY_d = para_list[ParaItem_Index.Item_GyroY.value][PIDItem_Index.PIDIndex_D.value]
+            
+            self.__gZ_p = para_list[ParaItem_Index.Item_GyroZ.value][PIDItem_Index.PIDIndex_P.value]
+            self.__gZ_i = para_list[ParaItem_Index.Item_GyroZ.value][PIDItem_Index.PIDIndex_I.value]
+            self.__gZ_d = para_list[ParaItem_Index.Item_GyroZ.value][PIDItem_Index.PIDIndex_D.value]
+
+    def __para_dsp(self):
+        self.__Pitch_P_sv.set(self.__pitch_p)
+        self.__Pitch_I_sv.set(self.__pitch_i)
+        self.__Pitch_D_sv.set(self.__pitch_d)
+        self.__Roll_P_sv.set(self.__roll_p)
+        self.__Roll_I_sv.set(self.__roll_i)
+        self.__Roll_D_sv.set(self.__roll_d)
+        self.__GX_P_sv.set(self.__gX_p)
+        self.__GX_I_sv.set(self.__gX_i)
+        self.__GX_D_sv.set(self.__gX_d)
+        self.__GY_P_sv.set(self.__gY_p)
+        self.__GY_I_sv.set(self.__gY_i)
+        self.__GY_D_sv.set(self.__gY_d)
+        self.__GZ_P_sv.set(self.__gZ_p)
+        self.__GZ_I_sv.set(self.__gZ_i)
+        self.__GZ_D_sv.set(self.__gZ_d)
+
     def __Get_Release(self):
-        pass
+        self.__clear_dsp()
+        time.sleep(0.1)
+        self.__get_para()
+        self.__para_dsp()
 
     def Tune(self):
         self.__UI.mainloop()

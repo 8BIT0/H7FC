@@ -31,7 +31,8 @@ _Min_Stack_Size = 0x800; /* required amount of stack */
 /* Specify the memory areas */
 
 FLASH_SIZE = 1000K;
-BOOT_SIZE = 256K;
+/* BOOT_SIZE = 256K; */
+BOOT_SIZE = 0K;
 
 MEMORY
 {
