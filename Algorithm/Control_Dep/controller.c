@@ -377,7 +377,6 @@ static void Controller_AttPID_Tune_CLI(uint8_t part, const char* P_i, const char
         return;
     }
 
-    Controller_Show_InusePID();
-    Controller_Show_StoredPID();
+    shellPrint(shell_obj, "[ ---- parameter saved ---- ]\r\n");
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, tune_att_pid, Controller_AttPID_Tune_CLI, tune attitude control parameter);

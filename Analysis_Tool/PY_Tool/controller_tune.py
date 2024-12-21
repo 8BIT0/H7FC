@@ -127,10 +127,10 @@ class Controller_Tune_AttPID:
 
     def __check_set_ack(self, bytes):
         if len(bytes):
-            if bytes.decode("ASCII").find("[ ---- parameter saved ---- ]"):
+            if bytes.decode("ASCII").find("[ ---- parameter saved ---- ]") != -1:
                 return TuneSet_Ack.Tune_Done
-            elif bytes.decode("ASCII").find("[ ---- parameter save failed ---- ]") or \
-                 bytes.decode("ASCII").find("[ ---- parameter set failed ---- ]"):
+            elif bytes.decode("ASCII").find("[ ---- parameter save failed ---- ]") != -1 or \
+                 bytes.decode("ASCII").find("[ ---- parameter set failed ---- ]") != -1:
                  return TuneSet_Ack.Tune_Failed
             return TuneSet_Ack.Tune_Wait
         return TuneSet_Ack.Tune_Wait
@@ -200,23 +200,26 @@ class Controller_Tune_AttPID:
         while True:
             print(CmdList[index])
             self.__port.write(CmdList[index].encode("ASCII"))
-            time.sleep(0.2)
-            ack_str = self.__port.readline()
-            state = self.__check_set_ack(ack_str)
-            if state == TuneSet_Ack.Tune_Done:
-                print("[ controller parameter set done ]")
-                # update sys time
-                sys_time = self.__sys_ms()
-                index += 1
-            elif state == TuneSet_Ack.Tune_Failed:
-                print("[ controller parameter set failed ]")
-                index += 1
-            elif state == TuneSet_Ack.Tune_Wait:
-                # check ack time out
-                if self.__sys_ms() - sys_time >= 1000:
-                    print("[ controller parameter set time out ]")
-                    # set next
+            while True:
+                ack_str = self.__port.readline()
+                print(ack_str)
+                state = self.__check_set_ack(ack_str)
+                if state == TuneSet_Ack.Tune_Done:
+                    print("[ controller parameter set done ]")
+                    # update sys time
+                    sys_time = self.__sys_ms()
                     index += 1
+                    break
+                elif state == TuneSet_Ack.Tune_Failed:
+                    print("[ controller parameter set failed ]")
+                    return
+                elif state == TuneSet_Ack.Tune_Wait:
+                    # check ack time out
+                    if self.__sys_ms() - sys_time >= 2000:
+                        print("[ controller parameter set time out ]")
+                        return
+                time.sleep(0.05)
+
             if index > ParaItem_Index.Item_GyroZ.value:
                 print("[ controller parameter set finish ]")
                 return
