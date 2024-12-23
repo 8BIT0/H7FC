@@ -73,7 +73,7 @@ static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
     if (p_PIDObj == NULL)
         return false;
         
-    p_PIDObj->Integral += diff;
+    p_PIDObj->Integral += diff * p_PIDObj->gI;
 
     /* limit Integral */
     /* check integer first */
