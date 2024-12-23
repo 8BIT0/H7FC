@@ -106,6 +106,7 @@ void TaskNavi_Core(void const *arg)
     bool Attitude_Update = false;
     memset(&attitude, 0, sizeof(IMUAtt_TypeDef));
     MadgwickAHRSInit(&algo_att);
+    M_Cbn_TypeDef Cbn;
 
     while(1)
     {
@@ -158,6 +159,7 @@ void TaskNavi_Core(void const *arg)
             DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_hub_DataPipe);
             DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_Log_DataPipe);
         }
+        Cbn = AttConvert2Cbn(attitude.pitch, attitude.roll, attitude.yaw);
 
         /* comput baro altitude */
         if (bar_state && Attitude_Update && \
