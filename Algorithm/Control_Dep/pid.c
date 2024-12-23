@@ -31,7 +31,7 @@ bool PID_Init(PIDObj_TypeDef *p_PIDObj, RC_Filter_Param_TypeDef rc_para)
 
 bool PID_Update(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float mea_in, const float exp_in)
 {
-    float diff = mea_in - exp_in;
+    float diff = exp_in - mea_in;
     float out_tmp = 0.0f;
 
     if (p_PIDObj == NULL)
