@@ -86,7 +86,7 @@ static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
         p_PIDObj->Integral = p_PIDObj->gI_Min;
     }
 
-    p_PIDObj->I_out = p_PIDObj->gI * p_PIDObj->Integral;
+    p_PIDObj->I_out = p_PIDObj->Integral;
     return true;
 }
 
