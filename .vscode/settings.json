@@ -213,7 +213,8 @@
                 "bsp_sdram_def.h": "c",
                 "dev_ws2812.h": "c",
                 "srv_ledstrip.h": "c",
-                "controller.h": "c"
+                "controller.h": "c",
+                "streambuf": "cpp"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

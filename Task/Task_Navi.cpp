@@ -27,7 +27,9 @@ using namespace Eigen;
 */
 #define FlipOver_Detect_HoldingTime 500 /* unit : ms */
 
+/* internal function */
 static bool TaskNavi_FlipOver_Detect(float roll_angle);
+static Matrix<float, 3, 1> BodyFixAcc_Convert2_GeodeticAcc(float pitch, float roll, float yaw, float *acc);
 
 /* internal vriable */
 TaskNavi_Monitor_TypeDef TaskNavi_Monitor;
@@ -106,7 +108,7 @@ void TaskNavi_Core(void const *arg)
     bool Attitude_Update = false;
     memset(&attitude, 0, sizeof(IMUAtt_TypeDef));
     MadgwickAHRSInit(&algo_att);
-    M_Cbn_TypeDef Cbn;
+    Matrix<float, 3, 1> EM_GeoAcc; /* eigen matrix geodetic coordinate Acc */
 
     while(1)
     {
@@ -158,8 +160,10 @@ void TaskNavi_Core(void const *arg)
             /* DataPipe Attitude Data to SrvDataHub */
             DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_hub_DataPipe);
             DataPipe_SendTo(&Attitude_smp_DataPipe, &Attitude_Log_DataPipe);
+
+            /* convert body fixed coordinate to geidetic coordinate */
+            EM_GeoAcc = BodyFixAcc_Convert2_GeodeticAcc(attitude.pitch, attitude.roll, attitude.yaw, Flt_Acc);
         }
-        Cbn = AttConvert2Cbn(attitude.pitch, attitude.roll, attitude.yaw);
 
         /* comput baro altitude */
         if (bar_state && Attitude_Update && \
@@ -230,3 +234,30 @@ static bool TaskNavi_FlipOver_Detect(float roll_angle)
     return FlipOver_State;
 }
 
+static Matrix<float, 3, 1> BodyFixAcc_Convert2_GeodeticAcc(float pitch, float roll, float yaw, float *acc)
+{
+    Matrix<float, 3, 1> tmp;
+    Matrix<float, 3, 1> Acc_in;
+    Matrix<float, 3, 3> EM_Cbn; /* eigen matrix Cbn */
+    M_Cbn_TypeDef Cbn;
+
+    /* init matrix */
+    tmp.setZero();
+
+    if (acc)
+    {
+        Cbn = AttConvert2Cbn(pitch, roll, yaw);
+        for (uint8_t c, r = 0; c < 3; c ++)
+        {
+            Acc_in(c, 0) = acc[c];
+            for (r = 0; r < 3; r ++)
+            {
+                EM_Cbn(c, r) = Cbn.matrix[c][r];
+            }
+        }
+
+        tmp = EM_Cbn * Acc_in;
+    }
+
+    return tmp;
+}

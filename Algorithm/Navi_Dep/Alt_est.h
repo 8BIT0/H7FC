@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include "Common/gen_physic_def/imu_data.h"
+#include <Eigen>
 
-float BaroAltEstimate_Update(float baro, const M_Cbn_TypeDef Cbn, float *acc);
+float BaroAltEstimate_Update(float baro, Matrix<float, 3, 1> acc);
 
 #endif

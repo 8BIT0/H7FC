@@ -57,7 +57,8 @@ BUILD_DIR = build
 # C++ source
 CPP_SOURCES = \
 Task/Task_Manager.cpp \
-Task/Task_Navi.cpp
+Task/Task_Navi.cpp \
+Algorithm/Navi_Dep/Alt_est.cpp
 
 # C sources
 C_SOURCES = \
