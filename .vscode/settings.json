@@ -214,7 +214,8 @@
                 "dev_ws2812.h": "c",
                 "srv_ledstrip.h": "c",
                 "controller.h": "c",
-                "streambuf": "cpp"
+                "streambuf": "cpp",
+                "complex": "cpp"
         },
         "C_Cpp.errorSquiggles": "Disabled",
         "cmake.configureOnOpen": false,

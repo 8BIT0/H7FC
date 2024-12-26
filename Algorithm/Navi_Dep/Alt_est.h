@@ -6,6 +6,7 @@
 #include <string.h>
 #include <Eigen>
 
-float BaroAltEstimate_Update(float baro, Matrix<float, 3, 1> acc);
+void BaroAltEstimate_Init(float baro_alt, float acc_z, float delta_T);
+float BaroAltEstimate_Update(float baro, float acc_z);
 
 #endif
