@@ -317,7 +317,12 @@ static void SrcActuator_Get_ChannelRemap(SrvActuator_Setting_TypeDef cfg)
     /* moto section */
     if (SrvActuator_Obj.drive_module.num.moto_cnt == 0)
         return;
-        
+    
+    /* test code */
+    cfg.moto_map[2] = 2;
+    cfg.moto_map[3] = 0;
+    /* test code */
+
     for (uint8_t i = 0; i < SrvActuator_Obj.drive_module.num.moto_cnt; i++)
     {
         SrvActuator_Obj.drive_module.obj_list[i].sig_id = cfg.moto_map[i];
@@ -541,8 +546,12 @@ static bool SrvActuator_QuadDrone_MotoMixControl(int16_t *ctl)
 
     tmp[0] = tmp[0] + ctl[Actuator_Ctl_GyrY] - ctl[Actuator_Ctl_GyrX] - ctl[Actuator_Ctl_GyrZ];
     tmp[1] = tmp[1] + ctl[Actuator_Ctl_GyrY] + ctl[Actuator_Ctl_GyrX] + ctl[Actuator_Ctl_GyrZ];
-    tmp[2] = tmp[2] - ctl[Actuator_Ctl_GyrY] + ctl[Actuator_Ctl_GyrX] - ctl[Actuator_Ctl_GyrZ];
-    tmp[3] = tmp[3] - ctl[Actuator_Ctl_GyrY] - ctl[Actuator_Ctl_GyrX] + ctl[Actuator_Ctl_GyrZ];
+    // tmp[2] = tmp[2] - ctl[Actuator_Ctl_GyrY] + ctl[Actuator_Ctl_GyrX] - ctl[Actuator_Ctl_GyrZ];
+    // tmp[3] = tmp[3] - ctl[Actuator_Ctl_GyrY] - ctl[Actuator_Ctl_GyrX] + ctl[Actuator_Ctl_GyrZ];
+    /* test code */
+    tmp[3] = tmp[3] - ctl[Actuator_Ctl_GyrY] + ctl[Actuator_Ctl_GyrX] - ctl[Actuator_Ctl_GyrZ];
+    tmp[2] = tmp[2] - ctl[Actuator_Ctl_GyrY] - ctl[Actuator_Ctl_GyrX] + ctl[Actuator_Ctl_GyrZ];
+    /* test code */
 
     for (uint8_t i = 0; i < 4; i++)
     {
@@ -553,9 +562,6 @@ static bool SrvActuator_QuadDrone_MotoMixControl(int16_t *ctl)
             tmp[i] = SrvActuator_Obj.drive_module.obj_list[i].max_val;
 
         SrvActuator_Obj.drive_module.obj_list[i].ctl_val = (uint16_t)tmp[i];
-        /* test code */
-        // SrvActuator_Obj.drive_module.obj_list[i].ctl_val = 0;
-        /* test code */
         SrvActuator_Moto_DirectDrive(i, SrvActuator_Obj.drive_module.obj_list[i].ctl_val);
     }
 
