@@ -29,6 +29,9 @@ typedef struct
     Matrix<float, 3, 3> L_C;        /* last covariance */
 
     Matrix<float, 3, 3> Proc_Q;     /* process bias matrix */
+    Matrix<float, 3, 3> Noise;      /* noise matrix */
+    Matrix<float, 2, 3> OutMatrix;  /* output matrix */
+    Matrix<float, 3, 3> Gain;       /* gain matrix */
 
     Matrix<float, 3, 3> StateCnvM;  /* state convert matrix */
 } BaroAltEstimateObj_TypeDef;
@@ -62,6 +65,9 @@ float BaroAltEstimate_Update(float baro, float acc_z)
 
     /* step 2: get covariance predict*/
     BaroAltObj.P_C = BaroAltObj.StateCnvM * BaroAltObj.L_C * BaroAltObj.StateCnvM.transpose() + BaroAltObj.Proc_Q;
+
+    /* step 3: get gain matrix */
+    // BaroAltObj.Gain = ;
 
     return tmp;
 }
