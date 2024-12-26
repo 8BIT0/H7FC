@@ -19,10 +19,17 @@ typedef union
 
 typedef struct
 {
-    uint32_t iter_num;              /* number of iterations */
     Matrix<float, 3, 1> InitStatus; /* Init baro altitude state */
-    Matrix<float, 3, 1> CurStatus;  /* current baro altitude state */
-    Matrix<float, 3, 1> LstStatus;  /* last baro altitude state */
+    Matrix<float, 3, 1> P_X;        /* predict baro altitude state */
+    Matrix<float, 3, 1> C_X;        /* current baro altitude state */
+    Matrix<float, 3, 1> L_X;        /* last baro altitude state */
+
+    Matrix<float, 3, 3> P_C;        /* predict covariance */
+    Matrix<float, 3, 3> C_C;        /* current covariance */
+    Matrix<float, 3, 3> L_C;        /* last covariance */
+
+    Matrix<float, 3, 3> Proc_Q;     /* process bias matrix */
+
     Matrix<float, 3, 3> StateCnvM;  /* state convert matrix */
 } BaroAltEstimateObj_TypeDef;
 
@@ -50,20 +57,12 @@ float BaroAltEstimate_Update(float baro, float acc_z)
 {
     float tmp = 0.0f;
 
-    if (BaroAltObj.iter_num != 0)
-    {
-        /* step 1: get current state predict */
-        BaroAltObj.CurStatus = BaroAltObj.StateCnvM * BaroAltObj.LstStatus;
-    
-        /* step 2: */
-    }
-    else
-    {
-        /* update last state only */
-        BaroAltObj.LstStatus = BaroAltObj.CurStatus;
-    }
+    /* step 1: get state predict */
+    BaroAltObj.P_X = BaroAltObj.StateCnvM * BaroAltObj.L_X;
 
-    BaroAltObj.iter_num ++;
+    /* step 2: get covariance predict*/
+    BaroAltObj.P_C = BaroAltObj.StateCnvM * BaroAltObj.L_C * BaroAltObj.StateCnvM.transpose() + BaroAltObj.Proc_Q;
+
     return tmp;
 }
 
