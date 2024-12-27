@@ -6,7 +6,7 @@
 #include <string.h>
 #include <Eigen>
 
-void BaroAltEstimate_Init(float baro_alt, float acc_z, float delta_T);
+void BaroAltEstimate_Init(float baro_alt, float acc_z, float delta_T, float baro_bias, float acc_bias);
 float BaroAltEstimate_Update(float baro, float acc_z);
 
 #endif
