@@ -40,15 +40,15 @@ inline M_Cbn_TypeDef AttConvert2Cbn(float pitch, float roll, float yaw)
     memset(&tmp, 0, sizeof(M_Cbn_TypeDef));
 
     tmp.matrix[0][0] = cos(yaw) * cos(pitch);
-    tmp.matrix[0][1] = cos(pitch) * sin(yaw);
-    tmp.matrix[0][2] = -sin(pitch);
+    tmp.matrix[1][0] = cos(pitch) * sin(yaw);
+    tmp.matrix[2][0] = -sin(pitch);
     
-    tmp.matrix[1][0] = cos(yaw) * sin(pitch) *sin(roll) - cos(roll) * sin(yaw);
+    tmp.matrix[0][1] = cos(yaw) * sin(pitch) *sin(roll) - cos(roll) * sin(yaw);
     tmp.matrix[1][1] = cos(yaw) * cos(roll) + sin(yaw) * sin(roll) * sin(pitch);
-    tmp.matrix[1][2] = cos(pitch) * sin(roll);
+    tmp.matrix[2][1] = cos(pitch) * sin(roll);
 
-    tmp.matrix[2][0] = sin(yaw) * sin(roll) + cos(roll) * cos(yaw) * sin(pitch);
-    tmp.matrix[2][1] = cos(roll) * sin(yaw) * sin(pitch) - cos(yaw) * sin(roll);
+    tmp.matrix[0][2] = sin(yaw) * sin(roll) + cos(roll) * cos(yaw) * sin(pitch);
+    tmp.matrix[1][2] = cos(roll) * sin(yaw) * sin(pitch) - cos(yaw) * sin(roll);
     tmp.matrix[2][2] = cos(pitch) * cos(roll);
     
     return tmp;

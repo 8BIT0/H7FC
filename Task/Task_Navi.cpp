@@ -166,8 +166,8 @@ void TaskNavi_Core(void const *arg)
         }
 
         /* comput baro altitude */
-        if (bar_state && Attitude_Update && \
-            SrvDataHub.get_baro_altitude(&Baro_TimeStamp, &Bar_Pres, &Baro_Alt, &Baro_Alt_Offset, &Baro_Tempra, &BAR_Err))
+       if (bar_state && Attitude_Update && \
+           SrvDataHub.get_baro_altitude(&Baro_TimeStamp, &Bar_Pres, &Baro_Alt, &Baro_Alt_Offset, &Baro_Tempra, &BAR_Err))
         {
             DataPipe_DataObj(Navi_Altitude).time = SrvOsCommon.get_os_ms();
             DataPipe_DataObj(Navi_Altitude).alt = 0.0f;
@@ -246,7 +246,7 @@ static Matrix<float, 3, 1> BodyFixAcc_Convert2_GeodeticAcc(float pitch, float ro
 
     if (acc)
     {
-        Cbn = AttConvert2Cbn(pitch, roll, yaw);
+        Cbn = AttConvert2Cbn(Deg2Rad(pitch), Deg2Rad(roll), Deg2Rad(yaw));
         for (uint8_t c, r = 0; c < 3; c ++)
         {
             Acc_in(c, 0) = acc[c];
