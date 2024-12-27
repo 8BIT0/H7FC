@@ -29,11 +29,12 @@ typedef struct
     Matrix<float, 3, 3> L_C;        /* last covariance */
 
     Matrix<float, 3, 3> Proc_Q;     /* process bias matrix */
-    Matrix<float, 3, 3> Noise;      /* noise matrix */
+    Matrix<float, 2, 2> Noise;      /* noise matrix */
     Matrix<float, 2, 3> OutMatrix;  /* output matrix */
-    Matrix<float, 3, 3> Gain;       /* gain matrix */
+    Matrix<float, 3, 2> Gain;       /* gain matrix */
 
     Matrix<float, 3, 3> StateCnvM;  /* state convert matrix */
+    Matrix<float, 2, 1> InitState;  /* Baro Acc init state */
 } BaroAltEstimateObj_TypeDef;
 
 static BaroAltEstimateObj_TypeDef BaroAltObj;
@@ -54,11 +55,31 @@ void BaroAltEstimate_Init(float baro_alt, float acc_z, float delta_T)
     BaroAltObj.StateCnvM(2, 0) = 0;
     BaroAltObj.StateCnvM(2, 1) = 0;
     BaroAltObj.StateCnvM(2, 2) = 1;
+
+    /* init output matrix */
+    BaroAltObj.OutMatrix(0, 0) = (-1.0 / 0.09f);
+    BaroAltObj.OutMatrix(0, 1) = 0.0f;
+    BaroAltObj.OutMatrix(0, 2) = 0.0f;
+
+    BaroAltObj.OutMatrix(1, 0) = 0.0f;
+    BaroAltObj.OutMatrix(1, 1) = 0.0f;
+    BaroAltObj.OutMatrix(1, 2) = 1.0f;
 }
 
 float BaroAltEstimate_Update(float baro, float acc_z)
 {
     float tmp = 0.0f;
+    Matrix<float, 3, 2> M32_tmp_1;
+    Matrix<float, 2, 2> M32_tmp_2;
+    Matrix<float, 2, 1> M_Mea;
+    Matrix<float, 3, 3> M_Unit;
+
+    M32_tmp_1.Zero();
+    M32_tmp_2.Zero();
+    M_Unit.Identity();
+
+    M_Mea(0, 0) = baro;
+    M_Mea(1, 0) = acc_z;
 
     /* step 1: get state predict */
     BaroAltObj.P_X = BaroAltObj.StateCnvM * BaroAltObj.L_X;
@@ -67,7 +88,18 @@ float BaroAltEstimate_Update(float baro, float acc_z)
     BaroAltObj.P_C = BaroAltObj.StateCnvM * BaroAltObj.L_C * BaroAltObj.StateCnvM.transpose() + BaroAltObj.Proc_Q;
 
     /* step 3: get gain matrix */
-    // BaroAltObj.Gain = ;
+    M32_tmp_1 = BaroAltObj.P_C * BaroAltObj.OutMatrix.transpose();
+    M32_tmp_2 = BaroAltObj.OutMatrix * M32_tmp_1 + BaroAltObj.Noise;
+    BaroAltObj.Gain = M32_tmp_1 * M32_tmp_2.inverse();
+
+    /* step 4: get current state estimate */
+    BaroAltObj.C_X = BaroAltObj.P_X + BaroAltObj.Gain * (M_Mea - BaroAltObj.OutMatrix * BaroAltObj.P_X - BaroAltObj.InitState);
+
+    /* step 5: update convariance */
+    BaroAltObj.C_C = (M_Unit - BaroAltObj.Gain * BaroAltObj.OutMatrix) * BaroAltObj.P_C;
+
+    BaroAltObj.L_C = BaroAltObj.C_C;
+    BaroAltObj.L_X = BaroAltObj.C_X;
 
     return tmp;
 }
