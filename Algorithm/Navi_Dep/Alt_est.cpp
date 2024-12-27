@@ -11,9 +11,9 @@ typedef union
 
     struct
     {
-        float alt;          /* altitude             unit: m */
-        float ver_speed;    /* vertical speed       unit: m/s */
-        float ver_accel;    /* vertical accelerate  unit: m/s^2 */
+        float alt;                  /* altitude             unit: m */
+        float ver_speed;            /* vertical speed       unit: m/s */
+        float ver_accel;            /* vertical accelerate  unit: m/s^2 */
     } sec;
 } BaroStatus_TypeDef;
 
