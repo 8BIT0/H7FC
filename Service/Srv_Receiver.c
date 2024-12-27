@@ -335,8 +335,7 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
 
                             if (receiver_obj->invert_list && (receiver_obj->invert_list & 1 << i))
                             {
-                                receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
-                                receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data.val_list[i];
+                                receiver_obj->data.val_list[i] = CRSF_DIGITAL_CHANNEL_MAX - receiver_obj->data.val_list[i];
                             }
                         }
 

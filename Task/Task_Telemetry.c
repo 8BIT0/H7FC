@@ -103,6 +103,8 @@ void TaskTelemetry_Init(uint32_t period)
                 Receiver_Smp_DataPipe.data_addr = (uint32_t)DataPipe_DataObjAddr(Rc);
                 Receiver_Smp_DataPipe.data_size = DataPipe_DataSize(Rc);
 
+                SrvReceiver.invert(&Receiver_Obj, Telemetry_Monitor.pitch_ch);
+                
                 DataPipe_Enable(&Receiver_Smp_DataPipe);
             }
         }
