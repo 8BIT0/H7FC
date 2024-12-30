@@ -246,7 +246,6 @@ static void TaskControl_Actuator_ControlValue_Update(uint16_t throttle, float GX
 {
     int16_t ctl_buf[Actuator_Ctl_Sum] = {0};
 
-    /* idle spin when disarm */
     ctl_buf[Actuator_Ctl_Throttle] = throttle;
 
     ctl_buf[Actuator_Ctl_GyrX] = (int16_t)GX_Ctl_Out;

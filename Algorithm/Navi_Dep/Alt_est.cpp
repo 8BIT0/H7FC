@@ -19,7 +19,6 @@ typedef union
 
 typedef struct
 {
-    Matrix<float, 3, 1> InitStatus; /* Init baro altitude state */
     Matrix<float, 3, 1> P_X;        /* predict baro altitude state */
     Matrix<float, 3, 1> C_X;        /* current baro altitude state */
     Matrix<float, 3, 1> L_X;        /* last baro altitude state */
@@ -71,6 +70,11 @@ void BaroAltEstimate_Init(float baro_alt, float acc_z, float delta_T, float baro
     BaroAltObj.Noise.Zero();
     BaroAltObj.Noise(0, 0) = baro_bias;
     BaroAltObj.Noise(1, 1) = acc_bias;
+
+    /* set init state */
+    BaroAltObj.InitState.Zero();
+    BaroAltObj.InitState(0, 0) = baro_alt;
+    BaroAltObj.InitState(1, 0) = acc_z;
 }
 
 float BaroAltEstimate_Update(float baro, float acc_z)
