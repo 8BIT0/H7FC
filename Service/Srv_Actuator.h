@@ -311,11 +311,11 @@ typedef struct
     uint8_t drv_type;
     uint8_t sig_id;
 
-    uint16_t ctl_val;
-    uint16_t max_val;
-    uint16_t min_val;
-    uint16_t idle_val;
-    uint16_t lock_val;
+    int16_t ctl_val;
+    int16_t max_val;
+    int16_t min_val;
+    int16_t idle_val;
+    int16_t lock_val;
 
     SrvActuator_PeriphSet_TypeDef *periph_ptr;
     void *drv_obj;

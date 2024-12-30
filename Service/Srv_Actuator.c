@@ -524,7 +524,7 @@ static SrvActuator_Model_List SrvActuator_GetModel(void)
  */
 static bool SrvActuator_QuadDrone_MotoMixControl(int16_t *ctl)
 {
-    float throttle_base_percent = 0.0f;
+    float throttle = 0.0f;
     int16_t tmp[4] = {0, 0, 0, 0};
 
     if (!SrvActuator_Obj.init || \
@@ -535,13 +535,13 @@ static bool SrvActuator_QuadDrone_MotoMixControl(int16_t *ctl)
     if (ctl[Actuator_Ctl_Throttle] >= SRV_ACTUATOR_MAX_THROTTLE_PERCENT)
         ctl[Actuator_Ctl_Throttle] = SRV_ACTUATOR_MAX_THROTTLE_PERCENT;
 
-    throttle_base_percent = ctl[Actuator_Ctl_Throttle] / 100.0f;
+    throttle = ctl[Actuator_Ctl_Throttle] / 100.0f;
 
     for (uint8_t i = 0; i < 4; i++)
     {
         tmp[i] = (SrvActuator_Obj.drive_module.obj_list[i].max_val - \
                   SrvActuator_Obj.drive_module.obj_list[i].idle_val) * \
-                  throttle_base_percent + SrvActuator_Obj.drive_module.obj_list[i].idle_val;
+                  throttle + SrvActuator_Obj.drive_module.obj_list[i].idle_val;
     }
 
     tmp[0] = tmp[0] + ctl[Actuator_Ctl_GyrY] - ctl[Actuator_Ctl_GyrX] - ctl[Actuator_Ctl_GyrZ];
@@ -555,10 +555,10 @@ static bool SrvActuator_QuadDrone_MotoMixControl(int16_t *ctl)
 
     for (uint8_t i = 0; i < 4; i++)
     {
-        if (tmp[i] < SrvActuator_Obj.drive_module.obj_list[i].idle_val)
+        if (tmp[i] <= SrvActuator_Obj.drive_module.obj_list[i].idle_val)
             tmp[i] = SrvActuator_Obj.drive_module.obj_list[i].idle_val;
 
-        if (tmp[i] > SrvActuator_Obj.drive_module.obj_list[i].max_val)
+        if (tmp[i] >= SrvActuator_Obj.drive_module.obj_list[i].max_val)
             tmp[i] = SrvActuator_Obj.drive_module.obj_list[i].max_val;
 
         SrvActuator_Moto_DirectDrive(i, tmp[i]);

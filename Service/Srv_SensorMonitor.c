@@ -138,38 +138,17 @@ static uint32_t SrvSensorMonitor_Get_FreqVal(uint8_t freq_enum)
 {
     switch(freq_enum)
     {
-        case SrvSensorMonitor_SampleFreq_1KHz:
-            return 1000;
-
-        case SrvSensorMonitor_SampleFreq_500Hz:
-            return 500;
-        
-        case SrvSensorMonitor_SampleFreq_250Hz:
-            return 250;
-
-        case SrvSensorMonitor_SampleFreq_200Hz:
-            return 200;
-
-        case SrvSensorMonitor_SampleFreq_100Hz:
-            return 100;
-
-        case SrvSensorMonitor_SampleFreq_50Hz:
-            return 50;
-
-        case SrvSensorMonitor_SampleFreq_20Hz:
-            return 20;
-        
-        case SrvSensorMonitor_SampleFreq_10Hz:
-            return 10;
-
-        case SrvSensorMonitor_SampleFreq_5Hz:
-            return 5;
-
-        case SrvSensorMonitor_SampleFreq_1Hz:
-            return 1;
-
-        default:
-            return 0;
+        case SrvSensorMonitor_SampleFreq_1KHz:  return 1000;
+        case SrvSensorMonitor_SampleFreq_500Hz: return 500;
+        case SrvSensorMonitor_SampleFreq_250Hz: return 250;
+        case SrvSensorMonitor_SampleFreq_200Hz: return 200;
+        case SrvSensorMonitor_SampleFreq_100Hz: return 100;
+        case SrvSensorMonitor_SampleFreq_50Hz:  return 50;
+        case SrvSensorMonitor_SampleFreq_20Hz:  return 20;
+        case SrvSensorMonitor_SampleFreq_10Hz:  return 10;
+        case SrvSensorMonitor_SampleFreq_5Hz:   return 5;
+        case SrvSensorMonitor_SampleFreq_1Hz:   return 1;
+        default: return 0;
     }
 
     return 0;
@@ -663,12 +642,9 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     state |= SrvSensorMonitor_IMU_SampleCTL(obj);
     if (obj->statistic_imu->is_calid == Calib_Start)
     {
+        obj->statistic_imu->is_calid = Calib_Failed;
         if (SrvIMU.set_calib)
-        {
             obj->statistic_imu->is_calid = SrvIMU.set_calib(GYRO_CALIB_CYCLE);
-        }
-        else
-            obj->statistic_imu->is_calid = Calib_Failed;
     }
     else if (obj->statistic_imu->is_calid != Calib_Failed)
         obj->statistic_imu->is_calid = SrvIMU.get_calib();
@@ -679,12 +655,9 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     state |= SrvSensorMonitor_Baro_SampleCTL(obj);
     if (obj->statistic_baro->is_calid == Calib_Start)
     {
+        obj->statistic_baro->is_calid = Calib_Failed;
         if (SrvBaro.set_calib)
-        {
             obj->statistic_baro->is_calid = SrvBaro.set_calib(BARO_CALIB_CYCLE);
-        }
-        else
-            obj->statistic_baro->is_calid = Calib_Failed;
     }
     else if (obj->statistic_baro->is_calid != Calib_Failed)
         obj->statistic_baro->is_calid = SrvBaro.get_calib();
@@ -700,20 +673,10 @@ static GenCalib_State_TypeList SrvSensorMonitor_Set_Module_Calib(SrvSensorMonito
     {
         switch((uint8_t) type)
         {
-            case SrvSensorMonitor_Type_IMU:
-                obj->statistic_imu->is_calid = Calib_Start;
-                break;
-
-            case SrvSensorMonitor_Type_BARO:
-                obj->statistic_baro->is_calid = Calib_Start;
-                break;
-
-            case SrvSensorMonitor_Type_MAG:
-                obj->statistic_mag->is_calid = Calib_Start;
-                break;
-
-            default:
-                return Calib_Start;
+            case SrvSensorMonitor_Type_IMU:  obj->statistic_imu->is_calid = Calib_Start;  break;
+            case SrvSensorMonitor_Type_BARO: obj->statistic_baro->is_calid = Calib_Start; break;
+            case SrvSensorMonitor_Type_MAG:  obj->statistic_mag->is_calid = Calib_Start;  break;
+            default: break;
         }
     }
 
@@ -734,19 +697,16 @@ static GenCalib_State_TypeList SrvSensorMonitor_Get_Module_Calib(SrvSensorMonito
                 {
                     return obj->statistic_mag->is_calid;
                 }
-                else
-                    return Calib_Failed; 
+                return Calib_Failed; 
 
             case SrvSensorMonitor_Type_BARO:
                 if (obj->enabled_reg.bit.baro && obj->init_state_reg.bit.baro)
                 {
                     return obj->statistic_baro->is_calid;
                 }
-                else
-                    return Calib_Failed;
-
-            default:
                 return Calib_Failed;
+
+            default: return Calib_Failed;
         }
     }
 
