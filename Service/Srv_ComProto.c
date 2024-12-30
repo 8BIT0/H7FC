@@ -118,6 +118,7 @@ static bool Srv_ComProto_MsgObj_Init(SrvComProto_MsgInfo_TypeDef *msg, SrvComPro
         break;
 
     case MAV_CompoID_MotoCtl:
+        msg->pack_callback = To_DataPack_Callback(SrvComProto_MavMsg_MotoActuator);
         break;
 
     default:
@@ -313,6 +314,23 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
                                           pck->pck_info.chan, pck->msg_obj,
                                           time_stamp,
                                           baro_alt, baro_pressure, 0, 0, 0, 0);
+}
+
+static uint16_t SrvComProto_MavMsg_MotoActuator(SrvComProto_MsgInfo_TypeDef *pck)
+{
+    uint32_t time_stamp = 0;
+    uint8_t moto_num = 0;
+    int16_t m_b[8];
+
+    memset(m_b, 0, sizeof(m_b));
+    SrvDataHub.get_moto(&time_stamp, moto_num, m_b);
+
+    return mavlink_msg_servo_output_raw_pack_chan(pck->pck_info.system_id,
+                                                  pck->pck_info.component_id,
+                                                  pck->pck_info.chan, pck->msg_obj,
+                                                  time_stamp, moto_num,
+                                                  m_b[0], m_b[1], m_b[2], m_b[3],
+                                                  m_b[4], m_b[5], m_b[6], m_b[7]);
 }
 
 /******************************************* Frame Out ****************************************/

@@ -46,8 +46,8 @@ static bool SrvDataHub_Get_Scaled_Mag(uint32_t *time_stamp, float *scale, float 
 static bool SrvDataHub_Get_Arm(bool *arm);
 static bool SrvDataHub_Get_Failsafe(bool *failsafe);
 static bool SrvDataHub_Get_Telemetry_ControlData(ControlData_TypeDef *data);
-static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir);
-static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir);
+static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, int16_t *moto_ch);
+static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, int16_t *servo_ch);
 static bool SrvDataHub_Get_IMU_InitState(bool *state);
 static bool SrvDataHub_Get_Mag_InitState(bool *state);
 static bool SrvDataHub_Get_Bar_InitState(bool *state);
@@ -817,7 +817,7 @@ reupdate_telemetry_control_data:
     return false;
 }
 
-static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *moto_ch, uint8_t *moto_dir)
+static bool SrvDataHub_Get_MotoChannel(uint32_t *time_stamp, uint8_t *cnt, int16_t *moto_ch)
 {
     if ((cnt == NULL) || (moto_ch == NULL))
         return false;
@@ -830,7 +830,7 @@ reupdate_moto_channel:
 
     if (*cnt)
     {
-        memcpy(moto_ch, SrvDataHub_Monitor.data.moto, *cnt);
+        memcpy(moto_ch, SrvDataHub_Monitor.data.moto, *cnt * sizeof(SrvDataHub_Monitor.data.moto[0]));
     }
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.actuator)
@@ -889,9 +889,9 @@ reupdate_baro_state:
     return true;
 }
 
-static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, uint16_t *servo_ch, uint8_t *servo_dir)
+static bool SrvDataHub_Get_ServoChannel(uint32_t *time_stamp, uint8_t *cnt, int16_t *servo_ch)
 {
-    if ((cnt == NULL) || (servo_ch == NULL) || (servo_dir == NULL))
+    if ((cnt == NULL) || (servo_ch == NULL))
         return false;
 
 reupdate_servo_channel:
@@ -902,7 +902,7 @@ reupdate_servo_channel:
 
     if (*cnt)
     {
-        memcpy(servo_ch, SrvDataHub_Monitor.data.servo, *cnt);
+        memcpy(servo_ch, SrvDataHub_Monitor.data.servo, *cnt * sizeof(SrvDataHub_Monitor.data.servo[0]));
     }
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.actuator)

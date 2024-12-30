@@ -179,8 +179,8 @@ typedef struct
     uint32_t actuator_update_time;
     uint8_t moto_num;
     uint8_t servo_num;
-    uint16_t moto[8];
-    uint8_t servo[8];
+    int16_t moto[8];
+    int16_t servo[8];
 
     /* reserved */
     uint32_t tunning_heartbeat_timestamp;
@@ -227,8 +227,8 @@ typedef struct
     bool (*get_baro_altitude)(uint32_t *time_stamp, float *baro_pressure, float *baro_alt, float *baro_alt_offset, float *baro_temp, uint8_t *error);
     bool (*get_arm_state)(bool *arm);
     bool (*get_failsafe)(bool *failsafe);
-    bool (*get_moto)(uint32_t *time_stamp, uint8_t *cnt, uint16_t *ch, uint8_t *dir);
-    bool (*get_servo)(uint32_t *time_stamp, uint8_t *cnt, uint16_t *ch, uint8_t *dir);
+    bool (*get_moto)(uint32_t *time_stamp, uint8_t *cnt, int16_t *ch);
+    bool (*get_servo)(uint32_t *time_stamp, uint8_t *cnt, int16_t *ch);
 } SrvDataHub_TypeDef;
 
 extern SrvDataHub_TypeDef SrvDataHub;
