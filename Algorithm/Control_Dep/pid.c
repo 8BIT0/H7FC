@@ -20,13 +20,21 @@ bool PID_Init(PIDObj_TypeDef *p_PIDObj, RC_Filter_Param_TypeDef rc_para)
     p_PIDObj->I_out = 0.0f;
     p_PIDObj->D_out = 0.0f;
 
-    p_PIDObj->Integral = 0.0f;
-    p_PIDObj->lst_diff = 0.0f;
+    PID_Reset_ProcessVal(p_PIDObj);
 
     if (RCFilter.init(&p_PIDObj->Dtrim_RC) == 0)
         return false;
 
     return true;
+}
+
+void PID_Reset_ProcessVal(PIDObj_TypeDef *p_PIDObj)
+{
+    if (p_PIDObj == NULL)
+        return;
+
+    p_PIDObj->Integral = 0.0f;
+    p_PIDObj->lst_diff = 0.0f;
 }
 
 bool PID_Update(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float mea_in, const float exp_in)
