@@ -455,8 +455,8 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
             Controller.att_ctl(TaskControl_Monitor.ctl_para.att_mode, sys_ms, ang_ctl_only, att_ctl_exp, att_ctl_mea, &att_ctl_out);
 
             /* when usb attached then lock moto */
-            if (SrvDataHub.get_vcp_attach_state(&USB_Attach) || !USB_Attach)
-            {
+            // if (SrvDataHub.get_vcp_attach_state(&USB_Attach) || !USB_Attach)
+            // {
                 TaskControl_Actuator_ControlValue_Update(TaskControl_Monitor.throttle_percent, \
                                                          att_ctl_out.gyro_x, \
                                                          att_ctl_out.gyro_y, \
@@ -472,7 +472,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
                 }
             
                 return;
-            }
+            // }
         }
     }
 

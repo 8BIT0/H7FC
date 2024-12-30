@@ -380,7 +380,7 @@ typedef struct
     bool (*get_servo_control_range)(uint8_t servo_index, int16_t *min, int16_t *idle, int16_t *max);
     SrvActuator_ModelComponentNum_TypeDef (*get_cnt)(void);
     SrvActuator_Model_List (*get_model)(void);
-    bool (*moto_direct_drive)(uint8_t index, uint16_t value);
+    bool (*moto_direct_drive)(uint8_t index, int16_t value);
     bool (*servo_direct_drive)(uint8_t index, uint16_t value);
     void (*save)(uint8_t component_index);
 } SrvActuator_TypeDef;

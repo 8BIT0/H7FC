@@ -38,12 +38,22 @@ typedef struct
 
 static BaroAltEstimateObj_TypeDef BaroAltObj;
 
-void BaroAltEstimate_Init(float baro_alt, float acc_z, float delta_T, float baro_bias, float acc_bias)
+void BaroAltEstimate_Init(float baro, float acc_z, float delta_T, float baro_bias, float acc_bias)
 {
-    memset(&BaroAltObj, 0, sizeof(BaroAltEstimateObj_TypeDef));
+    BaroAltObj.P_X.Zero();
+    BaroAltObj.C_X.Zero();
+    BaroAltObj.L_X.Zero();
+    BaroAltObj.P_C.Zero();
+    BaroAltObj.C_C.Zero();
+    BaroAltObj.L_C.Zero();
+    BaroAltObj.Proc_Q.Zero();
+    BaroAltObj.Noise.Zero();
+    BaroAltObj.OutMatrix.Zero();
+    BaroAltObj.Gain.Zero();
+    BaroAltObj.StateCnvM.Zero();
+    BaroAltObj.InitState.Zero();
 
     /* init state convert matrix */
-    BaroAltObj.StateCnvM.Zero();
     BaroAltObj.StateCnvM(0, 0) = 1;
     BaroAltObj.StateCnvM(0, 1) = delta_T;
     BaroAltObj.StateCnvM(0, 2) = 0.5 * (delta_T * delta_T);
@@ -57,7 +67,6 @@ void BaroAltEstimate_Init(float baro_alt, float acc_z, float delta_T, float baro
     BaroAltObj.StateCnvM(2, 2) = 1;
 
     /* init output matrix */
-    BaroAltObj.OutMatrix.Zero();
     BaroAltObj.OutMatrix(0, 0) = (-1.0 / 0.09f);
     BaroAltObj.OutMatrix(0, 1) = 0.0f;
     BaroAltObj.OutMatrix(0, 2) = 0.0f;
@@ -67,13 +76,11 @@ void BaroAltEstimate_Init(float baro_alt, float acc_z, float delta_T, float baro
     BaroAltObj.OutMatrix(1, 2) = 1.0f;
 
     /* set noise matrix */
-    BaroAltObj.Noise.Zero();
     BaroAltObj.Noise(0, 0) = baro_bias;
     BaroAltObj.Noise(1, 1) = acc_bias;
 
     /* set init state */
-    BaroAltObj.InitState.Zero();
-    BaroAltObj.InitState(0, 0) = baro_alt;
+    BaroAltObj.InitState(0, 0) = baro;
     BaroAltObj.InitState(1, 0) = acc_z;
 }
 
