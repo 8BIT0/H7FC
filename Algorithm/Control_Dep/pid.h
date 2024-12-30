@@ -32,6 +32,7 @@ typedef struct
     float P_out;
     
     float gI;
+    bool  gI_Limit;
     float gI_Min;
     float gI_Max;
     float Integral;

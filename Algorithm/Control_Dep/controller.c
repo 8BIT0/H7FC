@@ -262,7 +262,7 @@ static float Controller_ConvertToFloat(const char* in)
     bool match = false;
     const char character[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '\0'};
 
-    if ((in == NULL) || (strlen(in) >= 5))
+    if ((in == NULL) || (strlen(in) >= 7))
         return 0.0f;
 
     if ((in[0] != 'P') && (in[0] != 'p') && (in[0] != 'I') && (in[0] != 'i') && (in[0] != 'D') && (in[0] != 'd'))

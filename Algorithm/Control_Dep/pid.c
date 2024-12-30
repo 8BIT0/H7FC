@@ -77,13 +77,16 @@ static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 
     /* limit Integral */
     /* check integer first */
-    if ((int16_t)p_PIDObj->Integral >= (int16_t)p_PIDObj->gI_Max)
+    if (p_PIDObj->gI_Limit)
     {
-        p_PIDObj->Integral = p_PIDObj->gI_Max;
-    }
-    else if ((int16_t)p_PIDObj->Integral <= (int16_t)p_PIDObj->gI_Min)
-    {
-        p_PIDObj->Integral = p_PIDObj->gI_Min;
+        if ((int16_t)p_PIDObj->Integral >= (int16_t)p_PIDObj->gI_Max)
+        {
+            p_PIDObj->Integral = p_PIDObj->gI_Max;
+        }
+        else if ((int16_t)p_PIDObj->Integral <= (int16_t)p_PIDObj->gI_Min)
+        {
+            p_PIDObj->Integral = p_PIDObj->gI_Min;
+        }
     }
 
     p_PIDObj->I_out = p_PIDObj->Integral;

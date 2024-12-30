@@ -149,6 +149,9 @@ static bool Att_PID_Param_Set(AttCaseCadePID_Param_TypeDef para)
     ProcessPara.g_x.gP = para.GyroX_Para.gP;
     ProcessPara.g_x.gI = para.GyroX_Para.gI;
     ProcessPara.g_x.gD = para.GyroX_Para.gD;
+    ProcessPara.g_x.gI_Limit = false;
+    ProcessPara.g_x.gI_Min = 50;
+    ProcessPara.g_x.gI_Max = -50;
     
     /* angular axis Y parameter set */
     if (PARA_AMPLIFICATE(para.GyroY_Para.gP) == 0)
@@ -159,6 +162,9 @@ static bool Att_PID_Param_Set(AttCaseCadePID_Param_TypeDef para)
 
     ProcessPara.g_y.gP = para.GyroY_Para.gP;
     ProcessPara.g_y.gI = para.GyroY_Para.gI;
+    ProcessPara.g_y.gI_Limit = false;
+    ProcessPara.g_y.gI_Min = 50;
+    ProcessPara.g_y.gI_Max = -50;
     ProcessPara.g_y.gD = para.GyroY_Para.gD;
                    
     /* angular axis Z parameter set */
@@ -170,6 +176,9 @@ static bool Att_PID_Param_Set(AttCaseCadePID_Param_TypeDef para)
 
     ProcessPara.g_z.gP = para.GyroZ_Para.gP;
     ProcessPara.g_z.gI = para.GyroZ_Para.gI;
+    ProcessPara.g_z.gI_Limit = false;
+    ProcessPara.g_z.gI_Min = 50;
+    ProcessPara.g_z.gI_Max = -50;
     ProcessPara.g_z.gD = para.GyroZ_Para.gD;
 
     return true;
