@@ -138,7 +138,11 @@ static bool Controller_Set_Param(bool ARM, ControlTarget_List target, ControlMod
     else if (target == CtlT_Altitude)
     {
         /* still in developping */
-        return false;
+        switch (mode)
+        {
+            case CtlM_PID: return false;
+            default: return false;
+        }
     }
 
     return false;
