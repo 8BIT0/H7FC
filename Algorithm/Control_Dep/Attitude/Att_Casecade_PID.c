@@ -32,6 +32,7 @@ static bool Att_PID_Param_Set(AttCaseCadePID_Param_TypeDef para);
 /* external function */
 static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para);
 static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out);
+static void Att_Casecade_PID_Reset(void);
 static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void);
 static AttCaseCadePID_Param_TypeDef Att_CaseCade_PID_InUse_Param(void);
 
@@ -40,6 +41,7 @@ AttCasecadePID_TypeDef Att_CasecadePID_Controller = {
     .process = Att_Casecade_PID,
     .cur_param = Att_CaseCade_PID_InUse_Param,
     .default_param = Att_Casecade_PID_DefaultPara,
+    .reset = Att_Casecade_PID_Reset,
 };
 
 static AttCaseCadePID_Param_TypeDef Att_CaseCade_PID_InUse_Param(void)
@@ -253,3 +255,11 @@ static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_T
     return true;
 }
 
+static void Att_Casecade_PID_Reset(void)
+{
+    PID_Reset_ProcessVal(&ProcessPara.pitch);
+    PID_Reset_ProcessVal(&ProcessPara.roll);
+    PID_Reset_ProcessVal(&ProcessPara.g_x);
+    PID_Reset_ProcessVal(&ProcessPara.g_y);
+    PID_Reset_ProcessVal(&ProcessPara.g_z);
+}

@@ -38,8 +38,9 @@ static bool Controller_PID_AttParam_Set(uint8_t *p_param, uint16_t size);
 /* external function */
 /* attitude section */
 static bool Controller_Att_Init(ControlMode_List mode);
-static bool Controller_AttControl(ControlMode_List mode, uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out);
+static bool Controller_Att_Control(ControlMode_List mode, uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out);
 static bool Controller_Set_Param(bool ARM, ControlTarget_List target, ControlMode_List mode, uint8_t *p_param, uint16_t size);
+static void Controller_Reset_Att_Processing(ControlMode_List mode);
 
 /* altitude section */
 static bool Controller_Alt_Init(ControlMode_List mode);
@@ -50,7 +51,9 @@ Control_TypeDef Controller = {
     
     .att_param_set = Controller_Set_Param,
 
-    .att_ctl = Controller_AttControl,
+    .att_ctl = Controller_Att_Control,
+
+    .reset_att_processing = Controller_Reset_Att_Processing,
 };
 
 static bool Controller_Get_AttParam(ControlMode_List *cur_mode, uint8_t *p_data, uint16_t *para_len)
@@ -93,7 +96,7 @@ static bool Controller_Att_Init(ControlMode_List mode)
     return false;
 }
 
-static bool Controller_AttControl(ControlMode_List mode, uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out)
+static bool Controller_Att_Control(ControlMode_List mode, uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out)
 {
     switch ((uint8_t) mode)
     {
@@ -102,6 +105,15 @@ static bool Controller_AttControl(ControlMode_List mode, uint32_t sys_ms, bool a
     }
     ControllerMonitor.att_ctl_mode = mode;
     return false;
+}
+
+static void Controller_Reset_Att_Processing(ControlMode_List mode)
+{
+    switch ((uint8_t) mode)
+    {
+        case CtlM_PID: Att_CasecadePID_Controller.reset(); break;
+        default: break;
+    }
 }
 
 static bool Controller_Set_Param(bool ARM, ControlTarget_List target, ControlMode_List mode, uint8_t *p_param, uint16_t size)

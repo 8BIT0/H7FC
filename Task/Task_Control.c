@@ -477,6 +477,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
     }
 
 lock_moto:
+    Controller.reset_att_processing(TaskControl_Monitor.ctl_para.att_mode);
     SrvActuator.lock();
 }
 

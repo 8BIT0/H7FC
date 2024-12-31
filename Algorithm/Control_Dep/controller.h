@@ -34,6 +34,8 @@ typedef struct
 
     bool (*att_ctl)(ControlMode_List mode, uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *out);
     // void (*alt_ctl)();
+
+    void (*reset_att_processing)(ControlMode_List mode);
 } Control_TypeDef;
 
 extern Control_TypeDef Controller;
