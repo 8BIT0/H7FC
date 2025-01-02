@@ -307,13 +307,21 @@ static uint16_t SrvComProto_MavMsg_Altitude(SrvComProto_MsgInfo_TypeDef *pck)
     float baro_alt_offset = 0.0f;
     float baro_tempra = 0.0f;
 
+    uint32_t relalt_time_stamp = 0;
+    float rel_alt = 0.0f;
+    float rel_alt_speed = 0.0f;
+
+    float acc_z = 0.0f;
+
     SrvDataHub.get_baro_altitude(&time_stamp, &baro_pressure, &baro_alt, &baro_alt_offset, &baro_tempra, &error);
+    SrvDataHub.get_relative_alt(&relalt_time_stamp, &rel_alt, &rel_alt_speed);
+    SrvDataHub.get_scaled_imu(NULL, NULL, NULL, NULL, NULL, &acc_z, NULL, NULL, NULL, NULL, NULL);
 
     return mavlink_msg_altitude_pack_chan(pck->pck_info.system_id,
                                           pck->pck_info.component_id,
                                           pck->pck_info.chan, pck->msg_obj,
                                           time_stamp,
-                                          baro_alt, baro_pressure, 0, 0, 0, 0);
+                                          baro_alt, baro_pressure, acc_z, rel_alt, rel_alt_speed, 0);
 }
 
 static uint16_t SrvComProto_MavMsg_MotoActuator(SrvComProto_MsgInfo_TypeDef *pck)

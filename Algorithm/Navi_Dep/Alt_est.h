@@ -5,8 +5,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <Eigen>
+#include "pos_data.h"
 
-void BaroAltEstimate_Init(float baro_alt, float acc_z, float delta_T, float baro_bias, float acc_bias);
-float BaroAltEstimate_Update(float baro, float acc_z);
+void BaroAltEstimate_Init(float baro, float delta_T, float baro_bias, float acc_bias);
+RelMov_TypeDef BaroAltEstimate_Update(float baro, float acc_z);
 
 #endif

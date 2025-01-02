@@ -38,7 +38,7 @@ typedef struct
 
 static BaroAltEstimateObj_TypeDef BaroAltObj;
 
-void BaroAltEstimate_Init(float baro, float acc_z, float delta_T, float baro_bias, float acc_bias)
+void BaroAltEstimate_Init(float baro, float delta_T, float baro_bias, float acc_bias)
 {
     BaroAltObj.P_X.Zero();
     BaroAltObj.C_X.Zero();
@@ -81,23 +81,29 @@ void BaroAltEstimate_Init(float baro, float acc_z, float delta_T, float baro_bia
 
     /* set init state */
     BaroAltObj.InitState(0, 0) = baro;
-    BaroAltObj.InitState(1, 0) = acc_z;
+    BaroAltObj.InitState(1, 0) = 0.0f;
+
+    BaroAltObj.Proc_Q(0, 0) = 0.0001f;
+    BaroAltObj.Proc_Q(1, 1) = 0.0001f;
+    BaroAltObj.Proc_Q(2, 2) = 0.00001f;
 }
 
-float BaroAltEstimate_Update(float baro, float acc_z)
+RelMov_TypeDef BaroAltEstimate_Update(float baro, float acc_z)
 {
-    float tmp = 0.0f;
+    RelMov_TypeDef out;
     Matrix<float, 3, 2> M32_tmp_1;
     Matrix<float, 2, 2> M32_tmp_2;
     Matrix<float, 2, 1> M_Mea;
     Matrix<float, 3, 3> M_Unit;
+
+    memset(&out, 0, sizeof(RelMov_TypeDef));
 
     M32_tmp_1.Zero();
     M32_tmp_2.Zero();
     M_Unit.Identity();
 
     M_Mea(0, 0) = baro;
-    M_Mea(1, 0) = acc_z;
+    M_Mea(1, 0) = (float)((int16_t)(acc_z * 100.0) / 100.0f);
 
     /* step 1: get state predict */
     BaroAltObj.P_X = BaroAltObj.StateCnvM * BaroAltObj.L_X;
@@ -119,6 +125,10 @@ float BaroAltEstimate_Update(float baro, float acc_z)
     BaroAltObj.L_C = BaroAltObj.C_C;
     BaroAltObj.L_X = BaroAltObj.C_X;
 
-    return tmp;
+    out.pos = BaroAltObj.C_X(0, 0);
+    out.vel = -BaroAltObj.C_X(1, 0);
+    out.acc = BaroAltObj.C_X(2, 0);
+
+    return out;
 }
 

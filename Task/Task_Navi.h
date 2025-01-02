@@ -18,10 +18,7 @@ typedef struct
     float att_heading;
 
     bool flip_over;
-
-    PosData_TypeDef pos;
-    PosVelData_TypeDef vel;
-
+    
     uint16_t period;
 }TaskNavi_Monitor_TypeDef;
 

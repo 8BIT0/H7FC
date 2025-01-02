@@ -102,6 +102,7 @@ typedef struct
     float roll;
     float yaw;
     float alt;
+    float alt_vel;
 } BlackBox_AttAltData_TypeDef;
 #pragma pack()
 

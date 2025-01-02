@@ -5,6 +5,7 @@
 #include "Srv_DataHub.h"
 #include "DataPipe.h"
 #include "MadgwickAHRS.h"
+#include "Alt_est.h"
 #include "math_util.h"
 #include <Eigen>
 #include <stdio.h>
@@ -29,14 +30,15 @@ using namespace Eigen;
 
 /* internal function */
 static bool TaskNavi_FlipOver_Detect(float roll_angle);
+static void TaskNavi_Update_BaroAltEst(float baro, float acc_dif, RelMov_TypeDef *baro_alt);
 static Matrix<float, 3, 1> BodyFixAcc_Convert2_GeodeticAcc(float pitch, float roll, float yaw, float *acc);
 
 /* internal vriable */
 TaskNavi_Monitor_TypeDef TaskNavi_Monitor;
 
 /* data structure definition */
-DataPipe_CreateDataObj(IMUAtt_TypeDef,  Navi_Attitude);
-DataPipe_CreateDataObj(AltData_TypeDef, Navi_Altitude);
+DataPipe_CreateDataObj(IMUAtt_TypeDef, Navi_Attitude);
+DataPipe_CreateDataObj(RelMov_TypeDef, Navi_Altitude);
 
 void TaskNavi_Init(uint32_t period)
 {
@@ -92,6 +94,7 @@ void TaskNavi_Core(void const *arg)
     float Gyr_Scale = 0.0f;
     float Mag_Scale = 0.0f;
     IMUAtt_TypeDef attitude;
+    RelMov_TypeDef rel_alt;
     AlgoAttData_TypeDef algo_att;
     float Flt_Acc[Axis_Sum] = {0.0f};
     float Flt_Gyr[Axis_Sum] = {0.0f};
@@ -169,8 +172,11 @@ void TaskNavi_Core(void const *arg)
        if (bar_state && Attitude_Update && \
            SrvDataHub.get_baro_altitude(&Baro_TimeStamp, &Bar_Pres, &Baro_Alt, &Baro_Alt_Offset, &Baro_Tempra, &BAR_Err))
         {
+            TaskNavi_Update_BaroAltEst(Bar_Pres, (EM_GeoAcc(2, 0) + 1.0f), &rel_alt);
+
             DataPipe_DataObj(Navi_Altitude).time = SrvOsCommon.get_os_ms();
-            DataPipe_DataObj(Navi_Altitude).alt = 0.0f;
+            DataPipe_DataObj(Navi_Altitude).pos = rel_alt.pos;
+            DataPipe_DataObj(Navi_Altitude).vel = rel_alt.vel;
 
             DataPipe_SendTo(&Altitude_smp_DataPipe, &Altitude_hub_DataPipe);
             DataPipe_SendTo(&Altitude_smp_DataPipe, &Altitude_Log_DataPipe);
@@ -232,6 +238,24 @@ static bool TaskNavi_FlipOver_Detect(float roll_angle)
     }
 
     return FlipOver_State;
+}
+
+static void TaskNavi_Update_BaroAltEst(float baro, float acc_dif, RelMov_TypeDef *baro_alt)
+{
+    static bool init = false;
+    RelMov_TypeDef alt;
+
+    if (!init)
+    {
+        BaroAltEstimate_Init(baro, (TaskNavi_Monitor.period / 1000.0f), 0.28f, 0.0003f);
+        init = true;
+    }
+    else
+    {
+        alt = BaroAltEstimate_Update(baro, acc_dif);
+        if (baro_alt)
+            *baro_alt = alt;
+    }
 }
 
 static Matrix<float, 3, 1> BodyFixAcc_Convert2_GeodeticAcc(float pitch, float roll, float yaw, float *acc)

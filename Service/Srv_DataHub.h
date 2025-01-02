@@ -143,6 +143,7 @@ typedef struct
     /* altitude relative to lift off place */
     uint32_t relative_alt_time;
     float relative_alt;
+    float relative_vertical_speed;
 
     ControlData_TypeDef RC_Control_Data;
 
@@ -216,7 +217,7 @@ typedef struct
     bool (*get_sec_imu_range)(uint8_t *acc_range, uint16_t *gye_range);
     bool (*get_baro_init_state)(bool *state);
     bool (*get_mag_init_state)(bool *state);
-    bool (*get_relative_alt)(uint32_t *time_stamp, float *alt);
+    bool (*get_relative_alt)(uint32_t *time_stamp, float *alt, float *alt_speed);
     bool (*get_raw_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);
     bool (*get_scaled_imu)(uint32_t *time_stamp, float *acc_scale, float *gyr_scale, float *acc_x, float *acc_y, float *acc_z, float *gyr_x, float *gyr_y, float *gyr_z, float *tmp, uint8_t *err);
     bool (*get_raw_mag)(uint32_t *time_stamp, float *scale, float *mag_x, float *mag_y, float *mag_z, uint8_t *err);

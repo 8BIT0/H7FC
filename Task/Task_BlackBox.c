@@ -84,7 +84,7 @@ static SrvBlackBox_TypeDef *p_blackbox = NULL;
 DataPipe_CreateDataObj(SrvIMU_UnionData_TypeDef,  LogImu_Data);
 DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, LogBaro_Data);
 DataPipe_CreateDataObj(IMUAtt_TypeDef,            LogAtt_Data);
-DataPipe_CreateDataObj(AltData_TypeDef,           LogAlt_Data);
+DataPipe_CreateDataObj(RelMov_TypeDef,            LogAlt_Data);
 DataPipe_CreateDataObj(ExpControlData_TypeDef,    LogCtl_Data);
 
 /* internal function */
@@ -381,7 +381,7 @@ static void TaskBlackBox_PipeTransFinish_Callback(DataPipeObj_TypeDef *obj)
             else if (obj == &Altitude_Log_DataPipe)
             {
                 /* set altitude */
-                att_alt_data.alt = DataPipe_DataObj(LogAlt_Data).alt;
+                att_alt_data.alt = DataPipe_DataObj(LogAlt_Data).pos;
                 alt_update = true;
             }
         }

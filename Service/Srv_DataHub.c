@@ -15,8 +15,7 @@ DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Enable);
 DataPipe_CreateDataObj(SrvSensorMonitor_GenReg_TypeDef, Sensor_Init);
 DataPipe_CreateDataObj(IMUAtt_TypeDef, Hub_Attitude);
 DataPipe_CreateDataObj(SrvBaro_UnionData_TypeDef, Hub_Baro_Data);
-DataPipe_CreateDataObj(PosData_TypeDef, Hub_Pos);
-DataPipe_CreateDataObj(AltData_TypeDef, Hub_Alt);
+DataPipe_CreateDataObj(RelMov_TypeDef, Hub_Alt);
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_PriIMU_Range);
 #if (IMU_SUM == 2)
 DataPipe_CreateDataObj(SrvIMU_Range_TypeDef, Hub_SecIMU_Range);
@@ -58,7 +57,7 @@ static bool SrvDataHub_Get_CLI_State(bool *state);
 static bool SrvDataHub_Get_Upgrade_State(bool *state);
 static bool SrvDataHub_Get_PriIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
 static bool SrvDataHub_Get_SecIMU_Range(uint8_t *acc_range, uint16_t *gyr_range);
-static bool SrvDataHub_Get_RelativeAlt(uint32_t *time_stamp, float *alt);
+static bool SrvDataHub_Get_RelativeAlt(uint32_t *time_stamp, float *alt, float *alt_speed);
 static bool SrvDataHub_Get_Convert_ControlData(uint32_t *time_stamp, bool *arm, bool *failsafe, uint8_t *mode, float *pitch, float *roll, float *gx, float *gy, float *gz);
 
 static bool SrvDataHub_Set_CLI_State(bool state);
@@ -207,7 +206,8 @@ static void SrvDatHub_Alt_DataPipe_Finish_Callback(DataPipeObj_TypeDef *obj)
             SrvDataHub_Monitor.inuse_reg.bit.relative_alt = false;
             
         SrvDataHub_Monitor.data.relative_alt_time = DataPipe_DataObj(Hub_Alt).time;
-        SrvDataHub_Monitor.data.relative_alt = DataPipe_DataObj(Hub_Alt).alt;
+        SrvDataHub_Monitor.data.relative_alt = DataPipe_DataObj(Hub_Alt).pos;
+        SrvDataHub_Monitor.data.relative_vertical_speed = DataPipe_DataObj(Hub_Alt).vel;
 
         SrvDataHub_Monitor.update_reg.bit.relative_alt = false;
     }
@@ -634,7 +634,7 @@ reupdate_scaled_baro:
     return true;
 }
 
-static bool SrvDataHub_Get_RelativeAlt(uint32_t *time_stamp, float *alt)
+static bool SrvDataHub_Get_RelativeAlt(uint32_t *time_stamp, float *alt, float *alt_speed)
 {
     SrvDataHub_Monitor.inuse_reg.bit.relative_alt = true;
 
@@ -644,6 +644,9 @@ reupdate_relative_alt:
     
     if (alt)
         *alt = SrvDataHub_Monitor.data.relative_alt;
+
+    if (alt_speed)
+        *alt_speed = SrvDataHub_Monitor.data.relative_vertical_speed;
 
     if (!SrvDataHub_Monitor.inuse_reg.bit.relative_alt)
         goto reupdate_relative_alt;
