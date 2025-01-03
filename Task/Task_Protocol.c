@@ -3,7 +3,6 @@
 #include "HW_Def.h"
 #include "Srv_ComProto.h"
 #include "Srv_DataHub.h"
-#include "Srv_FileAdapter.h"
 #include "DataPipe.h"
 #include "Storage.h"
 #include "debug_util.h"
@@ -143,7 +142,7 @@ static FrameCTL_UpgradeMonitor_TypeDef Upgrade_Monitor = {
 };
 
 /* upgrade section */
-static bool TaskFrameCTL_Upgrade_Enable(bool state, FileInfo_TypeDef file_info, uint32_t port_addr, uint8_t port_type);
+static bool TaskFrameCTL_Upgrade_Enable(bool state, uint32_t port_addr, uint8_t port_type);
 static void TaskFrameCTL_Upgrade_StatePolling(bool cli);
 
 /* frame section */
@@ -211,9 +210,6 @@ void TaskFrameCTL_Init(uint32_t period)
 
     SrvOsCommon.delay_ms(50);
     DataPipe_Enable(&VCP_Connect_smp_DataPipe);
-
-    /* init upgrade */
-    memset(&Upgrade_Monitor.file_info, 0, sizeof(Upgrade_Monitor.file_info));
 }
 
 void TaskFrameCTL_Core(void const *arg)
@@ -635,7 +631,7 @@ static void TaskFrameCTL_Upgrade_Send(uint8_t *p_buf, uint16_t size)
     }
 }
 
-static bool TaskFrameCTL_Upgrade_Enable(bool state, FileInfo_TypeDef file_info, uint32_t port_addr, uint8_t port_type)
+static bool TaskFrameCTL_Upgrade_Enable(bool state, uint32_t port_addr, uint8_t port_type)
 {
     bool arm_state = DRONE_ARM;
 
@@ -656,8 +652,6 @@ static bool TaskFrameCTL_Upgrade_Enable(bool state, FileInfo_TypeDef file_info, 
             SrvDataHub.set_upgrade_state(true);
             SrvOsCommon.exit_critical();
         }
-        else
-            Upgrade_Monitor.file_info = file_info;
 
         /* suspend Telemetry task */
         /* when upgrade finish or abort resume telemtry task */
@@ -675,7 +669,7 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
     Shell *shell_obj = Shell_GetInstence();
     uint16_t logout_size = 0;
 
-    stage = SrvUpgrade.polling(sys_time, TaskFrameCTL_Upgrade_Send);
+    stage = SrvUpgrade.polling(sys_time);
 
     switch ((uint8_t) stage)
     {
@@ -690,7 +684,6 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
                 shellPrint(shell_obj, "[ Upgrade ] Error\r\n");
             
             Upgrade_Monitor.is_enable = false;
-            memset(&Upgrade_Monitor.file_info, 0, sizeof(Upgrade_Monitor.file_info));
             Upgrade_Monitor.port_addr = 0;
             SrvOsCommon.enter_critical();
             SrvDataHub.set_upgrade_state(false);
@@ -711,17 +704,6 @@ static void TaskFrameCTL_Upgrade_StatePolling(bool cli)
             break;
 
         case Stage_Process_PortData:
-            logout_size = SrvUpgrade.get_log(CLIPrintBuf, sizeof(CLIPrintBuf));
-            if (logout_size)
-            {
-                if (cli && shell_obj)
-                {
-                    SrvOsCommon.delay_ms(10);
-                    shellPrint(shell_obj, "[ Upgrade Info ] %s", CLIPrintBuf);
-                }
-
-                SrvUpgrade.clear_log();
-            }
             break;
 
         default:
@@ -1082,51 +1064,4 @@ static void TaskFermeCTL_CLI_DisableControl(void)
     }
 }
 SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, CLI_Disable,  TaskFermeCTL_CLI_DisableControl, CLI Enable Control);
-
-static void TaskFrameCTL_FileAccept_Enable(uint8_t type)
-{
-    Shell *shell_obj = Shell_GetInstence();
-    FileInfo_TypeDef Info_tmp;
-
-    memset(&Info_tmp, 0, sizeof(FileInfo_TypeDef));
-    if (shell_obj)
-    {
-        shellPrint(shell_obj, "\r\n\r\n");
-        shellPrint(shell_obj, "[ File Adapter Enable ]\r\n");
-        shellPrint(shell_obj, "[ File Type List Down Below ]\r\n");
-        shellPrint(shell_obj, "\t1 ---- App    Firmware File\r\n");
-        shellPrint(shell_obj, "\r\n");
-    
-        switch (type)
-        {
-            case FileType_APP:
-                shellPrint(shell_obj, "[ Waitting App Firmware ]\r\n");
-                break;
-
-            default:
-                shellPrint(shell_obj, "Unknown File Type\r\n");
-                shellPrint(shell_obj, "Disable File Adapter\r\n");
-                return;
-        }
-        
-        shellPrint(shell_obj, "[ YMODEM Enable ]\r\n");
-
-        Info_tmp.File_Type = type;
-        Info_tmp.Adapter_Type = SrvFileAdapter_Frame_YModem;
-        Info_tmp.SW_Ver[0] = AppVer[0];
-        Info_tmp.SW_Ver[1] = AppVer[1];
-        Info_tmp.SW_Ver[2] = AppVer[2];
-        Info_tmp.HW_Ver[0] = HWVer[0];
-        Info_tmp.HW_Ver[1] = HWVer[1];
-        Info_tmp.HW_Ver[2] = HWVer[2];
-        Info_tmp.File_Size = 0;
-
-        if (!TaskFrameCTL_Upgrade_Enable(true, Info_tmp, CLI_Monitor.port_addr, CLI_Monitor.type))
-            /* failed to switch to upgrade mode */
-            shellPrint(shell_obj, "Failed to enable upgrade mode\r\n");
-
-        SrvUpgrade.set_fileinfo(Upgrade_Monitor.file_info);
-    }
-}
-SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_RETURN, file_rec, TaskFrameCTL_FileAccept_Enable, In File Receive Mode);
 

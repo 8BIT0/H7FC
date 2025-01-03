@@ -10,7 +10,6 @@ extern "C" {
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include "Srv_FileAdapter.h"
 
 #define Max_App_Num 32
 
@@ -71,17 +70,13 @@ typedef union
 typedef struct
 {
     SrvUpgrade_CTLReg_TypeDef CTLReg;
-    FileInfo_TypeDef AF_Info;   /* app firmware info */
 } SrvUpgradeInfo_TypeDef;
 #pragma pack()
 
 typedef struct
 {
     bool (*init)(void);
-    SrvUpgrade_Stage_List (*polling)(uint32_t sys_time, SrvFileAdapter_Send_Func send);
-    void (*set_fileinfo)(const FileInfo_TypeDef info);
-    uint16_t (*get_log)(uint8_t *p_info, uint16_t len);
-    void (*clear_log)(void);
+    SrvUpgrade_Stage_List (*polling)(uint32_t sys_time);
     bool (*push_data)(uint32_t sys_time, uint8_t *p_buf, uint16_t len);
 } SrvUpgrade_TypeDef;
 

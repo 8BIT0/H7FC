@@ -153,7 +153,6 @@ typedef struct
 {
     bool is_enable;
     bool flash_enable;
-    FileInfo_TypeDef file_info;
     uint32_t port_addr;
     FrameCTL_PortType_List port_type;
 } FrameCTL_UpgradeMonitor_TypeDef;

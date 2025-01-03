@@ -96,7 +96,6 @@ Service/Srv_ComProto.c \
 Service/Srv_DataHub.c \
 Service/Srv_OsCommon.c \
 Service/Srv_SensorMonitor.c \
-Service/Srv_FileAdapter.c \
 Service/Srv_Upgrade.c \
 Service/Srv_BlackBox_Chip.c \
 Service/Srv_BlackBox_Card.c \
