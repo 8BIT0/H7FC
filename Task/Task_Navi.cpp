@@ -247,7 +247,7 @@ static void TaskNavi_Update_BaroAltEst(float baro, float acc_dif, RelMov_TypeDef
 
     if (!init)
     {
-        BaroAltEstimate_Init(baro, (TaskNavi_Monitor.period / 1000.0f), 0.28f, 0.0003f);
+        BaroAltEstimate_Init(baro, delta_T, 0.28f, 0.00004f);
         init = true;
     }
     else
