@@ -963,7 +963,8 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
                         InUse_PriIMU_Obj.OriData_ptr->gyr_int_lst[i] = InUse_PriIMU_Obj.OriData_ptr->gyr_int[i];
                     
                         /* over angular accelerate error detect */
-                        if (SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.org_gyr[i], PriIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
+                        if (SrvIMU_Detect_AngularOverSpeed(PriIMU_Data.org_gyr[i], PriIMU_Data_Lst.org_gyr[i], Sample_MsDiff) && \
+                            (PriIMU_Data.error_code != SrvIMU_Sample_Data_Gyr_Blunt))
                             PriIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                     }
                 }
@@ -1037,7 +1038,8 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
                         InUse_SecIMU_Obj.OriData_ptr->acc_int_lst[i] = InUse_SecIMU_Obj.OriData_ptr->acc_int[i];
                         InUse_SecIMU_Obj.OriData_ptr->gyr_int_lst[i] = InUse_SecIMU_Obj.OriData_ptr->gyr_int[i];
                     
-                        if (SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.org_gyr[i], SecIMU_Data_Lst.org_gyr[i], Sample_MsDiff))
+                        if (SrvIMU_Detect_AngularOverSpeed(SecIMU_Data.org_gyr[i], SecIMU_Data_Lst.org_gyr[i], Sample_MsDiff) && \
+                            (SecIMU_Data.error_code != SrvIMU_Sample_Data_Gyr_Blunt))
                             SecIMU_Data.error_code = SrvIMU_Sample_Over_Angular_Accelerate;
                     }
                 }
