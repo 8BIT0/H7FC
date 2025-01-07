@@ -2,6 +2,12 @@
  */
 #include "pid.h"
 
+#define Default_gP_Max_Rate 1.0f
+#define Default_gD_Max_Rate 1.0f
+
+#define Default_gP_Min_Rate 0.4f
+#define Default_gD_Min_Rate 0.4f
+
 /* internal function */
 static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
 static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
@@ -19,6 +25,9 @@ bool PID_Init(PIDObj_TypeDef *p_PIDObj, RC_Filter_Param_TypeDef rc_para)
     p_PIDObj->P_out = 0.0f;
     p_PIDObj->I_out = 0.0f;
     p_PIDObj->D_out = 0.0f;
+
+    p_PIDObj->gP_Rate = Default_gP_Max_Rate;
+    p_PIDObj->gD_Rate = Default_gD_Max_Rate;
 
     PID_Reset_ProcessVal(p_PIDObj);
 
@@ -69,10 +78,8 @@ static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
 {
     if (p_PIDObj == NULL)
         return false;
-        
-    /* limit diff range */
-    /* check integer first */
-    p_PIDObj->P_out = diff * p_PIDObj->gP;
+    
+    p_PIDObj->P_out = diff * p_PIDObj->gP * p_PIDObj->gP_Rate;
     return true;
 }
 
@@ -111,8 +118,35 @@ static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const floa
     if (p_PIDObj == NULL)
         return false;
     
-    p_PIDObj->D_out = p_PIDObj->gD * derivative;
+    p_PIDObj->D_out = p_PIDObj->gD * p_PIDObj->gD_Rate * derivative;
     p_PIDObj->lst_diff = diff;
     return true;
 }
 
+static void PID_P_DynamicTrim(PIDObj_TypeDef *p_PIDObj, bool en, float rate)
+{
+    if (p_PIDObj == NULL)
+        return;
+
+    p_PIDObj->gP_Rate = Default_gP_Max_Rate;
+    if (en)
+    {
+        p_PIDObj->gP_Rate = Default_gP_Min_Rate;
+        if (rate > Default_gP_Min_Rate)
+            p_PIDObj->gP_Rate = rate;
+    }
+}
+
+static void PID_D_DynamicTrim(PIDObj_TypeDef *p_PIDObj, bool en, float rate)
+{
+    if (p_PIDObj == NULL)
+        return;
+
+    p_PIDObj->gD_Rate = Default_gD_Max_Rate;
+    if (en)
+    {
+        p_PIDObj->gD_Rate = Default_gD_Min_Rate;
+        if (rate > Default_gD_Min_Rate)
+            p_PIDObj->gD_Rate = rate;
+    }
+}

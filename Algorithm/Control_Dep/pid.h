@@ -29,6 +29,7 @@ typedef struct
 
     /* add member in this section */
     float gP;
+    float gP_Rate;
     float P_out;
     
     float gI;
@@ -39,6 +40,7 @@ typedef struct
     float I_out;
 
     float gD;
+    float gD_Rate;
     float lst_diff;
     float D_out;
     RC_Filter_Param_TypeDef Dtrim_RC;
