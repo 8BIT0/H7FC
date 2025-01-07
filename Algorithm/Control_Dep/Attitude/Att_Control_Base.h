@@ -8,6 +8,7 @@ extern "C" {
 /* attitude and angular speed */
 typedef struct
 {
+    float throttle_percent;
     float pitch;
     float roll;
     float gyro_x;

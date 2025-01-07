@@ -1,11 +1,12 @@
 #include "Att_Casecade_PID.h"
 
-#define PARA_AMPLIFICATE(x)     (uint16_t)(x * 1000) 
-#define ATTITUDE_CONTROL_RATE   1
-#define ATTITUDE_INTEGRAL_RANGE 20
+#define DYNAMIC_TUNE_THROTTLE_POINT 0.4f
 
-#define ATT_DTRIM_RC_F_CUT 20
-#define ANG_DTRIM_RC_F_CUT 100
+#define PARA_AMPLIFICATE(x)         (uint16_t)(x * 1000) 
+#define ATTITUDE_INTEGRAL_RANGE     20
+
+#define ATT_DTRIM_RC_F_CUT          20
+#define ANG_DTRIM_RC_F_CUT          100
 
 /* Casecade PID in process paramter */
 typedef struct
@@ -215,12 +216,16 @@ static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
 
 static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttControl_In_TypeDef mea, AngControl_Out_TypeDef *ctl_out)
 {
+    float dynamic_tune_rate = 1.0f;
+    bool dynamic_tune_en = false;
+
     if (ctl_out == NULL)
         return false;
 
     if (!angular_only)
     {
         /* attitude loop */
+        /* dynamic trim is unavilable in this loop */
         /* Pitch PID update */
         PID_Update(&ProcessPara.pitch, sys_ms, mea.pitch, exp.pitch);
         exp.gyro_y = ProcessPara.pitch.fout;
@@ -237,6 +242,22 @@ static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_T
         ProcessPara.roll.lst_diff = 0.0f;
         ProcessPara.roll.Integral = 0.0f;
     }
+
+    if (exp.throttle_percent >= DYNAMIC_TUNE_THROTTLE_POINT)
+    {
+        dynamic_tune_en = true;
+
+        /* comput dynamic tune rate */
+        dynamic_tune_rate -= (exp.throttle_percent - DYNAMIC_TUNE_THROTTLE_POINT);
+    }
+
+    PID_P_DynamicTrim(&ProcessPara.g_x, dynamic_tune_en, dynamic_tune_rate);
+    PID_P_DynamicTrim(&ProcessPara.g_y, dynamic_tune_en, dynamic_tune_rate);
+    PID_P_DynamicTrim(&ProcessPara.g_z, dynamic_tune_en, dynamic_tune_rate);
+
+    PID_D_DynamicTrim(&ProcessPara.g_x, dynamic_tune_en, dynamic_tune_rate);
+    PID_D_DynamicTrim(&ProcessPara.g_y, dynamic_tune_en, dynamic_tune_rate);
+    PID_D_DynamicTrim(&ProcessPara.g_z, dynamic_tune_en, dynamic_tune_rate);
 
     /* angular speed loop */
     /* Gyro X PID update */

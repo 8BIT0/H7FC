@@ -283,6 +283,7 @@ static void TaskControl_FlightControl_Polling(ControlData_TypeDef *exp_ctl_val, 
     {
         if (exp_ctl_val->update_time_stamp && !exp_ctl_val->fail_safe)
         {
+            att_ctl_exp.throttle_percent = exp_ctl_val->throttle_percent;
             att_ctl_exp.pitch  = TaskControl_Convert_CtlData(exp_ctl_val->pitch_percent, TaskControl_Monitor.ctl_para.pitch_range, TaskControl_Monitor.ctl_para.att_rate);
             att_ctl_exp.roll   = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.roll_range,  TaskControl_Monitor.ctl_para.att_rate);
             att_ctl_exp.gyro_x = TaskControl_Convert_CtlData(exp_ctl_val->roll_percent,  TaskControl_Monitor.ctl_para.gx_range,    TaskControl_Monitor.ctl_para.gx_rate);
