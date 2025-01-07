@@ -91,23 +91,23 @@ static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void)
     para.Roll_Para.gI_Min       = -10;
     para.Roll_Para.gD           = 0.5;
 
-    para.GyroX_Para.gP          = 1.5;
-    para.GyroX_Para.gI          = 0.15;
+    para.GyroX_Para.gP          = 1.4;
+    para.GyroX_Para.gI          = 0.006;
     para.GyroX_Para.gI_Max      = 100;
     para.GyroX_Para.gI_Min      = -100;
-    para.GyroX_Para.gD          = 0.5;
+    para.GyroX_Para.gD          = 1.8;
 
-    para.GyroY_Para.gP          = 1.5;
-    para.GyroY_Para.gI          = 0.15;
+    para.GyroY_Para.gP          = 1.4;
+    para.GyroY_Para.gI          = 0.006;
     para.GyroY_Para.gI_Max      = 100;
     para.GyroY_Para.gI_Min      = -100;
-    para.GyroY_Para.gD          = 0.5;
+    para.GyroY_Para.gD          = 1.8;
 
-    para.GyroZ_Para.gP          = 1.2;
-    para.GyroZ_Para.gI          = 0.0;
+    para.GyroZ_Para.gP          = 1.3;
+    para.GyroZ_Para.gI          = 0.008;
     para.GyroZ_Para.gI_Max      = 50;
     para.GyroZ_Para.gI_Min      = -50;
-    para.GyroZ_Para.gD          = 0.0;
+    para.GyroZ_Para.gD          = 1.2;
 
     return para;
 }

@@ -318,7 +318,7 @@ static float RC_Filter_Update(RC_Object_Handle hdl, uint32_t sys_ms, float in)
 
     if (To_RCParam_Ptr(hdl)->lst_tick)
     {
-        To_RCParam_Ptr(hdl)->dt = 1.0f / (sys_ms - To_RCParam_Ptr(hdl)->lst_tick);
+        To_RCParam_Ptr(hdl)->dt = (sys_ms - To_RCParam_Ptr(hdl)->lst_tick) / 1000.0f;
         
         /* comput alpha */
         alpha = 2 * PI * To_RCParam_Ptr(hdl)->f_cut * To_RCParam_Ptr(hdl)->dt;
