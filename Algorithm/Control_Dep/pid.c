@@ -123,7 +123,7 @@ static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const floa
     return true;
 }
 
-static void PID_P_DynamicTrim(PIDObj_TypeDef *p_PIDObj, bool en, float rate)
+void PID_P_DynamicTrim(PIDObj_TypeDef *p_PIDObj, bool en, float rate)
 {
     if (p_PIDObj == NULL)
         return;
@@ -137,7 +137,7 @@ static void PID_P_DynamicTrim(PIDObj_TypeDef *p_PIDObj, bool en, float rate)
     }
 }
 
-static void PID_D_DynamicTrim(PIDObj_TypeDef *p_PIDObj, bool en, float rate)
+void PID_D_DynamicTrim(PIDObj_TypeDef *p_PIDObj, bool en, float rate)
 {
     if (p_PIDObj == NULL)
         return;

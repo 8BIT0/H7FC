@@ -49,6 +49,8 @@ typedef struct
 bool PID_Init(PIDObj_TypeDef *p_PIDObj, RC_Filter_Param_TypeDef rc_para);
 void PID_Reset_ProcessVal(PIDObj_TypeDef *p_PIDObj);
 bool PID_Update(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float mea_in, const float exp_in);
+void PID_P_DynamicTrim(PIDObj_TypeDef *p_PIDObj, bool en, float rate);
+void PID_D_DynamicTrim(PIDObj_TypeDef *p_PIDObj, bool en, float rate);
 
 #ifdef __cplusplus
 }
