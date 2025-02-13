@@ -21,7 +21,7 @@ extern "C" {
 #define IMU_Commu_TimeOut 1000
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
 
-#define GYR_STATIC_CALIB_CYCLE 1000
+#define GYR_STATIC_CALIB_CYCLE 100
 
 #define IMU_DATA_SIZE sizeof(SrvIMU_Data_TypeDef)
 
