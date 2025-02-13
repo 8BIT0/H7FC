@@ -821,6 +821,9 @@ static void SrvIMU_Calib_GyroZeroOffset(SrvIMU_CalibMonitor_TypeDef *cali_monito
                 for (i = Axis_X; i < Axis_Sum; i ++)
                 {
                     cali_monitor->z_offset[i] += cali_monitor->avg[i];
+                    cali_monitor->avg[i] = 0.0f;
+                    cali_monitor->max[i] = 0.0f;
+                    cali_monitor->min[i] = 0.0f;
                 }
 
                 /* comput zero offset */
