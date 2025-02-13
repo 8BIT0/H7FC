@@ -68,7 +68,6 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.imu = true;
             obj->statistic_imu = &obj->statistic_list[list_index];
             obj->statistic_imu->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.imu);
-            obj->statistic_imu->is_calid = Calib_None; 
             list_index ++;
         }
         else
@@ -87,12 +86,12 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.mag = true;
             obj->statistic_mag = &obj->statistic_list[list_index];
             obj->statistic_mag->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.mag);
-            obj->statistic_mag->is_calid = Calib_None;
+            obj->statistic_mag->is_calid = Calib_Ready;
             list_index ++;
         }
         else
         {
-            obj->statistic_mag->is_calid = Calib_None;
+            obj->statistic_mag->is_calid = Calib_Ready;
             obj->init_state_reg.bit.mag = false;
         }
 
@@ -104,12 +103,12 @@ static bool SrvSensorMonitor_Init(SrvSensorMonitorObj_TypeDef *obj)
             obj->init_state_reg.bit.baro = true;
             obj->statistic_baro = &obj->statistic_list[list_index];
             obj->statistic_baro->set_period = SrvSensorMonitor_Get_FreqVal(obj->freq_reg.bit.baro);
-            obj->statistic_baro->is_calid = Calib_None;
+            obj->statistic_baro->is_calid = Calib_Ready;
             list_index ++;
         }
         else
         {
-            obj->statistic_baro->is_calid = Calib_None;
+            obj->statistic_baro->is_calid = Calib_Ready;
             obj->init_state_reg.bit.baro = false;
         }
 
@@ -640,15 +639,6 @@ static bool SrvSensorMonitor_SampleCTL(SrvSensorMonitorObj_TypeDef *obj)
     
     /* imu single sampling overhead is about 60us */
     state |= SrvSensorMonitor_IMU_SampleCTL(obj);
-    if (obj->statistic_imu->is_calid == Calib_Start)
-    {
-        obj->statistic_imu->is_calid = Calib_Failed;
-        if (SrvIMU.set_calib)
-            obj->statistic_imu->is_calid = SrvIMU.set_calib(GYRO_CALIB_CYCLE);
-    }
-    else if (obj->statistic_imu->is_calid != Calib_Failed)
-        obj->statistic_imu->is_calid = SrvIMU.get_calib();
-    
     state |= SrvSensorMonitor_Mag_SampleCTL(obj);
 
     /* baro single sampling overhead is about 230us */
@@ -673,7 +663,6 @@ static GenCalib_State_TypeList SrvSensorMonitor_Set_Module_Calib(SrvSensorMonito
     {
         switch((uint8_t) type)
         {
-            case SrvSensorMonitor_Type_IMU:  obj->statistic_imu->is_calid = Calib_Start;  break;
             case SrvSensorMonitor_Type_BARO: obj->statistic_baro->is_calid = Calib_Start; break;
             case SrvSensorMonitor_Type_MAG:  obj->statistic_mag->is_calid = Calib_Start;  break;
             default: break;

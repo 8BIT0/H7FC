@@ -20,12 +20,8 @@ extern "C" {
 
 #define IMU_Commu_TimeOut 1000
 #define MPU_MODULE_INIT_RETRY 10 // init retry count 10
-#define ANGULAR_SPEED_ACCURACY 1000
 
 #define GYR_STATIC_CALIB_CYCLE 1000
-#define GYR_STATIC_CALIB_ACCURACY ANGULAR_SPEED_ACCURACY
-#define GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD (3 * GYR_STATIC_CALIB_ACCURACY)
-#define GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD (2 * GYR_STATIC_CALIB_ACCURACY)
 
 #define IMU_DATA_SIZE sizeof(SrvIMU_Data_TypeDef)
 
@@ -147,6 +143,12 @@ typedef struct
     GenCalib_State_TypeList state;
     uint16_t calib_cycle;
     uint16_t cur_cycle;
+
+    float max[Axis_Sum];
+    float min[Axis_Sum];
+    float avg[Axis_Sum];
+
+    float z_offset[Axis_Sum];
 }SrvIMU_CalibMonitor_TypeDef;
 
 typedef struct
@@ -158,8 +160,6 @@ typedef struct
     float (*get_max_angular_speed_diff)(void);
     bool (*get_type)(SrvIMU_Module_Type module, SrvIMU_SensorID_List *type);
     void (*error_proc)(void);
-    GenCalib_State_TypeList (*get_calib)(void);
-    GenCalib_State_TypeList (*set_calib)(uint32_t calib_cycle);
 } SrvIMU_TypeDef;
 
 extern SrvIMU_TypeDef SrvIMU;

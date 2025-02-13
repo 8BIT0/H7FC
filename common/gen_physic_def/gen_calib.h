@@ -7,7 +7,7 @@ extern "C" {
 
 typedef enum
 {
-    Calib_None = 0,
+    Calib_Ready = 0,
     Calib_Start,
     Calib_InProcess,
     Calib_Done,

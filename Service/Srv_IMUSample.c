@@ -22,7 +22,10 @@
  * Angular Speed Over Speed Threshold
  * Angular Speed Per Millscond
  */
-#define ANGULAR_ACCECLERATION_THRESHOLD 200 / 1.0f // angular speed accelerate from 0 to 100 deg/s in 1 Ms
+#define ANGULAR_ACCECLERATION_THRESHOLD 200 / 1.0f      /* angular speed accelerate from 0 to 100 deg/s in 1 Ms */
+#define MOVING_DETECT_CONDITION_1 1.0                   /* unit deg/s */
+#define MOVING_DETECT_CONDITION_2 (1000.0f / 3600.0f)   /* unit deg/s */
+#define ANGULAR_SPEED_ACCURACY 1000
 
 typedef void (*SrvIMU_SetDataReady_Callback)(void *obj);
 typedef bool (*SrvIMU_GetDataReady_Callback)(void *obj);
@@ -48,38 +51,6 @@ typedef struct
 
 static uint32_t SrvIMU_Reupdate_Statistics_CNT = 0;
 
-/* PriIMU Butterworth filter object handle */
-static BWF_Object_Handle PriIMU_Gyr_LPF_Handle[Axis_Sum] = {0};
-static BWF_Object_Handle PriIMU_Acc_LPF_Handle[Axis_Sum] = {0};
-
-#if (IMU_SUM > 1)
-/* SecIMU Butterworth filter object handle */
-static BWF_Object_Handle SecIMU_Gyr_LPF_Handle[Axis_Sum] = {0};
-static BWF_Object_Handle SecIMU_Acc_LPF_Handle[Axis_Sum] = {0};
-#endif
-
-/* Gyro Calibration Monitor */
-static SrvIMU_CalibMonitor_TypeDef Gyro_Calib_Monitor;
-
-/* Gyro Calibration Zero Offset Val */
-static float PriIMU_Gyr_ZeroOffset[Axis_Sum] = {0.0f};
-#if (IMU_SUM > 1)
-static float SecIMU_Gyr_ZeroOffset[Axis_Sum] = {0.0f};
-#endif
-
-/*
- *   PriIMU -> MPU6000
- *   SecIMU -> ICM42688P
- */
-static SrvMpu_Reg_TypeDef SrvMpu_Init_Reg;
-static SrvMpu_Reg_TypeDef SrvMpu_Update_Reg;
-static SrvIMU_Data_TypeDef PriIMU_Data;
-static SrvIMU_Data_TypeDef SecIMU_Data;
-static SrvIMU_Data_TypeDef PriIMU_Data_Lst;
-static SrvIMU_Data_TypeDef SecIMU_Data_Lst;
-static SrvIMU_Data_TypeDef IMU_Data;
-static SrvIMU_Data_TypeDef IMU_Data_Lst;
-static Error_Handler SrvMPU_Error_Handle = 0;
 
 /* internal variable */
 #if defined STM32H743xx
@@ -96,8 +67,40 @@ static DevICM20602Obj_TypeDef ICM20602Obj;
 static DevICM426xxObj_TypeDef ICM42688PObj;
 static DevICM426xxObj_TypeDef ICM42605Obj;
 
+static Error_Handler SrvMPU_Error_Handle = 0;
+
+/*
+ *   PriIMU -> MPU6000
+ *   SecIMU -> ICM42688P
+ */
+static SrvMpu_Reg_TypeDef SrvMpu_Init_Reg;
+static SrvMpu_Reg_TypeDef SrvMpu_Update_Reg;
+static SrvIMU_Data_TypeDef IMU_Data;
+static SrvIMU_Data_TypeDef IMU_Data_Lst;
+
+static SrvIMU_Data_TypeDef PriIMU_Data;
+static SrvIMU_Data_TypeDef PriIMU_Data_Lst;
 static SrvIMU_InuseSensorObj_TypeDef InUse_PriIMU_Obj;
+
+/* PriIMU Butterworth filter object handle */
+static BWF_Object_Handle PriIMU_Gyr_LPF_Handle[Axis_Sum] = {0};
+static BWF_Object_Handle PriIMU_Acc_LPF_Handle[Axis_Sum] = {0};
+
+/* Pri Gyro Calibration Monitor */
+static SrvIMU_CalibMonitor_TypeDef PriGyro_Calib_Monitor;
+
+#if (IMU_SUM > 1)
+static SrvIMU_Data_TypeDef SecIMU_Data
+static SrvIMU_Data_TypeDef SecIMU_Data_Lst;
 static SrvIMU_InuseSensorObj_TypeDef InUse_SecIMU_Obj;
+
+/* SecIMU Butterworth filter object handle */
+static BWF_Object_Handle SecIMU_Gyr_LPF_Handle[Axis_Sum] = {0};
+static BWF_Object_Handle SecIMU_Acc_LPF_Handle[Axis_Sum] = {0};
+
+/* Sec Gyro Calibration Monitor */
+static SrvIMU_CalibMonitor_TypeDef SecGyro_Calib_Monitor;
+#endif
 
 /************************************************************************ Error Tree Item ************************************************************************/
 static void SrvIMU_PriDev_Filter_InitError(int16_t code, uint8_t *p_arg, uint16_t size);
@@ -275,9 +278,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode);
 static bool SrvIMU_Get_Data(SrvIMU_Module_Type type, SrvIMU_Data_TypeDef *data);
 static void SrvIMU_ErrorProc(void);
 static float SrvIMU_Get_MaxAngularSpeed_Diff(void);
-static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle, uint16_t *calib_cycle_cnt, float *pri_gyr, float *sec_gyr);
-static GenCalib_State_TypeList SrvIMU_Set_Calib(uint32_t calb_cycle);
-static GenCalib_State_TypeList SrvIMU_Get_Calib(void);
+static void SrvIMU_Calib_GyroZeroOffset(SrvIMU_CalibMonitor_TypeDef *cali_monitor, float *gyr);
 static bool SrvIMU_Get_Range(SrvIMU_Module_Type module, SrvIMU_Range_TypeDef *range);
 static bool SrvIMU_Get_ModuleType(SrvIMU_Module_Type module, SrvIMU_SensorID_List *type);
 
@@ -303,8 +304,6 @@ SrvIMU_TypeDef SrvIMU = {
     .get_data = SrvIMU_Get_Data,
     .get_range = SrvIMU_Get_Range,
     .error_proc = SrvIMU_ErrorProc,
-    .set_calib = SrvIMU_Set_Calib,
-    .get_calib = SrvIMU_Get_Calib,
     .get_type = SrvIMU_Get_ModuleType,
     .get_max_angular_speed_diff = SrvIMU_Get_MaxAngularSpeed_Diff,
 };
@@ -318,22 +317,18 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
     CREATE_FILTER_PARAM_OBJ(Acc, 2, 50Hz, 1K, Acc_Filter_Ptr);
 
     memset(&InUse_PriIMU_Obj, 0, sizeof(InUse_PriIMU_Obj));
-    memset(&InUse_SecIMU_Obj, 0, sizeof(InUse_SecIMU_Obj));
 
     InUse_PriIMU_Obj.type = SrvIMU_Dev_None;
-    InUse_SecIMU_Obj.type = SrvIMU_Dev_None;
 
     memset(&PriIMU_Data, 0, sizeof(PriIMU_Data));
-    memset(&SecIMU_Data, 0, sizeof(SecIMU_Data));
-
     memset(&PriIMU_Data_Lst, 0, sizeof(PriIMU_Data_Lst));
-    memset(&SecIMU_Data_Lst, 0, sizeof(SecIMU_Data_Lst));
 
     /* init gyro calibration monitor */
-    Gyro_Calib_Monitor.state = Calib_Start;
-    Gyro_Calib_Monitor.calib_cycle = GYR_STATIC_CALIB_CYCLE;
-    Gyro_Calib_Monitor.cur_cycle = Gyro_Calib_Monitor.calib_cycle;
-
+    memset(&PriGyro_Calib_Monitor, 0, sizeof(PriGyro_Calib_Monitor));
+    PriGyro_Calib_Monitor.state = Calib_Ready;
+    PriGyro_Calib_Monitor.calib_cycle = GYR_STATIC_CALIB_CYCLE;
+    PriGyro_Calib_Monitor.cur_cycle = 0;
+     
     /* create error log handle */
     SrvMPU_Error_Handle = ErrorLog.create("SrvIMU_Error");
 
@@ -372,6 +367,19 @@ static SrvIMU_ErrorCode_List SrvIMU_Init(void)
         ErrorLog.trigger(SrvMPU_Error_Handle, PriIMU_Init_State, (uint8_t *)&InUse_PriIMU_Obj, sizeof(InUse_PriIMU_Obj));
 
 #if (IMU_SUM > 1)
+    memset(&InUse_SecIMU_Obj, 0, sizeof(InUse_SecIMU_Obj));
+    
+    InUse_SecIMU_Obj.type = SrvIMU_Dev_None;
+
+    memset(&SecIMU_Data, 0, sizeof(SecIMU_Data));
+    memset(&SecIMU_Data_Lst, 0, sizeof(SecIMU_Data_Lst));
+    
+    /* init gyro calibration monitor */
+    memset(&SecGyro_Calib_Monitor, 0, sizeof(SecGyro_Calib_Monitor));
+    SecGyro_Calib_Monitor.state = Calib_Ready;
+    SecGyro_Calib_Monitor.calib_cycle = GYR_STATIC_CALIB_CYCLE;
+    SecGyro_Calib_Monitor.cur_cycle = 0;
+
     SrvIMU_ErrorCode_List SecIMU_Init_State = SrvIMU_SecIMU_Init();
     
     if (SecIMU_Init_State == SrvIMU_No_Error)
@@ -769,120 +777,89 @@ static SrvIMU_SampleErrorCode_List SrvIMU_DataCheck(IMUData_TypeDef *data, uint8
     return SrvIMU_Sample_NoError;
 }
 
-static GenCalib_State_TypeList SrvIMU_Set_Calib(uint32_t calib_cycle)
+/* dynamic comput zero offset */
+static void SrvIMU_Calib_GyroZeroOffset(SrvIMU_CalibMonitor_TypeDef *cali_monitor, float *gyr)
 {
-    if((Gyro_Calib_Monitor.state != Calib_Start) || (Gyro_Calib_Monitor.state != Calib_InProcess))
+    uint8_t i = 0;
+
+    if ((cali_monitor->state == NULL) || (gyr == NULL))
+        return;
+
+    switch (cali_monitor->state)
     {
-        Gyro_Calib_Monitor.state = Calib_Start;
-        Gyro_Calib_Monitor.calib_cycle = calib_cycle;
-        Gyro_Calib_Monitor.cur_cycle = calib_cycle;
-        return Calib_InProcess;
-    }
-
-    return Gyro_Calib_Monitor.state;
-}
-
-static GenCalib_State_TypeList SrvIMU_Get_Calib(void)
-{
-    return Gyro_Calib_Monitor.state;
-}
-
-static GenCalib_State_TypeList SrvIMU_Calib_GyroZeroOffset(uint32_t calib_cycle, uint16_t *calib_cycle_cnt, float *pri_gyr, float *sec_gyr)
-{
-    uint8_t i = Axis_X;
-    GenCalib_State_TypeList state = Calib_Failed;
-    static int16_t lst_pri_gyr[Axis_Sum] = {0};
-    static int16_t PriIMU_Prc_Gyr_ZeroOffset[Axis_Sum] = {0};
-
-    int16_t pri_gyr_tmp[Axis_Sum] = {0};
-
-    if(calib_cycle_cnt == NULL)
-        return Calib_Failed;
-
-#if (IMU_SUM > 1)
-    static int16_t lst_sec_gyr[Axis_Sum] = {0};
-    static int16_t SecIMU_Prc_Gyr_ZeroOffset[Axis_Sum] = {0};
-    int16_t sec_gyr_tmp[Axis_Sum] = {0};
-    
-    if((pri_gyr == NULL) || 
-       (sec_gyr == NULL))
-        goto reset_calib_var;
-#else
-    UNUSED(sec_gyr);
-
-    if(pri_gyr == NULL)
-        goto reset_calib_var;
-#endif
-
-    if(*calib_cycle_cnt)
-    {
-        for(i = Axis_X; i < Axis_Sum; i++)
-        {
-            pri_gyr_tmp[i] = (int16_t)(pri_gyr[i] * GYR_STATIC_CALIB_ACCURACY);
-
-             /* motion detect */
-            if((pri_gyr_tmp[i] >= GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD) || /* 3 deg/s */
-               (abs(pri_gyr_tmp[i] - lst_pri_gyr[i]) >= GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD))
+        case Calib_Ready:
+            cali_monitor->state = Calib_InProcess;
+            cali_monitor->cur_cycle = 1;
+        
+            for (i = Axis_X; i < Axis_Sum; i++)
             {
-                /* reset variable */
-                state = Calib_Failed;
-                goto reset_calib_var;
+                cali_monitor->avg[i] += gyr[i];
+                cali_monitor->max[i] = gyr[i];
+                cali_monitor->min[i] = gyr[i];
             }
-            
-            PriIMU_Prc_Gyr_ZeroOffset[i] += pri_gyr_tmp[i];
-            /* we need to keep sensor for static statment for entiry calibration proce */
-            lst_pri_gyr[i] = pri_gyr_tmp[i];
+            break;
 
-#if (IMU_SUM > 1)
-            sec_gyr_tmp[i] = (int16_t)(sec_gyr[i] * GYR_STATIC_CALIB_ACCURACY);
-            
-            /* motion detect */
-            if((sec_gyr_tmp[i] >= GYR_STATIC_CALIB_ANGULAR_SPEED_THRESHOLD) ||
-               (abs(sec_gyr_tmp[i] - lst_sec_gyr[i]) >= GYR_STATIC_CALIB_ANGULAR_SPEED_DIFF_THRESHOLD))
+        case Calib_InProcess:
+            cali_monitor->cur_cycle ++;
+
+            if (cali_monitor->calib_cycle == cali_monitor->cur_cycle)
             {
-                /* reset variable */
-                state = Calib_Failed;
-                goto reset_calib_var;
+                cali_monitor->state = Calib_Ready;
+                
+                for (i = Axis_X; i < Axis_Sum; i++)
+                {
+                    cali_monitor->avg[i] /= cali_monitor->calib_cycle;
+
+                    if (fabs(cali_monitor->avg[i]) >= MOVING_DETECT_CONDITION_2)
+                    {
+                        cali_monitor->state = Calib_Failed;
+                        return;
+                    }
+                }
+
+                /* after all axis checked set zero offset */
+                for (i = Axis_X; i < Axis_Sum; i ++)
+                {
+                    cali_monitor->z_offset[i] += cali_monitor->avg[i];
+                }
+
+                /* comput zero offset */
+                cali_monitor->state = Calib_Ready;
+                break;
             }
 
-            SecIMU_Prc_Gyr_ZeroOffset[i] += sec_gyr_tmp[i];
-            lst_sec_gyr[i] = sec_gyr_tmp[i];
-#endif
-        }
-
-        (*calib_cycle_cnt)--;
-
-        /* calib done */
-        if((*calib_cycle_cnt) == 0)
-        {
-            for(i = Axis_X; i < Axis_Sum; i++)
+            for (i = Axis_X; i < Axis_Sum; i++)
             {
-                PriIMU_Gyr_ZeroOffset[i] = (PriIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / calib_cycle;
-#if (IMU_SUM > 1)
-                SecIMU_Gyr_ZeroOffset[i] = (SecIMU_Prc_Gyr_ZeroOffset[i] / (float)GYR_STATIC_CALIB_ACCURACY) / calib_cycle;
-#endif
+                if (gyr[i] > cali_monitor->max[i])
+                    cali_monitor->max[i] = gyr[i];
+
+                if (gyr[i] < cali_monitor->min[i])
+                    cali_monitor->min[i] = gyr[i];
+
+                if (fabs(cali_monitor->max[i] - cali_monitor->min[i]) >= MOVING_DETECT_CONDITION_1)
+                {
+                    cali_monitor->state = Calib_Failed;
+                    return;
+                }
+
+                cali_monitor->avg[i] += gyr[i];
+            }
+            break;
+
+        case Calib_Failed:
+            for (i = Axis_X; i < Axis_Sum; i ++)
+            {
+                cali_monitor->avg[i] = 0.0f;
+                cali_monitor->max[i] = 0.0f;
+                cali_monitor->min[i] = 0.0f;
             }
 
-            return Calib_Done;
-        }
-        else
-            return Calib_InProcess;
-    }
+            cali_monitor->state = Calib_Ready;
+            cali_monitor->calib_cycle = GYR_STATIC_CALIB_CYCLE;
+            break;
 
-reset_calib_var:
-    /* for test */
-    for(i = Axis_X; i < Axis_Sum; i++)
-    {
-        PriIMU_Prc_Gyr_ZeroOffset[i] = 0;
-        lst_pri_gyr[i] = 0;
-
-#if (IMU_SUM > 1)
-        SecIMU_Prc_Gyr_ZeroOffset[i] = 0;
-        lst_sec_gyr[i] = 0;
-#endif
+        default: break;
     }
-            
-    return state;
 }
 
 static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
@@ -949,7 +926,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
                 for (i = Axis_X; i < Axis_Sum; i++)
                 {
                     PriIMU_Data.org_acc[i] = InUse_PriIMU_Obj.OriData_ptr->acc_flt[i];
-                    PriIMU_Data.org_gyr[i] = InUse_PriIMU_Obj.OriData_ptr->gyr_flt[i] - PriIMU_Gyr_ZeroOffset[i];
+                    PriIMU_Data.org_gyr[i] = InUse_PriIMU_Obj.OriData_ptr->gyr_flt[i] - PriGyro_Calib_Monitor.z_offset[i];
 
                     /* filted imu data */
                     PriIMU_Data.flt_gyr[i] = Butterworth.update(PriIMU_Gyr_LPF_Handle[i], PriIMU_Data.org_gyr[i]);
@@ -1065,10 +1042,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
         sec_sample_state = false;
 
     /* update calibration state */
-    if((Gyro_Calib_Monitor.state == Calib_Start) || (Gyro_Calib_Monitor.state == Calib_InProcess))
-    {
-        Gyro_Calib_Monitor.state = SrvIMU_Calib_GyroZeroOffset(Gyro_Calib_Monitor.calib_cycle, &Gyro_Calib_Monitor.cur_cycle, PriIMU_Data.org_gyr, SecIMU_Data.org_gyr);
-    }
+    SrvIMU_Calib_GyroZeroOffset(&SecGyro_Calib_Monitor, SecIMU_Data.org_gyr);
 
     switch(mode)
     {
@@ -1113,10 +1087,7 @@ static bool SrvIMU_Sample(SrvIMU_SampleMode_List mode)
     }
 #else
     /* update calibration state */
-    if((Gyro_Calib_Monitor.state == Calib_Start) || (Gyro_Calib_Monitor.state == Calib_InProcess))
-    {
-        Gyro_Calib_Monitor.state = SrvIMU_Calib_GyroZeroOffset(Gyro_Calib_Monitor.calib_cycle, &Gyro_Calib_Monitor.cur_cycle, PriIMU_Data.org_gyr, NULL);
-    }
+    SrvIMU_Calib_GyroZeroOffset(&PriGyro_Calib_Monitor, PriIMU_Data.org_gyr);
     
     if(pri_sample_state)
     {
@@ -1187,12 +1158,14 @@ reupdate_imu:
     }
     else if (type == SrvIMU_SecModule)
     {
+#if (IMU_NUM > 1)
         if (!SrvMpu_Update_Reg.sec.Sec_State)
         {
             memcpy(&imu_data_tmp, &SecIMU_Data, IMU_DATA_SIZE);
         }
         else
             goto reupdate_imu_statistics;
+#endif
     }
     else if(type == SrvIMU_FusModule)
     {
@@ -1217,13 +1190,16 @@ static bool SrvIMU_Get_ModuleType(SrvIMU_Module_Type module, SrvIMU_SensorID_Lis
     if ((module >= SrvIMU_FusModule) || (type == NULL))
         return false;
 
+    *type = SrvIMU_Dev_None;
     if (module == SrvIMU_PriModule)
     {
         *type = InUse_PriIMU_Obj.type;
     }
     else if (module == SrvIMU_SecModule)
     {
+#if (IMU_NUM > 1)
         *type = InUse_SecIMU_Obj.type;
+#endif
     }
 
     return true;
