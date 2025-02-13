@@ -828,6 +828,7 @@ static void SrvIMU_Calib_GyroZeroOffset(SrvIMU_CalibMonitor_TypeDef *cali_monito
 
                 /* comput zero offset */
                 cali_monitor->state = Calib_Ready;
+                cali_monitor->calib_cycle = GYR_STATIC_CALIB_CYCLE;
                 break;
             }
 
