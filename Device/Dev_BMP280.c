@@ -13,8 +13,6 @@ static bool DevBMP280_GetStatus(DevBMP280Obj_TypeDef *obj, DevBMP280_Status_Type
 static bool DevBMP280_Calibration(DevBMP280Obj_TypeDef *obj);
 static bool DevBMP280_Set_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List OverSampling);
 static bool DevBMP280_Set_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List OverSampling);
-static bool DevBMP280_Get_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List *OverSampling);
-static bool DevBMP280_Get_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List *OverSampling);
 static bool DevBMP280_Set_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List filter);
 static bool DevBMP_Get_Filter(DevBMP280Obj_TypeDef *obj, DevBMP280_Filter_List *filter);
 static bool DevBMP280_Set_NormalMode(DevBMP280Obj_TypeDef *obj);
@@ -130,19 +128,6 @@ static bool DevBMP280_Set_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, DevBM
     return false;
 }
 
-static bool DevBMP280_Get_Pressure_OverSampling(DevBMP280Obj_TypeDef *obj, uint8_t *OverSampling)
-{
-    if (obj && OverSampling)
-    {
-        if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, OverSampling, sizeof(uint8_t)) == 0)
-            return false;
-
-        return true;
-    }
-
-    return false;
-}
-
 static bool DevBMP280_Set_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, DevBMP280_OverSampling_List OverSampling)
 {
     uint8_t cur_setting = 0;
@@ -169,19 +154,6 @@ static bool DevBMP280_Set_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, De
         if (setting_readout != cur_setting)
             return false;
 
-        return true;
-    }
-
-    return false;
-}
-
-static bool DevBMP280_Get_Temperature_OverSampling(DevBMP280Obj_TypeDef *obj, uint8_t *OverSampling)
-{
-    if (obj && OverSampling)
-    {
-        if (DevBMP280_Register_Read(obj, BMP280_REG_CTRL_MEAS, OverSampling, sizeof(uint8_t)) == 0)
-            return false;
-    
         return true;
     }
 
