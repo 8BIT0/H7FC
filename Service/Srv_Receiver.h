@@ -122,7 +122,7 @@ typedef struct
 
     bool re_update;
     bool in_use;
-    uint32_t invert_list;
+    uint32_t ch_invert_list;
 
     /* for sbus receiver we gonna need inverter hardware */
     BspGPIO_Obj_TypeDef inverter_pin;

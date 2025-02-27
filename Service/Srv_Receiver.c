@@ -288,7 +288,7 @@ static bool SrvReceiver_Init(SrvReceiverObj_TypeDef *obj, uint8_t *port_obj)
         return false;
     }
 
-    obj->invert_list = 0;
+    obj->ch_invert_list = 0;
 
     return true;
 }
@@ -333,7 +333,7 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                                 receiver_obj->data.val_list[i] = CRSF_DIGITAL_CHANNEL_MAX;
                             }
 
-                            if (receiver_obj->invert_list && (receiver_obj->invert_list & 1 << i))
+                            if (receiver_obj->ch_invert_list && (receiver_obj->ch_invert_list & 1 << i))
                             {
                                 receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
                                 receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data.val_list[i];
@@ -361,7 +361,7 @@ static void SrvReceiver_SerialDecode_Callback(SrvReceiverObj_TypeDef *receiver_o
                     {
                         receiver_obj->data.val_list[i] = (To_SBUS_Obj(receiver_obj->frame_data_obj))->val[i];
 
-                        if (receiver_obj->invert_list && receiver_obj->invert_list & 1 << i)
+                        if (receiver_obj->ch_invert_list && receiver_obj->ch_invert_list & 1 << i)
                         {
                             receiver_obj->data.val_list[i] -= CHANNEL_RANGE_MID;
                             receiver_obj->data.val_list[i] = CHANNEL_RANGE_MID - receiver_obj->data.val_list[i];
@@ -433,13 +433,13 @@ static void SrvReceiver_Set_Invert(SrvReceiverObj_TypeDef *receiver_obj, uint16_
 {
     if (receiver_obj && (channel_index < receiver_obj->channel_num))
     {
-        if (receiver_obj->invert_list & (1 << channel_index))
+        if (receiver_obj->ch_invert_list & (1 << channel_index))
         {
-            receiver_obj->invert_list &= ~(1 << channel_index);
+            receiver_obj->ch_invert_list &= ~(1 << channel_index);
         }
         else
         {
-            receiver_obj->invert_list |= (1 << channel_index);
+            receiver_obj->ch_invert_list |= (1 << channel_index);
         }
     }
 }
