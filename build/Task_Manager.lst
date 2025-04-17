@@ -1,0 +1,987 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Task_Manager.cpp"
+  16              		.section	.rodata.str1.4,"aMS",%progbits,1
+  17              		.align	2
+  18              	.LC0:
+  19 0000 4D616E61 		.ascii	"ManagerTask\000"
+  19      67657254 
+  19      61736B00 
+  20              		.align	2
+  21              	.LC2:
+  22 000c 53616D70 		.ascii	"SampleTask\000"
+  22      6C655461 
+  22      736B00
+  23 0017 00       		.align	2
+  24              	.LC4:
+  25 0018 54656C65 		.ascii	"TelemtryTask\000"
+  25      6D747279 
+  25      5461736B 
+  25      00
+  26 0025 000000   		.align	2
+  27              	.LC6:
+  28 0028 436F6E74 		.ascii	"ControlTask\000"
+  28      726F6C54 
+  28      61736B00 
+  29              		.align	2
+  30              	.LC8:
+  31 0034 4E617654 		.ascii	"NavTask\000"
+  31      61736B00 
+  32              		.align	2
+  33              	.LC10:
+  34 003c 426C6163 		.ascii	"BlackBoxTask\000"
+  34      6B426F78 
+  34      5461736B 
+  34      00
+  35 0049 000000   		.align	2
+  36              	.LC12:
+  37 004c 4672616D 		.ascii	"FrameCTLTask\000"
+  37      6543544C 
+  37      5461736B 
+  37      00
+  38              		.text
+  39              	.Ltext0:
+  40              		.cfi_sections	.debug_frame
+  41              		.section	.rodata.Task_Manager_CreateTask.str1.4,"aMS",%progbits,1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 2
+
+
+  42              		.align	2
+  43              	.LC14:
+  44 0000 48617264 		.ascii	"Hardware CCRC_AT32\000"
+  44      77617265 
+  44      20434352 
+  44      435F4154 
+  44      333200
+  45 0013 00       		.align	2
+  46              	.LC15:
+  47 0014 25730D0A 		.ascii	"%s\015\012\000"
+  47      00
+  48 0019 000000   		.align	2
+  49              	.LC16:
+  50 001c 5B204841 		.ascii	"[ HARDWARE INFO ] \000"
+  50      52445741 
+  50      52452049 
+  50      4E464F20 
+  50      5D2000
+  51 002f 00       		.align	2
+  52              	.LC17:
+  53 0030 48617264 		.ascii	"Hardware Version %d.%d.%d\015\012\000"
+  53      77617265 
+  53      20566572 
+  53      73696F6E 
+  53      2025642E 
+  54              		.align	2
+  55              	.LC18:
+  56 004c 53797320 		.ascii	"Sys Start\015\012\000"
+  56      53746172 
+  56      740D0A00 
+  57              		.align	2
+  58              	.LC19:
+  59 0058 5B204445 		.ascii	"[ DEBUG INFO ] \000"
+  59      42554720 
+  59      494E464F 
+  59      205D2000 
+  60              		.align	2
+  61              	.LC20:
+  62 0068 53797320 		.ascii	"Sys Time: %d\015\012\000"
+  62      54696D65 
+  62      3A202564 
+  62      0D0A00
+  63              		.section	.text.Task_Manager_CreateTask,"ax",%progbits
+  64              		.align	1
+  65              		.global	Task_Manager_CreateTask
+  66              		.syntax unified
+  67              		.thumb
+  68              		.thumb_func
+  70              	Task_Manager_CreateTask:
+  71              		.fnstart
+  72              	.LVL0:
+  73              	.LFB2300:
+  74              		.file 1 "Task/Task_Manager.cpp"
+   1:Task/Task_Manager.cpp **** #include "Task_Manager.h"
+   2:Task/Task_Manager.cpp **** // #include "Task_Log.h"
+   3:Task/Task_Manager.cpp **** #include "Task_Control.h"
+   4:Task/Task_Manager.cpp **** #include "Task_Sample.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 3
+
+
+   5:Task/Task_Manager.cpp **** #include "Task_Telemetry.h"
+   6:Task/Task_Manager.cpp **** #include "Task_Navi.h"
+   7:Task/Task_Manager.cpp **** #include "Task_Protocol.h"
+   8:Task/Task_Manager.cpp **** #include "Task_BlackBox.h"
+   9:Task/Task_Manager.cpp **** #include "debug_util.h"
+  10:Task/Task_Manager.cpp **** #include "HW_Def.h"
+  11:Task/Task_Manager.cpp **** #include "Dev_Led.h"
+  12:Task/Task_Manager.cpp **** #include "DiskIO.h"
+  13:Task/Task_Manager.cpp **** #include "Srv_ComProto.h"
+  14:Task/Task_Manager.cpp **** #include "Srv_OsCommon.h"
+  15:Task/Task_Manager.cpp **** #include "Srv_LedStrip.h"
+  16:Task/Task_Manager.cpp **** #include "../DataPipe/DataPipe.h"
+  17:Task/Task_Manager.cpp **** #include "shell_port.h"
+  18:Task/Task_Manager.cpp **** #include "Storage.h"
+  19:Task/Task_Manager.cpp **** #include "cmsis_os.h"
+  20:Task/Task_Manager.cpp **** 
+  21:Task/Task_Manager.cpp **** #define TaskSample_Period_Def    1  /* unit: ms period 1ms  1000Hz */
+  22:Task/Task_Manager.cpp **** #define TaskControl_Period_Def   5  /* unit: ms period 5ms  200Hz  */
+  23:Task/Task_Manager.cpp **** #define TaskTelemetry_Period_def 2  /* unit: ms period 2ms  500Hz  */
+  24:Task/Task_Manager.cpp **** #define TaslLog_Period_Def       5  /* unit: ms period 5ms  200Hz  */
+  25:Task/Task_Manager.cpp **** #define TaslNavi_Period_Def      10 /* unit: ms period 10ms 100Hz  */
+  26:Task/Task_Manager.cpp **** #define TaskFrameCTL_Period_Def  5  /* unit: ms period 5ms  200Hz  */
+  27:Task/Task_Manager.cpp **** 
+  28:Task/Task_Manager.cpp **** osThreadId TaskInertial_Handle = NULL;
+  29:Task/Task_Manager.cpp **** osThreadId TaskControl_Handle = NULL;
+  30:Task/Task_Manager.cpp **** osThreadId TaskNavi_Handle = NULL;
+  31:Task/Task_Manager.cpp **** osThreadId TaskLog_Handle = NULL;
+  32:Task/Task_Manager.cpp **** osThreadId TaskTelemetry_Handle = NULL;
+  33:Task/Task_Manager.cpp **** osThreadId TaskFrameCTL_Handle = NULL;
+  34:Task/Task_Manager.cpp **** osThreadId TaskManager_Handle = NULL;
+  35:Task/Task_Manager.cpp **** 
+  36:Task/Task_Manager.cpp **** #define SYS_TAG "[ HARDWARE INFO ] "
+  37:Task/Task_Manager.cpp **** #define SYS_INFO(fmt, ...) Debug_Print(&DebugPort, SYS_TAG, fmt, ##__VA_ARGS__)
+  38:Task/Task_Manager.cpp **** 
+  39:Task/Task_Manager.cpp **** void Task_Manager_Init(void)
+  40:Task/Task_Manager.cpp **** {
+  41:Task/Task_Manager.cpp ****     DevLED.init(Led1);
+  42:Task/Task_Manager.cpp **** #if defined MATEKH743_V1_5
+  43:Task/Task_Manager.cpp ****     DevLED.init(Led2);
+  44:Task/Task_Manager.cpp ****     DevLED.init(Led3);
+  45:Task/Task_Manager.cpp **** 
+  46:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC0);
+  47:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC1);
+  48:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC2);
+  49:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC3);
+  50:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PB3);
+  51:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PB4);
+  52:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PB5);
+  53:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PB6);
+  54:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PB10);
+  55:Task/Task_Manager.cpp **** #elif defined BATEAT32F435_AIO
+  56:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC8);
+  57:Task/Task_Manager.cpp ****     DebugPin.init(Debug_PC0);
+  58:Task/Task_Manager.cpp **** #elif defined CCRC_AT32_20
+  59:Task/Task_Manager.cpp ****     DevLED.init(Led2);
+  60:Task/Task_Manager.cpp **** #endif
+  61:Task/Task_Manager.cpp ****     /* vol ADC init */
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 4
+
+
+  62:Task/Task_Manager.cpp **** 
+  63:Task/Task_Manager.cpp ****     /* cur ADC init */
+  64:Task/Task_Manager.cpp ****     
+  65:Task/Task_Manager.cpp ****     SrvOsCommon.init();
+  66:Task/Task_Manager.cpp **** 
+  67:Task/Task_Manager.cpp ****     osThreadDef(ManagerTask, Task_Manager_CreateTask, osPriorityLow, 0, 1024);
+  68:Task/Task_Manager.cpp ****     TaskManager_Handle = osThreadCreate(osThread(ManagerTask), NULL);
+  69:Task/Task_Manager.cpp **** 
+  70:Task/Task_Manager.cpp ****     osKernelStart();
+  71:Task/Task_Manager.cpp **** }
+  72:Task/Task_Manager.cpp **** 
+  73:Task/Task_Manager.cpp **** void Task_Manager_CreateTask(void const *arg)
+  74:Task/Task_Manager.cpp **** {
+  75              		.loc 1 74 1 view -0
+  76              		.cfi_startproc
+  77              		@ args = 0, pretend = 0, frame = 168
+  78              		@ frame_needed = 0, uses_anonymous_args = 0
+  79              		.loc 1 74 1 is_stmt 0 view .LVU1
+  80 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+  81              		.save {r4, r5, r6, r7, lr}
+  82              		.cfi_def_cfa_offset 20
+  83              		.cfi_offset 4, -20
+  84              		.cfi_offset 5, -16
+  85              		.cfi_offset 6, -12
+  86              		.cfi_offset 7, -8
+  87              		.cfi_offset 14, -4
+  88              		.pad #180
+  89 0002 ADB0     		sub	sp, sp, #180
+  90              		.cfi_def_cfa_offset 200
+  75:Task/Task_Manager.cpp ****     bool init = false;
+  91              		.loc 1 75 5 is_stmt 1 view .LVU2
+  92              	.LVL1:
+  76:Task/Task_Manager.cpp ****     StorageDevObj_TypeDef *storage_ExtFlashObj = NULL;
+  93              		.loc 1 76 5 view .LVU3
+  77:Task/Task_Manager.cpp **** 
+  78:Task/Task_Manager.cpp ****     DebugPort.free = SrvOsCommon.free;
+  94              		.loc 1 78 5 view .LVU4
+  95              		.loc 1 78 34 is_stmt 0 view .LVU5
+  96 0004 6A4D     		ldr	r5, .L8
+  97 0006 2B6B     		ldr	r3, [r5, #48]
+  98              		.loc 1 78 20 view .LVU6
+  99 0008 6A4C     		ldr	r4, .L8+4
+ 100 000a 2361     		str	r3, [r4, #16]
+  79:Task/Task_Manager.cpp ****     DebugPort.malloc = SrvOsCommon.malloc;
+ 101              		.loc 1 79 5 is_stmt 1 view .LVU7
+ 102              		.loc 1 79 36 is_stmt 0 view .LVU8
+ 103 000c EB6A     		ldr	r3, [r5, #44]
+ 104              		.loc 1 79 22 view .LVU9
+ 105 000e E360     		str	r3, [r4, #12]
+  80:Task/Task_Manager.cpp ****     Debug_Port_Init(&DebugPort);
+ 106              		.loc 1 80 5 is_stmt 1 view .LVU10
+ 107              		.loc 1 80 20 is_stmt 0 view .LVU11
+ 108 0010 2046     		mov	r0, r4
+ 109              	.LVL2:
+ 110              		.loc 1 80 20 view .LVU12
+ 111 0012 FFF7FEFF 		bl	Debug_Port_Init
+ 112              	.LVL3:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 5
+
+
+  81:Task/Task_Manager.cpp **** 
+  82:Task/Task_Manager.cpp ****     SYS_INFO("%s\r\n", Select_Hardware);
+ 113              		.loc 1 82 5 is_stmt 1 view .LVU13
+ 114 0016 684E     		ldr	r6, .L8+8
+ 115 0018 684B     		ldr	r3, .L8+12
+ 116 001a 694A     		ldr	r2, .L8+16
+ 117 001c 3146     		mov	r1, r6
+ 118 001e 2046     		mov	r0, r4
+ 119 0020 FFF7FEFF 		bl	Debug_Print
+ 120              	.LVL4:
+  83:Task/Task_Manager.cpp ****     SYS_INFO("Hardware Version %d.%d.%d\r\n", HWVer[0], HWVer[1], HWVer[2]);
+ 121              		.loc 1 83 5 view .LVU14
+ 122 0024 674B     		ldr	r3, .L8+20
+ 123 0026 5A78     		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 124 0028 9978     		ldrb	r1, [r3, #2]	@ zero_extendqisi2
+ 125 002a 0191     		str	r1, [sp, #4]
+ 126 002c 0092     		str	r2, [sp]
+ 127 002e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 128 0030 654A     		ldr	r2, .L8+24
+ 129 0032 3146     		mov	r1, r6
+ 130 0034 2046     		mov	r0, r4
+ 131 0036 FFF7FEFF 		bl	Debug_Print
+ 132              	.LVL5:
+  84:Task/Task_Manager.cpp ****     
+  85:Task/Task_Manager.cpp **** #if (FLASH_CHIP_STATE == ON)
+  86:Task/Task_Manager.cpp ****     storage_ExtFlashObj = (StorageDevObj_TypeDef *)SrvOsCommon.malloc(sizeof(StorageDevObj_TypeDef)
+ 133              		.loc 1 86 5 view .LVU15
+ 134              		.loc 1 86 64 is_stmt 0 view .LVU16
+ 135 003a EB6A     		ldr	r3, [r5, #44]
+ 136              		.loc 1 86 70 view .LVU17
+ 137 003c 3420     		movs	r0, #52
+ 138 003e 9847     		blx	r3
+ 139              	.LVL6:
+  87:Task/Task_Manager.cpp **** 
+  88:Task/Task_Manager.cpp ****     if (storage_ExtFlashObj)
+ 140              		.loc 1 88 5 is_stmt 1 view .LVU18
+ 141 0040 0546     		mov	r5, r0
+ 142 0042 38B1     		cbz	r0, .L2
+  89:Task/Task_Manager.cpp ****     {
+  90:Task/Task_Manager.cpp ****         storage_ExtFlashObj->chip_type = ExtFlash_Chip_Type;
+ 143              		.loc 1 90 9 view .LVU19
+ 144              		.loc 1 90 40 is_stmt 0 view .LVU20
+ 145 0044 0123     		movs	r3, #1
+ 146 0046 0370     		strb	r3, [r0]
+  91:Task/Task_Manager.cpp ****         storage_ExtFlashObj->api = ExtFlash_Dev_Api;
+ 147              		.loc 1 91 9 is_stmt 1 view .LVU21
+ 148              		.loc 1 91 34 is_stmt 0 view .LVU22
+ 149 0048 604B     		ldr	r3, .L8+28
+ 150 004a 0363     		str	r3, [r0, #48]
+  92:Task/Task_Manager.cpp ****         storage_ExtFlashObj->obj = NULL;
+ 151              		.loc 1 92 9 is_stmt 1 view .LVU23
+ 152              		.loc 1 92 34 is_stmt 0 view .LVU24
+ 153 004c 0023     		movs	r3, #0
+ 154 004e C362     		str	r3, [r0, #44]
+ 155              	.LVL7:
+ 156              	.L3:
+  74:Task/Task_Manager.cpp ****     bool init = false;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 6
+
+
+ 157              		.loc 1 74 1 view .LVU25
+ 158 0050 0024     		movs	r4, #0
+ 159 0052 AAE0     		b	.L5
+ 160              	.LVL8:
+ 161              	.L2:
+  93:Task/Task_Manager.cpp ****     }
+  94:Task/Task_Manager.cpp ****     else
+  95:Task/Task_Manager.cpp ****     {
+  96:Task/Task_Manager.cpp ****         SrvOsCommon.free(storage_ExtFlashObj);
+ 162              		.loc 1 96 9 is_stmt 1 view .LVU26
+ 163              		.loc 1 96 21 is_stmt 0 view .LVU27
+ 164 0054 564B     		ldr	r3, .L8
+ 165 0056 1B6B     		ldr	r3, [r3, #48]
+ 166              		.loc 1 96 25 view .LVU28
+ 167 0058 9847     		blx	r3
+ 168              	.LVL9:
+  97:Task/Task_Manager.cpp ****         storage_ExtFlashObj = NULL;
+ 169              		.loc 1 97 9 is_stmt 1 view .LVU29
+ 170              		.loc 1 97 9 is_stmt 0 view .LVU30
+ 171 005a F9E7     		b	.L3
+ 172              	.LVL10:
+ 173              	.L7:
+ 174              	.LBB2:
+ 175              	.LBB3:
+ 176              	.LBB4:
+  98:Task/Task_Manager.cpp ****     }
+  99:Task/Task_Manager.cpp **** #endif
+ 100:Task/Task_Manager.cpp **** 
+ 101:Task/Task_Manager.cpp ****     while(1)
+ 102:Task/Task_Manager.cpp ****     {
+ 103:Task/Task_Manager.cpp ****         if (!init)
+ 104:Task/Task_Manager.cpp ****         {
+ 105:Task/Task_Manager.cpp ****             uint32_t sys_time = SrvOsCommon.get_os_ms();
+ 177              		.loc 1 105 13 is_stmt 1 view .LVU31
+ 178              		.loc 1 105 45 is_stmt 0 view .LVU32
+ 179 005c 544B     		ldr	r3, .L8
+ 180 005e 5B68     		ldr	r3, [r3, #4]
+ 181              		.loc 1 105 54 view .LVU33
+ 182 0060 9847     		blx	r3
+ 183              	.LVL11:
+ 184 0062 0446     		mov	r4, r0
+ 185              	.LVL12:
+ 106:Task/Task_Manager.cpp ****             DEBUG_INFO("Sys Start\r\n");
+ 186              		.loc 1 106 13 is_stmt 1 view .LVU34
+ 187 0064 5A4F     		ldr	r7, .L8+32
+ 188 0066 534E     		ldr	r6, .L8+4
+ 189 0068 5A4A     		ldr	r2, .L8+36
+ 190 006a 3946     		mov	r1, r7
+ 191 006c 3046     		mov	r0, r6
+ 192              	.LVL13:
+ 193              		.loc 1 106 13 is_stmt 0 view .LVU35
+ 194 006e FFF7FEFF 		bl	Debug_Print
+ 195              	.LVL14:
+ 107:Task/Task_Manager.cpp ****             DEBUG_INFO("Sys Time: %d\r\n", sys_time);
+ 196              		.loc 1 107 13 is_stmt 1 view .LVU36
+ 197 0072 2346     		mov	r3, r4
+ 198 0074 584A     		ldr	r2, .L8+40
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 7
+
+
+ 199 0076 3946     		mov	r1, r7
+ 200 0078 3046     		mov	r0, r6
+ 201 007a FFF7FEFF 		bl	Debug_Print
+ 202              	.LVL15:
+ 108:Task/Task_Manager.cpp **** 
+ 109:Task/Task_Manager.cpp ****             DataPipe_Init();
+ 203              		.loc 1 109 13 view .LVU37
+ 204              		.loc 1 109 26 is_stmt 0 view .LVU38
+ 205 007e FFF7FEFF 		bl	DataPipe_Init
+ 206              	.LVL16:
+ 110:Task/Task_Manager.cpp ****             Storage.init(storage_ExtFlashObj);
+ 207              		.loc 1 110 13 is_stmt 1 view .LVU39
+ 208              		.loc 1 110 21 is_stmt 0 view .LVU40
+ 209 0082 564B     		ldr	r3, .L8+44
+ 210 0084 1B68     		ldr	r3, [r3]
+ 211              		.loc 1 110 25 view .LVU41
+ 212 0086 2846     		mov	r0, r5
+ 213 0088 9847     		blx	r3
+ 214              	.LVL17:
+ 111:Task/Task_Manager.cpp ****             SrvUpgrade.init();
+ 215              		.loc 1 111 13 is_stmt 1 view .LVU42
+ 216              		.loc 1 111 24 is_stmt 0 view .LVU43
+ 217 008a 554B     		ldr	r3, .L8+48
+ 218 008c 1B68     		ldr	r3, [r3]
+ 219              		.loc 1 111 28 view .LVU44
+ 220 008e 9847     		blx	r3
+ 221              	.LVL18:
+ 112:Task/Task_Manager.cpp ****             SrvLedStrip.init(6);
+ 222              		.loc 1 112 13 is_stmt 1 view .LVU45
+ 223              		.loc 1 112 25 is_stmt 0 view .LVU46
+ 224 0090 544B     		ldr	r3, .L8+52
+ 225 0092 1B68     		ldr	r3, [r3]
+ 226              		.loc 1 112 29 view .LVU47
+ 227 0094 0620     		movs	r0, #6
+ 228 0096 9847     		blx	r3
+ 229              	.LVL19:
+ 113:Task/Task_Manager.cpp ****             SrvComProto.init(SrvComProto_Type_MAV, NULL);
+ 230              		.loc 1 113 13 is_stmt 1 view .LVU48
+ 231              		.loc 1 113 25 is_stmt 0 view .LVU49
+ 232 0098 534B     		ldr	r3, .L8+56
+ 233 009a 1B68     		ldr	r3, [r3]
+ 234              		.loc 1 113 29 view .LVU50
+ 235 009c 0021     		movs	r1, #0
+ 236 009e 0220     		movs	r0, #2
+ 237 00a0 9847     		blx	r3
+ 238              	.LVL20:
+ 114:Task/Task_Manager.cpp ****             
+ 115:Task/Task_Manager.cpp ****             TaskSample_Init(TaskSample_Period_Def);
+ 239              		.loc 1 115 13 is_stmt 1 view .LVU51
+ 240              		.loc 1 115 28 is_stmt 0 view .LVU52
+ 241 00a2 0120     		movs	r0, #1
+ 242 00a4 FFF7FEFF 		bl	TaskSample_Init
+ 243              	.LVL21:
+ 116:Task/Task_Manager.cpp ****             TaskTelemetry_Init(TaskTelemetry_Period_def);
+ 244              		.loc 1 116 13 is_stmt 1 view .LVU53
+ 245              		.loc 1 116 31 is_stmt 0 view .LVU54
+ 246 00a8 0220     		movs	r0, #2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 8
+
+
+ 247 00aa FFF7FEFF 		bl	TaskTelemetry_Init
+ 248              	.LVL22:
+ 117:Task/Task_Manager.cpp ****             TaskControl_Init(TaskControl_Period_Def);
+ 249              		.loc 1 117 13 is_stmt 1 view .LVU55
+ 250              		.loc 1 117 29 is_stmt 0 view .LVU56
+ 251 00ae 0520     		movs	r0, #5
+ 252 00b0 FFF7FEFF 		bl	TaskControl_Init
+ 253              	.LVL23:
+ 118:Task/Task_Manager.cpp **** #if (SD_CARD_ENABLE_STATE == ON)
+ 119:Task/Task_Manager.cpp ****             /* lagecy */
+ 120:Task/Task_Manager.cpp ****             // TaskLog_Init(TaslLog_Period_Def);
+ 121:Task/Task_Manager.cpp **** #endif
+ 122:Task/Task_Manager.cpp ****             TaskBlackBox_Init();
+ 254              		.loc 1 122 13 is_stmt 1 view .LVU57
+ 255              		.loc 1 122 30 is_stmt 0 view .LVU58
+ 256 00b4 FFF7FEFF 		bl	TaskBlackBox_Init
+ 257              	.LVL24:
+ 123:Task/Task_Manager.cpp ****             TaskNavi_Init(TaslNavi_Period_Def);
+ 258              		.loc 1 123 13 is_stmt 1 view .LVU59
+ 259              		.loc 1 123 26 is_stmt 0 view .LVU60
+ 260 00b8 0A20     		movs	r0, #10
+ 261 00ba FFF7FEFF 		bl	TaskNavi_Init
+ 262              	.LVL25:
+ 124:Task/Task_Manager.cpp ****             TaskFrameCTL_Init(TaskFrameCTL_Period_Def);
+ 263              		.loc 1 124 13 is_stmt 1 view .LVU61
+ 264              		.loc 1 124 30 is_stmt 0 view .LVU62
+ 265 00be 0520     		movs	r0, #5
+ 266 00c0 FFF7FEFF 		bl	TaskFrameCTL_Init
+ 267              	.LVL26:
+ 125:Task/Task_Manager.cpp **** 
+ 126:Task/Task_Manager.cpp ****             osThreadDef(SampleTask, TaskSample_Core, osPriorityRealtime, 0, 1024);
+ 268              		.loc 1 126 13 is_stmt 1 view .LVU63
+ 269 00c4 494C     		ldr	r4, .L8+60
+ 270              	.LVL27:
+ 271              		.loc 1 126 13 is_stmt 0 view .LVU64
+ 272 00c6 0DF1080C 		add	ip, sp, #8
+ 273 00ca A646     		mov	lr, r4
+ 274 00cc BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 275 00d0 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 276 00d4 9EE80700 		ldm	lr, {r0, r1, r2}
+ 277 00d8 8CE80700 		stm	ip, {r0, r1, r2}
+ 127:Task/Task_Manager.cpp ****             TaskInertial_Handle = osThreadCreate(osThread(SampleTask), NULL);
+ 278              		.loc 1 127 13 is_stmt 1 view .LVU65
+ 279              		.loc 1 127 49 is_stmt 0 view .LVU66
+ 280 00dc 0021     		movs	r1, #0
+ 281 00de 02A8     		add	r0, sp, #8
+ 282 00e0 FFF7FEFF 		bl	osThreadCreate
+ 283              	.LVL28:
+ 284              		.loc 1 127 33 view .LVU67
+ 285 00e4 424B     		ldr	r3, .L8+64
+ 286 00e6 1860     		str	r0, [r3]
+ 128:Task/Task_Manager.cpp **** 
+ 129:Task/Task_Manager.cpp ****             osThreadDef(TelemtryTask, TaskTelemetry_Core, osPriorityHigh, 0, 1024);
+ 287              		.loc 1 129 13 is_stmt 1 view .LVU68
+ 288 00e8 0DF1240C 		add	ip, sp, #36
+ 289 00ec 04F11C0E 		add	lr, r4, #28
+ 290 00f0 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 9
+
+
+ 291 00f4 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 292 00f8 9EE80700 		ldm	lr, {r0, r1, r2}
+ 293 00fc 8CE80700 		stm	ip, {r0, r1, r2}
+ 130:Task/Task_Manager.cpp ****             TaskTelemetry_Handle = osThreadCreate(osThread(TelemtryTask), NULL);
+ 294              		.loc 1 130 13 view .LVU69
+ 295              		.loc 1 130 50 is_stmt 0 view .LVU70
+ 296 0100 0021     		movs	r1, #0
+ 297 0102 09A8     		add	r0, sp, #36
+ 298 0104 FFF7FEFF 		bl	osThreadCreate
+ 299              	.LVL29:
+ 300              		.loc 1 130 34 view .LVU71
+ 301 0108 3A4B     		ldr	r3, .L8+68
+ 302 010a 1860     		str	r0, [r3]
+ 131:Task/Task_Manager.cpp **** 
+ 132:Task/Task_Manager.cpp ****             osThreadDef(ControlTask, TaskControl_Core, osPriorityHigh, 0, 1024);
+ 303              		.loc 1 132 13 is_stmt 1 view .LVU72
+ 304 010c 0DF1400C 		add	ip, sp, #64
+ 305 0110 04F1380E 		add	lr, r4, #56
+ 306 0114 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 307 0118 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 308 011c 9EE80700 		ldm	lr, {r0, r1, r2}
+ 309 0120 8CE80700 		stm	ip, {r0, r1, r2}
+ 133:Task/Task_Manager.cpp ****             TaskControl_Handle = osThreadCreate(osThread(ControlTask), NULL);
+ 310              		.loc 1 133 13 view .LVU73
+ 311              		.loc 1 133 48 is_stmt 0 view .LVU74
+ 312 0124 0021     		movs	r1, #0
+ 313 0126 10A8     		add	r0, sp, #64
+ 314 0128 FFF7FEFF 		bl	osThreadCreate
+ 315              	.LVL30:
+ 316              		.loc 1 133 32 view .LVU75
+ 317 012c 324B     		ldr	r3, .L8+72
+ 318 012e 1860     		str	r0, [r3]
+ 134:Task/Task_Manager.cpp **** 
+ 135:Task/Task_Manager.cpp ****             osThreadDef(NavTask, TaskNavi_Core, osPriorityAboveNormal, 0, 1024);
+ 319              		.loc 1 135 13 is_stmt 1 view .LVU76
+ 320 0130 0DF15C0C 		add	ip, sp, #92
+ 321 0134 04F1540E 		add	lr, r4, #84
+ 322 0138 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 323 013c ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 324 0140 9EE80700 		ldm	lr, {r0, r1, r2}
+ 325 0144 8CE80700 		stm	ip, {r0, r1, r2}
+ 136:Task/Task_Manager.cpp ****             TaskNavi_Handle = osThreadCreate(osThread(NavTask), NULL);
+ 326              		.loc 1 136 13 view .LVU77
+ 327              		.loc 1 136 45 is_stmt 0 view .LVU78
+ 328 0148 0021     		movs	r1, #0
+ 329 014a 17A8     		add	r0, sp, #92
+ 330 014c FFF7FEFF 		bl	osThreadCreate
+ 331              	.LVL31:
+ 332              		.loc 1 136 29 view .LVU79
+ 333 0150 2A4B     		ldr	r3, .L8+76
+ 334 0152 1860     		str	r0, [r3]
+ 137:Task/Task_Manager.cpp **** 
+ 138:Task/Task_Manager.cpp **** #if (SD_CARD_ENABLE_STATE  == ON)
+ 139:Task/Task_Manager.cpp ****             /* lagecy */
+ 140:Task/Task_Manager.cpp ****             // osThreadDef(LogTask, TaskLog_Core, osPriorityAboveNormal, 0, 4096);
+ 141:Task/Task_Manager.cpp ****             // TaskLog_Handle = osThreadCreate(osThread(LogTask), NULL);
+ 142:Task/Task_Manager.cpp **** #endif
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 10
+
+
+ 143:Task/Task_Manager.cpp ****             osThreadDef(BlackBoxTask, TaskBlackBox_Core, osPriorityNormal, 0, 4096);
+ 335              		.loc 1 143 13 is_stmt 1 view .LVU80
+ 336 0154 0DF1780C 		add	ip, sp, #120
+ 337 0158 04F1700E 		add	lr, r4, #112
+ 338 015c BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 339 0160 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 340 0164 9EE80700 		ldm	lr, {r0, r1, r2}
+ 341 0168 8CE80700 		stm	ip, {r0, r1, r2}
+ 144:Task/Task_Manager.cpp ****             TaskLog_Handle = osThreadCreate(osThread(BlackBoxTask), NULL);
+ 342              		.loc 1 144 13 view .LVU81
+ 343              		.loc 1 144 44 is_stmt 0 view .LVU82
+ 344 016c 0021     		movs	r1, #0
+ 345 016e 1EA8     		add	r0, sp, #120
+ 346 0170 FFF7FEFF 		bl	osThreadCreate
+ 347              	.LVL32:
+ 348              		.loc 1 144 28 view .LVU83
+ 349 0174 224B     		ldr	r3, .L8+80
+ 350 0176 1860     		str	r0, [r3]
+ 145:Task/Task_Manager.cpp **** 
+ 146:Task/Task_Manager.cpp ****             osThreadDef(FrameCTLTask, TaskFrameCTL_Core, osPriorityNormal, 0, 1024);
+ 351              		.loc 1 146 13 is_stmt 1 view .LVU84
+ 352 0178 0DF1940E 		add	lr, sp, #148
+ 353 017c 04F18C0C 		add	ip, r4, #140
+ 354 0180 BCE80F00 		ldmia	ip!, {r0, r1, r2, r3}
+ 355 0184 AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 356 0188 9CE80700 		ldm	ip, {r0, r1, r2}
+ 357 018c 8EE80700 		stm	lr, {r0, r1, r2}
+ 147:Task/Task_Manager.cpp ****             TaskFrameCTL_Handle = osThreadCreate(osThread(FrameCTLTask), NULL);
+ 358              		.loc 1 147 13 view .LVU85
+ 359              		.loc 1 147 49 is_stmt 0 view .LVU86
+ 360 0190 0021     		movs	r1, #0
+ 361 0192 25A8     		add	r0, sp, #148
+ 362 0194 FFF7FEFF 		bl	osThreadCreate
+ 363              	.LVL33:
+ 364              		.loc 1 147 33 view .LVU87
+ 365 0198 1A4B     		ldr	r3, .L8+84
+ 366 019a 1860     		str	r0, [r3]
+ 148:Task/Task_Manager.cpp **** 
+ 149:Task/Task_Manager.cpp ****             init = true;
+ 367              		.loc 1 149 13 is_stmt 1 view .LVU88
+ 368              	.LVL34:
+ 369              		.loc 1 149 18 is_stmt 0 view .LVU89
+ 370 019c 0124     		movs	r4, #1
+ 371              	.LVL35:
+ 372              	.L4:
+ 373              		.loc 1 149 18 view .LVU90
+ 374              	.LBE4:
+ 375              	.LBE3:
+ 150:Task/Task_Manager.cpp ****         }
+ 151:Task/Task_Manager.cpp **** 
+ 152:Task/Task_Manager.cpp ****         SrvLedStrip.polling();
+ 376              		.loc 1 152 9 is_stmt 1 view .LVU91
+ 377              		.loc 1 152 21 is_stmt 0 view .LVU92
+ 378 019e 114B     		ldr	r3, .L8+52
+ 379 01a0 5B68     		ldr	r3, [r3, #4]
+ 380              		.loc 1 152 28 view .LVU93
+ 381 01a2 9847     		blx	r3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 11
+
+
+ 382              	.LVL36:
+ 153:Task/Task_Manager.cpp **** 
+ 154:Task/Task_Manager.cpp ****         /* run system statistic in this task */
+ 155:Task/Task_Manager.cpp ****         osDelay(10);
+ 383              		.loc 1 155 9 is_stmt 1 view .LVU94
+ 384              		.loc 1 155 16 is_stmt 0 view .LVU95
+ 385 01a4 0A20     		movs	r0, #10
+ 386 01a6 FFF7FEFF 		bl	osDelay
+ 387              	.LVL37:
+ 388              	.LBE2:
+ 101:Task/Task_Manager.cpp ****     {
+ 389              		.loc 1 101 5 is_stmt 1 view .LVU96
+ 390              	.L5:
+ 101:Task/Task_Manager.cpp ****     {
+ 391              		.loc 1 101 5 view .LVU97
+ 392              	.LBB6:
+ 103:Task/Task_Manager.cpp ****         {
+ 393              		.loc 1 103 9 view .LVU98
+ 394              	.LBB5:
+ 395 01aa 002C     		cmp	r4, #0
+ 396 01ac F7D1     		bne	.L4
+ 397 01ae 55E7     		b	.L7
+ 398              	.L9:
+ 399              		.align	2
+ 400              	.L8:
+ 401 01b0 00000000 		.word	SrvOsCommon
+ 402 01b4 00000000 		.word	DebugPort
+ 403 01b8 1C000000 		.word	.LC16
+ 404 01bc 00000000 		.word	.LC14
+ 405 01c0 14000000 		.word	.LC15
+ 406 01c4 00000000 		.word	HWVer
+ 407 01c8 30000000 		.word	.LC17
+ 408 01cc 00000000 		.word	DevW25Qxx
+ 409 01d0 58000000 		.word	.LC19
+ 410 01d4 4C000000 		.word	.LC18
+ 411 01d8 68000000 		.word	.LC20
+ 412 01dc 00000000 		.word	Storage
+ 413 01e0 00000000 		.word	SrvUpgrade
+ 414 01e4 00000000 		.word	SrvLedStrip
+ 415 01e8 00000000 		.word	SrvComProto
+ 416 01ec 00000000 		.word	.LANCHOR0
+ 417 01f0 00000000 		.word	.LANCHOR1
+ 418 01f4 00000000 		.word	.LANCHOR2
+ 419 01f8 00000000 		.word	.LANCHOR3
+ 420 01fc 00000000 		.word	.LANCHOR4
+ 421 0200 00000000 		.word	.LANCHOR5
+ 422 0204 00000000 		.word	.LANCHOR6
+ 423              	.LBE5:
+ 424              	.LBE6:
+ 425              		.cfi_endproc
+ 426              	.LFE2300:
+ 427              		.fnend
+ 429              		.section	.text.Task_Manager_Init,"ax",%progbits
+ 430              		.align	1
+ 431              		.global	Task_Manager_Init
+ 432              		.syntax unified
+ 433              		.thumb
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 12
+
+
+ 434              		.thumb_func
+ 436              	Task_Manager_Init:
+ 437              		.fnstart
+ 438              	.LFB2299:
+  40:Task/Task_Manager.cpp ****     DevLED.init(Led1);
+ 439              		.loc 1 40 1 view -0
+ 440              		.cfi_startproc
+ 441              		@ args = 0, pretend = 0, frame = 32
+ 442              		@ frame_needed = 0, uses_anonymous_args = 0
+ 443 0000 10B5     		push	{r4, lr}
+ 444              		.save {r4, lr}
+ 445              		.cfi_def_cfa_offset 8
+ 446              		.cfi_offset 4, -8
+ 447              		.cfi_offset 14, -4
+ 448              		.pad #32
+ 449 0002 88B0     		sub	sp, sp, #32
+ 450              		.cfi_def_cfa_offset 40
+  41:Task/Task_Manager.cpp **** #if defined MATEKH743_V1_5
+ 451              		.loc 1 41 5 view .LVU100
+  41:Task/Task_Manager.cpp **** #if defined MATEKH743_V1_5
+ 452              		.loc 1 41 12 is_stmt 0 view .LVU101
+ 453 0004 104C     		ldr	r4, .L12
+  41:Task/Task_Manager.cpp **** #if defined MATEKH743_V1_5
+ 454              		.loc 1 41 16 view .LVU102
+ 455 0006 114B     		ldr	r3, .L12+4
+ 456 0008 93E80700 		ldm	r3, {r0, r1, r2}
+ 457 000c 2368     		ldr	r3, [r4]
+ 458 000e 9847     		blx	r3
+ 459              	.LVL38:
+  59:Task/Task_Manager.cpp **** #endif
+ 460              		.loc 1 59 5 is_stmt 1 view .LVU103
+  59:Task/Task_Manager.cpp **** #endif
+ 461              		.loc 1 59 12 is_stmt 0 view .LVU104
+ 462 0010 2468     		ldr	r4, [r4]
+  59:Task/Task_Manager.cpp **** #endif
+ 463              		.loc 1 59 16 view .LVU105
+ 464 0012 0F4B     		ldr	r3, .L12+8
+ 465 0014 93E80700 		ldm	r3, {r0, r1, r2}
+ 466 0018 A047     		blx	r4
+ 467              	.LVL39:
+  65:Task/Task_Manager.cpp **** 
+ 468              		.loc 1 65 5 is_stmt 1 view .LVU106
+  65:Task/Task_Manager.cpp **** 
+ 469              		.loc 1 65 17 is_stmt 0 view .LVU107
+ 470 001a 0E4B     		ldr	r3, .L12+12
+ 471 001c 1B68     		ldr	r3, [r3]
+  65:Task/Task_Manager.cpp **** 
+ 472              		.loc 1 65 21 view .LVU108
+ 473 001e 9847     		blx	r3
+ 474              	.LVL40:
+  67:Task/Task_Manager.cpp ****     TaskManager_Handle = osThreadCreate(osThread(ManagerTask), NULL);
+ 475              		.loc 1 67 5 is_stmt 1 view .LVU109
+ 476 0020 0DF1040C 		add	ip, sp, #4
+ 477 0024 0C4C     		ldr	r4, .L12+16
+ 478 0026 0FCC     		ldmia	r4!, {r0, r1, r2, r3}
+ 479 0028 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 480 002c 94E80700 		ldm	r4, {r0, r1, r2}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 13
+
+
+ 481 0030 8CE80700 		stm	ip, {r0, r1, r2}
+  68:Task/Task_Manager.cpp **** 
+ 482              		.loc 1 68 5 view .LVU110
+  68:Task/Task_Manager.cpp **** 
+ 483              		.loc 1 68 40 is_stmt 0 view .LVU111
+ 484 0034 0021     		movs	r1, #0
+ 485 0036 01A8     		add	r0, sp, #4
+ 486 0038 FFF7FEFF 		bl	osThreadCreate
+ 487              	.LVL41:
+  68:Task/Task_Manager.cpp **** 
+ 488              		.loc 1 68 24 view .LVU112
+ 489 003c 074B     		ldr	r3, .L12+20
+ 490 003e 1860     		str	r0, [r3]
+  70:Task/Task_Manager.cpp **** }
+ 491              		.loc 1 70 5 is_stmt 1 view .LVU113
+  70:Task/Task_Manager.cpp **** }
+ 492              		.loc 1 70 18 is_stmt 0 view .LVU114
+ 493 0040 FFF7FEFF 		bl	osKernelStart
+ 494              	.LVL42:
+  71:Task/Task_Manager.cpp **** 
+ 495              		.loc 1 71 1 view .LVU115
+ 496 0044 08B0     		add	sp, sp, #32
+ 497              		.cfi_def_cfa_offset 8
+ 498              		@ sp needed
+ 499 0046 10BD     		pop	{r4, pc}
+ 500              	.L13:
+ 501              		.align	2
+ 502              	.L12:
+ 503 0048 00000000 		.word	DevLED
+ 504 004c 00000000 		.word	Led1
+ 505 0050 00000000 		.word	Led2
+ 506 0054 00000000 		.word	SrvOsCommon
+ 507 0058 A8000000 		.word	.LANCHOR0+168
+ 508 005c 00000000 		.word	.LANCHOR7
+ 509              		.cfi_endproc
+ 510              	.LFE2299:
+ 511              		.fnend
+ 513              		.global	TaskManager_Handle
+ 514              		.global	TaskFrameCTL_Handle
+ 515              		.global	TaskTelemetry_Handle
+ 516              		.global	TaskLog_Handle
+ 517              		.global	TaskNavi_Handle
+ 518              		.global	TaskControl_Handle
+ 519              		.global	TaskInertial_Handle
+ 520              		.section	.rodata
+ 521              		.align	2
+ 522              		.set	.LANCHOR0,. + 0
+ 523              	.LC21:
+ 524 0000 0C000000 		.word	.LC2
+ 525 0004 00000000 		.word	TaskSample_Core
+ 526 0008 0300     		.short	3
+ 527 000a 0000     		.space	2
+ 528 000c 00000000 		.word	0
+ 529 0010 00040000 		.word	1024
+ 530 0014 00000000 		.word	0
+ 531 0018 00000000 		.word	0
+ 532              	.LC22:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 14
+
+
+ 533 001c 18000000 		.word	.LC4
+ 534 0020 00000000 		.word	TaskTelemetry_Core
+ 535 0024 0200     		.short	2
+ 536 0026 0000     		.space	2
+ 537 0028 00000000 		.word	0
+ 538 002c 00040000 		.word	1024
+ 539 0030 00000000 		.word	0
+ 540 0034 00000000 		.word	0
+ 541              	.LC23:
+ 542 0038 28000000 		.word	.LC6
+ 543 003c 00000000 		.word	TaskControl_Core
+ 544 0040 0200     		.short	2
+ 545 0042 0000     		.space	2
+ 546 0044 00000000 		.word	0
+ 547 0048 00040000 		.word	1024
+ 548 004c 00000000 		.word	0
+ 549 0050 00000000 		.word	0
+ 550              	.LC24:
+ 551 0054 34000000 		.word	.LC8
+ 552 0058 00000000 		.word	TaskNavi_Core
+ 553 005c 0100     		.short	1
+ 554 005e 0000     		.space	2
+ 555 0060 00000000 		.word	0
+ 556 0064 00040000 		.word	1024
+ 557 0068 00000000 		.word	0
+ 558 006c 00000000 		.word	0
+ 559              	.LC25:
+ 560 0070 3C000000 		.word	.LC10
+ 561 0074 00000000 		.word	TaskBlackBox_Core
+ 562 0078 0000     		.short	0
+ 563 007a 0000     		.space	2
+ 564 007c 00000000 		.word	0
+ 565 0080 00100000 		.word	4096
+ 566 0084 00000000 		.word	0
+ 567 0088 00000000 		.word	0
+ 568              	.LC26:
+ 569 008c 4C000000 		.word	.LC12
+ 570 0090 00000000 		.word	TaskFrameCTL_Core
+ 571 0094 0000     		.short	0
+ 572 0096 0000     		.space	2
+ 573 0098 00000000 		.word	0
+ 574 009c 00040000 		.word	1024
+ 575 00a0 00000000 		.word	0
+ 576 00a4 00000000 		.word	0
+ 577              	.LC27:
+ 578 00a8 00000000 		.word	.LC0
+ 579 00ac 00000000 		.word	Task_Manager_CreateTask
+ 580 00b0 FEFF     		.short	-2
+ 581 00b2 0000     		.space	2
+ 582 00b4 00000000 		.word	0
+ 583 00b8 00040000 		.word	1024
+ 584 00bc 00000000 		.word	0
+ 585 00c0 00000000 		.word	0
+ 586              		.section	.bss.TaskControl_Handle,"aw",%nobits
+ 587              		.align	2
+ 588              		.set	.LANCHOR3,. + 0
+ 591              	TaskControl_Handle:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 15
+
+
+ 592 0000 00000000 		.space	4
+ 593              		.section	.bss.TaskFrameCTL_Handle,"aw",%nobits
+ 594              		.align	2
+ 595              		.set	.LANCHOR6,. + 0
+ 598              	TaskFrameCTL_Handle:
+ 599 0000 00000000 		.space	4
+ 600              		.section	.bss.TaskInertial_Handle,"aw",%nobits
+ 601              		.align	2
+ 602              		.set	.LANCHOR1,. + 0
+ 605              	TaskInertial_Handle:
+ 606 0000 00000000 		.space	4
+ 607              		.section	.bss.TaskLog_Handle,"aw",%nobits
+ 608              		.align	2
+ 609              		.set	.LANCHOR5,. + 0
+ 612              	TaskLog_Handle:
+ 613 0000 00000000 		.space	4
+ 614              		.section	.bss.TaskManager_Handle,"aw",%nobits
+ 615              		.align	2
+ 616              		.set	.LANCHOR7,. + 0
+ 619              	TaskManager_Handle:
+ 620 0000 00000000 		.space	4
+ 621              		.section	.bss.TaskNavi_Handle,"aw",%nobits
+ 622              		.align	2
+ 623              		.set	.LANCHOR4,. + 0
+ 626              	TaskNavi_Handle:
+ 627 0000 00000000 		.space	4
+ 628              		.section	.bss.TaskTelemetry_Handle,"aw",%nobits
+ 629              		.align	2
+ 630              		.set	.LANCHOR2,. + 0
+ 633              	TaskTelemetry_Handle:
+ 634 0000 00000000 		.space	4
+ 635              		.text
+ 636              	.Letext0:
+ 637              		.file 2 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\machine\\_defau
+ 638              		.file 3 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 639              		.file 4 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\c++\\10.3.1\\cs
+ 640              		.file 5 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\c++\\10.3.1\\bi
+ 641              		.file 6 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\c++\\10.3.1\\bi
+ 642              		.file 7 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\c++\\10.3.1\\cm
+ 643              		.file 8 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\c++\\10.3.1\\ar
+ 644              		.file 9 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\lib\\gcc\\arm-none-eabi\\10.3.1\\includ
+ 645              		.file 10 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\stdlib.h"
+ 646              		.file 11 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\c++\\10.3.1\\s
+ 647              		.file 12 "common/gen_physic_def/imu_data.h"
+ 648              		.file 13 "System/FreeRTOS/portable/GCC/ARM_CM4F/portmacro.h"
+ 649              		.file 14 "System/FreeRTOS/include/portable.h"
+ 650              		.file 15 "System/FreeRTOS/include/FreeRTOS.h"
+ 651              		.file 16 "System/FreeRTOS/include/task.h"
+ 652              		.file 17 "System/FreeRTOS/CMSIS_RTOS/cmsis_os.h"
+ 653              		.file 18 "Service/Srv_OsCommon.h"
+ 654              		.file 19 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\math.h"
+ 655              		.file 20 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\c++\\10.3.1\\m
+ 656              		.file 21 "HW_Lib/AT32F435/device_support/at32f435_437.h"
+ 657              		.file 22 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 658              		.file 23 "HW_Lib/PortApi_Def/Bsp_GPIO_Port_Def.h"
+ 659              		.file 24 "Device/Dev_Dshot.h"
+ 660              		.file 25 "Device/Dev_Led.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 16
+
+
+ 661              		.file 26 "debug/debug_util.h"
+ 662              		.file 27 "Device/Dev_W25Qxx.h"
+ 663              		.file 28 "HW_Lib/AT32F435/PinPort_Def/CCRC_AT32_20/HW_Def.h"
+ 664              		.file 29 "Service/Srv_IMUSample.h"
+ 665              		.file 30 "Service/control_data.h"
+ 666              		.file 31 "Task/../System/storage/Storage_Dev_Port.h"
+ 667              		.file 32 "Task/../System/storage/Storage.h"
+ 668              		.file 33 "Service/../MAVLink/common/../mavlink_types.h"
+ 669              		.file 34 "Service/Srv_ComProto.h"
+ 670              		.file 35 "Task/Task_Telemetry.h"
+ 671              		.file 36 "Service/Srv_Upgrade.h"
+ 672              		.file 37 "Service/Srv_LedStrip.h"
+ 673              		.file 38 "System/DataPipe/DataPipe.h"
+ 674              		.file 39 "Task/Task_Sample.h"
+ 675              		.file 40 "Task/Task_Control.h"
+ 676              		.file 41 "Task/Task_BlackBox.h"
+ 677              		.file 42 "Task/Task_Navi.h"
+ 678              		.file 43 "Task/Task_Protocol.h"
+ 679              		.file 44 "<built-in>"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 17
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Task_Manager.cpp
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:17     .rodata.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:42     .rodata.Task_Manager_CreateTask.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:64     .text.Task_Manager_CreateTask:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:70     .text.Task_Manager_CreateTask:00000000 Task_Manager_CreateTask
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:401    .text.Task_Manager_CreateTask:000001b0 $d
+.ARM.exidx.text.Task_Manager_CreateTask:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:430    .text.Task_Manager_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:436    .text.Task_Manager_Init:00000000 Task_Manager_Init
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:503    .text.Task_Manager_Init:00000048 $d
+.ARM.exidx.text.Task_Manager_Init:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:619    .bss.TaskManager_Handle:00000000 TaskManager_Handle
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:598    .bss.TaskFrameCTL_Handle:00000000 TaskFrameCTL_Handle
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:633    .bss.TaskTelemetry_Handle:00000000 TaskTelemetry_Handle
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:612    .bss.TaskLog_Handle:00000000 TaskLog_Handle
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:626    .bss.TaskNavi_Handle:00000000 TaskNavi_Handle
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:591    .bss.TaskControl_Handle:00000000 TaskControl_Handle
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:605    .bss.TaskInertial_Handle:00000000 TaskInertial_Handle
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:521    .rodata:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:587    .bss.TaskControl_Handle:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:594    .bss.TaskFrameCTL_Handle:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:601    .bss.TaskInertial_Handle:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:608    .bss.TaskLog_Handle:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:615    .bss.TaskManager_Handle:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:622    .bss.TaskNavi_Handle:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s:629    .bss.TaskTelemetry_Handle:00000000 $d
+
+UNDEFINED SYMBOLS
+Debug_Port_Init
+Debug_Print
+DataPipe_Init
+TaskSample_Init
+TaskTelemetry_Init
+TaskControl_Init
+TaskBlackBox_Init
+TaskNavi_Init
+TaskFrameCTL_Init
+osThreadCreate
+osDelay
+SrvOsCommon
+DebugPort
+HWVer
+DevW25Qxx
+Storage
+SrvUpgrade
+SrvLedStrip
+SrvComProto
+__aeabi_unwind_cpp_pr0
+osKernelStart
+DevLED
+Led1
+Led2
+TaskSample_Core
+TaskTelemetry_Core
+TaskControl_Core
+TaskNavi_Core
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc4RsSrC.s 			page 18
+
+
+TaskBlackBox_Core
+TaskFrameCTL_Core

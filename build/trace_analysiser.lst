@@ -1,0 +1,790 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"trace_analysiser.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.trace_get_sp,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	trace_get_sp:
+  25              	.LFB339:
+  26              		.file 1 "debug/trace_analysiser.c"
+   1:debug/trace_analysiser.c **** /*
+   2:debug/trace_analysiser.c ****  * Auther: 8_B!T0
+   3:debug/trace_analysiser.c ****  * Reference by CmBacktrace
+   4:debug/trace_analysiser.c ****  * github link : https://github.com/armink/CmBacktrace
+   5:debug/trace_analysiser.c ****  */
+   6:debug/trace_analysiser.c **** #include "trace_analysiser.h"
+   7:debug/trace_analysiser.c **** #include "FreeRTOS.h"
+   8:debug/trace_analysiser.c **** #include "task.h"
+   9:debug/trace_analysiser.c **** #include "debug_util.h"
+  10:debug/trace_analysiser.c **** #include "HW_Def.h"
+  11:debug/trace_analysiser.c **** #include "Srv_Actuator.h"
+  12:debug/trace_analysiser.c **** 
+  13:debug/trace_analysiser.c **** extern uint32_t _sstack;
+  14:debug/trace_analysiser.c **** extern uint32_t _estack;
+  15:debug/trace_analysiser.c **** 
+  16:debug/trace_analysiser.c **** static uint32_t trace_get_sp(void)
+  17:debug/trace_analysiser.c **** {
+  27              		.loc 1 17 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 0
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31              		@ link register save eliminated.
+  18:debug/trace_analysiser.c ****     register uint32_t result;
+  32              		.loc 1 18 5 view .LVU1
+  19:debug/trace_analysiser.c ****     __asm volatile ("MOV %0, sp\n" : "=r" (result) );
+  33              		.loc 1 19 5 view .LVU2
+  34              		.syntax unified
+  35              	@ 19 "debug/trace_analysiser.c" 1
+  36 0000 6846     		MOV r0, sp
+  37              	
+  38              	@ 0 "" 2
+  39              	.LVL0:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 2
+
+
+  20:debug/trace_analysiser.c ****     return(result);
+  40              		.loc 1 20 5 view .LVU3
+  21:debug/trace_analysiser.c **** }
+  41              		.loc 1 21 1 is_stmt 0 view .LVU4
+  42              		.thumb
+  43              		.syntax unified
+  44 0002 7047     		bx	lr
+  45              		.cfi_endproc
+  46              	.LFE339:
+  48              		.section	.text.trace_get_psp,"ax",%progbits
+  49              		.align	1
+  50              		.syntax unified
+  51              		.thumb
+  52              		.thumb_func
+  54              	trace_get_psp:
+  55              	.LFB340:
+  22:debug/trace_analysiser.c **** 
+  23:debug/trace_analysiser.c **** static uint32_t trace_get_psp(void)
+  24:debug/trace_analysiser.c **** {
+  56              		.loc 1 24 1 is_stmt 1 view -0
+  57              		.cfi_startproc
+  58              		@ args = 0, pretend = 0, frame = 0
+  59              		@ frame_needed = 0, uses_anonymous_args = 0
+  60              		@ link register save eliminated.
+  25:debug/trace_analysiser.c ****     register uint32_t result;
+  61              		.loc 1 25 5 view .LVU6
+  26:debug/trace_analysiser.c ****     __asm volatile ("MRS %0, psp\n" : "=r" (result) );
+  62              		.loc 1 26 5 view .LVU7
+  63              		.syntax unified
+  64              	@ 26 "debug/trace_analysiser.c" 1
+  65 0000 EFF30980 		MRS r0, psp
+  66              	
+  67              	@ 0 "" 2
+  68              	.LVL1:
+  27:debug/trace_analysiser.c ****     return(result);
+  69              		.loc 1 27 5 view .LVU8
+  28:debug/trace_analysiser.c **** }
+  70              		.loc 1 28 1 is_stmt 0 view .LVU9
+  71              		.thumb
+  72              		.syntax unified
+  73 0004 7047     		bx	lr
+  74              		.cfi_endproc
+  75              	.LFE340:
+  77              		.section	.text.trace_get_msp,"ax",%progbits
+  78              		.align	1
+  79              		.syntax unified
+  80              		.thumb
+  81              		.thumb_func
+  83              	trace_get_msp:
+  84              	.LFB341:
+  29:debug/trace_analysiser.c **** 
+  30:debug/trace_analysiser.c **** static uint32_t trace_get_msp(void)
+  31:debug/trace_analysiser.c **** {
+  85              		.loc 1 31 1 is_stmt 1 view -0
+  86              		.cfi_startproc
+  87              		@ args = 0, pretend = 0, frame = 0
+  88              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 3
+
+
+  89              		@ link register save eliminated.
+  32:debug/trace_analysiser.c ****     register uint32_t result;
+  90              		.loc 1 32 5 view .LVU11
+  33:debug/trace_analysiser.c ****     __asm volatile ("MRS %0, msp\n" : "=r" (result) );
+  91              		.loc 1 33 5 view .LVU12
+  92              		.syntax unified
+  93              	@ 33 "debug/trace_analysiser.c" 1
+  94 0000 EFF30880 		MRS r0, msp
+  95              	
+  96              	@ 0 "" 2
+  97              	.LVL2:
+  34:debug/trace_analysiser.c ****     return(result);
+  98              		.loc 1 34 5 view .LVU13
+  35:debug/trace_analysiser.c **** }
+  99              		.loc 1 35 1 is_stmt 0 view .LVU14
+ 100              		.thumb
+ 101              		.syntax unified
+ 102 0004 7047     		bx	lr
+ 103              		.cfi_endproc
+ 104              	.LFE341:
+ 106              		.section	.rodata.trace_overflow.str1.4,"aMS",%progbits,1
+ 107              		.align	2
+ 108              	.LC0:
+ 109 0000 73746163 		.ascii	"stack_addr : %08X\015\012\000"
+ 109      6B5F6164 
+ 109      6472203A 
+ 109      20253038 
+ 109      580D0A00 
+ 110              		.align	2
+ 111              	.LC1:
+ 112 0014 5B204445 		.ascii	"[ DEBUG INFO ] \000"
+ 112      42554720 
+ 112      494E464F 
+ 112      205D2000 
+ 113              		.align	2
+ 114              	.LC2:
+ 115 0024 73746163 		.ascii	"stack_start: %08X\015\012\000"
+ 115      6B5F7374 
+ 115      6172743A 
+ 115      20253038 
+ 115      580D0A00 
+ 116              		.align	2
+ 117              	.LC3:
+ 118 0038 73746163 		.ascii	"stack_end  : %08x\015\012\000"
+ 118      6B5F656E 
+ 118      6420203A 
+ 118      20253038 
+ 118      780D0A00 
+ 119              		.align	2
+ 120              	.LC4:
+ 121 004c 73746163 		.ascii	"stack_depth: %d\015\012\000"
+ 121      6B5F6465 
+ 121      7074683A 
+ 121      2025640D 
+ 121      0A00
+ 122 005e 0000     		.align	2
+ 123              	.LC5:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 4
+
+
+ 124 0060 53746163 		.ascii	"Stack Overflow\015\012\000"
+ 124      6B204F76 
+ 124      6572666C 
+ 124      6F770D0A 
+ 124      00
+ 125              		.section	.text.trace_overflow,"ax",%progbits
+ 126              		.align	1
+ 127              		.syntax unified
+ 128              		.thumb
+ 129              		.thumb_func
+ 131              	trace_overflow:
+ 132              	.LVL3:
+ 133              	.LFB342:
+  36:debug/trace_analysiser.c **** 
+  37:debug/trace_analysiser.c **** static bool trace_overflow(uint32_t p_stack, uint32_t stack_s_addr, uint32_t stack_depth)
+  38:debug/trace_analysiser.c **** {
+ 134              		.loc 1 38 1 is_stmt 1 view -0
+ 135              		.cfi_startproc
+ 136              		@ args = 0, pretend = 0, frame = 0
+ 137              		@ frame_needed = 0, uses_anonymous_args = 0
+ 138              		.loc 1 38 1 is_stmt 0 view .LVU16
+ 139 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 140              	.LCFI0:
+ 141              		.cfi_def_cfa_offset 32
+ 142              		.cfi_offset 3, -32
+ 143              		.cfi_offset 4, -28
+ 144              		.cfi_offset 5, -24
+ 145              		.cfi_offset 6, -20
+ 146              		.cfi_offset 7, -16
+ 147              		.cfi_offset 8, -12
+ 148              		.cfi_offset 9, -8
+ 149              		.cfi_offset 14, -4
+ 150 0004 0446     		mov	r4, r0
+ 151 0006 0D46     		mov	r5, r1
+ 152 0008 9046     		mov	r8, r2
+  39:debug/trace_analysiser.c ****     DEBUG_INFO("stack_addr : %08X\r\n", p_stack);
+ 153              		.loc 1 39 5 is_stmt 1 view .LVU17
+ 154 000a 154F     		ldr	r7, .L9
+ 155 000c 154E     		ldr	r6, .L9+4
+ 156 000e 0346     		mov	r3, r0
+ 157 0010 154A     		ldr	r2, .L9+8
+ 158              	.LVL4:
+ 159              		.loc 1 39 5 is_stmt 0 view .LVU18
+ 160 0012 3946     		mov	r1, r7
+ 161              	.LVL5:
+ 162              		.loc 1 39 5 view .LVU19
+ 163 0014 3046     		mov	r0, r6
+ 164              	.LVL6:
+ 165              		.loc 1 39 5 view .LVU20
+ 166 0016 FFF7FEFF 		bl	Debug_Print
+ 167              	.LVL7:
+  40:debug/trace_analysiser.c ****     DEBUG_INFO("stack_start: %08X\r\n", stack_s_addr);
+ 168              		.loc 1 40 5 is_stmt 1 view .LVU21
+ 169 001a 2B46     		mov	r3, r5
+ 170 001c 134A     		ldr	r2, .L9+12
+ 171 001e 3946     		mov	r1, r7
+ 172 0020 3046     		mov	r0, r6
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 5
+
+
+ 173 0022 FFF7FEFF 		bl	Debug_Print
+ 174              	.LVL8:
+  41:debug/trace_analysiser.c ****     DEBUG_INFO("stack_end  : %08x\r\n", stack_depth + stack_s_addr);
+ 175              		.loc 1 41 5 view .LVU22
+ 176 0026 05EB0809 		add	r9, r5, r8
+ 177 002a 4B46     		mov	r3, r9
+ 178 002c 104A     		ldr	r2, .L9+16
+ 179 002e 3946     		mov	r1, r7
+ 180 0030 3046     		mov	r0, r6
+ 181 0032 FFF7FEFF 		bl	Debug_Print
+ 182              	.LVL9:
+  42:debug/trace_analysiser.c ****     DEBUG_INFO("stack_depth: %d\r\n", stack_depth);
+ 183              		.loc 1 42 5 view .LVU23
+ 184 0036 4346     		mov	r3, r8
+ 185 0038 0E4A     		ldr	r2, .L9+20
+ 186 003a 3946     		mov	r1, r7
+ 187 003c 3046     		mov	r0, r6
+ 188 003e FFF7FEFF 		bl	Debug_Print
+ 189              	.LVL10:
+  43:debug/trace_analysiser.c **** 
+  44:debug/trace_analysiser.c ****     p_stack += sizeof(size_t) * 8;
+ 190              		.loc 1 44 5 view .LVU24
+ 191              		.loc 1 44 13 is_stmt 0 view .LVU25
+ 192 0042 2034     		adds	r4, r4, #32
+ 193              	.LVL11:
+  45:debug/trace_analysiser.c **** 
+  46:debug/trace_analysiser.c ****     if ((p_stack < stack_s_addr) || \
+ 194              		.loc 1 46 5 is_stmt 1 view .LVU26
+ 195              		.loc 1 46 8 is_stmt 0 view .LVU27
+ 196 0044 A542     		cmp	r5, r4
+ 197 0046 04D8     		bhi	.L5
+ 198              		.loc 1 46 34 discriminator 1 view .LVU28
+ 199 0048 A145     		cmp	r9, r4
+ 200 004a 02D3     		bcc	.L5
+  47:debug/trace_analysiser.c ****         (p_stack > (stack_depth + stack_s_addr)))
+  48:debug/trace_analysiser.c ****     {
+  49:debug/trace_analysiser.c ****         DEBUG_INFO("Stack Overflow\r\n");
+  50:debug/trace_analysiser.c ****         return true;
+  51:debug/trace_analysiser.c ****     }
+  52:debug/trace_analysiser.c **** 
+  53:debug/trace_analysiser.c ****     return false;
+ 201              		.loc 1 53 12 view .LVU29
+ 202 004c 0020     		movs	r0, #0
+ 203              	.L6:
+  54:debug/trace_analysiser.c **** }
+ 204              		.loc 1 54 1 view .LVU30
+ 205 004e BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 206              	.LVL12:
+ 207              	.L5:
+  49:debug/trace_analysiser.c ****         return true;
+ 208              		.loc 1 49 9 is_stmt 1 view .LVU31
+ 209 0052 094A     		ldr	r2, .L9+24
+ 210 0054 0249     		ldr	r1, .L9
+ 211 0056 0348     		ldr	r0, .L9+4
+ 212 0058 FFF7FEFF 		bl	Debug_Print
+ 213              	.LVL13:
+  50:debug/trace_analysiser.c ****     }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 6
+
+
+ 214              		.loc 1 50 9 view .LVU32
+  50:debug/trace_analysiser.c ****     }
+ 215              		.loc 1 50 16 is_stmt 0 view .LVU33
+ 216 005c 0120     		movs	r0, #1
+ 217 005e F6E7     		b	.L6
+ 218              	.L10:
+ 219              		.align	2
+ 220              	.L9:
+ 221 0060 14000000 		.word	.LC1
+ 222 0064 00000000 		.word	DebugPort
+ 223 0068 00000000 		.word	.LC0
+ 224 006c 24000000 		.word	.LC2
+ 225 0070 38000000 		.word	.LC3
+ 226 0074 4C000000 		.word	.LC4
+ 227 0078 60000000 		.word	.LC5
+ 228              		.cfi_endproc
+ 229              	.LFE342:
+ 231              		.section	.rodata.trace_analysiser.str1.4,"aMS",%progbits,1
+ 232              		.align	2
+ 233              	.LC6:
+ 234 0000 48415244 		.ascii	"HARD FAULT\015\012\000"
+ 234      20464155 
+ 234      4C540D0A 
+ 234      00
+ 235 000d 000000   		.align	2
+ 236              	.LC7:
+ 237 0010 54485245 		.ascii	"THREAD MODE\015\012\000"
+ 237      4144204D 
+ 237      4F44450D 
+ 237      0A00
+ 238 001e 0000     		.align	2
+ 239              	.LC8:
+ 240 0020 54687265 		.ascii	"Thread Name: %s\015\012\000"
+ 240      6164204E 
+ 240      616D653A 
+ 240      2025730D 
+ 240      0A00
+ 241 0032 0000     		.align	2
+ 242              	.LC9:
+ 243 0034 4D41494E 		.ascii	"MAIN STACK\015\012\000"
+ 243      20535441 
+ 243      434B0D0A 
+ 243      00
+ 244 0041 000000   		.align	2
+ 245              	.LC10:
+ 246 0044 73702020 		.ascii	"sp      : %08x\015\012\000"
+ 246      20202020 
+ 246      3A202530 
+ 246      38780D0A 
+ 246      00
+ 247 0055 000000   		.align	2
+ 248              	.LC11:
+ 249 0058 6375725F 		.ascii	"cur_sp  : %08x\015\012\000"
+ 249      73702020 
+ 249      3A202530 
+ 249      38780D0A 
+ 249      00
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 7
+
+
+ 250 0069 000000   		.align	2
+ 251              	.LC12:
+ 252 006c 70737020 		.ascii	"psp     : %08x\015\012\000"
+ 252      20202020 
+ 252      3A202530 
+ 252      38780D0A 
+ 252      00
+ 253 007d 000000   		.align	2
+ 254              	.LC13:
+ 255 0080 6D737020 		.ascii	"msp     : %08x\015\012\000"
+ 255      20202020 
+ 255      3A202530 
+ 255      38780D0A 
+ 255      00
+ 256 0091 000000   		.align	2
+ 257              	.LC14:
+ 258 0094 72302020 		.ascii	"r0  : %08x\015\012\000"
+ 258      3A202530 
+ 258      38780D0A 
+ 258      00
+ 259 00a1 000000   		.align	2
+ 260              	.LC15:
+ 261 00a4 72312020 		.ascii	"r1  : %08x\015\012\000"
+ 261      3A202530 
+ 261      38780D0A 
+ 261      00
+ 262 00b1 000000   		.align	2
+ 263              	.LC16:
+ 264 00b4 72322020 		.ascii	"r2  : %08x\015\012\000"
+ 264      3A202530 
+ 264      38780D0A 
+ 264      00
+ 265 00c1 000000   		.align	2
+ 266              	.LC17:
+ 267 00c4 72332020 		.ascii	"r3  : %08x\015\012\000"
+ 267      3A202530 
+ 267      38780D0A 
+ 267      00
+ 268 00d1 000000   		.align	2
+ 269              	.LC18:
+ 270 00d4 72313220 		.ascii	"r12 : %08x\015\012\000"
+ 270      3A202530 
+ 270      38780D0A 
+ 270      00
+ 271 00e1 000000   		.align	2
+ 272              	.LC19:
+ 273 00e4 6C722020 		.ascii	"lr  : %08x\015\012\000"
+ 273      3A202530 
+ 273      38780D0A 
+ 273      00
+ 274 00f1 000000   		.align	2
+ 275              	.LC20:
+ 276 00f4 70632020 		.ascii	"pc  : %08x\015\012\000"
+ 276      3A202530 
+ 276      38780D0A 
+ 276      00
+ 277 0101 000000   		.align	2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 8
+
+
+ 278              	.LC21:
+ 279 0104 70737220 		.ascii	"psr : %08x\015\012\000"
+ 279      3A202530 
+ 279      38780D0A 
+ 279      00
+ 280              		.section	.text.trace_analysiser,"ax",%progbits
+ 281              		.align	1
+ 282              		.global	trace_analysiser
+ 283              		.syntax unified
+ 284              		.thumb
+ 285              		.thumb_func
+ 287              	trace_analysiser:
+ 288              	.LVL14:
+ 289              	.LFB343:
+  55:debug/trace_analysiser.c **** 
+  56:debug/trace_analysiser.c **** void trace_analysiser(uint32_t lr, uint32_t sp)
+  57:debug/trace_analysiser.c **** {
+ 290              		.loc 1 57 1 is_stmt 1 view -0
+ 291              		.cfi_startproc
+ 292              		@ Volatile: function does not return.
+ 293              		@ args = 0, pretend = 0, frame = 24
+ 294              		@ frame_needed = 0, uses_anonymous_args = 0
+ 295              		.loc 1 57 1 is_stmt 0 view .LVU35
+ 296 0000 00B5     		push	{lr}
+ 297              	.LCFI1:
+ 298              		.cfi_def_cfa_offset 4
+ 299              		.cfi_offset 14, -4
+ 300 0002 87B0     		sub	sp, sp, #28
+ 301              	.LCFI2:
+ 302              		.cfi_def_cfa_offset 32
+ 303 0004 0446     		mov	r4, r0
+ 304 0006 0E46     		mov	r6, r1
+  58:debug/trace_analysiser.c ****     DEBUG_INFO("HARD FAULT\r\n");
+ 305              		.loc 1 58 5 is_stmt 1 view .LVU36
+ 306 0008 4C4A     		ldr	r2, .L16
+ 307 000a 4D49     		ldr	r1, .L16+4
+ 308              	.LVL15:
+ 309              		.loc 1 58 5 is_stmt 0 view .LVU37
+ 310 000c 4D48     		ldr	r0, .L16+8
+ 311              	.LVL16:
+ 312              		.loc 1 58 5 view .LVU38
+ 313 000e FFF7FEFF 		bl	Debug_Print
+ 314              	.LVL17:
+  59:debug/trace_analysiser.c ****     volatile TaskHandle_t p_CurTCB = 0;
+ 315              		.loc 1 59 5 is_stmt 1 view .LVU39
+ 316              		.loc 1 59 27 is_stmt 0 view .LVU40
+ 317 0012 0023     		movs	r3, #0
+ 318 0014 0593     		str	r3, [sp, #20]
+  60:debug/trace_analysiser.c ****     volatile uint32_t err_stack = sp;
+ 319              		.loc 1 60 5 is_stmt 1 view .LVU41
+ 320              		.loc 1 60 23 is_stmt 0 view .LVU42
+ 321 0016 0496     		str	r6, [sp, #16]
+  61:debug/trace_analysiser.c ****     volatile uint32_t cur_sp = trace_get_sp();
+ 322              		.loc 1 61 5 is_stmt 1 view .LVU43
+ 323              		.loc 1 61 32 is_stmt 0 view .LVU44
+ 324 0018 FFF7FEFF 		bl	trace_get_sp
+ 325              	.LVL18:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 9
+
+
+ 326              		.loc 1 61 23 view .LVU45
+ 327 001c 0390     		str	r0, [sp, #12]
+  62:debug/trace_analysiser.c ****     volatile uint32_t msp = trace_get_msp();
+ 328              		.loc 1 62 5 is_stmt 1 view .LVU46
+ 329              		.loc 1 62 29 is_stmt 0 view .LVU47
+ 330 001e FFF7FEFF 		bl	trace_get_msp
+ 331              	.LVL19:
+ 332              		.loc 1 62 23 view .LVU48
+ 333 0022 0290     		str	r0, [sp, #8]
+  63:debug/trace_analysiser.c ****     volatile uint32_t psp = trace_get_psp();
+ 334              		.loc 1 63 5 is_stmt 1 view .LVU49
+ 335              		.loc 1 63 29 is_stmt 0 view .LVU50
+ 336 0024 FFF7FEFF 		bl	trace_get_psp
+ 337              	.LVL20:
+ 338              		.loc 1 63 23 view .LVU51
+ 339 0028 0190     		str	r0, [sp, #4]
+  64:debug/trace_analysiser.c **** 
+  65:debug/trace_analysiser.c ****     /* check mode */
+  66:debug/trace_analysiser.c ****     if (lr & (1 << 2))
+ 340              		.loc 1 66 5 is_stmt 1 view .LVU52
+ 341              		.loc 1 66 8 is_stmt 0 view .LVU53
+ 342 002a 14F0040F 		tst	r4, #4
+ 343 002e 77D0     		beq	.L12
+  67:debug/trace_analysiser.c ****     {
+  68:debug/trace_analysiser.c ****         DEBUG_INFO("THREAD MODE\r\n");
+ 344              		.loc 1 68 9 is_stmt 1 view .LVU54
+ 345 0030 434D     		ldr	r5, .L16+4
+ 346 0032 444C     		ldr	r4, .L16+8
+ 347              	.LVL21:
+ 348              		.loc 1 68 9 is_stmt 0 view .LVU55
+ 349 0034 444A     		ldr	r2, .L16+12
+ 350 0036 2946     		mov	r1, r5
+ 351 0038 2046     		mov	r0, r4
+ 352 003a FFF7FEFF 		bl	Debug_Print
+ 353              	.LVL22:
+  69:debug/trace_analysiser.c **** 
+  70:debug/trace_analysiser.c ****         p_CurTCB = xTaskGetCurrentTaskHandle();
+ 354              		.loc 1 70 9 is_stmt 1 view .LVU56
+ 355              		.loc 1 70 20 is_stmt 0 view .LVU57
+ 356 003e FFF7FEFF 		bl	xTaskGetCurrentTaskHandle
+ 357              	.LVL23:
+ 358              		.loc 1 70 18 view .LVU58
+ 359 0042 0590     		str	r0, [sp, #20]
+  71:debug/trace_analysiser.c **** 
+  72:debug/trace_analysiser.c ****         /* check thread name */
+  73:debug/trace_analysiser.c ****         DEBUG_INFO("Thread Name: %s\r\n", pcTaskGetName(p_CurTCB));
+ 360              		.loc 1 73 9 is_stmt 1 view .LVU59
+ 361 0044 0598     		ldr	r0, [sp, #20]
+ 362 0046 FFF7FEFF 		bl	pcTaskGetName
+ 363              	.LVL24:
+ 364 004a 0346     		mov	r3, r0
+ 365 004c 3F4A     		ldr	r2, .L16+16
+ 366 004e 2946     		mov	r1, r5
+ 367 0050 2046     		mov	r0, r4
+ 368 0052 FFF7FEFF 		bl	Debug_Print
+ 369              	.LVL25:
+  74:debug/trace_analysiser.c ****         err_stack = psp;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 10
+
+
+ 370              		.loc 1 74 9 view .LVU60
+ 371              		.loc 1 74 19 is_stmt 0 view .LVU61
+ 372 0056 019B     		ldr	r3, [sp, #4]
+ 373 0058 0493     		str	r3, [sp, #16]
+  75:debug/trace_analysiser.c ****         trace_overflow(err_stack, (uint32_t)xTaskGetCurrentTaskStack(p_CurTCB), xTaskGetCurrentTask
+ 374              		.loc 1 75 9 is_stmt 1 view .LVU62
+ 375 005a 049D     		ldr	r5, [sp, #16]
+ 376              		.loc 1 75 45 is_stmt 0 view .LVU63
+ 377 005c 0598     		ldr	r0, [sp, #20]
+ 378 005e FFF7FEFF 		bl	xTaskGetCurrentTaskStack
+ 379              	.LVL26:
+ 380 0062 0446     		mov	r4, r0
+ 381              		.loc 1 75 9 view .LVU64
+ 382 0064 0598     		ldr	r0, [sp, #20]
+ 383 0066 FFF7FEFF 		bl	xTaskGetCurrentTaskStackDeph
+ 384              	.LVL27:
+ 385 006a 0246     		mov	r2, r0
+ 386 006c 2146     		mov	r1, r4
+ 387 006e 2846     		mov	r0, r5
+ 388 0070 FFF7FEFF 		bl	trace_overflow
+ 389              	.LVL28:
+ 390              	.L13:
+  76:debug/trace_analysiser.c ****     }
+  77:debug/trace_analysiser.c ****     else
+  78:debug/trace_analysiser.c ****     {
+  79:debug/trace_analysiser.c ****         DEBUG_INFO("MAIN STACK\r\n");
+  80:debug/trace_analysiser.c ****         trace_overflow(err_stack, _sstack, _estack);
+  81:debug/trace_analysiser.c ****     }
+  82:debug/trace_analysiser.c **** 
+  83:debug/trace_analysiser.c ****     DEBUG_INFO("sp      : %08x\r\n", sp);
+ 391              		.loc 1 83 5 is_stmt 1 view .LVU65
+ 392 0074 324D     		ldr	r5, .L16+4
+ 393 0076 334C     		ldr	r4, .L16+8
+ 394 0078 3346     		mov	r3, r6
+ 395 007a 354A     		ldr	r2, .L16+20
+ 396 007c 2946     		mov	r1, r5
+ 397 007e 2046     		mov	r0, r4
+ 398 0080 FFF7FEFF 		bl	Debug_Print
+ 399              	.LVL29:
+  84:debug/trace_analysiser.c ****     DEBUG_INFO("cur_sp  : %08x\r\n", cur_sp);
+ 400              		.loc 1 84 5 view .LVU66
+ 401 0084 039B     		ldr	r3, [sp, #12]
+ 402 0086 334A     		ldr	r2, .L16+24
+ 403 0088 2946     		mov	r1, r5
+ 404 008a 2046     		mov	r0, r4
+ 405 008c FFF7FEFF 		bl	Debug_Print
+ 406              	.LVL30:
+  85:debug/trace_analysiser.c ****     DEBUG_INFO("psp     : %08x\r\n", psp);
+ 407              		.loc 1 85 5 view .LVU67
+ 408 0090 019B     		ldr	r3, [sp, #4]
+ 409 0092 314A     		ldr	r2, .L16+28
+ 410 0094 2946     		mov	r1, r5
+ 411 0096 2046     		mov	r0, r4
+ 412 0098 FFF7FEFF 		bl	Debug_Print
+ 413              	.LVL31:
+  86:debug/trace_analysiser.c ****     DEBUG_INFO("msp     : %08x\r\n", msp);
+ 414              		.loc 1 86 5 view .LVU68
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 11
+
+
+ 415 009c 029B     		ldr	r3, [sp, #8]
+ 416 009e 2F4A     		ldr	r2, .L16+32
+ 417 00a0 2946     		mov	r1, r5
+ 418 00a2 2046     		mov	r0, r4
+ 419 00a4 FFF7FEFF 		bl	Debug_Print
+ 420              	.LVL32:
+  87:debug/trace_analysiser.c **** 
+  88:debug/trace_analysiser.c ****     /* dump regular register r0 r1 r2 r3 r12 lr pc psr */
+  89:debug/trace_analysiser.c ****     DEBUG_INFO("r0  : %08x\r\n", ((uint32_t *)err_stack)[0]);
+ 421              		.loc 1 89 5 view .LVU69
+ 422 00a8 049B     		ldr	r3, [sp, #16]
+ 423 00aa 1B68     		ldr	r3, [r3]
+ 424 00ac 2C4A     		ldr	r2, .L16+36
+ 425 00ae 2946     		mov	r1, r5
+ 426 00b0 2046     		mov	r0, r4
+ 427 00b2 FFF7FEFF 		bl	Debug_Print
+ 428              	.LVL33:
+  90:debug/trace_analysiser.c ****     DEBUG_INFO("r1  : %08x\r\n", ((uint32_t *)err_stack)[1]);
+ 429              		.loc 1 90 5 view .LVU70
+ 430 00b6 049B     		ldr	r3, [sp, #16]
+ 431 00b8 5B68     		ldr	r3, [r3, #4]
+ 432 00ba 2A4A     		ldr	r2, .L16+40
+ 433 00bc 2946     		mov	r1, r5
+ 434 00be 2046     		mov	r0, r4
+ 435 00c0 FFF7FEFF 		bl	Debug_Print
+ 436              	.LVL34:
+  91:debug/trace_analysiser.c ****     DEBUG_INFO("r2  : %08x\r\n", ((uint32_t *)err_stack)[2]);
+ 437              		.loc 1 91 5 view .LVU71
+ 438 00c4 049B     		ldr	r3, [sp, #16]
+ 439 00c6 9B68     		ldr	r3, [r3, #8]
+ 440 00c8 274A     		ldr	r2, .L16+44
+ 441 00ca 2946     		mov	r1, r5
+ 442 00cc 2046     		mov	r0, r4
+ 443 00ce FFF7FEFF 		bl	Debug_Print
+ 444              	.LVL35:
+  92:debug/trace_analysiser.c ****     DEBUG_INFO("r3  : %08x\r\n", ((uint32_t *)err_stack)[3]);
+ 445              		.loc 1 92 5 view .LVU72
+ 446 00d2 049B     		ldr	r3, [sp, #16]
+ 447 00d4 DB68     		ldr	r3, [r3, #12]
+ 448 00d6 254A     		ldr	r2, .L16+48
+ 449 00d8 2946     		mov	r1, r5
+ 450 00da 2046     		mov	r0, r4
+ 451 00dc FFF7FEFF 		bl	Debug_Print
+ 452              	.LVL36:
+  93:debug/trace_analysiser.c ****     DEBUG_INFO("r12 : %08x\r\n", ((uint32_t *)err_stack)[4]);
+ 453              		.loc 1 93 5 view .LVU73
+ 454 00e0 049B     		ldr	r3, [sp, #16]
+ 455 00e2 1B69     		ldr	r3, [r3, #16]
+ 456 00e4 224A     		ldr	r2, .L16+52
+ 457 00e6 2946     		mov	r1, r5
+ 458 00e8 2046     		mov	r0, r4
+ 459 00ea FFF7FEFF 		bl	Debug_Print
+ 460              	.LVL37:
+  94:debug/trace_analysiser.c ****         
+  95:debug/trace_analysiser.c ****     DEBUG_INFO("lr  : %08x\r\n", ((uint32_t *)err_stack)[5]);
+ 461              		.loc 1 95 5 view .LVU74
+ 462 00ee 049B     		ldr	r3, [sp, #16]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 12
+
+
+ 463 00f0 5B69     		ldr	r3, [r3, #20]
+ 464 00f2 204A     		ldr	r2, .L16+56
+ 465 00f4 2946     		mov	r1, r5
+ 466 00f6 2046     		mov	r0, r4
+ 467 00f8 FFF7FEFF 		bl	Debug_Print
+ 468              	.LVL38:
+  96:debug/trace_analysiser.c ****     DEBUG_INFO("pc  : %08x\r\n", ((uint32_t *)err_stack)[6]);
+ 469              		.loc 1 96 5 view .LVU75
+ 470 00fc 049B     		ldr	r3, [sp, #16]
+ 471 00fe 9B69     		ldr	r3, [r3, #24]
+ 472 0100 1D4A     		ldr	r2, .L16+60
+ 473 0102 2946     		mov	r1, r5
+ 474 0104 2046     		mov	r0, r4
+ 475 0106 FFF7FEFF 		bl	Debug_Print
+ 476              	.LVL39:
+  97:debug/trace_analysiser.c ****     DEBUG_INFO("psr : %08x\r\n", ((uint32_t *)err_stack)[7]);
+ 477              		.loc 1 97 5 view .LVU76
+ 478 010a 049B     		ldr	r3, [sp, #16]
+ 479 010c DB69     		ldr	r3, [r3, #28]
+ 480 010e 1B4A     		ldr	r2, .L16+64
+ 481 0110 2946     		mov	r1, r5
+ 482 0112 2046     		mov	r0, r4
+ 483 0114 FFF7FEFF 		bl	Debug_Print
+ 484              	.LVL40:
+  98:debug/trace_analysiser.c **** 
+  99:debug/trace_analysiser.c ****     /* lock all moto */
+ 100:debug/trace_analysiser.c ****     SrvActuator.lock();
+ 485              		.loc 1 100 5 view .LVU77
+ 486              		.loc 1 100 16 is_stmt 0 view .LVU78
+ 487 0118 194B     		ldr	r3, .L16+68
+ 488 011a DB68     		ldr	r3, [r3, #12]
+ 489              		.loc 1 100 5 view .LVU79
+ 490 011c 9847     		blx	r3
+ 491              	.LVL41:
+ 492              	.L14:
+ 101:debug/trace_analysiser.c **** 
+ 102:debug/trace_analysiser.c ****     while (1);
+ 493              		.loc 1 102 5 is_stmt 1 discriminator 1 view .LVU80
+ 494              		.loc 1 102 14 discriminator 1 view .LVU81
+ 495              		.loc 1 102 11 discriminator 1 view .LVU82
+ 496 011e FEE7     		b	.L14
+ 497              	.LVL42:
+ 498              	.L12:
+  79:debug/trace_analysiser.c ****         trace_overflow(err_stack, _sstack, _estack);
+ 499              		.loc 1 79 9 view .LVU83
+ 500 0120 184A     		ldr	r2, .L16+72
+ 501 0122 0749     		ldr	r1, .L16+4
+ 502 0124 0748     		ldr	r0, .L16+8
+ 503 0126 FFF7FEFF 		bl	Debug_Print
+ 504              	.LVL43:
+  80:debug/trace_analysiser.c ****     }
+ 505              		.loc 1 80 9 view .LVU84
+ 506 012a 0498     		ldr	r0, [sp, #16]
+ 507 012c 164B     		ldr	r3, .L16+76
+ 508 012e 1A68     		ldr	r2, [r3]
+ 509 0130 164B     		ldr	r3, .L16+80
+ 510 0132 1968     		ldr	r1, [r3]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 13
+
+
+ 511 0134 FFF7FEFF 		bl	trace_overflow
+ 512              	.LVL44:
+ 513 0138 9CE7     		b	.L13
+ 514              	.L17:
+ 515 013a 00BF     		.align	2
+ 516              	.L16:
+ 517 013c 00000000 		.word	.LC6
+ 518 0140 14000000 		.word	.LC1
+ 519 0144 00000000 		.word	DebugPort
+ 520 0148 10000000 		.word	.LC7
+ 521 014c 20000000 		.word	.LC8
+ 522 0150 44000000 		.word	.LC10
+ 523 0154 58000000 		.word	.LC11
+ 524 0158 6C000000 		.word	.LC12
+ 525 015c 80000000 		.word	.LC13
+ 526 0160 94000000 		.word	.LC14
+ 527 0164 A4000000 		.word	.LC15
+ 528 0168 B4000000 		.word	.LC16
+ 529 016c C4000000 		.word	.LC17
+ 530 0170 D4000000 		.word	.LC18
+ 531 0174 E4000000 		.word	.LC19
+ 532 0178 F4000000 		.word	.LC20
+ 533 017c 04010000 		.word	.LC21
+ 534 0180 00000000 		.word	SrvActuator
+ 535 0184 34000000 		.word	.LC9
+ 536 0188 00000000 		.word	_estack
+ 537 018c 00000000 		.word	_sstack
+ 538              		.cfi_endproc
+ 539              	.LFE343:
+ 541              		.text
+ 542              	.Letext0:
+ 543              		.file 2 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\machine\\_defau
+ 544              		.file 3 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 545              		.file 4 "System/FreeRTOS/include/task.h"
+ 546              		.file 5 "debug/debug_util.h"
+ 547              		.file 6 "Service/Srv_Actuator.h"
+ 548              		.file 7 "HW_Lib/STM32H7/PinPort_Def/Neure/HW_Def.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s 			page 14
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 trace_analysiser.c
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:19     .text.trace_get_sp:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:24     .text.trace_get_sp:00000000 trace_get_sp
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:49     .text.trace_get_psp:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:54     .text.trace_get_psp:00000000 trace_get_psp
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:78     .text.trace_get_msp:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:83     .text.trace_get_msp:00000000 trace_get_msp
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:107    .rodata.trace_overflow.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:126    .text.trace_overflow:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:131    .text.trace_overflow:00000000 trace_overflow
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:221    .text.trace_overflow:00000060 $d
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:232    .rodata.trace_analysiser.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:281    .text.trace_analysiser:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:287    .text.trace_analysiser:00000000 trace_analysiser
+C:\Users\HUAV\AppData\Local\Temp\cc0QeCJp.s:517    .text.trace_analysiser:0000013c $d
+
+UNDEFINED SYMBOLS
+Debug_Print
+DebugPort
+xTaskGetCurrentTaskHandle
+pcTaskGetName
+xTaskGetCurrentTaskStack
+xTaskGetCurrentTaskStackDeph
+SrvActuator
+_estack
+_sstack

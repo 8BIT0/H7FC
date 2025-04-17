@@ -90,7 +90,7 @@ static BWF_Object_Handle PriIMU_Acc_LPF_Handle[Axis_Sum] = {0};
 static SrvIMU_CalibMonitor_TypeDef PriGyro_Calib_Monitor;
 
 #if (IMU_SUM > 1)
-static SrvIMU_Data_TypeDef SecIMU_Data
+static SrvIMU_Data_TypeDef SecIMU_Data;
 static SrvIMU_Data_TypeDef SecIMU_Data_Lst;
 static SrvIMU_InuseSensorObj_TypeDef InUse_SecIMU_Obj;
 

@@ -1,0 +1,1673 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Srv_Upgrade.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.SrvUpgrade_PortProcPolling,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	SrvUpgrade_PortProcPolling:
+  26              	.LVL0:
+  27              	.LFB153:
+  28              		.file 1 "Service/Srv_Upgrade.c"
+   1:Service/Srv_Upgrade.c **** /*
+   2:Service/Srv_Upgrade.c ****  *  Auther: 8_B!T0
+   3:Service/Srv_Upgrade.c ****  *  Noticed: this file use to upgrade App / Module Firmware 
+   4:Service/Srv_Upgrade.c ****  *  When at bootloader use this file can upgrade App and Module Firmware
+   5:Service/Srv_Upgrade.c ****  *  When at app use this file can upgrade Bootloader and Module Firmware
+   6:Service/Srv_Upgrade.c ****  *  
+   7:Service/Srv_Upgrade.c ****  *                      F ------- Y ------ I
+   8:Service/Srv_Upgrade.c ****  *                      still in developping
+   9:Service/Srv_Upgrade.c ****  */
+  10:Service/Srv_Upgrade.c **** #include "Srv_Upgrade.h"
+  11:Service/Srv_Upgrade.c **** #include "util.h"
+  12:Service/Srv_Upgrade.c **** #include "../System/storage/Storage.h"
+  13:Service/Srv_Upgrade.c **** #include "Bsp_Flash.h"
+  14:Service/Srv_Upgrade.c **** #include "shell_port.h"
+  15:Service/Srv_Upgrade.c **** #include "HW_Def.h"
+  16:Service/Srv_Upgrade.c **** #include "debug_util.h"
+  17:Service/Srv_Upgrade.c **** 
+  18:Service/Srv_Upgrade.c **** #define FIRMWARE_WAITTING_TIMEOUT   60000   /* unit: ms */
+  19:Service/Srv_Upgrade.c **** #define FIRMWARE_COMMU_TIMEOUT      1000    /* unit: ms */
+  20:Service/Srv_Upgrade.c **** #define DEFAULT_WINDOW_SIZE         100     /* unit: ms */
+  21:Service/Srv_Upgrade.c **** 
+  22:Service/Srv_Upgrade.c **** const uint8_t AppVer[3] = {0, 0, 17};
+  23:Service/Srv_Upgrade.c **** 
+  24:Service/Srv_Upgrade.c **** #define AppBref "First Version of H7FC"
+  25:Service/Srv_Upgrade.c **** #define AppCompileData __DATA__
+  26:Service/Srv_Upgrade.c **** #define FIRMWARE_MAX_READ_SIZE (4 Kb)
+  27:Service/Srv_Upgrade.c **** 
+  28:Service/Srv_Upgrade.c **** #define UpgradeInfo_Sec  "Upgrade_Info"
+  29:Service/Srv_Upgrade.c **** 
+  30:Service/Srv_Upgrade.c **** #define UPGERADE_INFO(fmt,...) Debug_Print(&DebugPort, "[ UPGRADE INFO ] ", fmt, ##__VA_ARGS__)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 2
+
+
+  31:Service/Srv_Upgrade.c **** 
+  32:Service/Srv_Upgrade.c **** typedef void (*Application_Func)(void);
+  33:Service/Srv_Upgrade.c **** 
+  34:Service/Srv_Upgrade.c **** static uint8_t upgrade_buf[FIRMWARE_MAX_READ_SIZE] = {0};
+  35:Service/Srv_Upgrade.c **** 
+  36:Service/Srv_Upgrade.c **** __attribute__((weak)) bool Write_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return 
+  37:Service/Srv_Upgrade.c **** __attribute__((weak)) bool Read_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return f
+  38:Service/Srv_Upgrade.c **** __attribute__((weak)) bool Erase_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return 
+  39:Service/Srv_Upgrade.c **** 
+  40:Service/Srv_Upgrade.c **** typedef enum
+  41:Service/Srv_Upgrade.c **** {
+  42:Service/Srv_Upgrade.c ****     UpgradeParam_None = 0,
+  43:Service/Srv_Upgrade.c ****     UpgradeParam_InValid,
+  44:Service/Srv_Upgrade.c ****     UpgradeParam_Valid,
+  45:Service/Srv_Upgrade.c **** } SrvUpgrade_ParamValid_List;
+  46:Service/Srv_Upgrade.c **** 
+  47:Service/Srv_Upgrade.c **** typedef struct
+  48:Service/Srv_Upgrade.c **** {
+  49:Service/Srv_Upgrade.c ****     bool access;
+  50:Service/Srv_Upgrade.c ****     uint16_t size;
+  51:Service/Srv_Upgrade.c ****     uint16_t total_size;
+  52:Service/Srv_Upgrade.c ****     uint8_t *p_buf;
+  53:Service/Srv_Upgrade.c **** } SrvUpgrade_Stream_TypeDef;
+  54:Service/Srv_Upgrade.c **** 
+  55:Service/Srv_Upgrade.c **** typedef struct
+  56:Service/Srv_Upgrade.c **** {
+  57:Service/Srv_Upgrade.c ****     bool init_state;
+  58:Service/Srv_Upgrade.c **** 
+  59:Service/Srv_Upgrade.c ****     SrvUpgrade_Stage_List PollingState;
+  60:Service/Srv_Upgrade.c ****     SrvUpgrade_PortDataProc_List PortDataState;
+  61:Service/Srv_Upgrade.c **** 
+  62:Service/Srv_Upgrade.c ****     uint32_t discard_time;
+  63:Service/Srv_Upgrade.c **** 
+  64:Service/Srv_Upgrade.c ****     uint32_t rec_timeout;
+  65:Service/Srv_Upgrade.c ****     uint32_t rec_time;
+  66:Service/Srv_Upgrade.c ****     
+  67:Service/Srv_Upgrade.c ****     Storage_ItemSearchOut_TypeDef UpgradeInfo_SO;
+  68:Service/Srv_Upgrade.c ****     
+  69:Service/Srv_Upgrade.c ****     bool info_update;
+  70:Service/Srv_Upgrade.c **** 
+  71:Service/Srv_Upgrade.c ****     SrvUpgrade_Stream_TypeDef proc_stream[2];
+  72:Service/Srv_Upgrade.c **** 
+  73:Service/Srv_Upgrade.c ****     uint8_t LogOut_Info[1024];
+  74:Service/Srv_Upgrade.c ****     uint16_t LogOut_Info_size;
+  75:Service/Srv_Upgrade.c **** } SrvUpgradeMonitor_TypeDef;
+  76:Service/Srv_Upgrade.c **** 
+  77:Service/Srv_Upgrade.c **** typedef struct
+  78:Service/Srv_Upgrade.c **** {
+  79:Service/Srv_Upgrade.c ****     uint32_t read_addr;
+  80:Service/Srv_Upgrade.c ****     uint32_t read_size;
+  81:Service/Srv_Upgrade.c **** 
+  82:Service/Srv_Upgrade.c ****     uint32_t write_addr;
+  83:Service/Srv_Upgrade.c ****     uint32_t write_size;
+  84:Service/Srv_Upgrade.c **** 
+  85:Service/Srv_Upgrade.c ****     uint32_t remain_size;
+  86:Service/Srv_Upgrade.c **** } FlashMonitor_TypeDef;
+  87:Service/Srv_Upgrade.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 3
+
+
+  88:Service/Srv_Upgrade.c **** /* internal virable */
+  89:Service/Srv_Upgrade.c **** static SrvUpgradeMonitor_TypeDef Monitor = {
+  90:Service/Srv_Upgrade.c ****     .init_state = false,
+  91:Service/Srv_Upgrade.c **** };
+  92:Service/Srv_Upgrade.c **** 
+  93:Service/Srv_Upgrade.c **** /* internal function */
+  94:Service/Srv_Upgrade.c **** static void SrvUpgrade_Collect_Info(const char *format, ...);
+  95:Service/Srv_Upgrade.c **** static void SrvUpgrade_CheckUpgrade_OnBootUp(void);
+  96:Service/Srv_Upgrade.c **** 
+  97:Service/Srv_Upgrade.c **** /* external function */
+  98:Service/Srv_Upgrade.c **** static bool SrvUpgrade_Init(void);
+  99:Service/Srv_Upgrade.c **** static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time);
+ 100:Service/Srv_Upgrade.c **** static uint16_t SrvUpgrade_Get_Info(uint8_t *p_info, uint16_t len);
+ 101:Service/Srv_Upgrade.c **** static bool SrvUpgrade_PushData(uint32_t sys_time, uint8_t *p_buf, uint16_t len);
+ 102:Service/Srv_Upgrade.c **** 
+ 103:Service/Srv_Upgrade.c **** /* external function */
+ 104:Service/Srv_Upgrade.c **** SrvUpgrade_TypeDef SrvUpgrade = {
+ 105:Service/Srv_Upgrade.c ****     .init = SrvUpgrade_Init,
+ 106:Service/Srv_Upgrade.c ****     .polling = SrvUpgrade_StatePolling,
+ 107:Service/Srv_Upgrade.c ****     .push_data = SrvUpgrade_PushData,
+ 108:Service/Srv_Upgrade.c **** };
+ 109:Service/Srv_Upgrade.c **** 
+ 110:Service/Srv_Upgrade.c **** static bool SrvUpgrade_Init(void)
+ 111:Service/Srv_Upgrade.c **** {
+ 112:Service/Srv_Upgrade.c ****     if (sizeof(upgrade_buf) % 2)
+ 113:Service/Srv_Upgrade.c ****         return false;
+ 114:Service/Srv_Upgrade.c **** 
+ 115:Service/Srv_Upgrade.c ****     /* reset file info */
+ 116:Service/Srv_Upgrade.c ****     Monitor.info_update = false;
+ 117:Service/Srv_Upgrade.c **** 
+ 118:Service/Srv_Upgrade.c ****     /* get data from storage */
+ 119:Service/Srv_Upgrade.c ****     Monitor.LogOut_Info_size = 0;
+ 120:Service/Srv_Upgrade.c **** 
+ 121:Service/Srv_Upgrade.c ****     memset(Monitor.LogOut_Info, 0, sizeof(Monitor.LogOut_Info));
+ 122:Service/Srv_Upgrade.c ****     Monitor.LogOut_Info_size = 0;
+ 123:Service/Srv_Upgrade.c ****     
+ 124:Service/Srv_Upgrade.c ****     /* set stream */
+ 125:Service/Srv_Upgrade.c ****     Monitor.proc_stream[0].access = false;
+ 126:Service/Srv_Upgrade.c ****     Monitor.proc_stream[0].size = 0;
+ 127:Service/Srv_Upgrade.c ****     Monitor.proc_stream[0].total_size = sizeof(upgrade_buf) / 2;
+ 128:Service/Srv_Upgrade.c ****     Monitor.proc_stream[0].p_buf = upgrade_buf;
+ 129:Service/Srv_Upgrade.c **** 
+ 130:Service/Srv_Upgrade.c ****     Monitor.proc_stream[1].access = false;
+ 131:Service/Srv_Upgrade.c ****     Monitor.proc_stream[1].size = 0;
+ 132:Service/Srv_Upgrade.c ****     Monitor.proc_stream[1].total_size = sizeof(upgrade_buf) / 2;
+ 133:Service/Srv_Upgrade.c ****     Monitor.proc_stream[1].p_buf = &upgrade_buf[sizeof(upgrade_buf) / 2];
+ 134:Service/Srv_Upgrade.c **** 
+ 135:Service/Srv_Upgrade.c ****     Monitor.init_state = true;
+ 136:Service/Srv_Upgrade.c ****     Monitor.PollingState = Stage_Init;
+ 137:Service/Srv_Upgrade.c ****     Monitor.PortDataState = PortProc_None;
+ 138:Service/Srv_Upgrade.c ****     
+ 139:Service/Srv_Upgrade.c ****     /* 
+ 140:Service/Srv_Upgrade.c ****      * whatever on boot or app
+ 141:Service/Srv_Upgrade.c ****      * check upgrade on boot up
+ 142:Service/Srv_Upgrade.c ****      */
+ 143:Service/Srv_Upgrade.c ****     SrvUpgrade_CheckUpgrade_OnBootUp();
+ 144:Service/Srv_Upgrade.c ****     return true;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 4
+
+
+ 145:Service/Srv_Upgrade.c **** }
+ 146:Service/Srv_Upgrade.c **** 
+ 147:Service/Srv_Upgrade.c **** static void SrvUpgrade_CheckUpgrade_OnBootUp(void)
+ 148:Service/Srv_Upgrade.c **** {
+ 149:Service/Srv_Upgrade.c ****     SrvUpgradeInfo_TypeDef Info;
+ 150:Service/Srv_Upgrade.c ****     uint32_t file_size = 0;
+ 151:Service/Srv_Upgrade.c ****     uint16_t update_size = 0;
+ 152:Service/Srv_Upgrade.c ****     uint32_t addr_offset = 0;
+ 153:Service/Srv_Upgrade.c **** 
+ 154:Service/Srv_Upgrade.c ****     memset(&Monitor.UpgradeInfo_SO, 0, sizeof(Monitor.UpgradeInfo_SO));
+ 155:Service/Srv_Upgrade.c ****     memset(&Info, 0, sizeof(Info));
+ 156:Service/Srv_Upgrade.c **** 
+ 157:Service/Srv_Upgrade.c ****     /* check upgrade enable control first */
+ 158:Service/Srv_Upgrade.c ****     Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
+ 159:Service/Srv_Upgrade.c ****     if (Monitor.UpgradeInfo_SO.item_addr)
+ 160:Service/Srv_Upgrade.c ****     {
+ 161:Service/Srv_Upgrade.c ****         Storage.get(Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)(&Info), sizeof(SrvUpgradeIn
+ 162:Service/Srv_Upgrade.c ****         /* read parameter section */
+ 163:Service/Srv_Upgrade.c ****         while (file_size)
+ 164:Service/Srv_Upgrade.c ****         {
+ 165:Service/Srv_Upgrade.c ****             update_size = file_size;
+ 166:Service/Srv_Upgrade.c ****             if (file_size > 1024)
+ 167:Service/Srv_Upgrade.c ****                 update_size = 1024;
+ 168:Service/Srv_Upgrade.c **** 
+ 169:Service/Srv_Upgrade.c ****             /* read firmware from storage */
+ 170:Service/Srv_Upgrade.c ****             memset(upgrade_buf, 0, update_size);
+ 171:Service/Srv_Upgrade.c ****             Storage.read_firmware(addr_offset, upgrade_buf, update_size);
+ 172:Service/Srv_Upgrade.c **** 
+ 173:Service/Srv_Upgrade.c ****             SrvOsCommon.enter_critical();
+ 174:Service/Srv_Upgrade.c ****             /* write firmware to boot flash */
+ 175:Service/Srv_Upgrade.c ****             Storage.write_firmware(Internal_Flash, addr_offset, upgrade_buf, update_size);
+ 176:Service/Srv_Upgrade.c ****             SrvOsCommon.exit_critical();
+ 177:Service/Srv_Upgrade.c **** 
+ 178:Service/Srv_Upgrade.c ****             file_size -= update_size;
+ 179:Service/Srv_Upgrade.c ****             addr_offset += update_size;
+ 180:Service/Srv_Upgrade.c ****         }
+ 181:Service/Srv_Upgrade.c ****     }
+ 182:Service/Srv_Upgrade.c ****     else
+ 183:Service/Srv_Upgrade.c ****     {
+ 184:Service/Srv_Upgrade.c ****         Storage.create(Para_Boot, UpgradeInfo_Sec, (uint8_t *)(&Info), sizeof(SrvUpgradeInfo_TypeDe
+ 185:Service/Srv_Upgrade.c ****         Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
+ 186:Service/Srv_Upgrade.c ****     }
+ 187:Service/Srv_Upgrade.c **** 
+ 188:Service/Srv_Upgrade.c ****     if (Monitor.UpgradeInfo_SO.item_addr == 0)
+ 189:Service/Srv_Upgrade.c ****     {
+ 190:Service/Srv_Upgrade.c ****         Monitor.init_state = false;
+ 191:Service/Srv_Upgrade.c ****         Monitor.PollingState = Stage_UpgradeInfo_Error;
+ 192:Service/Srv_Upgrade.c ****     }
+ 193:Service/Srv_Upgrade.c **** }
+ 194:Service/Srv_Upgrade.c **** 
+ 195:Service/Srv_Upgrade.c **** static SrvUpgrade_PortDataProc_List SrvUpgrade_PortProcPolling(uint32_t sys_time)
+ 196:Service/Srv_Upgrade.c **** {
+  29              		.loc 1 196 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 196 1 is_stmt 0 view .LVU1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 5
+
+
+  34 0000 00B5     		push	{lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 4
+  37              		.cfi_offset 14, -4
+  38 0002 8646     		mov	lr, r0
+ 197:Service/Srv_Upgrade.c ****     SrvUpgrade_PortDataProc_List ret;
+  39              		.loc 1 197 5 is_stmt 1 view .LVU2
+ 198:Service/Srv_Upgrade.c **** 
+ 199:Service/Srv_Upgrade.c ****     for (uint8_t i = 0; i < 2; i ++)
+  40              		.loc 1 199 5 view .LVU3
+  41              	.LBB2:
+  42              		.loc 1 199 10 view .LVU4
+  43              	.LVL1:
+  44              		.loc 1 199 18 is_stmt 0 view .LVU5
+  45 0004 0023     		movs	r3, #0
+  46              		.loc 1 199 5 view .LVU6
+  47 0006 01E0     		b	.L2
+  48              	.LVL2:
+  49              	.L3:
+  50              		.loc 1 199 32 is_stmt 1 discriminator 2 view .LVU7
+  51              		.loc 1 199 34 is_stmt 0 discriminator 2 view .LVU8
+  52 0008 0133     		adds	r3, r3, #1
+  53              	.LVL3:
+  54              		.loc 1 199 34 discriminator 2 view .LVU9
+  55 000a DBB2     		uxtb	r3, r3
+  56              	.LVL4:
+  57              	.L2:
+  58              		.loc 1 199 25 is_stmt 1 discriminator 1 view .LVU10
+  59              		.loc 1 199 5 is_stmt 0 discriminator 1 view .LVU11
+  60 000c 012B     		cmp	r3, #1
+  61 000e 1CD8     		bhi	.L11
+ 200:Service/Srv_Upgrade.c ****     {
+ 201:Service/Srv_Upgrade.c ****         if (!Monitor.proc_stream[i].access && Monitor.proc_stream[i].size)
+  62              		.loc 1 201 9 is_stmt 1 view .LVU12
+  63              		.loc 1 201 36 is_stmt 0 view .LVU13
+  64 0010 03EB4302 		add	r2, r3, r3, lsl #1
+  65 0014 1D49     		ldr	r1, .L14
+  66 0016 01EB8202 		add	r2, r1, r2, lsl #2
+  67 001a 92F85820 		ldrb	r2, [r2, #88]	@ zero_extendqisi2
+  68              		.loc 1 201 12 view .LVU14
+  69 001e 002A     		cmp	r2, #0
+  70 0020 F2D1     		bne	.L3
+  71              		.loc 1 201 69 discriminator 1 view .LVU15
+  72 0022 03EB4302 		add	r2, r3, r3, lsl #1
+  73 0026 01EB8202 		add	r2, r1, r2, lsl #2
+  74 002a B2F85A20 		ldrh	r2, [r2, #90]
+  75              		.loc 1 201 44 discriminator 1 view .LVU16
+  76 002e 002A     		cmp	r2, #0
+  77 0030 EAD0     		beq	.L3
+ 202:Service/Srv_Upgrade.c ****         {
+ 203:Service/Srv_Upgrade.c ****             Monitor.proc_stream[i].access = true;
+  78              		.loc 1 203 13 is_stmt 1 view .LVU17
+  79              		.loc 1 203 43 is_stmt 0 view .LVU18
+  80 0032 0A46     		mov	r2, r1
+  81 0034 03EB4301 		add	r1, r3, r3, lsl #1
+  82 0038 02EB8101 		add	r1, r2, r1, lsl #2
+  83 003c 0120     		movs	r0, #1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 6
+
+
+  84 003e 81F85800 		strb	r0, [r1, #88]
+ 204:Service/Srv_Upgrade.c **** 
+ 205:Service/Srv_Upgrade.c ****             Monitor.proc_stream[i].access = false;
+  85              		.loc 1 205 13 is_stmt 1 view .LVU19
+  86              		.loc 1 205 43 is_stmt 0 view .LVU20
+  87 0042 0022     		movs	r2, #0
+  88 0044 81F85820 		strb	r2, [r1, #88]
+  89 0048 DEE7     		b	.L3
+  90              	.L11:
+  91              	.LBE2:
+ 206:Service/Srv_Upgrade.c ****         }
+ 207:Service/Srv_Upgrade.c ****     }
+ 208:Service/Srv_Upgrade.c ****     
+ 209:Service/Srv_Upgrade.c ****     switch((uint8_t) Monitor.PortDataState)
+  92              		.loc 1 209 5 is_stmt 1 view .LVU21
+  93              		.loc 1 209 29 is_stmt 0 view .LVU22
+  94 004a 104B     		ldr	r3, .L14
+  95              	.LVL5:
+  96              		.loc 1 209 29 view .LVU23
+  97 004c 9878     		ldrb	r0, [r3, #2]	@ zero_extendqisi2
+  98              		.loc 1 209 5 view .LVU24
+  99 004e 0128     		cmp	r0, #1
+ 100 0050 0DD0     		beq	.L5
+ 101 0052 0228     		cmp	r0, #2
+ 102 0054 0FD0     		beq	.L6
+ 103 0056 30B1     		cbz	r0, .L12
+ 104 0058 0620     		movs	r0, #6
+ 105              	.L7:
+ 210:Service/Srv_Upgrade.c ****     {
+ 211:Service/Srv_Upgrade.c ****         case PortProc_None:
+ 212:Service/Srv_Upgrade.c ****             Monitor.rec_timeout = sys_time + FIRMWARE_COMMU_TIMEOUT;
+ 213:Service/Srv_Upgrade.c ****         case PortProc_Deal_Pack:
+ 214:Service/Srv_Upgrade.c ****             Monitor.PortDataState = PortProc_Deal_Pack;
+ 215:Service/Srv_Upgrade.c ****             ret = PortProc_Deal_Pack;
+ 216:Service/Srv_Upgrade.c ****             break;
+ 217:Service/Srv_Upgrade.c **** 
+ 218:Service/Srv_Upgrade.c ****         case PortProc_Deal_Error:
+ 219:Service/Srv_Upgrade.c ****             Monitor.PortDataState = PortProc_None;
+ 220:Service/Srv_Upgrade.c ****             ret = PortProc_Deal_Error;
+ 221:Service/Srv_Upgrade.c ****             break;
+ 222:Service/Srv_Upgrade.c **** 
+ 223:Service/Srv_Upgrade.c ****         default:
+ 224:Service/Srv_Upgrade.c ****             ret = PortProc_Unknown;
+ 225:Service/Srv_Upgrade.c ****             break;
+ 226:Service/Srv_Upgrade.c ****     }
+ 227:Service/Srv_Upgrade.c **** 
+ 228:Service/Srv_Upgrade.c ****     /* check for time out */
+ 229:Service/Srv_Upgrade.c ****     if ((ret != ProtProc_Finish) && (sys_time >= Monitor.rec_timeout))
+ 106              		.loc 1 229 57 discriminator 1 view .LVU25
+ 107 005a 0C4B     		ldr	r3, .L14
+ 108 005c 9B68     		ldr	r3, [r3, #8]
+ 109              		.loc 1 229 34 discriminator 1 view .LVU26
+ 110 005e 7345     		cmp	r3, lr
+ 111 0060 0DD9     		bls	.L13
+ 112              	.L8:
+ 113              	.LVL6:
+ 230:Service/Srv_Upgrade.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 7
+
+
+ 231:Service/Srv_Upgrade.c ****         Monitor.info_update = false;
+ 232:Service/Srv_Upgrade.c ****         Monitor.PortDataState = PortProc_None;
+ 233:Service/Srv_Upgrade.c ****         ret = PortProc_Deal_TimeOut;
+ 234:Service/Srv_Upgrade.c ****     }
+ 235:Service/Srv_Upgrade.c **** 
+ 236:Service/Srv_Upgrade.c ****     return ret;
+ 114              		.loc 1 236 5 is_stmt 1 view .LVU27
+ 237:Service/Srv_Upgrade.c **** }
+ 115              		.loc 1 237 1 is_stmt 0 view .LVU28
+ 116 0062 5DF804FB 		ldr	pc, [sp], #4
+ 117              	.LVL7:
+ 118              	.L12:
+ 212:Service/Srv_Upgrade.c ****         case PortProc_Deal_Pack:
+ 119              		.loc 1 212 13 is_stmt 1 view .LVU29
+ 212:Service/Srv_Upgrade.c ****         case PortProc_Deal_Pack:
+ 120              		.loc 1 212 44 is_stmt 0 view .LVU30
+ 121 0066 0EF57A73 		add	r3, lr, #1000
+ 212:Service/Srv_Upgrade.c ****         case PortProc_Deal_Pack:
+ 122              		.loc 1 212 33 view .LVU31
+ 123 006a 084A     		ldr	r2, .L14
+ 124 006c 9360     		str	r3, [r2, #8]
+ 125              	.L5:
+ 214:Service/Srv_Upgrade.c ****             ret = PortProc_Deal_Pack;
+ 126              		.loc 1 214 13 is_stmt 1 view .LVU32
+ 214:Service/Srv_Upgrade.c ****             ret = PortProc_Deal_Pack;
+ 127              		.loc 1 214 35 is_stmt 0 view .LVU33
+ 128 006e 0120     		movs	r0, #1
+ 129 0070 064B     		ldr	r3, .L14
+ 130 0072 9870     		strb	r0, [r3, #2]
+ 215:Service/Srv_Upgrade.c ****             break;
+ 131              		.loc 1 215 13 is_stmt 1 view .LVU34
+ 132              	.LVL8:
+ 216:Service/Srv_Upgrade.c **** 
+ 133              		.loc 1 216 13 view .LVU35
+ 229:Service/Srv_Upgrade.c ****     {
+ 134              		.loc 1 229 5 view .LVU36
+ 135 0074 F1E7     		b	.L7
+ 136              	.LVL9:
+ 137              	.L6:
+ 219:Service/Srv_Upgrade.c ****             ret = PortProc_Deal_Error;
+ 138              		.loc 1 219 13 view .LVU37
+ 219:Service/Srv_Upgrade.c ****             ret = PortProc_Deal_Error;
+ 139              		.loc 1 219 35 is_stmt 0 view .LVU38
+ 140 0076 054B     		ldr	r3, .L14
+ 141 0078 0022     		movs	r2, #0
+ 142 007a 9A70     		strb	r2, [r3, #2]
+ 220:Service/Srv_Upgrade.c ****             break;
+ 143              		.loc 1 220 13 is_stmt 1 view .LVU39
+ 144              	.LVL10:
+ 221:Service/Srv_Upgrade.c **** 
+ 145              		.loc 1 221 13 view .LVU40
+ 229:Service/Srv_Upgrade.c ****     {
+ 146              		.loc 1 229 5 view .LVU41
+ 147 007c EDE7     		b	.L7
+ 148              	.LVL11:
+ 149              	.L13:
+ 231:Service/Srv_Upgrade.c ****         Monitor.PortDataState = PortProc_None;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 8
+
+
+ 150              		.loc 1 231 9 view .LVU42
+ 231:Service/Srv_Upgrade.c ****         Monitor.PortDataState = PortProc_None;
+ 151              		.loc 1 231 29 is_stmt 0 view .LVU43
+ 152 007e 034B     		ldr	r3, .L14
+ 153 0080 0022     		movs	r2, #0
+ 154 0082 83F85520 		strb	r2, [r3, #85]
+ 232:Service/Srv_Upgrade.c ****         ret = PortProc_Deal_TimeOut;
+ 155              		.loc 1 232 9 is_stmt 1 view .LVU44
+ 232:Service/Srv_Upgrade.c ****         ret = PortProc_Deal_TimeOut;
+ 156              		.loc 1 232 31 is_stmt 0 view .LVU45
+ 157 0086 9A70     		strb	r2, [r3, #2]
+ 233:Service/Srv_Upgrade.c ****     }
+ 158              		.loc 1 233 9 is_stmt 1 view .LVU46
+ 159              	.LVL12:
+ 233:Service/Srv_Upgrade.c ****     }
+ 160              		.loc 1 233 13 is_stmt 0 view .LVU47
+ 161 0088 0420     		movs	r0, #4
+ 162 008a EAE7     		b	.L8
+ 163              	.L15:
+ 164              		.align	2
+ 165              	.L14:
+ 166 008c 00000000 		.word	.LANCHOR0
+ 167              		.cfi_endproc
+ 168              	.LFE153:
+ 170              		.section	.text.SrvUpgrade_PushData,"ax",%progbits
+ 171              		.align	1
+ 172              		.syntax unified
+ 173              		.thumb
+ 174              		.thumb_func
+ 176              	SrvUpgrade_PushData:
+ 177              	.LVL13:
+ 178              	.LFB156:
+ 238:Service/Srv_Upgrade.c **** 
+ 239:Service/Srv_Upgrade.c **** static SrvUpgrade_Stage_List SrvUpgrade_On_PortProc_Finish(void)
+ 240:Service/Srv_Upgrade.c **** {
+ 241:Service/Srv_Upgrade.c ****     SrvUpgradeInfo_TypeDef Info;
+ 242:Service/Srv_Upgrade.c **** 
+ 243:Service/Srv_Upgrade.c ****     memset(&Info, 0, sizeof(Info));
+ 244:Service/Srv_Upgrade.c **** 
+ 245:Service/Srv_Upgrade.c ****     /* all file data received */
+ 246:Service/Srv_Upgrade.c ****     /* update upgrade info to storage */
+ 247:Service/Srv_Upgrade.c ****     Storage.get(Para_Boot, Monitor.UpgradeInfo_SO.item, (uint8_t *)&Info, sizeof(SrvUpgradeInfo_Typ
+ 248:Service/Srv_Upgrade.c ****     
+ 249:Service/Srv_Upgrade.c ****     /* update app firmware info */
+ 250:Service/Srv_Upgrade.c ****     Info.CTLReg.bit.App = true;
+ 251:Service/Srv_Upgrade.c **** 
+ 252:Service/Srv_Upgrade.c ****     Storage.update(Para_Boot, Monitor.UpgradeInfo_SO.item.data_addr, (uint8_t *)&Info, sizeof(SrvUp
+ 253:Service/Srv_Upgrade.c ****     /* upgrade App */
+ 254:Service/Srv_Upgrade.c ****     return Stage_Reboot;
+ 255:Service/Srv_Upgrade.c **** }
+ 256:Service/Srv_Upgrade.c **** 
+ 257:Service/Srv_Upgrade.c **** static SrvUpgrade_Stage_List SrvUpgrade_StatePolling(uint32_t sys_time)
+ 258:Service/Srv_Upgrade.c **** {
+ 259:Service/Srv_Upgrade.c ****     uint8_t i = 0;
+ 260:Service/Srv_Upgrade.c **** 
+ 261:Service/Srv_Upgrade.c ****     switch ((uint8_t) Monitor.PollingState)
+ 262:Service/Srv_Upgrade.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 9
+
+
+ 263:Service/Srv_Upgrade.c ****         case Stage_Init:            
+ 264:Service/Srv_Upgrade.c ****             Monitor.PollingState = Stage_Process_PortData;
+ 265:Service/Srv_Upgrade.c ****             Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
+ 266:Service/Srv_Upgrade.c ****             return Monitor.PollingState;
+ 267:Service/Srv_Upgrade.c **** 
+ 268:Service/Srv_Upgrade.c ****         case Stage_Process_PortData:
+ 269:Service/Srv_Upgrade.c ****             /* check double stream data */
+ 270:Service/Srv_Upgrade.c ****             for (i = 0; i < 2; i++)
+ 271:Service/Srv_Upgrade.c ****             {
+ 272:Service/Srv_Upgrade.c ****                 if (Monitor.proc_stream[i].size)
+ 273:Service/Srv_Upgrade.c ****                 {
+ 274:Service/Srv_Upgrade.c ****                     /* received data from port */
+ 275:Service/Srv_Upgrade.c ****                     Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
+ 276:Service/Srv_Upgrade.c ****                     break;
+ 277:Service/Srv_Upgrade.c ****                 }
+ 278:Service/Srv_Upgrade.c ****             }
+ 279:Service/Srv_Upgrade.c ****             
+ 280:Service/Srv_Upgrade.c ****             switch (SrvUpgrade_PortProcPolling(sys_time))
+ 281:Service/Srv_Upgrade.c ****             {
+ 282:Service/Srv_Upgrade.c ****                 case ProtProc_Finish:
+ 283:Service/Srv_Upgrade.c ****                     Monitor.PollingState = SrvUpgrade_On_PortProc_Finish();
+ 284:Service/Srv_Upgrade.c ****                     Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
+ 285:Service/Srv_Upgrade.c ****                     break;
+ 286:Service/Srv_Upgrade.c **** 
+ 287:Service/Srv_Upgrade.c ****                 /* still developping this branch */
+ 288:Service/Srv_Upgrade.c ****                 case PortProc_Deal_TimeOut: /* Monitor.PollingState = Stage_TimeOut;*/ break;
+ 289:Service/Srv_Upgrade.c ****                 case PortProc_Deal_Error: 
+ 290:Service/Srv_Upgrade.c ****                     Monitor.PollingState = Stage_PortData_Error;
+ 291:Service/Srv_Upgrade.c ****                     break;
+ 292:Service/Srv_Upgrade.c **** 
+ 293:Service/Srv_Upgrade.c ****                 default: break;
+ 294:Service/Srv_Upgrade.c ****             }
+ 295:Service/Srv_Upgrade.c ****             return Stage_Process_PortData;
+ 296:Service/Srv_Upgrade.c **** 
+ 297:Service/Srv_Upgrade.c ****         /* firmware upgrading */
+ 298:Service/Srv_Upgrade.c ****         case Stage_Reboot:
+ 299:Service/Srv_Upgrade.c ****             return Stage_Reboot;
+ 300:Service/Srv_Upgrade.c **** 
+ 301:Service/Srv_Upgrade.c ****         /* when at bootloader */
+ 302:Service/Srv_Upgrade.c ****         case Stage_ReadyToJump:
+ 303:Service/Srv_Upgrade.c ****             return Stage_ReadyToJump;
+ 304:Service/Srv_Upgrade.c **** 
+ 305:Service/Srv_Upgrade.c ****         /* error process */
+ 306:Service/Srv_Upgrade.c ****         case Stage_FileInfo_Error:
+ 307:Service/Srv_Upgrade.c ****             return Stage_FileInfo_Error;
+ 308:Service/Srv_Upgrade.c **** 
+ 309:Service/Srv_Upgrade.c ****         case Stage_Upgrade_Error:
+ 310:Service/Srv_Upgrade.c ****         case Stage_Adapter_Error:
+ 311:Service/Srv_Upgrade.c ****         case Stage_PortData_Error:
+ 312:Service/Srv_Upgrade.c ****             return Stage_Adapter_Error;
+ 313:Service/Srv_Upgrade.c **** 
+ 314:Service/Srv_Upgrade.c ****         case Stage_TimeOut:
+ 315:Service/Srv_Upgrade.c ****             Monitor.PollingState = Stage_Init;
+ 316:Service/Srv_Upgrade.c ****             return Stage_TimeOut;
+ 317:Service/Srv_Upgrade.c **** 
+ 318:Service/Srv_Upgrade.c ****         case Stage_UpgradeInfo_Error:
+ 319:Service/Srv_Upgrade.c ****             return Stage_UpgradeInfo_Error;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 10
+
+
+ 320:Service/Srv_Upgrade.c **** 
+ 321:Service/Srv_Upgrade.c ****         default: return Stage_Unknow;
+ 322:Service/Srv_Upgrade.c ****     }
+ 323:Service/Srv_Upgrade.c **** }
+ 324:Service/Srv_Upgrade.c **** 
+ 325:Service/Srv_Upgrade.c **** /* call this function in receive thread or irq */
+ 326:Service/Srv_Upgrade.c **** static bool SrvUpgrade_PushData(uint32_t sys_time, uint8_t *p_buf, uint16_t len)
+ 327:Service/Srv_Upgrade.c **** {
+ 179              		.loc 1 327 1 is_stmt 1 view -0
+ 180              		.cfi_startproc
+ 181              		@ args = 0, pretend = 0, frame = 0
+ 182              		@ frame_needed = 0, uses_anonymous_args = 0
+ 183              		.loc 1 327 1 is_stmt 0 view .LVU49
+ 184 0000 2DE9F843 		push	{r3, r4, r5, r6, r7, r8, r9, lr}
+ 185              	.LCFI1:
+ 186              		.cfi_def_cfa_offset 32
+ 187              		.cfi_offset 3, -32
+ 188              		.cfi_offset 4, -28
+ 189              		.cfi_offset 5, -24
+ 190              		.cfi_offset 6, -20
+ 191              		.cfi_offset 7, -16
+ 192              		.cfi_offset 8, -12
+ 193              		.cfi_offset 9, -8
+ 194              		.cfi_offset 14, -4
+ 328:Service/Srv_Upgrade.c ****     if (Monitor.init_state)
+ 195              		.loc 1 328 5 is_stmt 1 view .LVU50
+ 196              		.loc 1 328 16 is_stmt 0 view .LVU51
+ 197 0004 1E4B     		ldr	r3, .L23
+ 198 0006 1E78     		ldrb	r6, [r3]	@ zero_extendqisi2
+ 199              		.loc 1 328 8 view .LVU52
+ 200 0008 B6B3     		cbz	r6, .L17
+ 201 000a 1546     		mov	r5, r2
+ 329:Service/Srv_Upgrade.c ****     {
+ 330:Service/Srv_Upgrade.c ****         Monitor.rec_time = sys_time;
+ 202              		.loc 1 330 9 is_stmt 1 view .LVU53
+ 203              		.loc 1 330 26 is_stmt 0 view .LVU54
+ 204 000c D860     		str	r0, [r3, #12]
+ 331:Service/Srv_Upgrade.c ****         Monitor.rec_timeout = Monitor.rec_time + FIRMWARE_COMMU_TIMEOUT;
+ 205              		.loc 1 331 9 is_stmt 1 view .LVU55
+ 206              		.loc 1 331 48 is_stmt 0 view .LVU56
+ 207 000e 00F57A70 		add	r0, r0, #1000
+ 208              	.LVL14:
+ 209              		.loc 1 331 29 view .LVU57
+ 210 0012 9860     		str	r0, [r3, #8]
+ 332:Service/Srv_Upgrade.c **** 
+ 333:Service/Srv_Upgrade.c ****         for (uint8_t i = 0; i < 2; i++)
+ 211              		.loc 1 333 9 is_stmt 1 view .LVU58
+ 212              	.LBB3:
+ 213              		.loc 1 333 14 view .LVU59
+ 214              	.LVL15:
+ 215              		.loc 1 333 22 is_stmt 0 view .LVU60
+ 216 0014 0023     		movs	r3, #0
+ 217              		.loc 1 333 9 view .LVU61
+ 218 0016 01E0     		b	.L18
+ 219              	.LVL16:
+ 220              	.L19:
+ 221              		.loc 1 333 36 is_stmt 1 discriminator 2 view .LVU62
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 11
+
+
+ 222              		.loc 1 333 37 is_stmt 0 discriminator 2 view .LVU63
+ 223 0018 0133     		adds	r3, r3, #1
+ 224              	.LVL17:
+ 225              		.loc 1 333 37 discriminator 2 view .LVU64
+ 226 001a DBB2     		uxtb	r3, r3
+ 227              	.LVL18:
+ 228              	.L18:
+ 229              		.loc 1 333 29 is_stmt 1 discriminator 1 view .LVU65
+ 230              		.loc 1 333 9 is_stmt 0 discriminator 1 view .LVU66
+ 231 001c 012B     		cmp	r3, #1
+ 232 001e 2AD8     		bhi	.L22
+ 334:Service/Srv_Upgrade.c ****         {
+ 335:Service/Srv_Upgrade.c ****             if ((!Monitor.proc_stream[i].access) && \
+ 233              		.loc 1 335 13 is_stmt 1 view .LVU67
+ 234              		.loc 1 335 41 is_stmt 0 view .LVU68
+ 235 0020 03EB4300 		add	r0, r3, r3, lsl #1
+ 236 0024 164C     		ldr	r4, .L23
+ 237              		.loc 1 335 41 view .LVU69
+ 238 0026 04EB8000 		add	r0, r4, r0, lsl #2
+ 239 002a 90F85820 		ldrb	r2, [r0, #88]	@ zero_extendqisi2
+ 240              		.loc 1 335 16 view .LVU70
+ 241 002e 002A     		cmp	r2, #0
+ 242 0030 F2D1     		bne	.L19
+ 336:Service/Srv_Upgrade.c ****                 ((Monitor.proc_stream[i].size + len) <= Monitor.proc_stream[i].total_size))
+ 243              		.loc 1 336 41 discriminator 1 view .LVU71
+ 244 0032 03EB4302 		add	r2, r3, r3, lsl #1
+ 245 0036 04EB8202 		add	r2, r4, r2, lsl #2
+ 246 003a B2F85A00 		ldrh	r0, [r2, #90]
+ 247              		.loc 1 336 47 discriminator 1 view .LVU72
+ 248 003e 2C18     		adds	r4, r5, r0
+ 249              		.loc 1 336 79 discriminator 1 view .LVU73
+ 250 0040 B2F85C20 		ldrh	r2, [r2, #92]
+ 335:Service/Srv_Upgrade.c ****                 ((Monitor.proc_stream[i].size + len) <= Monitor.proc_stream[i].total_size))
+ 251              		.loc 1 335 50 discriminator 1 view .LVU74
+ 252 0044 9442     		cmp	r4, r2
+ 253 0046 E7DC     		bgt	.L19
+ 337:Service/Srv_Upgrade.c ****             {
+ 338:Service/Srv_Upgrade.c ****                 Monitor.proc_stream[i].access = true;
+ 254              		.loc 1 338 17 is_stmt 1 view .LVU75
+ 255              		.loc 1 338 47 is_stmt 0 view .LVU76
+ 256 0048 DFF83480 		ldr	r8, .L23
+ 257              		.loc 1 338 47 view .LVU77
+ 258 004c 03EB4304 		add	r4, r3, r3, lsl #1
+ 259 0050 08EB8404 		add	r4, r8, r4, lsl #2
+ 260 0054 0123     		movs	r3, #1
+ 261              	.LVL19:
+ 262              		.loc 1 338 47 view .LVU78
+ 263 0056 84F85830 		strb	r3, [r4, #88]
+ 339:Service/Srv_Upgrade.c ****                 memcpy(&Monitor.proc_stream[i].p_buf[Monitor.proc_stream[i].size], p_buf, len);
+ 264              		.loc 1 339 17 is_stmt 1 view .LVU79
+ 265              		.loc 1 339 47 is_stmt 0 view .LVU80
+ 266 005a 236E     		ldr	r3, [r4, #96]
+ 267              		.loc 1 339 17 view .LVU81
+ 268 005c 2A46     		mov	r2, r5
+ 269 005e 1844     		add	r0, r0, r3
+ 270 0060 FFF7FEFF 		bl	memcpy
+ 271              	.LVL20:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 12
+
+
+ 340:Service/Srv_Upgrade.c ****                 Monitor.proc_stream[i].size += len;
+ 272              		.loc 1 340 17 is_stmt 1 view .LVU82
+ 273              		.loc 1 340 45 is_stmt 0 view .LVU83
+ 274 0064 B4F85A30 		ldrh	r3, [r4, #90]
+ 275 0068 1D44     		add	r5, r5, r3
+ 276 006a A4F85A50 		strh	r5, [r4, #90]	@ movhi
+ 341:Service/Srv_Upgrade.c ****                 Monitor.proc_stream[i].access = false;
+ 277              		.loc 1 341 17 is_stmt 1 view .LVU84
+ 278              		.loc 1 341 47 is_stmt 0 view .LVU85
+ 279 006e 0023     		movs	r3, #0
+ 280 0070 84F85830 		strb	r3, [r4, #88]
+ 342:Service/Srv_Upgrade.c ****                 return true;
+ 281              		.loc 1 342 17 is_stmt 1 view .LVU86
+ 282              		.loc 1 342 24 is_stmt 0 view .LVU87
+ 283 0074 00E0     		b	.L17
+ 284              	.LVL21:
+ 285              	.L22:
+ 286              		.loc 1 342 24 view .LVU88
+ 287              	.LBE3:
+ 343:Service/Srv_Upgrade.c ****             }
+ 344:Service/Srv_Upgrade.c ****         }
+ 345:Service/Srv_Upgrade.c ****     }
+ 346:Service/Srv_Upgrade.c **** 
+ 347:Service/Srv_Upgrade.c ****     return false;
+ 288              		.loc 1 347 12 view .LVU89
+ 289 0076 0026     		movs	r6, #0
+ 290              	.LVL22:
+ 291              	.L17:
+ 348:Service/Srv_Upgrade.c **** }
+ 292              		.loc 1 348 1 view .LVU90
+ 293 0078 3046     		mov	r0, r6
+ 294 007a BDE8F883 		pop	{r3, r4, r5, r6, r7, r8, r9, pc}
+ 295              	.L24:
+ 296 007e 00BF     		.align	2
+ 297              	.L23:
+ 298 0080 00000000 		.word	.LANCHOR0
+ 299              		.cfi_endproc
+ 300              	.LFE156:
+ 302              		.section	.text.SrvUpgrade_On_PortProc_Finish,"ax",%progbits
+ 303              		.align	1
+ 304              		.syntax unified
+ 305              		.thumb
+ 306              		.thumb_func
+ 308              	SrvUpgrade_On_PortProc_Finish:
+ 309              	.LFB154:
+ 240:Service/Srv_Upgrade.c ****     SrvUpgradeInfo_TypeDef Info;
+ 310              		.loc 1 240 1 is_stmt 1 view -0
+ 311              		.cfi_startproc
+ 312              		@ args = 0, pretend = 0, frame = 8
+ 313              		@ frame_needed = 0, uses_anonymous_args = 0
+ 314 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 315              	.LCFI2:
+ 316              		.cfi_def_cfa_offset 28
+ 317              		.cfi_offset 4, -28
+ 318              		.cfi_offset 5, -24
+ 319              		.cfi_offset 6, -20
+ 320              		.cfi_offset 7, -16
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 13
+
+
+ 321              		.cfi_offset 8, -12
+ 322              		.cfi_offset 9, -8
+ 323              		.cfi_offset 14, -4
+ 324 0004 93B0     		sub	sp, sp, #76
+ 325              	.LCFI3:
+ 326              		.cfi_def_cfa_offset 104
+ 241:Service/Srv_Upgrade.c **** 
+ 327              		.loc 1 241 5 view .LVU92
+ 243:Service/Srv_Upgrade.c **** 
+ 328              		.loc 1 243 5 view .LVU93
+ 329 0006 0023     		movs	r3, #0
+ 330 0008 8DF84430 		strb	r3, [sp, #68]
+ 247:Service/Srv_Upgrade.c ****     
+ 331              		.loc 1 247 5 view .LVU94
+ 247:Service/Srv_Upgrade.c ****     
+ 332              		.loc 1 247 12 is_stmt 0 view .LVU95
+ 333 000c 1D4B     		ldr	r3, .L28
+ 334 000e 1E69     		ldr	r6, [r3, #16]
+ 247:Service/Srv_Upgrade.c ****     
+ 335              		.loc 1 247 5 view .LVU96
+ 336 0010 1D4B     		ldr	r3, .L28+4
+ 337 0012 0122     		movs	r2, #1
+ 338 0014 0E92     		str	r2, [sp, #56]
+ 339 0016 11AA     		add	r2, sp, #68
+ 340 0018 0D92     		str	r2, [sp, #52]
+ 341 001a D3F81590 		ldr	r9, [r3, #21]	@ unaligned
+ 342 001e D3F81980 		ldr	r8, [r3, #25]	@ unaligned
+ 343 0022 D3F81D70 		ldr	r7, [r3, #29]	@ unaligned
+ 344 0026 03F1210C 		add	ip, r3, #33
+ 345 002a 6D46     		mov	r5, sp
+ 346 002c 03F1510E 		add	lr, r3, #81
+ 347              	.L26:
+ 348 0030 2C46     		mov	r4, r5
+ 349 0032 DCF80000 		ldr	r0, [ip]	@ unaligned
+ 350 0036 DCF80410 		ldr	r1, [ip, #4]	@ unaligned
+ 351 003a DCF80820 		ldr	r2, [ip, #8]	@ unaligned
+ 352 003e DCF80C30 		ldr	r3, [ip, #12]	@ unaligned
+ 353 0042 0FC4     		stmia	r4!, {r0, r1, r2, r3}
+ 354 0044 0CF1100C 		add	ip, ip, #16
+ 355 0048 2546     		mov	r5, r4
+ 356 004a F445     		cmp	ip, lr
+ 357 004c F0D1     		bne	.L26
+ 358 004e DCF80000 		ldr	r0, [ip]	@ unaligned
+ 359 0052 2060     		str	r0, [r4]
+ 360 0054 4946     		mov	r1, r9
+ 361 0056 4246     		mov	r2, r8
+ 362 0058 3B46     		mov	r3, r7
+ 363 005a 0020     		movs	r0, #0
+ 364 005c B047     		blx	r6
+ 365              	.LVL23:
+ 250:Service/Srv_Upgrade.c **** 
+ 366              		.loc 1 250 5 is_stmt 1 view .LVU97
+ 250:Service/Srv_Upgrade.c **** 
+ 367              		.loc 1 250 25 is_stmt 0 view .LVU98
+ 368 005e 9DF84430 		ldrb	r3, [sp, #68]	@ zero_extendqisi2
+ 369 0062 43F00103 		orr	r3, r3, #1
+ 370 0066 8DF84430 		strb	r3, [sp, #68]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 14
+
+
+ 252:Service/Srv_Upgrade.c ****     /* upgrade App */
+ 371              		.loc 1 252 5 is_stmt 1 view .LVU99
+ 252:Service/Srv_Upgrade.c ****     /* upgrade App */
+ 372              		.loc 1 252 12 is_stmt 0 view .LVU100
+ 373 006a 064B     		ldr	r3, .L28
+ 374 006c DC68     		ldr	r4, [r3, #12]
+ 252:Service/Srv_Upgrade.c ****     /* upgrade App */
+ 375              		.loc 1 252 5 view .LVU101
+ 376 006e 0123     		movs	r3, #1
+ 377 0070 11AA     		add	r2, sp, #68
+ 378 0072 0549     		ldr	r1, .L28+4
+ 379 0074 096C     		ldr	r1, [r1, #64]
+ 380 0076 0020     		movs	r0, #0
+ 381 0078 A047     		blx	r4
+ 382              	.LVL24:
+ 254:Service/Srv_Upgrade.c **** }
+ 383              		.loc 1 254 5 is_stmt 1 view .LVU102
+ 255:Service/Srv_Upgrade.c **** 
+ 384              		.loc 1 255 1 is_stmt 0 view .LVU103
+ 385 007a 0120     		movs	r0, #1
+ 386 007c 13B0     		add	sp, sp, #76
+ 387              	.LCFI4:
+ 388              		.cfi_def_cfa_offset 28
+ 389              		@ sp needed
+ 390 007e BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 391              	.L29:
+ 392 0082 00BF     		.align	2
+ 393              	.L28:
+ 394 0084 00000000 		.word	Storage
+ 395 0088 00000000 		.word	.LANCHOR0
+ 396              		.cfi_endproc
+ 397              	.LFE154:
+ 399              		.section	.text.SrvUpgrade_StatePolling,"ax",%progbits
+ 400              		.align	1
+ 401              		.syntax unified
+ 402              		.thumb
+ 403              		.thumb_func
+ 405              	SrvUpgrade_StatePolling:
+ 406              	.LVL25:
+ 407              	.LFB155:
+ 258:Service/Srv_Upgrade.c ****     uint8_t i = 0;
+ 408              		.loc 1 258 1 is_stmt 1 view -0
+ 409              		.cfi_startproc
+ 410              		@ args = 0, pretend = 0, frame = 0
+ 411              		@ frame_needed = 0, uses_anonymous_args = 0
+ 258:Service/Srv_Upgrade.c ****     uint8_t i = 0;
+ 412              		.loc 1 258 1 is_stmt 0 view .LVU105
+ 413 0000 38B5     		push	{r3, r4, r5, lr}
+ 414              	.LCFI5:
+ 415              		.cfi_def_cfa_offset 16
+ 416              		.cfi_offset 3, -16
+ 417              		.cfi_offset 4, -12
+ 418              		.cfi_offset 5, -8
+ 419              		.cfi_offset 14, -4
+ 420 0002 0546     		mov	r5, r0
+ 259:Service/Srv_Upgrade.c **** 
+ 421              		.loc 1 259 5 is_stmt 1 view .LVU106
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 15
+
+
+ 422              	.LVL26:
+ 261:Service/Srv_Upgrade.c ****     {
+ 423              		.loc 1 261 5 view .LVU107
+ 261:Service/Srv_Upgrade.c ****     {
+ 424              		.loc 1 261 30 is_stmt 0 view .LVU108
+ 425 0004 214B     		ldr	r3, .L45
+ 426 0006 5C78     		ldrb	r4, [r3, #1]	@ zero_extendqisi2
+ 261:Service/Srv_Upgrade.c ****     {
+ 427              		.loc 1 261 5 view .LVU109
+ 428 0008 092C     		cmp	r4, #9
+ 429 000a 3CD8     		bhi	.L31
+ 430 000c DFE804F0 		tbb	[pc, r4]
+ 431              	.L33:
+ 432 0010 05       		.byte	(.L37-.L33)/2
+ 433 0011 0C       		.byte	(.L32-.L33)/2
+ 434 0012 0C       		.byte	(.L32-.L33)/2
+ 435 0013 35       		.byte	(.L35-.L33)/2
+ 436 0014 0C       		.byte	(.L32-.L33)/2
+ 437 0015 22       		.byte	(.L42-.L33)/2
+ 438 0016 35       		.byte	(.L35-.L33)/2
+ 439 0017 35       		.byte	(.L35-.L33)/2
+ 440 0018 37       		.byte	(.L34-.L33)/2
+ 441 0019 0C       		.byte	(.L32-.L33)/2
+ 442              		.p2align 1
+ 443              	.L37:
+ 264:Service/Srv_Upgrade.c ****             Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
+ 444              		.loc 1 264 13 is_stmt 1 view .LVU110
+ 264:Service/Srv_Upgrade.c ****             Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
+ 445              		.loc 1 264 34 is_stmt 0 view .LVU111
+ 446 001a 1C4B     		ldr	r3, .L45
+ 447 001c 0524     		movs	r4, #5
+ 448 001e 5C70     		strb	r4, [r3, #1]
+ 265:Service/Srv_Upgrade.c ****             return Monitor.PollingState;
+ 449              		.loc 1 265 13 is_stmt 1 view .LVU112
+ 265:Service/Srv_Upgrade.c ****             return Monitor.PollingState;
+ 450              		.loc 1 265 45 is_stmt 0 view .LVU113
+ 451 0020 00F56A45 		add	r5, r0, #59904
+ 452 0024 6035     		adds	r5, r5, #96
+ 265:Service/Srv_Upgrade.c ****             return Monitor.PollingState;
+ 453              		.loc 1 265 34 view .LVU114
+ 454 0026 5D60     		str	r5, [r3, #4]
+ 266:Service/Srv_Upgrade.c **** 
+ 455              		.loc 1 266 13 is_stmt 1 view .LVU115
+ 456              	.LVL27:
+ 457              	.L32:
+ 323:Service/Srv_Upgrade.c **** 
+ 458              		.loc 1 323 1 is_stmt 0 view .LVU116
+ 459 0028 2046     		mov	r0, r4
+ 460 002a 38BD     		pop	{r3, r4, r5, pc}
+ 461              	.LVL28:
+ 462              	.L44:
+ 275:Service/Srv_Upgrade.c ****                     break;
+ 463              		.loc 1 275 21 is_stmt 1 view .LVU117
+ 275:Service/Srv_Upgrade.c ****                     break;
+ 464              		.loc 1 275 53 is_stmt 0 view .LVU118
+ 465 002c 05F56A43 		add	r3, r5, #59904
+ 466              	.LVL29:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 16
+
+
+ 275:Service/Srv_Upgrade.c ****                     break;
+ 467              		.loc 1 275 53 view .LVU119
+ 468 0030 6033     		adds	r3, r3, #96
+ 275:Service/Srv_Upgrade.c ****                     break;
+ 469              		.loc 1 275 42 view .LVU120
+ 470 0032 4B60     		str	r3, [r1, #4]
+ 276:Service/Srv_Upgrade.c ****                 }
+ 471              		.loc 1 276 21 is_stmt 1 view .LVU121
+ 472              	.L39:
+ 280:Service/Srv_Upgrade.c ****             {
+ 473              		.loc 1 280 13 view .LVU122
+ 280:Service/Srv_Upgrade.c ****             {
+ 474              		.loc 1 280 21 is_stmt 0 view .LVU123
+ 475 0034 2846     		mov	r0, r5
+ 476              	.LVL30:
+ 280:Service/Srv_Upgrade.c ****             {
+ 477              		.loc 1 280 21 view .LVU124
+ 478 0036 FFF7FEFF 		bl	SrvUpgrade_PortProcPolling
+ 479              	.LVL31:
+ 480 003a 0228     		cmp	r0, #2
+ 481 003c 19D0     		beq	.L41
+ 482 003e 0328     		cmp	r0, #3
+ 483 0040 F2D1     		bne	.L32
+ 283:Service/Srv_Upgrade.c ****                     Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
+ 484              		.loc 1 283 21 is_stmt 1 view .LVU125
+ 283:Service/Srv_Upgrade.c ****                     Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
+ 485              		.loc 1 283 44 is_stmt 0 view .LVU126
+ 486 0042 FFF7FEFF 		bl	SrvUpgrade_On_PortProc_Finish
+ 487              	.LVL32:
+ 283:Service/Srv_Upgrade.c ****                     Monitor.discard_time = sys_time + FIRMWARE_WAITTING_TIMEOUT;
+ 488              		.loc 1 283 42 view .LVU127
+ 489 0046 114B     		ldr	r3, .L45
+ 490 0048 5870     		strb	r0, [r3, #1]
+ 284:Service/Srv_Upgrade.c ****                     break;
+ 491              		.loc 1 284 21 is_stmt 1 view .LVU128
+ 284:Service/Srv_Upgrade.c ****                     break;
+ 492              		.loc 1 284 53 is_stmt 0 view .LVU129
+ 493 004a 05F56A45 		add	r5, r5, #59904
+ 494              	.LVL33:
+ 284:Service/Srv_Upgrade.c ****                     break;
+ 495              		.loc 1 284 53 view .LVU130
+ 496 004e 6035     		adds	r5, r5, #96
+ 497              	.LVL34:
+ 284:Service/Srv_Upgrade.c ****                     break;
+ 498              		.loc 1 284 42 view .LVU131
+ 499 0050 5D60     		str	r5, [r3, #4]
+ 285:Service/Srv_Upgrade.c **** 
+ 500              		.loc 1 285 21 is_stmt 1 view .LVU132
+ 501 0052 E9E7     		b	.L32
+ 502              	.LVL35:
+ 503              	.L42:
+ 261:Service/Srv_Upgrade.c ****     {
+ 504              		.loc 1 261 5 is_stmt 0 view .LVU133
+ 505 0054 0023     		movs	r3, #0
+ 506              	.LVL36:
+ 507              	.L36:
+ 270:Service/Srv_Upgrade.c ****             {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 17
+
+
+ 508              		.loc 1 270 25 is_stmt 1 discriminator 1 view .LVU134
+ 270:Service/Srv_Upgrade.c ****             {
+ 509              		.loc 1 270 13 is_stmt 0 discriminator 1 view .LVU135
+ 510 0056 012B     		cmp	r3, #1
+ 511 0058 ECD8     		bhi	.L39
+ 272:Service/Srv_Upgrade.c ****                 {
+ 512              		.loc 1 272 17 is_stmt 1 view .LVU136
+ 272:Service/Srv_Upgrade.c ****                 {
+ 513              		.loc 1 272 43 is_stmt 0 view .LVU137
+ 514 005a 03EB4302 		add	r2, r3, r3, lsl #1
+ 515 005e 0B49     		ldr	r1, .L45
+ 516 0060 01EB8202 		add	r2, r1, r2, lsl #2
+ 517 0064 B2F85A20 		ldrh	r2, [r2, #90]
+ 272:Service/Srv_Upgrade.c ****                 {
+ 518              		.loc 1 272 20 view .LVU138
+ 519 0068 002A     		cmp	r2, #0
+ 520 006a DFD1     		bne	.L44
+ 270:Service/Srv_Upgrade.c ****             {
+ 521              		.loc 1 270 32 is_stmt 1 discriminator 2 view .LVU139
+ 270:Service/Srv_Upgrade.c ****             {
+ 522              		.loc 1 270 33 is_stmt 0 discriminator 2 view .LVU140
+ 523 006c 0133     		adds	r3, r3, #1
+ 524              	.LVL37:
+ 270:Service/Srv_Upgrade.c ****             {
+ 525              		.loc 1 270 33 discriminator 2 view .LVU141
+ 526 006e DBB2     		uxtb	r3, r3
+ 527              	.LVL38:
+ 270:Service/Srv_Upgrade.c ****             {
+ 528              		.loc 1 270 33 discriminator 2 view .LVU142
+ 529 0070 F1E7     		b	.L36
+ 530              	.LVL39:
+ 531              	.L41:
+ 290:Service/Srv_Upgrade.c ****                     break;
+ 532              		.loc 1 290 21 is_stmt 1 view .LVU143
+ 290:Service/Srv_Upgrade.c ****                     break;
+ 533              		.loc 1 290 42 is_stmt 0 view .LVU144
+ 534 0072 064B     		ldr	r3, .L45
+ 535 0074 0722     		movs	r2, #7
+ 536 0076 5A70     		strb	r2, [r3, #1]
+ 291:Service/Srv_Upgrade.c **** 
+ 537              		.loc 1 291 21 is_stmt 1 view .LVU145
+ 538 0078 D6E7     		b	.L32
+ 539              	.LVL40:
+ 540              	.L35:
+ 312:Service/Srv_Upgrade.c **** 
+ 541              		.loc 1 312 13 view .LVU146
+ 312:Service/Srv_Upgrade.c **** 
+ 542              		.loc 1 312 20 is_stmt 0 view .LVU147
+ 543 007a 0324     		movs	r4, #3
+ 544 007c D4E7     		b	.L32
+ 545              	.L34:
+ 315:Service/Srv_Upgrade.c ****             return Stage_TimeOut;
+ 546              		.loc 1 315 13 is_stmt 1 view .LVU148
+ 315:Service/Srv_Upgrade.c ****             return Stage_TimeOut;
+ 547              		.loc 1 315 34 is_stmt 0 view .LVU149
+ 548 007e 034B     		ldr	r3, .L45
+ 549 0080 0022     		movs	r2, #0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 18
+
+
+ 550 0082 5A70     		strb	r2, [r3, #1]
+ 316:Service/Srv_Upgrade.c **** 
+ 551              		.loc 1 316 13 is_stmt 1 view .LVU150
+ 316:Service/Srv_Upgrade.c **** 
+ 552              		.loc 1 316 20 is_stmt 0 view .LVU151
+ 553 0084 D0E7     		b	.L32
+ 554              	.L31:
+ 321:Service/Srv_Upgrade.c ****     }
+ 555              		.loc 1 321 18 is_stmt 1 view .LVU152
+ 321:Service/Srv_Upgrade.c ****     }
+ 556              		.loc 1 321 25 is_stmt 0 view .LVU153
+ 557 0086 0B24     		movs	r4, #11
+ 558 0088 CEE7     		b	.L32
+ 559              	.L46:
+ 560 008a 00BF     		.align	2
+ 561              	.L45:
+ 562 008c 00000000 		.word	.LANCHOR0
+ 563              		.cfi_endproc
+ 564              	.LFE155:
+ 566              		.section	.rodata.SrvUpgrade_CheckUpgrade_OnBootUp.str1.4,"aMS",%progbits,1
+ 567              		.align	2
+ 568              	.LC0:
+ 569 0000 55706772 		.ascii	"Upgrade_Info\000"
+ 569      6164655F 
+ 569      496E666F 
+ 569      00
+ 570              		.section	.text.SrvUpgrade_CheckUpgrade_OnBootUp,"ax",%progbits
+ 571              		.align	1
+ 572              		.syntax unified
+ 573              		.thumb
+ 574              		.thumb_func
+ 576              	SrvUpgrade_CheckUpgrade_OnBootUp:
+ 577              	.LFB152:
+ 148:Service/Srv_Upgrade.c ****     SrvUpgradeInfo_TypeDef Info;
+ 578              		.loc 1 148 1 is_stmt 1 view -0
+ 579              		.cfi_startproc
+ 580              		@ args = 0, pretend = 0, frame = 80
+ 581              		@ frame_needed = 0, uses_anonymous_args = 0
+ 582 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 583              	.LCFI6:
+ 584              		.cfi_def_cfa_offset 28
+ 585              		.cfi_offset 4, -28
+ 586              		.cfi_offset 5, -24
+ 587              		.cfi_offset 6, -20
+ 588              		.cfi_offset 7, -16
+ 589              		.cfi_offset 8, -12
+ 590              		.cfi_offset 9, -8
+ 591              		.cfi_offset 14, -4
+ 592 0004 A5B0     		sub	sp, sp, #148
+ 593              	.LCFI7:
+ 594              		.cfi_def_cfa_offset 176
+ 149:Service/Srv_Upgrade.c ****     uint32_t file_size = 0;
+ 595              		.loc 1 149 5 view .LVU155
+ 150:Service/Srv_Upgrade.c ****     uint16_t update_size = 0;
+ 596              		.loc 1 150 5 view .LVU156
+ 597              	.LVL41:
+ 151:Service/Srv_Upgrade.c ****     uint32_t addr_offset = 0;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 19
+
+
+ 598              		.loc 1 151 5 view .LVU157
+ 152:Service/Srv_Upgrade.c **** 
+ 599              		.loc 1 152 5 view .LVU158
+ 154:Service/Srv_Upgrade.c ****     memset(&Info, 0, sizeof(Info));
+ 600              		.loc 1 154 5 view .LVU159
+ 601 0006 2F4C     		ldr	r4, .L53
+ 602 0008 04F11005 		add	r5, r4, #16
+ 603 000c 4526     		movs	r6, #69
+ 604 000e 3246     		mov	r2, r6
+ 605 0010 0021     		movs	r1, #0
+ 606 0012 2846     		mov	r0, r5
+ 607 0014 FFF7FEFF 		bl	memset
+ 608              	.LVL42:
+ 155:Service/Srv_Upgrade.c **** 
+ 609              		.loc 1 155 5 view .LVU160
+ 610 0018 0021     		movs	r1, #0
+ 611 001a 8DF88C10 		strb	r1, [sp, #140]
+ 158:Service/Srv_Upgrade.c ****     if (Monitor.UpgradeInfo_SO.item_addr)
+ 612              		.loc 1 158 5 view .LVU161
+ 158:Service/Srv_Upgrade.c ****     if (Monitor.UpgradeInfo_SO.item_addr)
+ 613              		.loc 1 158 37 is_stmt 0 view .LVU162
+ 614 001e 2A4B     		ldr	r3, .L53+4
+ 615 0020 5B68     		ldr	r3, [r3, #4]
+ 158:Service/Srv_Upgrade.c ****     if (Monitor.UpgradeInfo_SO.item_addr)
+ 616              		.loc 1 158 30 view .LVU163
+ 617 0022 2A4A     		ldr	r2, .L53+8
+ 618 0024 10A8     		add	r0, sp, #64
+ 619 0026 9847     		blx	r3
+ 620              	.LVL43:
+ 621 0028 3246     		mov	r2, r6
+ 622 002a 10A9     		add	r1, sp, #64
+ 623 002c 2846     		mov	r0, r5
+ 624 002e FFF7FEFF 		bl	memcpy
+ 625              	.LVL44:
+ 159:Service/Srv_Upgrade.c ****     {
+ 626              		.loc 1 159 5 is_stmt 1 view .LVU164
+ 159:Service/Srv_Upgrade.c ****     {
+ 627              		.loc 1 159 31 is_stmt 0 view .LVU165
+ 628 0032 2369     		ldr	r3, [r4, #16]
+ 159:Service/Srv_Upgrade.c ****     {
+ 629              		.loc 1 159 8 view .LVU166
+ 630 0034 9BB3     		cbz	r3, .L48
+ 161:Service/Srv_Upgrade.c ****         /* read parameter section */
+ 631              		.loc 1 161 9 is_stmt 1 view .LVU167
+ 161:Service/Srv_Upgrade.c ****         /* read parameter section */
+ 632              		.loc 1 161 16 is_stmt 0 view .LVU168
+ 633 0036 244B     		ldr	r3, .L53+4
+ 634 0038 1E69     		ldr	r6, [r3, #16]
+ 161:Service/Srv_Upgrade.c ****         /* read parameter section */
+ 635              		.loc 1 161 9 view .LVU169
+ 636 003a 0122     		movs	r2, #1
+ 637 003c 0E92     		str	r2, [sp, #56]
+ 638 003e 23AA     		add	r2, sp, #140
+ 639 0040 0D92     		str	r2, [sp, #52]
+ 640 0042 D4F81590 		ldr	r9, [r4, #21]	@ unaligned
+ 641 0046 D4F81980 		ldr	r8, [r4, #25]	@ unaligned
+ 642 004a D4F81D70 		ldr	r7, [r4, #29]	@ unaligned
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 20
+
+
+ 643 004e 04F1210C 		add	ip, r4, #33
+ 644 0052 6D46     		mov	r5, sp
+ 645 0054 5134     		adds	r4, r4, #81
+ 646              	.L49:
+ 647 0056 AE46     		mov	lr, r5
+ 648 0058 DCF80000 		ldr	r0, [ip]	@ unaligned
+ 649 005c DCF80410 		ldr	r1, [ip, #4]	@ unaligned
+ 650 0060 DCF80820 		ldr	r2, [ip, #8]	@ unaligned
+ 651 0064 DCF80C30 		ldr	r3, [ip, #12]	@ unaligned
+ 652 0068 AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 653 006c 0CF1100C 		add	ip, ip, #16
+ 654 0070 7546     		mov	r5, lr
+ 655 0072 A445     		cmp	ip, r4
+ 656 0074 EFD1     		bne	.L49
+ 657 0076 DCF80000 		ldr	r0, [ip]	@ unaligned
+ 658 007a CEF80000 		str	r0, [lr]
+ 659 007e 4946     		mov	r1, r9
+ 660 0080 4246     		mov	r2, r8
+ 661 0082 3B46     		mov	r3, r7
+ 662 0084 0020     		movs	r0, #0
+ 663 0086 B047     		blx	r6
+ 664              	.LVL45:
+ 163:Service/Srv_Upgrade.c ****         {
+ 665              		.loc 1 163 9 is_stmt 1 view .LVU170
+ 163:Service/Srv_Upgrade.c ****         {
+ 666              		.loc 1 163 15 view .LVU171
+ 667              	.L50:
+ 188:Service/Srv_Upgrade.c ****     {
+ 668              		.loc 1 188 5 view .LVU172
+ 188:Service/Srv_Upgrade.c ****     {
+ 669              		.loc 1 188 31 is_stmt 0 view .LVU173
+ 670 0088 0E4B     		ldr	r3, .L53
+ 671 008a 1B69     		ldr	r3, [r3, #16]
+ 188:Service/Srv_Upgrade.c ****     {
+ 672              		.loc 1 188 8 view .LVU174
+ 673 008c 23B9     		cbnz	r3, .L47
+ 190:Service/Srv_Upgrade.c ****         Monitor.PollingState = Stage_UpgradeInfo_Error;
+ 674              		.loc 1 190 9 is_stmt 1 view .LVU175
+ 190:Service/Srv_Upgrade.c ****         Monitor.PollingState = Stage_UpgradeInfo_Error;
+ 675              		.loc 1 190 28 is_stmt 0 view .LVU176
+ 676 008e 0D4B     		ldr	r3, .L53
+ 677 0090 0022     		movs	r2, #0
+ 678 0092 1A70     		strb	r2, [r3]
+ 191:Service/Srv_Upgrade.c ****     }
+ 679              		.loc 1 191 9 is_stmt 1 view .LVU177
+ 191:Service/Srv_Upgrade.c ****     }
+ 680              		.loc 1 191 30 is_stmt 0 view .LVU178
+ 681 0094 0222     		movs	r2, #2
+ 682 0096 5A70     		strb	r2, [r3, #1]
+ 683              	.L47:
+ 193:Service/Srv_Upgrade.c **** 
+ 684              		.loc 1 193 1 view .LVU179
+ 685 0098 25B0     		add	sp, sp, #148
+ 686              	.LCFI8:
+ 687              		.cfi_remember_state
+ 688              		.cfi_def_cfa_offset 28
+ 689              		@ sp needed
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 21
+
+
+ 690 009a BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 691              	.L48:
+ 692              	.LCFI9:
+ 693              		.cfi_restore_state
+ 184:Service/Srv_Upgrade.c ****         Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
+ 694              		.loc 1 184 9 is_stmt 1 view .LVU180
+ 184:Service/Srv_Upgrade.c ****         Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
+ 695              		.loc 1 184 16 is_stmt 0 view .LVU181
+ 696 009e 0A4D     		ldr	r5, .L53+4
+ 697 00a0 AE68     		ldr	r6, [r5, #8]
+ 184:Service/Srv_Upgrade.c ****         Monitor.UpgradeInfo_SO = Storage.search(Para_Boot, UpgradeInfo_Sec);
+ 698              		.loc 1 184 9 view .LVU182
+ 699 00a2 0A4C     		ldr	r4, .L53+8
+ 700 00a4 0123     		movs	r3, #1
+ 701 00a6 23AA     		add	r2, sp, #140
+ 702 00a8 2146     		mov	r1, r4
+ 703 00aa 0020     		movs	r0, #0
+ 704 00ac B047     		blx	r6
+ 705              	.LVL46:
+ 185:Service/Srv_Upgrade.c ****     }
+ 706              		.loc 1 185 9 is_stmt 1 view .LVU183
+ 185:Service/Srv_Upgrade.c ****     }
+ 707              		.loc 1 185 41 is_stmt 0 view .LVU184
+ 708 00ae 6B68     		ldr	r3, [r5, #4]
+ 185:Service/Srv_Upgrade.c ****     }
+ 709              		.loc 1 185 34 view .LVU185
+ 710 00b0 2246     		mov	r2, r4
+ 711 00b2 0021     		movs	r1, #0
+ 712 00b4 10A8     		add	r0, sp, #64
+ 713 00b6 9847     		blx	r3
+ 714              	.LVL47:
+ 715 00b8 4522     		movs	r2, #69
+ 716 00ba 10A9     		add	r1, sp, #64
+ 717 00bc 0448     		ldr	r0, .L53+12
+ 718 00be FFF7FEFF 		bl	memcpy
+ 719              	.LVL48:
+ 720 00c2 E1E7     		b	.L50
+ 721              	.L54:
+ 722              		.align	2
+ 723              	.L53:
+ 724 00c4 00000000 		.word	.LANCHOR0
+ 725 00c8 00000000 		.word	Storage
+ 726 00cc 00000000 		.word	.LC0
+ 727 00d0 10000000 		.word	.LANCHOR0+16
+ 728              		.cfi_endproc
+ 729              	.LFE152:
+ 731              		.section	.text.SrvUpgrade_Init,"ax",%progbits
+ 732              		.align	1
+ 733              		.syntax unified
+ 734              		.thumb
+ 735              		.thumb_func
+ 737              	SrvUpgrade_Init:
+ 738              	.LFB151:
+ 111:Service/Srv_Upgrade.c ****     if (sizeof(upgrade_buf) % 2)
+ 739              		.loc 1 111 1 is_stmt 1 view -0
+ 740              		.cfi_startproc
+ 741              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 22
+
+
+ 742              		@ frame_needed = 0, uses_anonymous_args = 0
+ 743 0000 70B5     		push	{r4, r5, r6, lr}
+ 744              	.LCFI10:
+ 745              		.cfi_def_cfa_offset 16
+ 746              		.cfi_offset 4, -16
+ 747              		.cfi_offset 5, -12
+ 748              		.cfi_offset 6, -8
+ 749              		.cfi_offset 14, -4
+ 112:Service/Srv_Upgrade.c ****         return false;
+ 750              		.loc 1 112 5 view .LVU187
+ 116:Service/Srv_Upgrade.c **** 
+ 751              		.loc 1 116 5 view .LVU188
+ 116:Service/Srv_Upgrade.c **** 
+ 752              		.loc 1 116 25 is_stmt 0 view .LVU189
+ 753 0002 134C     		ldr	r4, .L57
+ 754 0004 0025     		movs	r5, #0
+ 755 0006 84F85550 		strb	r5, [r4, #85]
+ 119:Service/Srv_Upgrade.c **** 
+ 756              		.loc 1 119 5 is_stmt 1 view .LVU190
+ 119:Service/Srv_Upgrade.c **** 
+ 757              		.loc 1 119 30 is_stmt 0 view .LVU191
+ 758 000a A4F87054 		strh	r5, [r4, #1136]	@ movhi
+ 121:Service/Srv_Upgrade.c ****     Monitor.LogOut_Info_size = 0;
+ 759              		.loc 1 121 5 is_stmt 1 view .LVU192
+ 760 000e 4FF48062 		mov	r2, #1024
+ 761 0012 2946     		mov	r1, r5
+ 762 0014 04F17000 		add	r0, r4, #112
+ 763 0018 FFF7FEFF 		bl	memset
+ 764              	.LVL49:
+ 122:Service/Srv_Upgrade.c ****     
+ 765              		.loc 1 122 5 view .LVU193
+ 125:Service/Srv_Upgrade.c ****     Monitor.proc_stream[0].size = 0;
+ 766              		.loc 1 125 5 view .LVU194
+ 125:Service/Srv_Upgrade.c ****     Monitor.proc_stream[0].size = 0;
+ 767              		.loc 1 125 35 is_stmt 0 view .LVU195
+ 768 001c 84F85850 		strb	r5, [r4, #88]
+ 126:Service/Srv_Upgrade.c ****     Monitor.proc_stream[0].total_size = sizeof(upgrade_buf) / 2;
+ 769              		.loc 1 126 5 is_stmt 1 view .LVU196
+ 126:Service/Srv_Upgrade.c ****     Monitor.proc_stream[0].total_size = sizeof(upgrade_buf) / 2;
+ 770              		.loc 1 126 33 is_stmt 0 view .LVU197
+ 771 0020 A4F85A50 		strh	r5, [r4, #90]	@ movhi
+ 127:Service/Srv_Upgrade.c ****     Monitor.proc_stream[0].p_buf = upgrade_buf;
+ 772              		.loc 1 127 5 is_stmt 1 view .LVU198
+ 127:Service/Srv_Upgrade.c ****     Monitor.proc_stream[0].p_buf = upgrade_buf;
+ 773              		.loc 1 127 39 is_stmt 0 view .LVU199
+ 774 0024 4FF40062 		mov	r2, #2048
+ 775 0028 A4F85C20 		strh	r2, [r4, #92]	@ movhi
+ 128:Service/Srv_Upgrade.c **** 
+ 776              		.loc 1 128 5 is_stmt 1 view .LVU200
+ 128:Service/Srv_Upgrade.c **** 
+ 777              		.loc 1 128 34 is_stmt 0 view .LVU201
+ 778 002c 094B     		ldr	r3, .L57+4
+ 779 002e 2366     		str	r3, [r4, #96]
+ 130:Service/Srv_Upgrade.c ****     Monitor.proc_stream[1].size = 0;
+ 780              		.loc 1 130 5 is_stmt 1 view .LVU202
+ 130:Service/Srv_Upgrade.c ****     Monitor.proc_stream[1].size = 0;
+ 781              		.loc 1 130 35 is_stmt 0 view .LVU203
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 23
+
+
+ 782 0030 84F86450 		strb	r5, [r4, #100]
+ 131:Service/Srv_Upgrade.c ****     Monitor.proc_stream[1].total_size = sizeof(upgrade_buf) / 2;
+ 783              		.loc 1 131 5 is_stmt 1 view .LVU204
+ 131:Service/Srv_Upgrade.c ****     Monitor.proc_stream[1].total_size = sizeof(upgrade_buf) / 2;
+ 784              		.loc 1 131 33 is_stmt 0 view .LVU205
+ 785 0034 A4F86650 		strh	r5, [r4, #102]	@ movhi
+ 132:Service/Srv_Upgrade.c ****     Monitor.proc_stream[1].p_buf = &upgrade_buf[sizeof(upgrade_buf) / 2];
+ 786              		.loc 1 132 5 is_stmt 1 view .LVU206
+ 132:Service/Srv_Upgrade.c ****     Monitor.proc_stream[1].p_buf = &upgrade_buf[sizeof(upgrade_buf) / 2];
+ 787              		.loc 1 132 39 is_stmt 0 view .LVU207
+ 788 0038 A4F86820 		strh	r2, [r4, #104]	@ movhi
+ 133:Service/Srv_Upgrade.c **** 
+ 789              		.loc 1 133 5 is_stmt 1 view .LVU208
+ 133:Service/Srv_Upgrade.c **** 
+ 790              		.loc 1 133 34 is_stmt 0 view .LVU209
+ 791 003c 1344     		add	r3, r3, r2
+ 792 003e E366     		str	r3, [r4, #108]
+ 135:Service/Srv_Upgrade.c ****     Monitor.PollingState = Stage_Init;
+ 793              		.loc 1 135 5 is_stmt 1 view .LVU210
+ 135:Service/Srv_Upgrade.c ****     Monitor.PollingState = Stage_Init;
+ 794              		.loc 1 135 24 is_stmt 0 view .LVU211
+ 795 0040 0126     		movs	r6, #1
+ 796 0042 2670     		strb	r6, [r4]
+ 136:Service/Srv_Upgrade.c ****     Monitor.PortDataState = PortProc_None;
+ 797              		.loc 1 136 5 is_stmt 1 view .LVU212
+ 136:Service/Srv_Upgrade.c ****     Monitor.PortDataState = PortProc_None;
+ 798              		.loc 1 136 26 is_stmt 0 view .LVU213
+ 799 0044 6570     		strb	r5, [r4, #1]
+ 137:Service/Srv_Upgrade.c ****     
+ 800              		.loc 1 137 5 is_stmt 1 view .LVU214
+ 137:Service/Srv_Upgrade.c ****     
+ 801              		.loc 1 137 27 is_stmt 0 view .LVU215
+ 802 0046 A570     		strb	r5, [r4, #2]
+ 143:Service/Srv_Upgrade.c ****     return true;
+ 803              		.loc 1 143 5 is_stmt 1 view .LVU216
+ 804 0048 FFF7FEFF 		bl	SrvUpgrade_CheckUpgrade_OnBootUp
+ 805              	.LVL50:
+ 144:Service/Srv_Upgrade.c **** }
+ 806              		.loc 1 144 5 view .LVU217
+ 145:Service/Srv_Upgrade.c **** 
+ 807              		.loc 1 145 1 is_stmt 0 view .LVU218
+ 808 004c 3046     		mov	r0, r6
+ 809 004e 70BD     		pop	{r4, r5, r6, pc}
+ 810              	.L58:
+ 811              		.align	2
+ 812              	.L57:
+ 813 0050 00000000 		.word	.LANCHOR0
+ 814 0054 00000000 		.word	upgrade_buf
+ 815              		.cfi_endproc
+ 816              	.LFE151:
+ 818              		.section	.rodata.SrvUpgrade_Show_CurAppVer.str1.4,"aMS",%progbits,1
+ 819              		.align	2
+ 820              	.LC1:
+ 821 0000 5B204375 		.ascii	"[ Current App ] SW Version: %d.%d.%d\015\012\000"
+ 821      7272656E 
+ 821      74204170 
+ 821      70205D20 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 24
+
+
+ 821      53572056 
+ 822              		.section	.text.SrvUpgrade_Show_CurAppVer,"ax",%progbits
+ 823              		.align	1
+ 824              		.syntax unified
+ 825              		.thumb
+ 826              		.thumb_func
+ 828              	SrvUpgrade_Show_CurAppVer:
+ 829              	.LFB159:
+ 349:Service/Srv_Upgrade.c **** 
+ 350:Service/Srv_Upgrade.c **** static uint16_t SrvUpgrade_Get_Info(uint8_t *p_info, uint16_t len)
+ 351:Service/Srv_Upgrade.c **** {
+ 352:Service/Srv_Upgrade.c ****     uint16_t log_size = 0;
+ 353:Service/Srv_Upgrade.c **** 
+ 354:Service/Srv_Upgrade.c ****     if (p_info && len && (len >= Monitor.LogOut_Info_size) && Monitor.init_state)
+ 355:Service/Srv_Upgrade.c ****     {
+ 356:Service/Srv_Upgrade.c ****         log_size = Monitor.LogOut_Info_size;
+ 357:Service/Srv_Upgrade.c ****         memcpy(p_info, Monitor.LogOut_Info, Monitor.LogOut_Info_size);
+ 358:Service/Srv_Upgrade.c ****         log_size = Monitor.LogOut_Info_size;
+ 359:Service/Srv_Upgrade.c ****     }
+ 360:Service/Srv_Upgrade.c **** 
+ 361:Service/Srv_Upgrade.c ****     return log_size;
+ 362:Service/Srv_Upgrade.c **** }
+ 363:Service/Srv_Upgrade.c **** 
+ 364:Service/Srv_Upgrade.c **** static void SrvUpgrade_ClearLog(void)
+ 365:Service/Srv_Upgrade.c **** {
+ 366:Service/Srv_Upgrade.c ****     memset(Monitor.LogOut_Info, 0, sizeof(Monitor.LogOut_Info));
+ 367:Service/Srv_Upgrade.c ****     Monitor.LogOut_Info_size = 0;
+ 368:Service/Srv_Upgrade.c **** }
+ 369:Service/Srv_Upgrade.c **** 
+ 370:Service/Srv_Upgrade.c **** static void SrvUpgrade_Show_CurAppVer(void)
+ 371:Service/Srv_Upgrade.c **** {
+ 830              		.loc 1 371 1 is_stmt 1 view -0
+ 831              		.cfi_startproc
+ 832              		@ args = 0, pretend = 0, frame = 0
+ 833              		@ frame_needed = 0, uses_anonymous_args = 0
+ 834 0000 00B5     		push	{lr}
+ 835              	.LCFI11:
+ 836              		.cfi_def_cfa_offset 4
+ 837              		.cfi_offset 14, -4
+ 838 0002 83B0     		sub	sp, sp, #12
+ 839              	.LCFI12:
+ 840              		.cfi_def_cfa_offset 16
+ 372:Service/Srv_Upgrade.c ****     Shell *shell_obj = Shell_GetInstence();
+ 841              		.loc 1 372 5 view .LVU220
+ 842              		.loc 1 372 24 is_stmt 0 view .LVU221
+ 843 0004 FFF7FEFF 		bl	Shell_GetInstence
+ 844              	.LVL51:
+ 373:Service/Srv_Upgrade.c **** 
+ 374:Service/Srv_Upgrade.c ****     if (shell_obj)
+ 845              		.loc 1 374 5 is_stmt 1 view .LVU222
+ 846              		.loc 1 374 8 is_stmt 0 view .LVU223
+ 847 0008 30B1     		cbz	r0, .L59
+ 375:Service/Srv_Upgrade.c ****     {
+ 376:Service/Srv_Upgrade.c ****         shellPrint(shell_obj, "[ Current App ] SW Version: %d.%d.%d\r\n", AppVer[0], AppVer[1], App
+ 848              		.loc 1 376 9 is_stmt 1 view .LVU224
+ 849 000a 1123     		movs	r3, #17
+ 850 000c 0093     		str	r3, [sp]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 25
+
+
+ 851 000e 0023     		movs	r3, #0
+ 852 0010 1A46     		mov	r2, r3
+ 853 0012 0349     		ldr	r1, .L62
+ 854 0014 FFF7FEFF 		bl	shellPrint
+ 855              	.LVL52:
+ 856              	.L59:
+ 377:Service/Srv_Upgrade.c ****     }
+ 378:Service/Srv_Upgrade.c **** }
+ 857              		.loc 1 378 1 is_stmt 0 view .LVU225
+ 858 0018 03B0     		add	sp, sp, #12
+ 859              	.LCFI13:
+ 860              		.cfi_def_cfa_offset 4
+ 861              		@ sp needed
+ 862 001a 5DF804FB 		ldr	pc, [sp], #4
+ 863              	.L63:
+ 864 001e 00BF     		.align	2
+ 865              	.L62:
+ 866 0020 00000000 		.word	.LC1
+ 867              		.cfi_endproc
+ 868              	.LFE159:
+ 870              		.section	.text.Write_OnChipFlash,"ax",%progbits
+ 871              		.align	1
+ 872              		.weak	Write_OnChipFlash
+ 873              		.syntax unified
+ 874              		.thumb
+ 875              		.thumb_func
+ 877              	Write_OnChipFlash:
+ 878              	.LVL53:
+ 879              	.LFB148:
+  36:Service/Srv_Upgrade.c **** __attribute__((weak)) bool Read_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return f
+ 880              		.loc 1 36 92 is_stmt 1 view -0
+ 881              		.cfi_startproc
+ 882              		@ args = 0, pretend = 0, frame = 0
+ 883              		@ frame_needed = 0, uses_anonymous_args = 0
+ 884              		@ link register save eliminated.
+  36:Service/Srv_Upgrade.c **** __attribute__((weak)) bool Read_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return f
+ 885              		.loc 1 36 93 view .LVU227
+  36:Service/Srv_Upgrade.c **** __attribute__((weak)) bool Read_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return f
+ 886              		.loc 1 36 106 is_stmt 0 view .LVU228
+ 887 0000 0020     		movs	r0, #0
+ 888              	.LVL54:
+  36:Service/Srv_Upgrade.c **** __attribute__((weak)) bool Read_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return f
+ 889              		.loc 1 36 106 view .LVU229
+ 890 0002 7047     		bx	lr
+ 891              		.cfi_endproc
+ 892              	.LFE148:
+ 894              		.section	.text.Read_OnChipFlash,"ax",%progbits
+ 895              		.align	1
+ 896              		.weak	Read_OnChipFlash
+ 897              		.syntax unified
+ 898              		.thumb
+ 899              		.thumb_func
+ 901              	Read_OnChipFlash:
+ 902              	.LVL55:
+ 903              	.LFB149:
+  37:Service/Srv_Upgrade.c **** __attribute__((weak)) bool Erase_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return 
+ 904              		.loc 1 37 91 is_stmt 1 view -0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 26
+
+
+ 905              		.cfi_startproc
+ 906              		@ args = 0, pretend = 0, frame = 0
+ 907              		@ frame_needed = 0, uses_anonymous_args = 0
+ 908              		@ link register save eliminated.
+  37:Service/Srv_Upgrade.c **** __attribute__((weak)) bool Erase_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return 
+ 909              		.loc 1 37 92 view .LVU231
+  37:Service/Srv_Upgrade.c **** __attribute__((weak)) bool Erase_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return 
+ 910              		.loc 1 37 105 is_stmt 0 view .LVU232
+ 911 0000 0020     		movs	r0, #0
+ 912              	.LVL56:
+  37:Service/Srv_Upgrade.c **** __attribute__((weak)) bool Erase_OnChipFlash(uint32_t addr, uint8_t *p_data, uint16_t size){return 
+ 913              		.loc 1 37 105 view .LVU233
+ 914 0002 7047     		bx	lr
+ 915              		.cfi_endproc
+ 916              	.LFE149:
+ 918              		.section	.text.Erase_OnChipFlash,"ax",%progbits
+ 919              		.align	1
+ 920              		.weak	Erase_OnChipFlash
+ 921              		.syntax unified
+ 922              		.thumb
+ 923              		.thumb_func
+ 925              	Erase_OnChipFlash:
+ 926              	.LVL57:
+ 927              	.LFB150:
+  38:Service/Srv_Upgrade.c **** 
+ 928              		.loc 1 38 92 is_stmt 1 view -0
+ 929              		.cfi_startproc
+ 930              		@ args = 0, pretend = 0, frame = 0
+ 931              		@ frame_needed = 0, uses_anonymous_args = 0
+ 932              		@ link register save eliminated.
+  38:Service/Srv_Upgrade.c **** 
+ 933              		.loc 1 38 93 view .LVU235
+  38:Service/Srv_Upgrade.c **** 
+ 934              		.loc 1 38 106 is_stmt 0 view .LVU236
+ 935 0000 0020     		movs	r0, #0
+ 936              	.LVL58:
+  38:Service/Srv_Upgrade.c **** 
+ 937              		.loc 1 38 106 view .LVU237
+ 938 0002 7047     		bx	lr
+ 939              		.cfi_endproc
+ 940              	.LFE150:
+ 942              		.global	shellCommandapp_ver
+ 943              		.global	shellDescapp_ver
+ 944              		.global	shellCmdapp_ver
+ 945              		.global	SrvUpgrade
+ 946              		.global	AppVer
+ 947              		.section	.bss.Monitor,"aw",%nobits
+ 948              		.align	2
+ 949              		.set	.LANCHOR0,. + 0
+ 952              	Monitor:
+ 953 0000 00000000 		.space	1140
+ 953      00000000 
+ 953      00000000 
+ 953      00000000 
+ 953      00000000 
+ 954              		.section	.bss.upgrade_buf,"aw",%nobits
+ 955              		.align	2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 27
+
+
+ 958              	upgrade_buf:
+ 959 0000 00000000 		.space	4096
+ 959      00000000 
+ 959      00000000 
+ 959      00000000 
+ 959      00000000 
+ 960              		.section	.data.SrvUpgrade,"aw"
+ 961              		.align	2
+ 964              	SrvUpgrade:
+ 965 0000 00000000 		.word	SrvUpgrade_Init
+ 966 0004 00000000 		.word	SrvUpgrade_StatePolling
+ 967 0008 00000000 		.word	SrvUpgrade_PushData
+ 968              		.section	.rodata.AppVer,"a"
+ 969              		.align	2
+ 972              	AppVer:
+ 973 0000 000011   		.ascii	"\000\000\021"
+ 974              		.section	.rodata.shellCmdapp_ver,"a"
+ 975              		.align	2
+ 978              	shellCmdapp_ver:
+ 979 0000 6170705F 		.ascii	"app_ver\000"
+ 979      76657200 
+ 980              		.section	.rodata.shellDescapp_ver,"a"
+ 981              		.align	2
+ 984              	shellDescapp_ver:
+ 985 0000 63686563 		.ascii	"check app version\000"
+ 985      6B206170 
+ 985      70207665 
+ 985      7273696F 
+ 985      6E00
+ 986              		.section	shellCommand,"a"
+ 987              		.align	2
+ 990              	shellCommandapp_ver:
+ 991 0000 00210000 		.word	8448
+ 992 0004 00000000 		.word	shellCmdapp_ver
+ 993 0008 00000000 		.word	SrvUpgrade_Show_CurAppVer
+ 994 000c 00000000 		.word	shellDescapp_ver
+ 995              		.text
+ 996              	.Letext0:
+ 997              		.file 2 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\machine\\_defau
+ 998              		.file 3 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 999              		.file 4 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\lib\\gcc\\arm-none-eabi\\10.3.1\\includ
+ 1000              		.file 5 "Service/Srv_Upgrade.h"
+ 1001              		.file 6 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 1002              		.file 7 "Device/Dev_Dshot.h"
+ 1003              		.file 8 "common/Error_Log/../../common/gen_physic_def/imu_data.h"
+ 1004              		.file 9 "System/FreeRTOS/include/portable.h"
+ 1005              		.file 10 "Service/Srv_OsCommon.h"
+ 1006              		.file 11 "Service/control_data.h"
+ 1007              		.file 12 "Service/../System/storage/Storage_Dev_Port.h"
+ 1008              		.file 13 "Service/../System/storage/Storage.h"
+ 1009              		.file 14 "System/shell/shell.h"
+ 1010              		.file 15 "System/shell/shell_port.h"
+ 1011              		.file 16 "<built-in>"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s 			page 28
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Srv_Upgrade.c
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:20     .text.SrvUpgrade_PortProcPolling:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:25     .text.SrvUpgrade_PortProcPolling:00000000 SrvUpgrade_PortProcPolling
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:166    .text.SrvUpgrade_PortProcPolling:0000008c $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:171    .text.SrvUpgrade_PushData:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:176    .text.SrvUpgrade_PushData:00000000 SrvUpgrade_PushData
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:298    .text.SrvUpgrade_PushData:00000080 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:303    .text.SrvUpgrade_On_PortProc_Finish:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:308    .text.SrvUpgrade_On_PortProc_Finish:00000000 SrvUpgrade_On_PortProc_Finish
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:394    .text.SrvUpgrade_On_PortProc_Finish:00000084 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:400    .text.SrvUpgrade_StatePolling:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:405    .text.SrvUpgrade_StatePolling:00000000 SrvUpgrade_StatePolling
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:432    .text.SrvUpgrade_StatePolling:00000010 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:442    .text.SrvUpgrade_StatePolling:0000001a $t
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:562    .text.SrvUpgrade_StatePolling:0000008c $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:567    .rodata.SrvUpgrade_CheckUpgrade_OnBootUp.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:571    .text.SrvUpgrade_CheckUpgrade_OnBootUp:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:576    .text.SrvUpgrade_CheckUpgrade_OnBootUp:00000000 SrvUpgrade_CheckUpgrade_OnBootUp
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:724    .text.SrvUpgrade_CheckUpgrade_OnBootUp:000000c4 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:732    .text.SrvUpgrade_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:737    .text.SrvUpgrade_Init:00000000 SrvUpgrade_Init
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:813    .text.SrvUpgrade_Init:00000050 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:958    .bss.upgrade_buf:00000000 upgrade_buf
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:819    .rodata.SrvUpgrade_Show_CurAppVer.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:823    .text.SrvUpgrade_Show_CurAppVer:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:828    .text.SrvUpgrade_Show_CurAppVer:00000000 SrvUpgrade_Show_CurAppVer
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:866    .text.SrvUpgrade_Show_CurAppVer:00000020 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:871    .text.Write_OnChipFlash:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:877    .text.Write_OnChipFlash:00000000 Write_OnChipFlash
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:895    .text.Read_OnChipFlash:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:901    .text.Read_OnChipFlash:00000000 Read_OnChipFlash
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:919    .text.Erase_OnChipFlash:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:925    .text.Erase_OnChipFlash:00000000 Erase_OnChipFlash
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:990    shellCommand:00000000 shellCommandapp_ver
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:984    .rodata.shellDescapp_ver:00000000 shellDescapp_ver
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:978    .rodata.shellCmdapp_ver:00000000 shellCmdapp_ver
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:964    .data.SrvUpgrade:00000000 SrvUpgrade
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:972    .rodata.AppVer:00000000 AppVer
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:948    .bss.Monitor:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:952    .bss.Monitor:00000000 Monitor
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:955    .bss.upgrade_buf:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:961    .data.SrvUpgrade:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:969    .rodata.AppVer:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:975    .rodata.shellCmdapp_ver:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:981    .rodata.shellDescapp_ver:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccbk0myg.s:987    shellCommand:00000000 $d
+
+UNDEFINED SYMBOLS
+memcpy
+Storage
+memset
+Shell_GetInstence
+shellPrint

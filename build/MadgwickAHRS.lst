@@ -1,0 +1,2691 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"MadgwickAHRS.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.invSqrt,"ax",%progbits
+  19              		.align	1
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  24              	invSqrt:
+  25              	.LVL0:
+  26              	.LFB7:
+  27              		.file 1 "Algorithm/Navi_Dep/MadgwickAHRS.c"
+   1:Algorithm/Navi_Dep/MadgwickAHRS.c **** //=================================================================================================
+   2:Algorithm/Navi_Dep/MadgwickAHRS.c **** // MadgwickAHRS.c
+   3:Algorithm/Navi_Dep/MadgwickAHRS.c **** //=================================================================================================
+   4:Algorithm/Navi_Dep/MadgwickAHRS.c **** //
+   5:Algorithm/Navi_Dep/MadgwickAHRS.c **** // Implementation of Madgwick's IMU and AHRS algorithms.
+   6:Algorithm/Navi_Dep/MadgwickAHRS.c **** // See: http://www.x-io.co.uk/node/8#open_source_ahrs_and_imu_algorithms
+   7:Algorithm/Navi_Dep/MadgwickAHRS.c **** //
+   8:Algorithm/Navi_Dep/MadgwickAHRS.c **** // Date			Author          Notes
+   9:Algorithm/Navi_Dep/MadgwickAHRS.c **** // 29/09/2011	SOH Madgwick    Initial release
+  10:Algorithm/Navi_Dep/MadgwickAHRS.c **** // 02/10/2011	SOH Madgwick	Optimised for reduced CPU load
+  11:Algorithm/Navi_Dep/MadgwickAHRS.c **** // 19/02/2012	SOH Madgwick	Magnetometer measurement is normalised
+  12:Algorithm/Navi_Dep/MadgwickAHRS.c **** //
+  13:Algorithm/Navi_Dep/MadgwickAHRS.c **** //=================================================================================================
+  14:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  15:Algorithm/Navi_Dep/MadgwickAHRS.c **** //-------------------------------------------------------------------------------------------------
+  16:Algorithm/Navi_Dep/MadgwickAHRS.c **** // Header files
+  17:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  18:Algorithm/Navi_Dep/MadgwickAHRS.c **** // coordinate of madgwick alogrithm is x ---> forward y ---> left z ---> up
+  19:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  20:Algorithm/Navi_Dep/MadgwickAHRS.c **** #include "MadgwickAHRS.h"
+  21:Algorithm/Navi_Dep/MadgwickAHRS.c **** #include <math.h>
+  22:Algorithm/Navi_Dep/MadgwickAHRS.c **** #include "math_util.h"
+  23:Algorithm/Navi_Dep/MadgwickAHRS.c **** #include <stdbool.h>
+  24:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  25:Algorithm/Navi_Dep/MadgwickAHRS.c **** //-------------------------------------------------------------------------------------------------
+  26:Algorithm/Navi_Dep/MadgwickAHRS.c **** // Definitions
+  27:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  28:Algorithm/Navi_Dep/MadgwickAHRS.c **** #define sampleFreq	100.0f		// sample frequency in Hz
+  29:Algorithm/Navi_Dep/MadgwickAHRS.c **** #define betaDef		1.5f		// 2 * proportional gain
+  30:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  31:Algorithm/Navi_Dep/MadgwickAHRS.c **** //-------------------------------------------------------------------------------------------------
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 2
+
+
+  32:Algorithm/Navi_Dep/MadgwickAHRS.c **** // Variable definitions
+  33:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  34:Algorithm/Navi_Dep/MadgwickAHRS.c **** //-------------------------------------------------------------------------------------------------
+  35:Algorithm/Navi_Dep/MadgwickAHRS.c **** // Function declarations
+  36:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  37:Algorithm/Navi_Dep/MadgwickAHRS.c **** static void MadgwickAHRS_Get_Attitude(AlgoAttData_TypeDef *att);
+  38:Algorithm/Navi_Dep/MadgwickAHRS.c **** static float invSqrt(float x);
+  39:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  40:Algorithm/Navi_Dep/MadgwickAHRS.c **** //=================================================================================================
+  41:Algorithm/Navi_Dep/MadgwickAHRS.c **** // Functions
+  42:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  43:Algorithm/Navi_Dep/MadgwickAHRS.c **** //-------------------------------------------------------------------------------------------------
+  44:Algorithm/Navi_Dep/MadgwickAHRS.c **** // AHRS algorithm update
+  45:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  46:Algorithm/Navi_Dep/MadgwickAHRS.c **** void MadgwickAHRSInit(AlgoAttData_TypeDef *att)
+  47:Algorithm/Navi_Dep/MadgwickAHRS.c **** {
+  48:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->beta = betaDef;
+  49:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 = 1.0f;
+  50:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 = 0.0f;
+  51:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 = 0.0f;
+  52:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 = 0.0f;
+  53:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->pitch = 0.0f;
+  54:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->roll = 0.0f;
+  55:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->yaw = 0.0f;
+  56:Algorithm/Navi_Dep/MadgwickAHRS.c **** }
+  57:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  58:Algorithm/Navi_Dep/MadgwickAHRS.c **** void MadgwickAHRSupdate(AlgoAttData_TypeDef *att, float gx, float gy, float gz, float ax, float ay,
+  59:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float recipNorm;
+  60:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float s0, s1, s2, s3;
+  61:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float qDot1, qDot2, qDot3, qDot4;
+  62:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float hx, hy;
+  63:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float _2q0mx, _2q0my, _2q0mz, _2q1mx, _2bx, _2bz, _4bx, _4bz, _2q0, _2q1, _2q2, _2q3, _2q0q2, _2q2
+  64:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  65:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	if (att == NULL)
+  66:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		return;
+  67:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  68:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	// Use IMU algorithm if magnetometer measurement invalid (avoids NaN in magnetometer normalisation
+  69:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	if((mx == 0.0f) && (my == 0.0f) && (mz == 0.0f)) {
+  70:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		MadgwickAHRSupdateIMU(att, gx, gy, gz, ax, ay, az);
+  71:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		return;
+  72:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	}
+  73:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  74:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	// Rate of change of quaternion from gyroscope
+  75:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot1 = 0.5f * (-att->q1 * gx - att->q2 * gy - att->q3 * gz);
+  76:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+  77:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+  78:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+  79:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  80:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	// Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisa
+  81:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	if(!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) {
+  82:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  83:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		// Normalise accelerometer measurement
+  84:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(ax * ax + ay * ay + az * az);
+  85:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+  86:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ay *= recipNorm;
+  87:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		az *= recipNorm;   
+  88:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 3
+
+
+  89:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		// Normalise magnetometer measurement
+  90:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(mx * mx + my * my + mz * mz);
+  91:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		mx *= recipNorm;
+  92:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		my *= recipNorm;
+  93:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		mz *= recipNorm;
+  94:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+  95:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		// Auxiliary variables to avoid repeated arithmetic
+  96:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0mx = 2.0f * att->q0 * mx;
+  97:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0my = 2.0f * att->q0 * my;
+  98:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0mz = 2.0f * att->q0 * mz;
+  99:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q1mx = 2.0f * att->q1 * mx;
+ 100:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0 = 2.0f * att->q0;
+ 101:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q1 = 2.0f * att->q1;
+ 102:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q2 = 2.0f * att->q2;
+ 103:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q3 = 2.0f * att->q3;
+ 104:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0q2 = 2.0f * att->q0 * att->q2;
+ 105:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q2q3 = 2.0f * att->q2 * att->q3;
+ 106:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q0 = att->q0 * att->q0;
+ 107:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q1 = att->q0 * att->q1;
+ 108:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q2 = att->q0 * att->q2;
+ 109:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q3 = att->q0 * att->q3;
+ 110:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q1 = att->q1 * att->q1;
+ 111:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q2 = att->q1 * att->q2;
+ 112:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q3 = att->q1 * att->q3;
+ 113:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q2q2 = att->q2 * att->q2;
+ 114:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q2q3 = att->q2 * att->q3;
+ 115:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q3q3 = att->q3 * att->q3;
+ 116:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 117:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		// Reference direction of Earth's magnetic field
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hx = mx * q0q0 - _2q0my * att->q3 + _2q0mz * att->q2 + mx * q1q1 + _2q1 * my * att->q2 + _2q1 * m
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 120:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bz = -_2q0mx * att->q2 + _2q0my * att->q1 + mz * q0q0 + _2q1mx * att->q3 - mz * q1q1 + _2q2 * m
+ 122:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 123:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bz = 2.0f * _2bz;
+ 124:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 125:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		// Gradient decent algorithm corrective step
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 = -_2q2 * (2.0f * q1q3 - _2q0q2 - ax) + _2q1 * (2.0f * q0q1 + _2q2q3 - ay) - _2bz * att->q2 * 
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 130:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 131:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 132:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 *= recipNorm;
+ 133:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 *= recipNorm;
+ 134:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 *= recipNorm;
+ 135:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 136:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		// Apply feedback step
+ 137:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot1 -= att->beta * s0;
+ 138:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot2 -= att->beta * s1;
+ 139:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot3 -= att->beta * s2;
+ 140:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot4 -= att->beta * s3;
+ 141:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	}
+ 142:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 143:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	// Integrate rate of change of quaternion to yield quaternion
+ 144:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 += qDot1 * (1.0f / sampleFreq);
+ 145:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 += qDot2 * (1.0f / sampleFreq);
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 4
+
+
+ 146:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 += qDot3 * (1.0f / sampleFreq);
+ 147:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 += qDot4 * (1.0f / sampleFreq);
+ 148:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 149:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	// Normalise quaternion
+ 150:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	recipNorm = invSqrt(att->q0 * att->q0 + att->q1 * att->q1 + att->q2 * att->q2 + att->q3 * att->q3)
+ 151:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 152:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 *= recipNorm;
+ 153:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 *= recipNorm;
+ 154:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 *= recipNorm;
+ 155:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 156:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	MadgwickAHRS_Get_Attitude(att);
+ 157:Algorithm/Navi_Dep/MadgwickAHRS.c **** }
+ 158:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 159:Algorithm/Navi_Dep/MadgwickAHRS.c **** //-------------------------------------------------------------------------------------------------
+ 160:Algorithm/Navi_Dep/MadgwickAHRS.c **** // IMU algorithm update
+ 161:Algorithm/Navi_Dep/MadgwickAHRS.c **** void MadgwickAHRSupdateIMU(AlgoAttData_TypeDef *att, float gx, float gy, float gz, float ax, float 
+ 162:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float recipNorm;
+ 163:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float s0, s1, s2, s3;
+ 164:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float qDot1, qDot2, qDot3, qDot4;
+ 165:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float _2q0, _2q1, _2q2, _2q3, _4q0, _4q1, _4q2 ,_8q1, _8q2, q0q0, q1q1, q2q2, q3q3;
+ 166:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 167:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	if (att == NULL)
+ 168:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		return;
+ 169:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 170:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	// Rate of change of quaternion from gyroscope
+ 171:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot1 = 0.5f * (-att->q1 * gx - att->q2 * gy - att->q3 * gz);
+ 172:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 173:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 174:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 175:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 176:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	// Compute feedback only if accelerometer measurement valid (avoids NaN in accelerometer normalisa
+ 177:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	if(!((ax == 0.0f) && (ay == 0.0f) && (az == 0.0f))) {
+ 178:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 179:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		// Normalise accelerometer measurement
+ 180:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(ax * ax + ay * ay + az * az);
+ 181:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 182:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ay *= recipNorm;
+ 183:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		az *= recipNorm;   
+ 184:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 185:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		// Auxiliary variables to avoid repeated arithmetic
+ 186:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0 = 2.0f * att->q0;
+ 187:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q1 = 2.0f * att->q1;
+ 188:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q2 = 2.0f * att->q2;
+ 189:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q3 = 2.0f * att->q3;
+ 190:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4q0 = 4.0f * att->q0;
+ 191:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4q1 = 4.0f * att->q1;
+ 192:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4q2 = 4.0f * att->q2;
+ 193:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_8q1 = 8.0f * att->q1;
+ 194:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_8q2 = 8.0f * att->q2;
+ 195:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q0 = att->q0 * att->q0;
+ 196:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q1 = att->q1 * att->q1;
+ 197:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q2q2 = att->q2 * att->q2;
+ 198:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q3q3 = att->q3 * att->q3;
+ 199:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 200:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		// Gradient decent algorithm corrective step
+ 201:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 = _4q0 * q2q2 + _2q2 * ax + _4q0 * q1q1 - _2q1 * ay;
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * att->q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 5
+
+
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 204:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 205:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 206:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 207:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 *= recipNorm;
+ 208:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 *= recipNorm;
+ 209:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 *= recipNorm;
+ 210:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 211:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		// Apply feedback step
+ 212:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot1 -= att->beta * s0;
+ 213:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot2 -= att->beta * s1;
+ 214:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot3 -= att->beta * s2;
+ 215:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot4 -= att->beta * s3;
+ 216:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	}
+ 217:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 218:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	// Integrate rate of change of quaternion to yield quaternion
+ 219:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 += qDot1 * (1.0f / sampleFreq);
+ 220:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 += qDot2 * (1.0f / sampleFreq);
+ 221:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 += qDot3 * (1.0f / sampleFreq);
+ 222:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 += qDot4 * (1.0f / sampleFreq);
+ 223:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 224:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	// Normalise quaternion
+ 225:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	recipNorm = invSqrt(att->q0 * att->q0 + att->q1 * att->q1 + att->q2 * att->q2 + att->q3 * att->q3)
+ 226:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 227:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 *= recipNorm;
+ 228:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 *= recipNorm;
+ 229:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 *= recipNorm;
+ 230:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 231:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	MadgwickAHRS_Get_Attitude(att);
+ 232:Algorithm/Navi_Dep/MadgwickAHRS.c **** }
+ 233:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 234:Algorithm/Navi_Dep/MadgwickAHRS.c **** //-------------------------------------------------------------------------------------------------
+ 235:Algorithm/Navi_Dep/MadgwickAHRS.c **** // Fast inverse square-root
+ 236:Algorithm/Navi_Dep/MadgwickAHRS.c **** // See: http://en.wikipedia.org/wiki/Fast_inverse_square_root
+ 237:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 238:Algorithm/Navi_Dep/MadgwickAHRS.c **** static float invSqrt(float x) {
+  28              		.loc 1 238 31 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+ 239:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float halfx = 0.5f * x;
+  33              		.loc 1 239 2 view .LVU1
+  34              		.loc 1 239 8 is_stmt 0 view .LVU2
+  35 0000 F6EE007A 		vmov.f32	s15, #5.0e-1
+  36 0004 60EE277A 		vmul.f32	s15, s0, s15
+  37              	.LVL1:
+ 240:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float y = x;
+  38              		.loc 1 240 2 is_stmt 1 view .LVU3
+ 241:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	long i = *(long*)&y;
+  39              		.loc 1 241 2 view .LVU4
+  40              		.loc 1 241 11 is_stmt 0 view .LVU5
+  41 0008 10EE103A 		vmov	r3, s0	@ int
+  42              	.LVL2:
+ 242:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	i = 0x5f3759df - (i>>1);
+  43              		.loc 1 242 2 is_stmt 1 view .LVU6
+ 243:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	y = *(float*)&i;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 6
+
+
+  44              		.loc 1 243 2 view .LVU7
+  45              		.loc 1 243 6 is_stmt 0 view .LVU8
+  46 000c 074A     		ldr	r2, .L2
+  47 000e A2EB6303 		sub	r3, r2, r3, asr #1
+  48              	.LVL3:
+  49              		.loc 1 243 6 view .LVU9
+  50 0012 07EE103A 		vmov	s14, r3	@ int
+  51              	.LVL4:
+ 244:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	y = y * (1.5f - (halfx * y * y));
+  52              		.loc 1 244 2 is_stmt 1 view .LVU10
+  53              		.loc 1 244 25 is_stmt 0 view .LVU11
+  54 0016 67EE277A 		vmul.f32	s15, s14, s15
+  55              	.LVL5:
+  56              		.loc 1 244 29 view .LVU12
+  57 001a 67EE277A 		vmul.f32	s15, s14, s15
+  58              		.loc 1 244 16 view .LVU13
+  59 001e B7EE080A 		vmov.f32	s0, #1.5e+0
+  60              	.LVL6:
+  61              		.loc 1 244 16 view .LVU14
+  62 0022 30EE670A 		vsub.f32	s0, s0, s15
+  63              	.LVL7:
+ 245:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	return y;
+  64              		.loc 1 245 2 is_stmt 1 view .LVU15
+ 246:Algorithm/Navi_Dep/MadgwickAHRS.c **** }
+  65              		.loc 1 246 1 is_stmt 0 view .LVU16
+  66 0026 27EE000A 		vmul.f32	s0, s14, s0
+  67 002a 7047     		bx	lr
+  68              	.L3:
+  69              		.align	2
+  70              	.L2:
+  71 002c DF59375F 		.word	1597463007
+  72              		.cfi_endproc
+  73              	.LFE7:
+  75              		.section	.text.MadgwickAHRS_Get_Attitude,"ax",%progbits
+  76              		.align	1
+  77              		.syntax unified
+  78              		.thumb
+  79              		.thumb_func
+  81              	MadgwickAHRS_Get_Attitude:
+  82              	.LVL8:
+  83              	.LFB8:
+ 247:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 248:Algorithm/Navi_Dep/MadgwickAHRS.c **** static void MadgwickAHRS_Get_Attitude(AlgoAttData_TypeDef *att)
+ 249:Algorithm/Navi_Dep/MadgwickAHRS.c **** {
+  84              		.loc 1 249 1 is_stmt 1 view -0
+  85              		.cfi_startproc
+  86              		@ args = 0, pretend = 0, frame = 0
+  87              		@ frame_needed = 0, uses_anonymous_args = 0
+ 250:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	double pitch_tmp = 0.0;
+  88              		.loc 1 250 2 view .LVU18
+ 251:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	double roll_tmp = 0.0;
+  89              		.loc 1 251 2 view .LVU19
+ 252:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	double yaw_tmp = 0.0;
+  90              		.loc 1 252 2 view .LVU20
+ 253:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 254:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	if (att == NULL)
+  91              		.loc 1 254 2 view .LVU21
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 7
+
+
+  92              		.loc 1 254 5 is_stmt 0 view .LVU22
+  93 0000 0028     		cmp	r0, #0
+  94 0002 6ED0     		beq	.L7
+ 249:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	double pitch_tmp = 0.0;
+  95              		.loc 1 249 1 view .LVU23
+  96 0004 10B5     		push	{r4, lr}
+  97              	.LCFI0:
+  98              		.cfi_def_cfa_offset 8
+  99              		.cfi_offset 4, -8
+ 100              		.cfi_offset 14, -4
+ 101 0006 2DED068B 		vpush.64	{d8, d9, d10}
+ 102              	.LCFI1:
+ 103              		.cfi_def_cfa_offset 32
+ 104              		.cfi_offset 80, -32
+ 105              		.cfi_offset 81, -28
+ 106              		.cfi_offset 82, -24
+ 107              		.cfi_offset 83, -20
+ 108              		.cfi_offset 84, -16
+ 109              		.cfi_offset 85, -12
+ 110 000a 0446     		mov	r4, r0
+ 255:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		return;
+ 256:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 257:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	roll_tmp = atan2(att->q0 * att->q1 + att->q2 * att->q3, 0.5f - att->q1 * att->q1 - att->q2 * att->
+ 111              		.loc 1 257 2 is_stmt 1 view .LVU24
+ 112              		.loc 1 257 22 is_stmt 0 view .LVU25
+ 113 000c 90ED010A 		vldr.32	s0, [r0, #4]
+ 114              		.loc 1 257 32 view .LVU26
+ 115 0010 90ED021A 		vldr.32	s2, [r0, #8]
+ 116              		.loc 1 257 27 view .LVU27
+ 117 0014 20EE010A 		vmul.f32	s0, s0, s2
+ 118              		.loc 1 257 42 view .LVU28
+ 119 0018 D0ED037A 		vldr.32	s15, [r0, #12]
+ 120              		.loc 1 257 52 view .LVU29
+ 121 001c 90ED047A 		vldr.32	s14, [r0, #16]
+ 122              		.loc 1 257 47 view .LVU30
+ 123 0020 27EE877A 		vmul.f32	s14, s15, s14
+ 124              		.loc 1 257 37 view .LVU31
+ 125 0024 30EE070A 		vadd.f32	s0, s0, s14
+ 126              		.loc 1 257 73 view .LVU32
+ 127 0028 21EE011A 		vmul.f32	s2, s2, s2
+ 128              		.loc 1 257 63 view .LVU33
+ 129 002c B6EE00AA 		vmov.f32	s20, #5.0e-1
+ 130 0030 3AEE411A 		vsub.f32	s2, s20, s2
+ 131              		.loc 1 257 93 view .LVU34
+ 132 0034 67EEA77A 		vmul.f32	s15, s15, s15
+ 133              		.loc 1 257 83 view .LVU35
+ 134 0038 31EE671A 		vsub.f32	s2, s2, s15
+ 135              		.loc 1 257 13 view .LVU36
+ 136 003c B7EEC11A 		vcvt.f64.f32	d1, s2
+ 137 0040 B7EEC00A 		vcvt.f64.f32	d0, s0
+ 138 0044 FFF7FEFF 		bl	atan2
+ 139              	.LVL9:
+ 140              		.loc 1 257 13 view .LVU37
+ 141 0048 B0EE408B 		vmov.f64	d8, d0
+ 142              	.LVL10:
+ 258:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	pitch_tmp = asin(-2.0f * (att->q1 * att->q3 - att->q0 * att->q2));
+ 143              		.loc 1 258 2 is_stmt 1 view .LVU38
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 8
+
+
+ 144              		.loc 1 258 31 is_stmt 0 view .LVU39
+ 145 004c 94ED020A 		vldr.32	s0, [r4, #8]
+ 146              	.LVL11:
+ 147              		.loc 1 258 41 view .LVU40
+ 148 0050 D4ED047A 		vldr.32	s15, [r4, #16]
+ 149              		.loc 1 258 36 view .LVU41
+ 150 0054 20EE270A 		vmul.f32	s0, s0, s15
+ 151              		.loc 1 258 51 view .LVU42
+ 152 0058 D4ED017A 		vldr.32	s15, [r4, #4]
+ 153              		.loc 1 258 61 view .LVU43
+ 154 005c 94ED037A 		vldr.32	s14, [r4, #12]
+ 155              		.loc 1 258 56 view .LVU44
+ 156 0060 67EE877A 		vmul.f32	s15, s15, s14
+ 157              		.loc 1 258 46 view .LVU45
+ 158 0064 30EE670A 		vsub.f32	s0, s0, s15
+ 159              		.loc 1 258 25 view .LVU46
+ 160 0068 F8EE007A 		vmov.f32	s15, #-2.0e+0
+ 161 006c 20EE270A 		vmul.f32	s0, s0, s15
+ 162              		.loc 1 258 14 view .LVU47
+ 163 0070 B7EEC00A 		vcvt.f64.f32	d0, s0
+ 164 0074 FFF7FEFF 		bl	asin
+ 165              	.LVL12:
+ 166 0078 B0EE409B 		vmov.f64	d9, d0
+ 167              	.LVL13:
+ 259:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	yaw_tmp = atan2(att->q1 * att->q2 + att->q0 * att->q3, 0.5f - att->q2 * att->q2 - att->q3 * att->q
+ 168              		.loc 1 259 2 is_stmt 1 view .LVU48
+ 169              		.loc 1 259 21 is_stmt 0 view .LVU49
+ 170 007c 94ED020A 		vldr.32	s0, [r4, #8]
+ 171              	.LVL14:
+ 172              		.loc 1 259 31 view .LVU50
+ 173 0080 94ED031A 		vldr.32	s2, [r4, #12]
+ 174              		.loc 1 259 26 view .LVU51
+ 175 0084 20EE010A 		vmul.f32	s0, s0, s2
+ 176              		.loc 1 259 41 view .LVU52
+ 177 0088 94ED017A 		vldr.32	s14, [r4, #4]
+ 178              		.loc 1 259 51 view .LVU53
+ 179 008c D4ED047A 		vldr.32	s15, [r4, #16]
+ 180              		.loc 1 259 46 view .LVU54
+ 181 0090 27EE277A 		vmul.f32	s14, s14, s15
+ 182              		.loc 1 259 36 view .LVU55
+ 183 0094 30EE070A 		vadd.f32	s0, s0, s14
+ 184              		.loc 1 259 72 view .LVU56
+ 185 0098 21EE011A 		vmul.f32	s2, s2, s2
+ 186              		.loc 1 259 62 view .LVU57
+ 187 009c 3AEE41AA 		vsub.f32	s20, s20, s2
+ 188              		.loc 1 259 92 view .LVU58
+ 189 00a0 67EEA77A 		vmul.f32	s15, s15, s15
+ 190              		.loc 1 259 82 view .LVU59
+ 191 00a4 3AEE671A 		vsub.f32	s2, s20, s15
+ 192              		.loc 1 259 12 view .LVU60
+ 193 00a8 B7EEC11A 		vcvt.f64.f32	d1, s2
+ 194 00ac B7EEC00A 		vcvt.f64.f32	d0, s0
+ 195 00b0 FFF7FEFF 		bl	atan2
+ 196              	.LVL15:
+ 260:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 261:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->pitch = -Rad2Deg((float)pitch_tmp);
+ 197              		.loc 1 261 2 is_stmt 1 view .LVU61
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 9
+
+
+ 198              		.loc 1 261 16 is_stmt 0 view .LVU62
+ 199 00b4 B7EEC99B 		vcvt.f32.f64	s18, d9
+ 200              	.LVL16:
+ 201              	.LBB8:
+ 202              	.LBI8:
+ 203              		.file 2 "Algorithm/math_util.h"
+   1:Algorithm/math_util.h **** #ifndef __MATH_UTIL_H
+   2:Algorithm/math_util.h **** #define __MATH_UTIL_H
+   3:Algorithm/math_util.h **** 
+   4:Algorithm/math_util.h **** #ifdef __cplusplus
+   5:Algorithm/math_util.h **** extern "C" {
+   6:Algorithm/math_util.h **** #endif
+   7:Algorithm/math_util.h **** 
+   8:Algorithm/math_util.h **** #include <stdbool.h>
+   9:Algorithm/math_util.h **** #include <stdint.h>
+  10:Algorithm/math_util.h **** #include <string.h>
+  11:Algorithm/math_util.h **** #include <math.h>
+  12:Algorithm/math_util.h **** 
+  13:Algorithm/math_util.h **** /* Cbn matrix definition */
+  14:Algorithm/math_util.h **** typedef union
+  15:Algorithm/math_util.h **** {
+  16:Algorithm/math_util.h ****     float buf[9];
+  17:Algorithm/math_util.h ****     float matrix[3][3];
+  18:Algorithm/math_util.h **** } M_Cbn_TypeDef;
+  19:Algorithm/math_util.h **** 
+  20:Algorithm/math_util.h **** inline float Deg2Rad(float deg)
+  21:Algorithm/math_util.h **** {
+  22:Algorithm/math_util.h ****     return deg / 57.3f;
+  23:Algorithm/math_util.h **** }
+  24:Algorithm/math_util.h **** 
+  25:Algorithm/math_util.h **** inline float Rad2Deg(float rad)
+ 204              		.loc 2 25 14 is_stmt 1 view .LVU63
+ 205              	.LBB9:
+  26:Algorithm/math_util.h **** {
+  27:Algorithm/math_util.h ****     return rad * 57.3f;
+ 206              		.loc 2 27 5 view .LVU64
+ 207              		.loc 2 27 16 is_stmt 0 view .LVU65
+ 208 00b8 DFED0A7A 		vldr.32	s15, .L10
+ 209              	.LVL17:
+ 210              		.loc 2 27 16 view .LVU66
+ 211              	.LBE9:
+ 212              	.LBE8:
+ 213              		.loc 1 261 15 view .LVU67
+ 214 00bc 27EEC99A 		vnmul.f32	s18, s15, s18
+ 215              		.loc 1 261 13 view .LVU68
+ 216 00c0 84ED059A 		vstr.32	s18, [r4, #20]
+ 262:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->roll  = Rad2Deg((float)roll_tmp);
+ 217              		.loc 1 262 2 is_stmt 1 view .LVU69
+ 218              		.loc 1 262 15 is_stmt 0 view .LVU70
+ 219 00c4 B7EEC88B 		vcvt.f32.f64	s16, d8
+ 220              	.LVL18:
+ 221              	.LBB10:
+ 222              	.LBI10:
+  25:Algorithm/math_util.h **** {
+ 223              		.loc 2 25 14 is_stmt 1 view .LVU71
+ 224              	.LBB11:
+ 225              		.loc 2 27 5 view .LVU72
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 10
+
+
+ 226              		.loc 2 27 16 is_stmt 0 view .LVU73
+ 227 00c8 28EE278A 		vmul.f32	s16, s16, s15
+ 228              	.LVL19:
+ 229              		.loc 2 27 16 view .LVU74
+ 230              	.LBE11:
+ 231              	.LBE10:
+ 232              		.loc 1 262 13 view .LVU75
+ 233 00cc 84ED068A 		vstr.32	s16, [r4, #24]
+ 263:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->yaw   = -Rad2Deg((float)yaw_tmp);
+ 234              		.loc 1 263 2 is_stmt 1 view .LVU76
+ 235              		.loc 1 263 16 is_stmt 0 view .LVU77
+ 236 00d0 B7EEC00B 		vcvt.f32.f64	s0, d0
+ 237              	.LVL20:
+ 238              	.LBB12:
+ 239              	.LBI12:
+  25:Algorithm/math_util.h **** {
+ 240              		.loc 2 25 14 is_stmt 1 view .LVU78
+ 241              	.LBB13:
+ 242              		.loc 2 27 5 view .LVU79
+ 243              		.loc 2 27 5 is_stmt 0 view .LVU80
+ 244              	.LBE13:
+ 245              	.LBE12:
+ 246              		.loc 1 263 15 view .LVU81
+ 247 00d4 67EEC07A 		vnmul.f32	s15, s15, s0
+ 248              		.loc 1 263 13 view .LVU82
+ 249 00d8 C4ED077A 		vstr.32	s15, [r4, #28]
+ 264:Algorithm/Navi_Dep/MadgwickAHRS.c **** }
+ 250              		.loc 1 264 1 view .LVU83
+ 251 00dc BDEC068B 		vldm	sp!, {d8-d10}
+ 252              	.LCFI2:
+ 253              		.cfi_restore 84
+ 254              		.cfi_restore 85
+ 255              		.cfi_restore 82
+ 256              		.cfi_restore 83
+ 257              		.cfi_restore 80
+ 258              		.cfi_restore 81
+ 259              		.cfi_def_cfa_offset 8
+ 260 00e0 10BD     		pop	{r4, pc}
+ 261              	.LVL21:
+ 262              	.L7:
+ 263              	.LCFI3:
+ 264              		.cfi_def_cfa_offset 0
+ 265              		.cfi_restore 4
+ 266              		.cfi_restore 14
+ 267              		.loc 1 264 1 view .LVU84
+ 268 00e2 7047     		bx	lr
+ 269              	.L11:
+ 270              		.align	2
+ 271              	.L10:
+ 272 00e4 33336542 		.word	1113928499
+ 273              		.cfi_endproc
+ 274              	.LFE8:
+ 276              		.section	.text.MadgwickAHRSInit,"ax",%progbits
+ 277              		.align	1
+ 278              		.global	MadgwickAHRSInit
+ 279              		.syntax unified
+ 280              		.thumb
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 11
+
+
+ 281              		.thumb_func
+ 283              	MadgwickAHRSInit:
+ 284              	.LVL22:
+ 285              	.LFB4:
+  47:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->beta = betaDef;
+ 286              		.loc 1 47 1 is_stmt 1 view -0
+ 287              		.cfi_startproc
+ 288              		@ args = 0, pretend = 0, frame = 0
+ 289              		@ frame_needed = 0, uses_anonymous_args = 0
+ 290              		@ link register save eliminated.
+  48:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 = 1.0f;
+ 291              		.loc 1 48 2 view .LVU86
+  48:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 = 1.0f;
+ 292              		.loc 1 48 12 is_stmt 0 view .LVU87
+ 293 0000 4FF07F53 		mov	r3, #1069547520
+ 294 0004 0360     		str	r3, [r0]	@ float
+  49:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 = 0.0f;
+ 295              		.loc 1 49 2 is_stmt 1 view .LVU88
+  49:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 = 0.0f;
+ 296              		.loc 1 49 10 is_stmt 0 view .LVU89
+ 297 0006 4FF07E53 		mov	r3, #1065353216
+ 298 000a 4360     		str	r3, [r0, #4]	@ float
+  50:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 = 0.0f;
+ 299              		.loc 1 50 2 is_stmt 1 view .LVU90
+  50:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 = 0.0f;
+ 300              		.loc 1 50 10 is_stmt 0 view .LVU91
+ 301 000c 0023     		movs	r3, #0
+ 302 000e 8360     		str	r3, [r0, #8]	@ float
+  51:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 = 0.0f;
+ 303              		.loc 1 51 2 is_stmt 1 view .LVU92
+  51:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 = 0.0f;
+ 304              		.loc 1 51 10 is_stmt 0 view .LVU93
+ 305 0010 C360     		str	r3, [r0, #12]	@ float
+  52:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->pitch = 0.0f;
+ 306              		.loc 1 52 2 is_stmt 1 view .LVU94
+  52:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->pitch = 0.0f;
+ 307              		.loc 1 52 10 is_stmt 0 view .LVU95
+ 308 0012 0361     		str	r3, [r0, #16]	@ float
+  53:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->roll = 0.0f;
+ 309              		.loc 1 53 2 is_stmt 1 view .LVU96
+  53:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->roll = 0.0f;
+ 310              		.loc 1 53 13 is_stmt 0 view .LVU97
+ 311 0014 4361     		str	r3, [r0, #20]	@ float
+  54:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->yaw = 0.0f;
+ 312              		.loc 1 54 2 is_stmt 1 view .LVU98
+  54:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->yaw = 0.0f;
+ 313              		.loc 1 54 12 is_stmt 0 view .LVU99
+ 314 0016 8361     		str	r3, [r0, #24]	@ float
+  55:Algorithm/Navi_Dep/MadgwickAHRS.c **** }
+ 315              		.loc 1 55 2 is_stmt 1 view .LVU100
+  55:Algorithm/Navi_Dep/MadgwickAHRS.c **** }
+ 316              		.loc 1 55 11 is_stmt 0 view .LVU101
+ 317 0018 C361     		str	r3, [r0, #28]	@ float
+  56:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 318              		.loc 1 56 1 view .LVU102
+ 319 001a 7047     		bx	lr
+ 320              		.cfi_endproc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 12
+
+
+ 321              	.LFE4:
+ 323              		.section	.text.MadgwickAHRSupdateIMU,"ax",%progbits
+ 324              		.align	1
+ 325              		.global	MadgwickAHRSupdateIMU
+ 326              		.syntax unified
+ 327              		.thumb
+ 328              		.thumb_func
+ 330              	MadgwickAHRSupdateIMU:
+ 331              	.LVL23:
+ 332              	.LFB6:
+ 161:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float recipNorm;
+ 333              		.loc 1 161 114 is_stmt 1 view -0
+ 334              		.cfi_startproc
+ 335              		@ args = 0, pretend = 0, frame = 0
+ 336              		@ frame_needed = 0, uses_anonymous_args = 0
+ 162:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float s0, s1, s2, s3;
+ 337              		.loc 1 162 2 view .LVU104
+ 163:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float qDot1, qDot2, qDot3, qDot4;
+ 338              		.loc 1 163 2 view .LVU105
+ 164:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float _2q0, _2q1, _2q2, _2q3, _4q0, _4q1, _4q2 ,_8q1, _8q2, q0q0, q1q1, q2q2, q3q3;
+ 339              		.loc 1 164 2 view .LVU106
+ 165:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 340              		.loc 1 165 2 view .LVU107
+ 167:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		return;
+ 341              		.loc 1 167 2 view .LVU108
+ 167:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		return;
+ 342              		.loc 1 167 5 is_stmt 0 view .LVU109
+ 343 0000 0028     		cmp	r0, #0
+ 344 0002 00F04D81 		beq	.L18
+ 161:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float recipNorm;
+ 345              		.loc 1 161 114 view .LVU110
+ 346 0006 10B5     		push	{r4, lr}
+ 347              	.LCFI4:
+ 348              		.cfi_def_cfa_offset 8
+ 349              		.cfi_offset 4, -8
+ 350              		.cfi_offset 14, -4
+ 351 0008 2DED0E8B 		vpush.64	{d8, d9, d10, d11, d12, d13, d14}
+ 352              	.LCFI5:
+ 353              		.cfi_def_cfa_offset 64
+ 354              		.cfi_offset 80, -64
+ 355              		.cfi_offset 81, -60
+ 356              		.cfi_offset 82, -56
+ 357              		.cfi_offset 83, -52
+ 358              		.cfi_offset 84, -48
+ 359              		.cfi_offset 85, -44
+ 360              		.cfi_offset 86, -40
+ 361              		.cfi_offset 87, -36
+ 362              		.cfi_offset 88, -32
+ 363              		.cfi_offset 89, -28
+ 364              		.cfi_offset 90, -24
+ 365              		.cfi_offset 91, -20
+ 366              		.cfi_offset 92, -16
+ 367              		.cfi_offset 93, -12
+ 368 000c F0EE61DA 		vmov.f32	s27, s3
+ 369 0010 F0EE428A 		vmov.f32	s17, s4
+ 370 0014 F0EE62BA 		vmov.f32	s23, s5
+ 371 0018 0446     		mov	r4, r0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 13
+
+
+ 171:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 372              		.loc 1 171 2 is_stmt 1 view .LVU111
+ 171:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 373              		.loc 1 171 22 is_stmt 0 view .LVU112
+ 374 001a D0ED02CA 		vldr.32	s25, [r0, #8]
+ 171:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 375              		.loc 1 171 27 view .LVU113
+ 376 001e 6CEEC0AA 		vnmul.f32	s21, s25, s0
+ 171:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 377              		.loc 1 171 37 view .LVU114
+ 378 0022 90ED03CA 		vldr.32	s24, [r0, #12]
+ 171:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 379              		.loc 1 171 42 view .LVU115
+ 380 0026 6CEE207A 		vmul.f32	s15, s24, s1
+ 171:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 381              		.loc 1 171 32 view .LVU116
+ 382 002a 7AEEE7AA 		vsub.f32	s21, s21, s15
+ 171:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 383              		.loc 1 171 52 view .LVU117
+ 384 002e 90ED04BA 		vldr.32	s22, [r0, #16]
+ 171:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 385              		.loc 1 171 57 view .LVU118
+ 386 0032 6BEE017A 		vmul.f32	s15, s22, s2
+ 171:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 387              		.loc 1 171 47 view .LVU119
+ 388 0036 7AEEE7AA 		vsub.f32	s21, s21, s15
+ 171:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 389              		.loc 1 171 8 view .LVU120
+ 390 003a B6EE008A 		vmov.f32	s16, #5.0e-1
+ 391 003e 6AEE88AA 		vmul.f32	s21, s21, s16
+ 392              	.LVL24:
+ 172:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 393              		.loc 1 172 2 is_stmt 1 view .LVU121
+ 172:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 394              		.loc 1 172 21 is_stmt 0 view .LVU122
+ 395 0042 90ED01DA 		vldr.32	s26, [r0, #4]
+ 172:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 396              		.loc 1 172 26 view .LVU123
+ 397 0046 2DEE00AA 		vmul.f32	s20, s26, s0
+ 172:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 398              		.loc 1 172 41 view .LVU124
+ 399 004a 6CEE017A 		vmul.f32	s15, s24, s2
+ 172:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 400              		.loc 1 172 31 view .LVU125
+ 401 004e 3AEE27AA 		vadd.f32	s20, s20, s15
+ 172:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 402              		.loc 1 172 56 view .LVU126
+ 403 0052 6BEE207A 		vmul.f32	s15, s22, s1
+ 172:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 404              		.loc 1 172 46 view .LVU127
+ 405 0056 3AEE67AA 		vsub.f32	s20, s20, s15
+ 172:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 406              		.loc 1 172 8 view .LVU128
+ 407 005a 2AEE08AA 		vmul.f32	s20, s20, s16
+ 408              	.LVL25:
+ 173:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 409              		.loc 1 173 2 is_stmt 1 view .LVU129
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 14
+
+
+ 173:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 410              		.loc 1 173 26 is_stmt 0 view .LVU130
+ 411 005e 6DEE209A 		vmul.f32	s19, s26, s1
+ 173:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 412              		.loc 1 173 41 view .LVU131
+ 413 0062 6CEE817A 		vmul.f32	s15, s25, s2
+ 173:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 414              		.loc 1 173 31 view .LVU132
+ 415 0066 79EEE79A 		vsub.f32	s19, s19, s15
+ 173:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 416              		.loc 1 173 56 view .LVU133
+ 417 006a 6BEE007A 		vmul.f32	s15, s22, s0
+ 173:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 418              		.loc 1 173 46 view .LVU134
+ 419 006e 79EEA79A 		vadd.f32	s19, s19, s15
+ 173:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 420              		.loc 1 173 8 view .LVU135
+ 421 0072 69EE889A 		vmul.f32	s19, s19, s16
+ 422              	.LVL26:
+ 174:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 423              		.loc 1 174 2 is_stmt 1 view .LVU136
+ 174:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 424              		.loc 1 174 26 is_stmt 0 view .LVU137
+ 425 0076 2DEE011A 		vmul.f32	s2, s26, s2
+ 426              	.LVL27:
+ 174:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 427              		.loc 1 174 41 view .LVU138
+ 428 007a 2CEEA09A 		vmul.f32	s18, s25, s1
+ 174:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 429              		.loc 1 174 31 view .LVU139
+ 430 007e 31EE099A 		vadd.f32	s18, s2, s18
+ 174:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 431              		.loc 1 174 56 view .LVU140
+ 432 0082 2CEE001A 		vmul.f32	s2, s24, s0
+ 174:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 433              		.loc 1 174 46 view .LVU141
+ 434 0086 39EE419A 		vsub.f32	s18, s18, s2
+ 174:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 435              		.loc 1 174 8 view .LVU142
+ 436 008a 29EE089A 		vmul.f32	s18, s18, s16
+ 437              	.LVL28:
+ 177:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 438              		.loc 1 177 2 is_stmt 1 view .LVU143
+ 177:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 439              		.loc 1 177 11 is_stmt 0 view .LVU144
+ 440 008e F5EE401A 		vcmp.f32	s3, #0
+ 441 0092 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 442 0096 14BF     		ite	ne
+ 443 0098 0123     		movne	r3, #1
+ 444 009a 0023     		moveq	r3, #0
+ 177:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 445              		.loc 1 177 27 view .LVU145
+ 446 009c B5EE402A 		vcmp.f32	s4, #0
+ 447 00a0 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 177:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 448              		.loc 1 177 20 view .LVU146
+ 449 00a4 18BF     		it	ne
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 15
+
+
+ 450 00a6 43F00103 		orrne	r3, r3, #1
+ 177:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 451              		.loc 1 177 4 view .LVU147
+ 452 00aa 2BB9     		cbnz	r3, .L15
+ 177:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 453              		.loc 1 177 5 discriminator 1 view .LVU148
+ 454 00ac F5EE402A 		vcmp.f32	s5, #0
+ 455 00b0 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 456 00b4 00F0B480 		beq	.L16
+ 457              	.L15:
+ 180:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 458              		.loc 1 180 3 is_stmt 1 view .LVU149
+ 180:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 459              		.loc 1 180 26 is_stmt 0 view .LVU150
+ 460 00b8 6DEEAD7A 		vmul.f32	s15, s27, s27
+ 180:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 461              		.loc 1 180 36 view .LVU151
+ 462 00bc 28EEA80A 		vmul.f32	s0, s17, s17
+ 463              	.LVL29:
+ 180:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 464              		.loc 1 180 31 view .LVU152
+ 465 00c0 77EE807A 		vadd.f32	s15, s15, s0
+ 180:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 466              		.loc 1 180 46 view .LVU153
+ 467 00c4 2BEEAB0A 		vmul.f32	s0, s23, s23
+ 180:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 468              		.loc 1 180 15 view .LVU154
+ 469 00c8 37EE800A 		vadd.f32	s0, s15, s0
+ 470 00cc FFF7FEFF 		bl	invSqrt
+ 471              	.LVL30:
+ 181:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ay *= recipNorm;
+ 472              		.loc 1 181 3 is_stmt 1 view .LVU155
+ 181:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ay *= recipNorm;
+ 473              		.loc 1 181 6 is_stmt 0 view .LVU156
+ 474 00d0 6DEE801A 		vmul.f32	s3, s27, s0
+ 475              	.LVL31:
+ 182:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		az *= recipNorm;   
+ 476              		.loc 1 182 3 is_stmt 1 view .LVU157
+ 182:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		az *= recipNorm;   
+ 477              		.loc 1 182 6 is_stmt 0 view .LVU158
+ 478 00d4 28EE802A 		vmul.f32	s4, s17, s0
+ 479              	.LVL32:
+ 183:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 480              		.loc 1 183 3 is_stmt 1 view .LVU159
+ 183:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 481              		.loc 1 183 6 is_stmt 0 view .LVU160
+ 482 00d8 6BEE802A 		vmul.f32	s5, s23, s0
+ 483              	.LVL33:
+ 186:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q1 = 2.0f * att->q1;
+ 484              		.loc 1 186 3 is_stmt 1 view .LVU161
+ 186:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q1 = 2.0f * att->q1;
+ 485              		.loc 1 186 8 is_stmt 0 view .LVU162
+ 486 00dc 3DEE0D3A 		vadd.f32	s6, s26, s26
+ 187:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q2 = 2.0f * att->q2;
+ 487              		.loc 1 187 3 is_stmt 1 view .LVU163
+ 187:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q2 = 2.0f * att->q2;
+ 488              		.loc 1 187 8 is_stmt 0 view .LVU164
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 16
+
+
+ 489 00e0 3CEEAC5A 		vadd.f32	s10, s25, s25
+ 188:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q3 = 2.0f * att->q3;
+ 490              		.loc 1 188 3 is_stmt 1 view .LVU165
+ 188:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q3 = 2.0f * att->q3;
+ 491              		.loc 1 188 8 is_stmt 0 view .LVU166
+ 492 00e4 7CEE0C5A 		vadd.f32	s11, s24, s24
+ 189:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4q0 = 4.0f * att->q0;
+ 493              		.loc 1 189 3 is_stmt 1 view .LVU167
+ 189:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4q0 = 4.0f * att->q0;
+ 494              		.loc 1 189 8 is_stmt 0 view .LVU168
+ 495 00e8 3BEE0B4A 		vadd.f32	s8, s22, s22
+ 190:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4q1 = 4.0f * att->q1;
+ 496              		.loc 1 190 3 is_stmt 1 view .LVU169
+ 190:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4q1 = 4.0f * att->q1;
+ 497              		.loc 1 190 8 is_stmt 0 view .LVU170
+ 498 00ec B1EE006A 		vmov.f32	s12, #4.0e+0
+ 499 00f0 2DEE060A 		vmul.f32	s0, s26, s12
+ 500              	.LVL34:
+ 191:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4q2 = 4.0f * att->q2;
+ 501              		.loc 1 191 3 is_stmt 1 view .LVU171
+ 191:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4q2 = 4.0f * att->q2;
+ 502              		.loc 1 191 8 is_stmt 0 view .LVU172
+ 503 00f4 2CEE861A 		vmul.f32	s2, s25, s12
+ 504              	.LVL35:
+ 192:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_8q1 = 8.0f * att->q1;
+ 505              		.loc 1 192 3 is_stmt 1 view .LVU173
+ 192:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_8q1 = 8.0f * att->q1;
+ 506              		.loc 1 192 8 is_stmt 0 view .LVU174
+ 507 00f8 6CEE064A 		vmul.f32	s9, s24, s12
+ 508              	.LVL36:
+ 193:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_8q2 = 8.0f * att->q2;
+ 509              		.loc 1 193 3 is_stmt 1 view .LVU175
+ 193:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_8q2 = 8.0f * att->q2;
+ 510              		.loc 1 193 8 is_stmt 0 view .LVU176
+ 511 00fc B2EE008A 		vmov.f32	s16, #8.0e+0
+ 512 0100 6CEE880A 		vmul.f32	s1, s25, s16
+ 513              	.LVL37:
+ 194:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q0 = att->q0 * att->q0;
+ 514              		.loc 1 194 3 is_stmt 1 view .LVU177
+ 194:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q0 = att->q0 * att->q0;
+ 515              		.loc 1 194 8 is_stmt 0 view .LVU178
+ 516 0104 2CEE088A 		vmul.f32	s16, s24, s16
+ 517              	.LVL38:
+ 195:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q1 = att->q1 * att->q1;
+ 518              		.loc 1 195 3 is_stmt 1 view .LVU179
+ 195:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q1 = att->q1 * att->q1;
+ 519              		.loc 1 195 8 is_stmt 0 view .LVU180
+ 520 0108 2DEE0DEA 		vmul.f32	s28, s26, s26
+ 521              	.LVL39:
+ 196:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q2q2 = att->q2 * att->q2;
+ 522              		.loc 1 196 3 is_stmt 1 view .LVU181
+ 196:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q2q2 = att->q2 * att->q2;
+ 523              		.loc 1 196 8 is_stmt 0 view .LVU182
+ 524 010c 6CEEAC7A 		vmul.f32	s15, s25, s25
+ 525              	.LVL40:
+ 197:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q3q3 = att->q3 * att->q3;
+ 526              		.loc 1 197 3 is_stmt 1 view .LVU183
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 17
+
+
+ 197:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q3q3 = att->q3 * att->q3;
+ 527              		.loc 1 197 8 is_stmt 0 view .LVU184
+ 528 0110 6CEE0C6A 		vmul.f32	s13, s24, s24
+ 529              	.LVL41:
+ 198:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 530              		.loc 1 198 3 is_stmt 1 view .LVU185
+ 198:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 531              		.loc 1 198 8 is_stmt 0 view .LVU186
+ 532 0114 6BEE0B3A 		vmul.f32	s7, s22, s22
+ 201:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * att->q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2
+ 533              		.loc 1 201 3 is_stmt 1 view .LVU187
+ 201:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * att->q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2
+ 534              		.loc 1 201 13 is_stmt 0 view .LVU188
+ 535 0118 60EE26DA 		vmul.f32	s27, s0, s13
+ 201:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * att->q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2
+ 536              		.loc 1 201 27 view .LVU189
+ 537 011c 21EEA57A 		vmul.f32	s14, s3, s11
+ 201:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * att->q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2
+ 538              		.loc 1 201 20 view .LVU190
+ 539 0120 7DEE87DA 		vadd.f32	s27, s27, s14
+ 201:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * att->q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2
+ 540              		.loc 1 201 39 view .LVU191
+ 541 0124 20EE270A 		vmul.f32	s0, s0, s15
+ 542              	.LVL42:
+ 201:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * att->q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2
+ 543              		.loc 1 201 32 view .LVU192
+ 544 0128 7DEE80DA 		vadd.f32	s27, s27, s0
+ 201:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * att->q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2
+ 545              		.loc 1 201 53 view .LVU193
+ 546 012c 22EE057A 		vmul.f32	s14, s4, s10
+ 201:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _4q1 * q3q3 - _2q3 * ax + 4.0f * q0q0 * att->q1 - _2q0 * ay - _4q1 + _8q1 * q1q1 + _8q1 * q2
+ 547              		.loc 1 201 6 view .LVU194
+ 548 0130 7DEEC7DA 		vsub.f32	s27, s27, s14
+ 549              	.LVL43:
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 550              		.loc 1 202 3 is_stmt 1 view .LVU195
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 551              		.loc 1 202 13 is_stmt 0 view .LVU196
+ 552 0134 61EE23BA 		vmul.f32	s23, s2, s7
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 553              		.loc 1 202 27 view .LVU197
+ 554 0138 21EE847A 		vmul.f32	s14, s3, s8
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 555              		.loc 1 202 20 view .LVU198
+ 556 013c 7BEEC7BA 		vsub.f32	s23, s23, s14
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 557              		.loc 1 202 39 view .LVU199
+ 558 0140 2EEE067A 		vmul.f32	s14, s28, s12
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 559              		.loc 1 202 46 view .LVU200
+ 560 0144 2CEE870A 		vmul.f32	s0, s25, s14
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 561              		.loc 1 202 32 view .LVU201
+ 562 0148 7BEE80BA 		vadd.f32	s23, s23, s0
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 563              		.loc 1 202 63 view .LVU202
+ 564 014c 22EE030A 		vmul.f32	s0, s4, s6
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 18
+
+
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 565              		.loc 1 202 56 view .LVU203
+ 566 0150 7BEEC0BA 		vsub.f32	s23, s23, s0
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 567              		.loc 1 202 68 view .LVU204
+ 568 0154 7BEEC1BA 		vsub.f32	s23, s23, s2
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 569              		.loc 1 202 82 view .LVU205
+ 570 0158 20EEA70A 		vmul.f32	s0, s1, s15
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 571              		.loc 1 202 75 view .LVU206
+ 572 015c 7BEE80BA 		vadd.f32	s23, s23, s0
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 573              		.loc 1 202 96 view .LVU207
+ 574 0160 60EEA60A 		vmul.f32	s1, s1, s13
+ 575              	.LVL44:
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 576              		.loc 1 202 89 view .LVU208
+ 577 0164 7BEEA0BA 		vadd.f32	s23, s23, s1
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 578              		.loc 1 202 110 view .LVU209
+ 579 0168 22EE811A 		vmul.f32	s2, s5, s2
+ 580              	.LVL45:
+ 202:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = 4.0f * q0q0 * att->q2 + _2q0 * ax + _4q2 * q3q3 - _2q3 * ay - _4q2 + _8q2 * q1q1 + _8q2 * q2
+ 581              		.loc 1 202 6 view .LVU210
+ 582 016c 7BEE81BA 		vadd.f32	s23, s23, s2
+ 583              	.LVL46:
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 584              		.loc 1 203 3 is_stmt 1 view .LVU211
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 585              		.loc 1 203 20 is_stmt 0 view .LVU212
+ 586 0170 2CEE077A 		vmul.f32	s14, s24, s14
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 587              		.loc 1 203 37 view .LVU213
+ 588 0174 21EE833A 		vmul.f32	s6, s3, s6
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 589              		.loc 1 203 30 view .LVU214
+ 590 0178 37EE037A 		vadd.f32	s14, s14, s6
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 591              		.loc 1 203 49 view .LVU215
+ 592 017c 64EEA33A 		vmul.f32	s7, s9, s7
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 593              		.loc 1 203 42 view .LVU216
+ 594 0180 37EE237A 		vadd.f32	s14, s14, s7
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 595              		.loc 1 203 63 view .LVU217
+ 596 0184 22EE044A 		vmul.f32	s8, s4, s8
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 597              		.loc 1 203 56 view .LVU218
+ 598 0188 37EE447A 		vsub.f32	s14, s14, s8
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 599              		.loc 1 203 68 view .LVU219
+ 600 018c 37EE647A 		vsub.f32	s14, s14, s9
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 601              		.loc 1 203 82 view .LVU220
+ 602 0190 28EE274A 		vmul.f32	s8, s16, s15
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 19
+
+
+ 603              		.loc 1 203 75 view .LVU221
+ 604 0194 37EE047A 		vadd.f32	s14, s14, s8
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 605              		.loc 1 203 96 view .LVU222
+ 606 0198 28EE268A 		vmul.f32	s16, s16, s13
+ 607              	.LVL47:
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 608              		.loc 1 203 89 view .LVU223
+ 609 019c 37EE087A 		vadd.f32	s14, s14, s16
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 610              		.loc 1 203 110 view .LVU224
+ 611 01a0 22EEA48A 		vmul.f32	s16, s5, s9
+ 203:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = 4.0f * q1q1 * att->q3 - _2q1 * ax + 4.0f * q2q2 * att->q3 - _2q2 * ay;
+ 612              		.loc 1 203 6 view .LVU225
+ 613 01a4 37EE088A 		vadd.f32	s16, s14, s16
+ 614              	.LVL48:
+ 204:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 615              		.loc 1 204 3 is_stmt 1 view .LVU226
+ 204:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 616              		.loc 1 204 13 is_stmt 0 view .LVU227
+ 617 01a8 67EE868A 		vmul.f32	s17, s15, s12
+ 204:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 618              		.loc 1 204 20 view .LVU228
+ 619 01ac 6BEE288A 		vmul.f32	s17, s22, s17
+ 204:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 620              		.loc 1 204 37 view .LVU229
+ 621 01b0 61EE851A 		vmul.f32	s3, s3, s10
+ 622              	.LVL49:
+ 204:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 623              		.loc 1 204 30 view .LVU230
+ 624 01b4 78EEE18A 		vsub.f32	s17, s17, s3
+ 204:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 625              		.loc 1 204 49 view .LVU231
+ 626 01b8 66EE866A 		vmul.f32	s13, s13, s12
+ 627              	.LVL50:
+ 204:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 628              		.loc 1 204 56 view .LVU232
+ 629 01bc 6BEE266A 		vmul.f32	s13, s22, s13
+ 204:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 630              		.loc 1 204 42 view .LVU233
+ 631 01c0 78EEA68A 		vadd.f32	s17, s17, s13
+ 204:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 632              		.loc 1 204 73 view .LVU234
+ 633 01c4 22EE252A 		vmul.f32	s4, s4, s11
+ 634              	.LVL51:
+ 204:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 635              		.loc 1 204 6 view .LVU235
+ 636 01c8 78EEC28A 		vsub.f32	s17, s17, s4
+ 637              	.LVL52:
+ 205:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 638              		.loc 1 205 3 is_stmt 1 view .LVU236
+ 205:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 639              		.loc 1 205 26 is_stmt 0 view .LVU237
+ 640 01cc 6DEEAD7A 		vmul.f32	s15, s27, s27
+ 641              	.LVL53:
+ 205:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 642              		.loc 1 205 36 view .LVU238
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 20
+
+
+ 643 01d0 2BEEAB0A 		vmul.f32	s0, s23, s23
+ 205:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 644              		.loc 1 205 31 view .LVU239
+ 645 01d4 77EE807A 		vadd.f32	s15, s15, s0
+ 205:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 646              		.loc 1 205 46 view .LVU240
+ 647 01d8 28EE080A 		vmul.f32	s0, s16, s16
+ 205:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 648              		.loc 1 205 41 view .LVU241
+ 649 01dc 77EE807A 		vadd.f32	s15, s15, s0
+ 205:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 650              		.loc 1 205 56 view .LVU242
+ 651 01e0 28EEA80A 		vmul.f32	s0, s17, s17
+ 205:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 652              		.loc 1 205 15 view .LVU243
+ 653 01e4 37EE800A 		vadd.f32	s0, s15, s0
+ 654 01e8 FFF7FEFF 		bl	invSqrt
+ 655              	.LVL54:
+ 206:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 *= recipNorm;
+ 656              		.loc 1 206 3 is_stmt 1 view .LVU244
+ 206:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 *= recipNorm;
+ 657              		.loc 1 206 6 is_stmt 0 view .LVU245
+ 658 01ec 6DEE80DA 		vmul.f32	s27, s27, s0
+ 659              	.LVL55:
+ 207:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 *= recipNorm;
+ 660              		.loc 1 207 3 is_stmt 1 view .LVU246
+ 207:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 *= recipNorm;
+ 661              		.loc 1 207 6 is_stmt 0 view .LVU247
+ 662 01f0 6BEE80BA 		vmul.f32	s23, s23, s0
+ 663              	.LVL56:
+ 208:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 *= recipNorm;
+ 664              		.loc 1 208 3 is_stmt 1 view .LVU248
+ 208:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 *= recipNorm;
+ 665              		.loc 1 208 6 is_stmt 0 view .LVU249
+ 666 01f4 28EE008A 		vmul.f32	s16, s16, s0
+ 667              	.LVL57:
+ 209:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 668              		.loc 1 209 3 is_stmt 1 view .LVU250
+ 209:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 669              		.loc 1 209 6 is_stmt 0 view .LVU251
+ 670 01f8 28EE800A 		vmul.f32	s0, s17, s0
+ 671              	.LVL58:
+ 212:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot2 -= att->beta * s1;
+ 672              		.loc 1 212 3 is_stmt 1 view .LVU252
+ 212:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot2 -= att->beta * s1;
+ 673              		.loc 1 212 15 is_stmt 0 view .LVU253
+ 674 01fc D4ED007A 		vldr.32	s15, [r4]
+ 212:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot2 -= att->beta * s1;
+ 675              		.loc 1 212 22 view .LVU254
+ 676 0200 67EEADDA 		vmul.f32	s27, s15, s27
+ 677              	.LVL59:
+ 212:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot2 -= att->beta * s1;
+ 678              		.loc 1 212 9 view .LVU255
+ 679 0204 7AEEEDAA 		vsub.f32	s21, s21, s27
+ 680              	.LVL60:
+ 213:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot3 -= att->beta * s2;
+ 681              		.loc 1 213 3 is_stmt 1 view .LVU256
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 21
+
+
+ 213:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot3 -= att->beta * s2;
+ 682              		.loc 1 213 22 is_stmt 0 view .LVU257
+ 683 0208 67EEABBA 		vmul.f32	s23, s15, s23
+ 684              	.LVL61:
+ 213:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot3 -= att->beta * s2;
+ 685              		.loc 1 213 9 view .LVU258
+ 686 020c 3AEE6BAA 		vsub.f32	s20, s20, s23
+ 687              	.LVL62:
+ 214:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot4 -= att->beta * s3;
+ 688              		.loc 1 214 3 is_stmt 1 view .LVU259
+ 214:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot4 -= att->beta * s3;
+ 689              		.loc 1 214 22 is_stmt 0 view .LVU260
+ 690 0210 27EE888A 		vmul.f32	s16, s15, s16
+ 691              	.LVL63:
+ 214:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot4 -= att->beta * s3;
+ 692              		.loc 1 214 9 view .LVU261
+ 693 0214 79EEC89A 		vsub.f32	s19, s19, s16
+ 694              	.LVL64:
+ 215:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	}
+ 695              		.loc 1 215 3 is_stmt 1 view .LVU262
+ 215:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	}
+ 696              		.loc 1 215 22 is_stmt 0 view .LVU263
+ 697 0218 67EE807A 		vmul.f32	s15, s15, s0
+ 215:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	}
+ 698              		.loc 1 215 9 view .LVU264
+ 699 021c 39EE679A 		vsub.f32	s18, s18, s15
+ 700              	.LVL65:
+ 701              	.L16:
+ 219:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 += qDot2 * (1.0f / sampleFreq);
+ 702              		.loc 1 219 2 is_stmt 1 view .LVU265
+ 219:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 += qDot2 * (1.0f / sampleFreq);
+ 703              		.loc 1 219 19 is_stmt 0 view .LVU266
+ 704 0220 9FED208A 		vldr.32	s16, .L21
+ 705 0224 6AEE88AA 		vmul.f32	s21, s21, s16
+ 706              	.LVL66:
+ 219:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 += qDot2 * (1.0f / sampleFreq);
+ 707              		.loc 1 219 10 view .LVU267
+ 708 0228 3DEE2ADA 		vadd.f32	s26, s26, s21
+ 709 022c 84ED01DA 		vstr.32	s26, [r4, #4]
+ 220:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 += qDot3 * (1.0f / sampleFreq);
+ 710              		.loc 1 220 2 is_stmt 1 view .LVU268
+ 220:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 += qDot3 * (1.0f / sampleFreq);
+ 711              		.loc 1 220 19 is_stmt 0 view .LVU269
+ 712 0230 2AEE08AA 		vmul.f32	s20, s20, s16
+ 713              	.LVL67:
+ 220:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 += qDot3 * (1.0f / sampleFreq);
+ 714              		.loc 1 220 10 view .LVU270
+ 715 0234 7CEE8ACA 		vadd.f32	s25, s25, s20
+ 716 0238 C4ED02CA 		vstr.32	s25, [r4, #8]
+ 221:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 += qDot4 * (1.0f / sampleFreq);
+ 717              		.loc 1 221 2 is_stmt 1 view .LVU271
+ 221:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 += qDot4 * (1.0f / sampleFreq);
+ 718              		.loc 1 221 19 is_stmt 0 view .LVU272
+ 719 023c 69EE889A 		vmul.f32	s19, s19, s16
+ 720              	.LVL68:
+ 221:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 += qDot4 * (1.0f / sampleFreq);
+ 721              		.loc 1 221 10 view .LVU273
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 22
+
+
+ 722 0240 3CEE29CA 		vadd.f32	s24, s24, s19
+ 723 0244 84ED03CA 		vstr.32	s24, [r4, #12]
+ 222:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 724              		.loc 1 222 2 is_stmt 1 view .LVU274
+ 222:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 725              		.loc 1 222 19 is_stmt 0 view .LVU275
+ 726 0248 29EE088A 		vmul.f32	s16, s18, s16
+ 222:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 727              		.loc 1 222 10 view .LVU276
+ 728 024c 3BEE088A 		vadd.f32	s16, s22, s16
+ 729 0250 84ED048A 		vstr.32	s16, [r4, #16]
+ 225:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 730              		.loc 1 225 2 is_stmt 1 view .LVU277
+ 225:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 731              		.loc 1 225 30 is_stmt 0 view .LVU278
+ 732 0254 6DEE0D7A 		vmul.f32	s15, s26, s26
+ 225:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 733              		.loc 1 225 50 view .LVU279
+ 734 0258 2CEEAC0A 		vmul.f32	s0, s25, s25
+ 225:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 735              		.loc 1 225 40 view .LVU280
+ 736 025c 77EE807A 		vadd.f32	s15, s15, s0
+ 225:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 737              		.loc 1 225 70 view .LVU281
+ 738 0260 2CEE0C0A 		vmul.f32	s0, s24, s24
+ 225:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 739              		.loc 1 225 60 view .LVU282
+ 740 0264 77EE807A 		vadd.f32	s15, s15, s0
+ 225:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 741              		.loc 1 225 90 view .LVU283
+ 742 0268 28EE080A 		vmul.f32	s0, s16, s16
+ 225:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 743              		.loc 1 225 14 view .LVU284
+ 744 026c 37EE800A 		vadd.f32	s0, s15, s0
+ 745 0270 FFF7FEFF 		bl	invSqrt
+ 746              	.LVL69:
+ 226:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 *= recipNorm;
+ 747              		.loc 1 226 2 is_stmt 1 view .LVU285
+ 226:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 *= recipNorm;
+ 748              		.loc 1 226 10 is_stmt 0 view .LVU286
+ 749 0274 2DEE00DA 		vmul.f32	s26, s26, s0
+ 750 0278 84ED01DA 		vstr.32	s26, [r4, #4]
+ 227:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 *= recipNorm;
+ 751              		.loc 1 227 2 is_stmt 1 view .LVU287
+ 227:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 *= recipNorm;
+ 752              		.loc 1 227 10 is_stmt 0 view .LVU288
+ 753 027c 6CEE80CA 		vmul.f32	s25, s25, s0
+ 754 0280 C4ED02CA 		vstr.32	s25, [r4, #8]
+ 228:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 *= recipNorm;
+ 755              		.loc 1 228 2 is_stmt 1 view .LVU289
+ 228:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 *= recipNorm;
+ 756              		.loc 1 228 10 is_stmt 0 view .LVU290
+ 757 0284 2CEE00CA 		vmul.f32	s24, s24, s0
+ 758 0288 84ED03CA 		vstr.32	s24, [r4, #12]
+ 229:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 759              		.loc 1 229 2 is_stmt 1 view .LVU291
+ 229:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 23
+
+
+ 760              		.loc 1 229 10 is_stmt 0 view .LVU292
+ 761 028c 28EE008A 		vmul.f32	s16, s16, s0
+ 762 0290 84ED048A 		vstr.32	s16, [r4, #16]
+ 231:Algorithm/Navi_Dep/MadgwickAHRS.c **** }
+ 763              		.loc 1 231 2 is_stmt 1 view .LVU293
+ 764 0294 2046     		mov	r0, r4
+ 765 0296 FFF7FEFF 		bl	MadgwickAHRS_Get_Attitude
+ 766              	.LVL70:
+ 232:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 767              		.loc 1 232 1 is_stmt 0 view .LVU294
+ 768 029a BDEC0E8B 		vldm	sp!, {d8-d14}
+ 769              	.LCFI6:
+ 770              		.cfi_restore 92
+ 771              		.cfi_restore 93
+ 772              		.cfi_restore 90
+ 773              		.cfi_restore 91
+ 774              		.cfi_restore 88
+ 775              		.cfi_restore 89
+ 776              		.cfi_restore 86
+ 777              		.cfi_restore 87
+ 778              		.cfi_restore 84
+ 779              		.cfi_restore 85
+ 780              		.cfi_restore 82
+ 781              		.cfi_restore 83
+ 782              		.cfi_restore 80
+ 783              		.cfi_restore 81
+ 784              		.cfi_def_cfa_offset 8
+ 785              	.LVL71:
+ 232:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 786              		.loc 1 232 1 view .LVU295
+ 787 029e 10BD     		pop	{r4, pc}
+ 788              	.LVL72:
+ 789              	.L18:
+ 790              	.LCFI7:
+ 791              		.cfi_def_cfa_offset 0
+ 792              		.cfi_restore 4
+ 793              		.cfi_restore 14
+ 232:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 794              		.loc 1 232 1 view .LVU296
+ 795 02a0 7047     		bx	lr
+ 796              	.L22:
+ 797 02a2 00BF     		.align	2
+ 798              	.L21:
+ 799 02a4 0AD7233C 		.word	1008981770
+ 800              		.cfi_endproc
+ 801              	.LFE6:
+ 803              		.section	.text.MadgwickAHRSupdate,"ax",%progbits
+ 804              		.align	1
+ 805              		.global	MadgwickAHRSupdate
+ 806              		.syntax unified
+ 807              		.thumb
+ 808              		.thumb_func
+ 810              	MadgwickAHRSupdate:
+ 811              	.LVL73:
+ 812              	.LFB5:
+  58:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float recipNorm;
+ 813              		.loc 1 58 141 is_stmt 1 view -0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 24
+
+
+ 814              		.cfi_startproc
+ 815              		@ args = 0, pretend = 0, frame = 64
+ 816              		@ frame_needed = 0, uses_anonymous_args = 0
+  59:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float s0, s1, s2, s3;
+ 817              		.loc 1 59 2 view .LVU298
+  60:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float qDot1, qDot2, qDot3, qDot4;
+ 818              		.loc 1 60 2 view .LVU299
+  61:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float hx, hy;
+ 819              		.loc 1 61 2 view .LVU300
+  62:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float _2q0mx, _2q0my, _2q0mz, _2q1mx, _2bx, _2bz, _4bx, _4bz, _2q0, _2q1, _2q2, _2q3, _2q0q2, _2q2
+ 820              		.loc 1 62 2 view .LVU301
+  63:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 821              		.loc 1 63 2 view .LVU302
+  65:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		return;
+ 822              		.loc 1 65 2 view .LVU303
+  65:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		return;
+ 823              		.loc 1 65 5 is_stmt 0 view .LVU304
+ 824 0000 0028     		cmp	r0, #0
+ 825 0002 00F0BA82 		beq	.L29
+  58:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	float recipNorm;
+ 826              		.loc 1 58 141 view .LVU305
+ 827 0006 10B5     		push	{r4, lr}
+ 828              	.LCFI8:
+ 829              		.cfi_def_cfa_offset 8
+ 830              		.cfi_offset 4, -8
+ 831              		.cfi_offset 14, -4
+ 832 0008 2DED108B 		vpush.64	{d8, d9, d10, d11, d12, d13, d14, d15}
+ 833              	.LCFI9:
+ 834              		.cfi_def_cfa_offset 72
+ 835              		.cfi_offset 80, -72
+ 836              		.cfi_offset 81, -68
+ 837              		.cfi_offset 82, -64
+ 838              		.cfi_offset 83, -60
+ 839              		.cfi_offset 84, -56
+ 840              		.cfi_offset 85, -52
+ 841              		.cfi_offset 86, -48
+ 842              		.cfi_offset 87, -44
+ 843              		.cfi_offset 88, -40
+ 844              		.cfi_offset 89, -36
+ 845              		.cfi_offset 90, -32
+ 846              		.cfi_offset 91, -28
+ 847              		.cfi_offset 92, -24
+ 848              		.cfi_offset 93, -20
+ 849              		.cfi_offset 94, -16
+ 850              		.cfi_offset 95, -12
+ 851 000c 90B0     		sub	sp, sp, #64
+ 852              	.LCFI10:
+ 853              		.cfi_def_cfa_offset 136
+ 854 000e F0EE61EA 		vmov.f32	s29, s3
+ 855 0012 B0EE42EA 		vmov.f32	s28, s4
+ 856 0016 F0EE62AA 		vmov.f32	s21, s5
+ 857 001a F0EE43CA 		vmov.f32	s25, s6
+ 858 001e B0EE63BA 		vmov.f32	s22, s7
+ 859 0022 B0EE44CA 		vmov.f32	s24, s8
+ 860 0026 0446     		mov	r4, r0
+  69:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		MadgwickAHRSupdateIMU(att, gx, gy, gz, ax, ay, az);
+ 861              		.loc 1 69 2 is_stmt 1 view .LVU306
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 25
+
+
+  69:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		MadgwickAHRSupdateIMU(att, gx, gy, gz, ax, ay, az);
+ 862              		.loc 1 69 9 is_stmt 0 view .LVU307
+ 863 0028 B5EE403A 		vcmp.f32	s6, #0
+ 864 002c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 865 0030 0CBF     		ite	eq
+ 866 0032 0123     		moveq	r3, #1
+ 867 0034 0023     		movne	r3, #0
+  69:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		MadgwickAHRSupdateIMU(att, gx, gy, gz, ax, ay, az);
+ 868              		.loc 1 69 25 view .LVU308
+ 869 0036 F5EE403A 		vcmp.f32	s7, #0
+ 870 003a F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  69:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		MadgwickAHRSupdateIMU(att, gx, gy, gz, ax, ay, az);
+ 871              		.loc 1 69 18 view .LVU309
+ 872 003e 03F00103 		and	r3, r3, #1
+ 873 0042 18BF     		it	ne
+ 874 0044 0023     		movne	r3, #0
+  69:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		MadgwickAHRSupdateIMU(att, gx, gy, gz, ax, ay, az);
+ 875              		.loc 1 69 4 view .LVU310
+ 876 0046 2BB1     		cbz	r3, .L25
+  69:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		MadgwickAHRSupdateIMU(att, gx, gy, gz, ax, ay, az);
+ 877              		.loc 1 69 34 discriminator 1 view .LVU311
+ 878 0048 B5EE404A 		vcmp.f32	s8, #0
+ 879 004c F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 880 0050 00F09082 		beq	.L32
+ 881              	.L25:
+  75:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 882              		.loc 1 75 2 is_stmt 1 view .LVU312
+  75:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 883              		.loc 1 75 22 is_stmt 0 view .LVU313
+ 884 0054 94ED02DA 		vldr.32	s26, [r4, #8]
+  75:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 885              		.loc 1 75 27 view .LVU314
+ 886 0058 2DEE409A 		vnmul.f32	s18, s26, s0
+  75:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 887              		.loc 1 75 37 view .LVU315
+ 888 005c D4ED03BA 		vldr.32	s23, [r4, #12]
+  75:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 889              		.loc 1 75 42 view .LVU316
+ 890 0060 6BEEA07A 		vmul.f32	s15, s23, s1
+  75:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 891              		.loc 1 75 32 view .LVU317
+ 892 0064 39EE679A 		vsub.f32	s18, s18, s15
+  75:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 893              		.loc 1 75 52 view .LVU318
+ 894 0068 94ED04AA 		vldr.32	s20, [r4, #16]
+  75:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 895              		.loc 1 75 57 view .LVU319
+ 896 006c 6AEE017A 		vmul.f32	s15, s20, s2
+  75:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 897              		.loc 1 75 47 view .LVU320
+ 898 0070 39EE679A 		vsub.f32	s18, s18, s15
+  75:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot2 = 0.5f * (att->q0 * gx + att->q2 * gz - att->q3 * gy);
+ 899              		.loc 1 75 8 view .LVU321
+ 900 0074 F6EE007A 		vmov.f32	s15, #5.0e-1
+ 901 0078 29EE279A 		vmul.f32	s18, s18, s15
+ 902              	.LVL74:
+  76:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 26
+
+
+ 903              		.loc 1 76 2 is_stmt 1 view .LVU322
+  76:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 904              		.loc 1 76 21 is_stmt 0 view .LVU323
+ 905 007c D4ED01DA 		vldr.32	s27, [r4, #4]
+  76:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 906              		.loc 1 76 26 view .LVU324
+ 907 0080 6DEE808A 		vmul.f32	s17, s27, s0
+  76:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 908              		.loc 1 76 41 view .LVU325
+ 909 0084 2BEE817A 		vmul.f32	s14, s23, s2
+  76:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 910              		.loc 1 76 31 view .LVU326
+ 911 0088 78EE878A 		vadd.f32	s17, s17, s14
+  76:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 912              		.loc 1 76 56 view .LVU327
+ 913 008c 2AEE207A 		vmul.f32	s14, s20, s1
+  76:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 914              		.loc 1 76 46 view .LVU328
+ 915 0090 78EEC78A 		vsub.f32	s17, s17, s14
+  76:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot3 = 0.5f * (att->q0 * gy - att->q1 * gz + att->q3 * gx);
+ 916              		.loc 1 76 8 view .LVU329
+ 917 0094 68EEA78A 		vmul.f32	s17, s17, s15
+ 918              	.LVL75:
+  77:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 919              		.loc 1 77 2 is_stmt 1 view .LVU330
+  77:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 920              		.loc 1 77 26 is_stmt 0 view .LVU331
+ 921 0098 2DEEA08A 		vmul.f32	s16, s27, s1
+  77:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 922              		.loc 1 77 41 view .LVU332
+ 923 009c 2DEE017A 		vmul.f32	s14, s26, s2
+  77:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 924              		.loc 1 77 31 view .LVU333
+ 925 00a0 38EE478A 		vsub.f32	s16, s16, s14
+  77:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 926              		.loc 1 77 56 view .LVU334
+ 927 00a4 2AEE007A 		vmul.f32	s14, s20, s0
+  77:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 928              		.loc 1 77 46 view .LVU335
+ 929 00a8 38EE078A 		vadd.f32	s16, s16, s14
+  77:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	qDot4 = 0.5f * (att->q0 * gz + att->q1 * gy - att->q2 * gx);
+ 930              		.loc 1 77 8 view .LVU336
+ 931 00ac 28EE278A 		vmul.f32	s16, s16, s15
+ 932              	.LVL76:
+  78:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 933              		.loc 1 78 2 is_stmt 1 view .LVU337
+  78:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 934              		.loc 1 78 26 is_stmt 0 view .LVU338
+ 935 00b0 2DEE811A 		vmul.f32	s2, s27, s2
+ 936              	.LVL77:
+  78:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 937              		.loc 1 78 41 view .LVU339
+ 938 00b4 6DEE200A 		vmul.f32	s1, s26, s1
+ 939              	.LVL78:
+  78:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 940              		.loc 1 78 31 view .LVU340
+ 941 00b8 31EE201A 		vadd.f32	s2, s2, s1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 27
+
+
+  78:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 942              		.loc 1 78 56 view .LVU341
+ 943 00bc 2BEE800A 		vmul.f32	s0, s23, s0
+ 944              	.LVL79:
+  78:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 945              		.loc 1 78 46 view .LVU342
+ 946 00c0 31EE401A 		vsub.f32	s2, s2, s0
+  78:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 947              		.loc 1 78 8 view .LVU343
+ 948 00c4 61EE277A 		vmul.f32	s15, s2, s15
+ 949 00c8 CDED007A 		vstr.32	s15, [sp]
+ 950              	.LVL80:
+  81:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 951              		.loc 1 81 2 is_stmt 1 view .LVU344
+  81:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 952              		.loc 1 81 11 is_stmt 0 view .LVU345
+ 953 00cc F5EE40EA 		vcmp.f32	s29, #0
+ 954 00d0 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 955 00d4 14BF     		ite	ne
+ 956 00d6 0123     		movne	r3, #1
+ 957 00d8 0023     		moveq	r3, #0
+  81:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 958              		.loc 1 81 27 view .LVU346
+ 959 00da B5EE40EA 		vcmp.f32	s28, #0
+ 960 00de F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+  81:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 961              		.loc 1 81 20 view .LVU347
+ 962 00e2 18BF     		it	ne
+ 963 00e4 43F00103 		orrne	r3, r3, #1
+  81:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 964              		.loc 1 81 4 view .LVU348
+ 965 00e8 2BB9     		cbnz	r3, .L26
+  81:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 966              		.loc 1 81 5 discriminator 1 view .LVU349
+ 967 00ea F5EE40AA 		vcmp.f32	s21, #0
+ 968 00ee F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 969 00f2 00F0F481 		beq	.L27
+ 970              	.L26:
+  84:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 971              		.loc 1 84 3 is_stmt 1 view .LVU350
+  84:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 972              		.loc 1 84 26 is_stmt 0 view .LVU351
+ 973 00f6 6EEEAE7A 		vmul.f32	s15, s29, s29
+ 974              	.LVL81:
+  84:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 975              		.loc 1 84 36 view .LVU352
+ 976 00fa 2EEE0E0A 		vmul.f32	s0, s28, s28
+  84:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 977              		.loc 1 84 31 view .LVU353
+ 978 00fe 77EE807A 		vadd.f32	s15, s15, s0
+  84:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 979              		.loc 1 84 46 view .LVU354
+ 980 0102 2AEEAA0A 		vmul.f32	s0, s21, s21
+  84:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ax *= recipNorm;
+ 981              		.loc 1 84 15 view .LVU355
+ 982 0106 37EE800A 		vadd.f32	s0, s15, s0
+ 983 010a FFF7FEFF 		bl	invSqrt
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 28
+
+
+ 984              	.LVL82:
+  85:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ay *= recipNorm;
+ 985              		.loc 1 85 3 is_stmt 1 view .LVU356
+  85:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		ay *= recipNorm;
+ 986              		.loc 1 85 6 is_stmt 0 view .LVU357
+ 987 010e 6EEE807A 		vmul.f32	s15, s29, s0
+ 988 0112 CDED017A 		vstr.32	s15, [sp, #4]
+ 989              	.LVL83:
+  86:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		az *= recipNorm;   
+ 990              		.loc 1 86 3 is_stmt 1 view .LVU358
+  86:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		az *= recipNorm;   
+ 991              		.loc 1 86 6 is_stmt 0 view .LVU359
+ 992 0116 2EEE007A 		vmul.f32	s14, s28, s0
+ 993 011a 8DED027A 		vstr.32	s14, [sp, #8]
+ 994              	.LVL84:
+  87:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 995              		.loc 1 87 3 is_stmt 1 view .LVU360
+  87:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 996              		.loc 1 87 6 is_stmt 0 view .LVU361
+ 997 011e 6AEE806A 		vmul.f32	s13, s21, s0
+ 998 0122 CDED036A 		vstr.32	s13, [sp, #12]
+ 999              	.LVL85:
+  90:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		mx *= recipNorm;
+ 1000              		.loc 1 90 3 is_stmt 1 view .LVU362
+  90:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		mx *= recipNorm;
+ 1001              		.loc 1 90 26 is_stmt 0 view .LVU363
+ 1002 0126 6CEEAC7A 		vmul.f32	s15, s25, s25
+ 1003              	.LVL86:
+  90:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		mx *= recipNorm;
+ 1004              		.loc 1 90 36 view .LVU364
+ 1005 012a 2BEE0B0A 		vmul.f32	s0, s22, s22
+ 1006              	.LVL87:
+  90:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		mx *= recipNorm;
+ 1007              		.loc 1 90 31 view .LVU365
+ 1008 012e 77EE807A 		vadd.f32	s15, s15, s0
+  90:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		mx *= recipNorm;
+ 1009              		.loc 1 90 46 view .LVU366
+ 1010 0132 2CEE0C0A 		vmul.f32	s0, s24, s24
+  90:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		mx *= recipNorm;
+ 1011              		.loc 1 90 15 view .LVU367
+ 1012 0136 37EE800A 		vadd.f32	s0, s15, s0
+ 1013 013a FFF7FEFF 		bl	invSqrt
+ 1014              	.LVL88:
+  91:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		my *= recipNorm;
+ 1015              		.loc 1 91 3 is_stmt 1 view .LVU368
+  91:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		my *= recipNorm;
+ 1016              		.loc 1 91 6 is_stmt 0 view .LVU369
+ 1017 013e 6CEE80CA 		vmul.f32	s25, s25, s0
+ 1018              	.LVL89:
+  92:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		mz *= recipNorm;
+ 1019              		.loc 1 92 3 is_stmt 1 view .LVU370
+  92:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		mz *= recipNorm;
+ 1020              		.loc 1 92 6 is_stmt 0 view .LVU371
+ 1021 0142 2BEE00BA 		vmul.f32	s22, s22, s0
+ 1022              	.LVL90:
+  93:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1023              		.loc 1 93 3 is_stmt 1 view .LVU372
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 29
+
+
+  93:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1024              		.loc 1 93 6 is_stmt 0 view .LVU373
+ 1025 0146 2CEE00CA 		vmul.f32	s24, s24, s0
+ 1026              	.LVL91:
+  96:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0my = 2.0f * att->q0 * my;
+ 1027              		.loc 1 96 3 is_stmt 1 view .LVU374
+  96:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0my = 2.0f * att->q0 * my;
+ 1028              		.loc 1 96 17 is_stmt 0 view .LVU375
+ 1029 014a 7DEEAD9A 		vadd.f32	s19, s27, s27
+  96:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0my = 2.0f * att->q0 * my;
+ 1030              		.loc 1 96 10 view .LVU376
+ 1031 014e 69EEAC6A 		vmul.f32	s13, s19, s25
+ 1032              	.LVL92:
+  97:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0mz = 2.0f * att->q0 * mz;
+ 1033              		.loc 1 97 3 is_stmt 1 view .LVU377
+  97:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0mz = 2.0f * att->q0 * mz;
+ 1034              		.loc 1 97 10 is_stmt 0 view .LVU378
+ 1035 0152 69EE8B7A 		vmul.f32	s15, s19, s22
+ 1036              	.LVL93:
+  98:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q1mx = 2.0f * att->q1 * mx;
+ 1037              		.loc 1 98 3 is_stmt 1 view .LVU379
+  98:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q1mx = 2.0f * att->q1 * mx;
+ 1038              		.loc 1 98 10 is_stmt 0 view .LVU380
+ 1039 0156 29EE8C7A 		vmul.f32	s14, s19, s24
+ 1040              	.LVL94:
+  99:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0 = 2.0f * att->q0;
+ 1041              		.loc 1 99 3 is_stmt 1 view .LVU381
+  99:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0 = 2.0f * att->q0;
+ 1042              		.loc 1 99 17 is_stmt 0 view .LVU382
+ 1043 015a 7DEE0DAA 		vadd.f32	s21, s26, s26
+  99:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0 = 2.0f * att->q0;
+ 1044              		.loc 1 99 10 view .LVU383
+ 1045 015e 2AEEAC6A 		vmul.f32	s12, s21, s25
+ 1046              	.LVL95:
+ 100:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q1 = 2.0f * att->q1;
+ 1047              		.loc 1 100 3 is_stmt 1 view .LVU384
+ 101:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q2 = 2.0f * att->q2;
+ 1048              		.loc 1 101 3 view .LVU385
+ 102:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q3 = 2.0f * att->q3;
+ 1049              		.loc 1 102 3 view .LVU386
+ 102:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q3 = 2.0f * att->q3;
+ 1050              		.loc 1 102 8 is_stmt 0 view .LVU387
+ 1051 0162 7BEEABEA 		vadd.f32	s29, s23, s23
+ 1052              	.LVL96:
+ 103:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0q2 = 2.0f * att->q0 * att->q2;
+ 1053              		.loc 1 103 3 is_stmt 1 view .LVU388
+ 103:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q0q2 = 2.0f * att->q0 * att->q2;
+ 1054              		.loc 1 103 8 is_stmt 0 view .LVU389
+ 1055 0166 3AEE0AFA 		vadd.f32	s30, s20, s20
+ 1056 016a 8DED07FA 		vstr.32	s30, [sp, #28]
+ 1057              	.LVL97:
+ 104:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q2q3 = 2.0f * att->q2 * att->q3;
+ 1058              		.loc 1 104 3 is_stmt 1 view .LVU390
+ 104:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2q2q3 = 2.0f * att->q2 * att->q3;
+ 1059              		.loc 1 104 10 is_stmt 0 view .LVU391
+ 1060 016e 6BEEA95A 		vmul.f32	s11, s23, s19
+ 1061 0172 CDED085A 		vstr.32	s11, [sp, #32]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 30
+
+
+ 1062              	.LVL98:
+ 105:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q0 = att->q0 * att->q0;
+ 1063              		.loc 1 105 3 is_stmt 1 view .LVU392
+ 105:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q0 = att->q0 * att->q0;
+ 1064              		.loc 1 105 10 is_stmt 0 view .LVU393
+ 1065 0176 2AEE2E5A 		vmul.f32	s10, s20, s29
+ 1066 017a 8DED095A 		vstr.32	s10, [sp, #36]
+ 1067              	.LVL99:
+ 106:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q1 = att->q0 * att->q1;
+ 1068              		.loc 1 106 3 is_stmt 1 view .LVU394
+ 106:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q1 = att->q0 * att->q1;
+ 1069              		.loc 1 106 8 is_stmt 0 view .LVU395
+ 1070 017e 2DEEADFA 		vmul.f32	s30, s27, s27
+ 1071              	.LVL100:
+ 107:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q2 = att->q0 * att->q2;
+ 1072              		.loc 1 107 3 is_stmt 1 view .LVU396
+ 107:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q2 = att->q0 * att->q2;
+ 1073              		.loc 1 107 8 is_stmt 0 view .LVU397
+ 1074 0182 2DEE2D3A 		vmul.f32	s6, s26, s27
+ 1075 0186 8DED0A3A 		vstr.32	s6, [sp, #40]
+ 1076              	.LVL101:
+ 108:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q3 = att->q0 * att->q3;
+ 1077              		.loc 1 108 3 is_stmt 1 view .LVU398
+ 108:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q3 = att->q0 * att->q3;
+ 1078              		.loc 1 108 8 is_stmt 0 view .LVU399
+ 1079 018a 6BEEAD5A 		vmul.f32	s11, s23, s27
+ 1080              	.LVL102:
+ 108:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q0q3 = att->q0 * att->q3;
+ 1081              		.loc 1 108 8 view .LVU400
+ 1082 018e CDED0B5A 		vstr.32	s11, [sp, #44]
+ 1083              	.LVL103:
+ 109:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q1 = att->q1 * att->q1;
+ 1084              		.loc 1 109 3 is_stmt 1 view .LVU401
+ 109:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q1 = att->q1 * att->q1;
+ 1085              		.loc 1 109 8 is_stmt 0 view .LVU402
+ 1086 0192 6AEE2D4A 		vmul.f32	s9, s20, s27
+ 1087 0196 CDED0C4A 		vstr.32	s9, [sp, #48]
+ 1088              	.LVL104:
+ 110:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q2 = att->q1 * att->q2;
+ 1089              		.loc 1 110 3 is_stmt 1 view .LVU403
+ 110:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q2 = att->q1 * att->q2;
+ 1090              		.loc 1 110 8 is_stmt 0 view .LVU404
+ 1091 019a 2DEE0DEA 		vmul.f32	s28, s26, s26
+ 1092              	.LVL105:
+ 111:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q3 = att->q1 * att->q3;
+ 1093              		.loc 1 111 3 is_stmt 1 view .LVU405
+ 111:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q1q3 = att->q1 * att->q3;
+ 1094              		.loc 1 111 8 is_stmt 0 view .LVU406
+ 1095 019e 2DEE2B2A 		vmul.f32	s4, s26, s23
+ 1096 01a2 8DED0D2A 		vstr.32	s4, [sp, #52]
+ 1097              	.LVL106:
+ 112:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q2q2 = att->q2 * att->q2;
+ 1098              		.loc 1 112 3 is_stmt 1 view .LVU407
+ 112:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q2q2 = att->q2 * att->q2;
+ 1099              		.loc 1 112 8 is_stmt 0 view .LVU408
+ 1100 01a6 6DEE0A0A 		vmul.f32	s1, s26, s20
+ 1101 01aa CDED0E0A 		vstr.32	s1, [sp, #56]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 31
+
+
+ 1102              	.LVL107:
+ 113:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q2q3 = att->q2 * att->q3;
+ 1103              		.loc 1 113 3 is_stmt 1 view .LVU409
+ 113:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q2q3 = att->q2 * att->q3;
+ 1104              		.loc 1 113 8 is_stmt 0 view .LVU410
+ 1105 01ae 6BEEABDA 		vmul.f32	s27, s23, s23
+ 1106              	.LVL108:
+ 114:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q3q3 = att->q3 * att->q3;
+ 1107              		.loc 1 114 3 is_stmt 1 view .LVU411
+ 114:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		q3q3 = att->q3 * att->q3;
+ 1108              		.loc 1 114 8 is_stmt 0 view .LVU412
+ 1109 01b2 6BEE8A1A 		vmul.f32	s3, s23, s20
+ 1110 01b6 CDED0F1A 		vstr.32	s3, [sp, #60]
+ 1111              	.LVL109:
+ 115:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1112              		.loc 1 115 3 is_stmt 1 view .LVU413
+ 115:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1113              		.loc 1 115 8 is_stmt 0 view .LVU414
+ 1114 01ba 6AEE0AFA 		vmul.f32	s31, s20, s20
+ 1115              	.LVL110:
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1116              		.loc 1 118 3 is_stmt 1 view .LVU415
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1117              		.loc 1 118 11 is_stmt 0 view .LVU416
+ 1118 01be 2CEE8F0A 		vmul.f32	s0, s25, s30
+ 1119              	.LVL111:
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1120              		.loc 1 118 27 view .LVU417
+ 1121 01c2 CDED057A 		vstr.32	s15, [sp, #20]
+ 1122 01c6 6AEE277A 		vmul.f32	s15, s20, s15
+ 1123              	.LVL112:
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1124              		.loc 1 118 18 view .LVU418
+ 1125 01ca 30EE670A 		vsub.f32	s0, s0, s15
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1126              		.loc 1 118 46 view .LVU419
+ 1127 01ce 6BEE877A 		vmul.f32	s15, s23, s14
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1128              		.loc 1 118 37 view .LVU420
+ 1129 01d2 30EE270A 		vadd.f32	s0, s0, s15
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1130              		.loc 1 118 61 view .LVU421
+ 1131 01d6 6CEE8E7A 		vmul.f32	s15, s25, s28
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1132              		.loc 1 118 56 view .LVU422
+ 1133 01da 30EE270A 		vadd.f32	s0, s0, s15
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1134              		.loc 1 118 75 view .LVU423
+ 1135 01de 6AEE8B7A 		vmul.f32	s15, s21, s22
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1136              		.loc 1 118 80 view .LVU424
+ 1137 01e2 6BEEA77A 		vmul.f32	s15, s23, s15
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1138              		.loc 1 118 68 view .LVU425
+ 1139 01e6 30EE270A 		vadd.f32	s0, s0, s15
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1140              		.loc 1 118 97 view .LVU426
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 32
+
+
+ 1141 01ea 6AEE8C7A 		vmul.f32	s15, s21, s24
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1142              		.loc 1 118 102 view .LVU427
+ 1143 01ee 6AEE277A 		vmul.f32	s15, s20, s15
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1144              		.loc 1 118 90 view .LVU428
+ 1145 01f2 30EE270A 		vadd.f32	s0, s0, s15
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1146              		.loc 1 118 117 view .LVU429
+ 1147 01f6 6CEEAD7A 		vmul.f32	s15, s25, s27
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1148              		.loc 1 118 112 view .LVU430
+ 1149 01fa 30EE670A 		vsub.f32	s0, s0, s15
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1150              		.loc 1 118 129 view .LVU431
+ 1151 01fe 6CEEAF7A 		vmul.f32	s15, s25, s31
+ 118:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		hy = _2q0mx * att->q3 + my * q0q0 - _2q0mz * att->q1 + _2q1mx * att->q2 - my * q1q1 + my * q2q2 +
+ 1152              		.loc 1 118 6 view .LVU432
+ 1153 0202 30EE670A 		vsub.f32	s0, s0, s15
+ 1154              	.LVL113:
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1155              		.loc 1 119 3 is_stmt 1 view .LVU433
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1156              		.loc 1 119 15 is_stmt 0 view .LVU434
+ 1157 0206 CDED046A 		vstr.32	s13, [sp, #16]
+ 1158 020a 6AEE267A 		vmul.f32	s15, s20, s13
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1159              		.loc 1 119 30 view .LVU435
+ 1160 020e 6BEE0F6A 		vmul.f32	s13, s22, s30
+ 1161              	.LVL114:
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1162              		.loc 1 119 25 view .LVU436
+ 1163 0212 77EEA67A 		vadd.f32	s15, s15, s13
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1164              		.loc 1 119 46 view .LVU437
+ 1165 0216 2DEE07DA 		vmul.f32	s26, s26, s14
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1166              		.loc 1 119 37 view .LVU438
+ 1167 021a 37EECDDA 		vsub.f32	s26, s15, s26
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1168              		.loc 1 119 65 view .LVU439
+ 1169 021e 8DED066A 		vstr.32	s12, [sp, #24]
+ 1170 0222 6BEE86BA 		vmul.f32	s23, s23, s12
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1171              		.loc 1 119 56 view .LVU440
+ 1172 0226 7DEE2BBA 		vadd.f32	s23, s26, s23
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1173              		.loc 1 119 80 view .LVU441
+ 1174 022a 2BEE0EDA 		vmul.f32	s26, s22, s28
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1175              		.loc 1 119 75 view .LVU442
+ 1176 022e 7BEECDBA 		vsub.f32	s23, s23, s26
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1177              		.loc 1 119 92 view .LVU443
+ 1178 0232 6BEE2D7A 		vmul.f32	s15, s22, s27
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1179              		.loc 1 119 87 view .LVU444
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 33
+
+
+ 1180 0236 7BEEA7BA 		vadd.f32	s23, s23, s15
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1181              		.loc 1 119 106 view .LVU445
+ 1182 023a 6CEE2E7A 		vmul.f32	s15, s24, s29
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1183              		.loc 1 119 111 view .LVU446
+ 1184 023e 2AEE27AA 		vmul.f32	s20, s20, s15
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1185              		.loc 1 119 99 view .LVU447
+ 1186 0242 3BEE8AAA 		vadd.f32	s20, s23, s20
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1187              		.loc 1 119 126 view .LVU448
+ 1188 0246 6BEE2F7A 		vmul.f32	s15, s22, s31
+ 119:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bx = sqrt(hx * hx + hy * hy);
+ 1189              		.loc 1 119 6 view .LVU449
+ 1190 024a 3AEE67AA 		vsub.f32	s20, s20, s15
+ 1191              	.LVL115:
+ 120:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bz = -_2q0mx * att->q2 + _2q0my * att->q1 + mz * q0q0 + _2q1mx * att->q3 - mz * q1q1 + _2q2 * m
+ 1192              		.loc 1 120 3 is_stmt 1 view .LVU450
+ 120:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bz = -_2q0mx * att->q2 + _2q0my * att->q1 + mz * q0q0 + _2q1mx * att->q3 - mz * q1q1 + _2q2 * m
+ 1193              		.loc 1 120 18 is_stmt 0 view .LVU451
+ 1194 024e 20EE000A 		vmul.f32	s0, s0, s0
+ 1195              	.LVL116:
+ 120:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bz = -_2q0mx * att->q2 + _2q0my * att->q1 + mz * q0q0 + _2q1mx * att->q3 - mz * q1q1 + _2q2 * m
+ 1196              		.loc 1 120 28 view .LVU452
+ 1197 0252 2AEE0AAA 		vmul.f32	s20, s20, s20
+ 1198              	.LVL117:
+ 120:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bz = -_2q0mx * att->q2 + _2q0my * att->q1 + mz * q0q0 + _2q1mx * att->q3 - mz * q1q1 + _2q2 * m
+ 1199              		.loc 1 120 23 view .LVU453
+ 1200 0256 30EE0A0A 		vadd.f32	s0, s0, s20
+ 120:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bz = -_2q0mx * att->q2 + _2q0my * att->q1 + mz * q0q0 + _2q1mx * att->q3 - mz * q1q1 + _2q2 * m
+ 1201              		.loc 1 120 10 view .LVU454
+ 1202 025a B7EEC00A 		vcvt.f64.f32	d0, s0
+ 1203 025e FFF7FEFF 		bl	sqrt
+ 1204              	.LVL118:
+ 120:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_2bz = -_2q0mx * att->q2 + _2q0my * att->q1 + mz * q0q0 + _2q1mx * att->q3 - mz * q1q1 + _2q2 * m
+ 1205              		.loc 1 120 8 view .LVU455
+ 1206 0262 B7EEC00B 		vcvt.f32.f64	s0, d0
+ 1207              	.LVL119:
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1208              		.loc 1 121 3 is_stmt 1 view .LVU456
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1209              		.loc 1 121 23 is_stmt 0 view .LVU457
+ 1210 0266 94ED037A 		vldr.32	s14, [r4, #12]
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1211              		.loc 1 121 18 view .LVU458
+ 1212 026a DDED046A 		vldr.32	s13, [sp, #16]
+ 1213 026e 66EEC77A 		vnmul.f32	s15, s13, s14
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1214              		.loc 1 121 42 view .LVU459
+ 1215 0272 94ED021A 		vldr.32	s2, [r4, #8]
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1216              		.loc 1 121 37 view .LVU460
+ 1217 0276 DDED056A 		vldr.32	s13, [sp, #20]
+ 1218 027a 61EE266A 		vmul.f32	s13, s2, s13
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1219              		.loc 1 121 28 view .LVU461
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 34
+
+
+ 1220 027e 77EEA67A 		vadd.f32	s15, s15, s13
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1221              		.loc 1 121 52 view .LVU462
+ 1222 0282 2CEE0FFA 		vmul.f32	s30, s24, s30
+ 1223              	.LVL120:
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1224              		.loc 1 121 47 view .LVU463
+ 1225 0286 77EE8F7A 		vadd.f32	s15, s15, s30
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1226              		.loc 1 121 73 view .LVU464
+ 1227 028a D4ED046A 		vldr.32	s13, [r4, #16]
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1228              		.loc 1 121 68 view .LVU465
+ 1229 028e 9DED066A 		vldr.32	s12, [sp, #24]
+ 1230 0292 26EE86FA 		vmul.f32	s30, s13, s12
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1231              		.loc 1 121 59 view .LVU466
+ 1232 0296 77EE8F7A 		vadd.f32	s15, s15, s30
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1233              		.loc 1 121 83 view .LVU467
+ 1234 029a 2CEE0EFA 		vmul.f32	s30, s24, s28
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1235              		.loc 1 121 78 view .LVU468
+ 1236 029e 77EECF7A 		vsub.f32	s15, s15, s30
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1237              		.loc 1 121 97 view .LVU469
+ 1238 02a2 2BEE2E6A 		vmul.f32	s12, s22, s29
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1239              		.loc 1 121 102 view .LVU470
+ 1240 02a6 26EE866A 		vmul.f32	s12, s13, s12
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1241              		.loc 1 121 90 view .LVU471
+ 1242 02aa 77EE867A 		vadd.f32	s15, s15, s12
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1243              		.loc 1 121 117 view .LVU472
+ 1244 02ae 2CEE2D6A 		vmul.f32	s12, s24, s27
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1245              		.loc 1 121 112 view .LVU473
+ 1246 02b2 77EEC67A 		vsub.f32	s15, s15, s12
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1247              		.loc 1 121 129 view .LVU474
+ 1248 02b6 2CEE2F6A 		vmul.f32	s12, s24, s31
+ 121:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bx = 2.0f * _2bx;
+ 1249              		.loc 1 121 8 view .LVU475
+ 1250 02ba 77EE867A 		vadd.f32	s15, s15, s12
+ 1251              	.LVL121:
+ 122:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bz = 2.0f * _2bz;
+ 1252              		.loc 1 122 3 is_stmt 1 view .LVU476
+ 122:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		_4bz = 2.0f * _2bz;
+ 1253              		.loc 1 122 8 is_stmt 0 view .LVU477
+ 1254 02be 30EE005A 		vadd.f32	s10, s0, s0
+ 1255              	.LVL122:
+ 123:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1256              		.loc 1 123 3 is_stmt 1 view .LVU478
+ 123:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1257              		.loc 1 123 8 is_stmt 0 view .LVU479
+ 1258 02c2 77EEA74A 		vadd.f32	s9, s15, s15
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 35
+
+
+ 1259              	.LVL123:
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1260              		.loc 1 126 3 is_stmt 1 view .LVU480
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1261              		.loc 1 126 22 is_stmt 0 view .LVU481
+ 1262 02c6 DDED0E0A 		vldr.32	s1, [sp, #56]
+ 1263 02ca 70EEA01A 		vadd.f32	s3, s1, s1
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1264              		.loc 1 126 29 view .LVU482
+ 1265 02ce 9DED084A 		vldr.32	s8, [sp, #32]
+ 1266 02d2 71EEC41A 		vsub.f32	s3, s3, s8
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1267              		.loc 1 126 38 view .LVU483
+ 1268 02d6 9DED016A 		vldr.32	s12, [sp, #4]
+ 1269 02da 71EEC61A 		vsub.f32	s3, s3, s12
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1270              		.loc 1 126 14 view .LVU484
+ 1271 02de 2EEEE1AA 		vnmul.f32	s20, s29, s3
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1272              		.loc 1 126 59 view .LVU485
+ 1273 02e2 9DED0A3A 		vldr.32	s6, [sp, #40]
+ 1274 02e6 33EE032A 		vadd.f32	s4, s6, s6
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1275              		.loc 1 126 66 view .LVU486
+ 1276 02ea 9DED094A 		vldr.32	s8, [sp, #36]
+ 1277 02ee 32EE042A 		vadd.f32	s4, s4, s8
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1278              		.loc 1 126 75 view .LVU487
+ 1279 02f2 9DED026A 		vldr.32	s12, [sp, #8]
+ 1280 02f6 32EE462A 		vsub.f32	s4, s4, s12
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1281              		.loc 1 126 51 view .LVU488
+ 1282 02fa 2AEE826A 		vmul.f32	s12, s21, s4
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1283              		.loc 1 126 44 view .LVU489
+ 1284 02fe 3AEE06AA 		vadd.f32	s20, s20, s12
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1285              		.loc 1 126 88 view .LVU490
+ 1286 0302 27EE276A 		vmul.f32	s12, s14, s15
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1287              		.loc 1 126 114 view .LVU491
+ 1288 0306 F6EE002A 		vmov.f32	s5, #5.0e-1
+ 1289 030a 72EEED5A 		vsub.f32	s11, s5, s27
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1290              		.loc 1 126 121 view .LVU492
+ 1291 030e 75EEEFFA 		vsub.f32	s31, s11, s31
+ 1292              	.LVL124:
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1293              		.loc 1 126 106 view .LVU493
+ 1294 0312 6FEE80FA 		vmul.f32	s31, s31, s0
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1295              		.loc 1 126 144 view .LVU494
+ 1296 0316 DDED0BBA 		vldr.32	s23, [sp, #44]
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1297              		.loc 1 126 144 view .LVU495
+ 1298 031a 70EEEB5A 		vsub.f32	s11, s1, s23
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 36
+
+
+ 1299              		.loc 1 126 136 view .LVU496
+ 1300 031e 65EEA75A 		vmul.f32	s11, s11, s15
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1301              		.loc 1 126 129 view .LVU497
+ 1302 0322 7FEEA5FA 		vadd.f32	s31, s31, s11
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1303              		.loc 1 126 152 view .LVU498
+ 1304 0326 7FEEECCA 		vsub.f32	s25, s31, s25
+ 1305              	.LVL125:
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1306              		.loc 1 126 98 view .LVU499
+ 1307 032a 66EE2C5A 		vmul.f32	s11, s12, s25
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1308              		.loc 1 126 81 view .LVU500
+ 1309 032e 3AEE65AA 		vsub.f32	s20, s20, s11
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1310              		.loc 1 126 167 view .LVU501
+ 1311 0332 20EE664A 		vnmul.f32	s8, s0, s13
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1312              		.loc 1 126 184 view .LVU502
+ 1313 0336 61EE275A 		vmul.f32	s11, s2, s15
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1314              		.loc 1 126 177 view .LVU503
+ 1315 033a 34EE254A 		vadd.f32	s8, s8, s11
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1316              		.loc 1 126 211 view .LVU504
+ 1317 033e 9DED0DDA 		vldr.32	s26, [sp, #52]
+ 1318 0342 DDED0C3A 		vldr.32	s7, [sp, #48]
+ 1319 0346 7DEE633A 		vsub.f32	s7, s26, s7
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1320              		.loc 1 126 203 view .LVU505
+ 1321 034a 63EE803A 		vmul.f32	s7, s7, s0
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1322              		.loc 1 126 234 view .LVU506
+ 1323 034e 9DED0FDA 		vldr.32	s26, [sp, #60]
+ 1324 0352 33EE0D3A 		vadd.f32	s6, s6, s26
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1325              		.loc 1 126 226 view .LVU507
+ 1326 0356 23EE273A 		vmul.f32	s6, s6, s15
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1327              		.loc 1 126 219 view .LVU508
+ 1328 035a 73EE833A 		vadd.f32	s7, s7, s6
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1329              		.loc 1 126 242 view .LVU509
+ 1330 035e 33EECBBA 		vsub.f32	s22, s7, s22
+ 1331              	.LVL126:
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1332              		.loc 1 126 195 view .LVU510
+ 1333 0362 24EE0B4A 		vmul.f32	s8, s8, s22
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1334              		.loc 1 126 158 view .LVU511
+ 1335 0366 3AEE04AA 		vadd.f32	s20, s20, s8
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1336              		.loc 1 126 255 view .LVU512
+ 1337 036a 67EE003A 		vmul.f32	s7, s14, s0
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1338              		.loc 1 126 281 view .LVU513
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 37
+
+
+ 1339 036e 3BEEA04A 		vadd.f32	s8, s23, s1
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1340              		.loc 1 126 273 view .LVU514
+ 1341 0372 24EE004A 		vmul.f32	s8, s8, s0
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1342              		.loc 1 126 304 view .LVU515
+ 1343 0376 72EECE2A 		vsub.f32	s5, s5, s28
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1344              		.loc 1 126 311 view .LVU516
+ 1345 037a 72EEED2A 		vsub.f32	s5, s5, s27
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1346              		.loc 1 126 296 view .LVU517
+ 1347 037e 62EEA72A 		vmul.f32	s5, s5, s15
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1348              		.loc 1 126 289 view .LVU518
+ 1349 0382 34EE224A 		vadd.f32	s8, s8, s5
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1350              		.loc 1 126 319 view .LVU519
+ 1351 0386 34EE4CCA 		vsub.f32	s24, s8, s24
+ 1352              	.LVL127:
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1353              		.loc 1 126 265 view .LVU520
+ 1354 038a 23EE8C4A 		vmul.f32	s8, s7, s24
+ 126:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 = _2q3 * (2.0f * q1q3 - _2q0q2 - ax) + _2q0 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q1 * (
+ 1355              		.loc 1 126 6 view .LVU521
+ 1356 038e 3AEE04AA 		vadd.f32	s20, s20, s8
+ 1357              	.LVL128:
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1358              		.loc 1 127 3 is_stmt 1 view .LVU522
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1359              		.loc 1 127 13 is_stmt 0 view .LVU523
+ 1360 0392 9DED07FA 		vldr.32	s30, [sp, #28]
+ 1361 0396 61EE8FBA 		vmul.f32	s23, s3, s30
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1362              		.loc 1 127 50 view .LVU524
+ 1363 039a 29EE824A 		vmul.f32	s8, s19, s4
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1364              		.loc 1 127 43 view .LVU525
+ 1365 039e 7BEE84BA 		vadd.f32	s23, s23, s8
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1366              		.loc 1 127 87 view .LVU526
+ 1367 03a2 B1EE003A 		vmov.f32	s6, #4.0e+0
+ 1368 03a6 21EE034A 		vmul.f32	s8, s2, s6
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1369              		.loc 1 127 109 view .LVU527
+ 1370 03aa 3EEE0EEA 		vadd.f32	s28, s28, s28
+ 1371              	.LVL129:
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1372              		.loc 1 127 102 view .LVU528
+ 1373 03ae F7EE002A 		vmov.f32	s5, #1.0e+0
+ 1374 03b2 32EECEEA 		vsub.f32	s28, s5, s28
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1375              		.loc 1 127 123 view .LVU529
+ 1376 03b6 7DEEADDA 		vadd.f32	s27, s27, s27
+ 1377              	.LVL130:
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1378              		.loc 1 127 116 view .LVU530
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 38
+
+
+ 1379 03ba 7EEE6DDA 		vsub.f32	s27, s28, s27
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1380              		.loc 1 127 130 view .LVU531
+ 1381 03be DDED032A 		vldr.32	s5, [sp, #12]
+ 1382 03c2 7DEEE22A 		vsub.f32	s5, s27, s5
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1383              		.loc 1 127 97 view .LVU532
+ 1384 03c6 24EE224A 		vmul.f32	s8, s8, s5
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1385              		.loc 1 127 80 view .LVU533
+ 1386 03ca 7BEEC4BA 		vsub.f32	s23, s23, s8
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1387              		.loc 1 127 143 view .LVU534
+ 1388 03ce 66EEA70A 		vmul.f32	s1, s13, s15
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1389              		.loc 1 127 153 view .LVU535
+ 1390 03d2 2CEEA04A 		vmul.f32	s8, s25, s1
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1391              		.loc 1 127 136 view .LVU536
+ 1392 03d6 7BEE84BA 		vadd.f32	s23, s23, s8
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1393              		.loc 1 127 243 view .LVU537
+ 1394 03da 94ED014A 		vldr.32	s8, [r4, #4]
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1395              		.loc 1 127 238 view .LVU538
+ 1396 03de 64EE277A 		vmul.f32	s15, s8, s15
+ 1397              	.LVL131:
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1398              		.loc 1 127 231 view .LVU539
+ 1399 03e2 73EEA73A 		vadd.f32	s7, s7, s15
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1400              		.loc 1 127 249 view .LVU540
+ 1401 03e6 6BEE233A 		vmul.f32	s7, s22, s7
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1402              		.loc 1 127 213 view .LVU541
+ 1403 03ea 7BEEA3BA 		vadd.f32	s23, s23, s7
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1404              		.loc 1 127 310 view .LVU542
+ 1405 03ee 66EE803A 		vmul.f32	s7, s13, s0
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1406              		.loc 1 127 327 view .LVU543
+ 1407 03f2 21EE24DA 		vmul.f32	s26, s2, s9
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1408              		.loc 1 127 320 view .LVU544
+ 1409 03f6 73EECD3A 		vsub.f32	s7, s7, s26
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1410              		.loc 1 127 338 view .LVU545
+ 1411 03fa 6CEE233A 		vmul.f32	s7, s24, s7
+ 127:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 = -_2q0 * (2.0f * q1q3 - _2q0q2 - ax) + _2q3 * (2.0f * q0q1 + _2q2q3 - ay) - 4.0f * att->q2 * 
+ 1412              		.loc 1 127 6 view .LVU546
+ 1413 03fe 7BEEA3BA 		vadd.f32	s23, s23, s7
+ 1414              	.LVL132:
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1415              		.loc 1 128 3 is_stmt 1 view .LVU547
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1416              		.loc 1 128 14 is_stmt 0 view .LVU548
+ 1417 0402 69EEE19A 		vnmul.f32	s19, s19, s3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 39
+
+
+ 1418              	.LVL133:
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1419              		.loc 1 128 51 view .LVU549
+ 1420 0406 62EE0F3A 		vmul.f32	s7, s4, s30
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1421              		.loc 1 128 44 view .LVU550
+ 1422 040a 79EEA39A 		vadd.f32	s19, s19, s7
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1423              		.loc 1 128 88 view .LVU551
+ 1424 040e 27EE033A 		vmul.f32	s6, s14, s6
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1425              		.loc 1 128 98 view .LVU552
+ 1426 0412 62EE832A 		vmul.f32	s5, s5, s6
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1427              		.loc 1 128 81 view .LVU553
+ 1428 0416 79EEE29A 		vsub.f32	s19, s19, s5
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1429              		.loc 1 128 146 view .LVU554
+ 1430 041a 65EE473A 		vnmul.f32	s7, s10, s14
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1431              		.loc 1 128 156 view .LVU555
+ 1432 041e 73EEE77A 		vsub.f32	s15, s7, s15
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1433              		.loc 1 128 174 view .LVU556
+ 1434 0422 6CEEA77A 		vmul.f32	s15, s25, s15
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1435              		.loc 1 128 137 view .LVU557
+ 1436 0426 79EEA79A 		vadd.f32	s19, s19, s15
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1437              		.loc 1 128 242 view .LVU558
+ 1438 042a 21EE001A 		vmul.f32	s2, s2, s0
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1439              		.loc 1 128 252 view .LVU559
+ 1440 042e 70EE810A 		vadd.f32	s1, s1, s2
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1441              		.loc 1 128 270 view .LVU560
+ 1442 0432 6BEE200A 		vmul.f32	s1, s22, s1
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1443              		.loc 1 128 234 view .LVU561
+ 1444 0436 79EEA09A 		vadd.f32	s19, s19, s1
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1445              		.loc 1 128 331 view .LVU562
+ 1446 043a 64EE007A 		vmul.f32	s15, s8, s0
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1447              		.loc 1 128 348 view .LVU563
+ 1448 043e 27EE247A 		vmul.f32	s14, s14, s9
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1449              		.loc 1 128 341 view .LVU564
+ 1450 0442 37EEC77A 		vsub.f32	s14, s15, s14
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1451              		.loc 1 128 359 view .LVU565
+ 1452 0446 2CEE077A 		vmul.f32	s14, s24, s14
+ 128:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 = _2q1 * (2.0f * q1q3 - _2q0q2 - ax) + _2q2 * (2.0f * q0q1 + _2q2q3 - ay) + (-_4bx * att->q3 +
+ 1453              		.loc 1 128 6 view .LVU566
+ 1454 044a 79EE879A 		vadd.f32	s19, s19, s14
+ 1455              	.LVL134:
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 40
+
+
+ 1456              		.loc 1 129 3 is_stmt 1 view .LVU567
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1457              		.loc 1 129 13 is_stmt 0 view .LVU568
+ 1458 044e 6AEEA11A 		vmul.f32	s3, s21, s3
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1459              		.loc 1 129 50 view .LVU569
+ 1460 0452 22EE2E2A 		vmul.f32	s4, s4, s29
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1461              		.loc 1 129 43 view .LVU570
+ 1462 0456 31EE822A 		vadd.f32	s4, s3, s4
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1463              		.loc 1 129 89 view .LVU571
+ 1464 045a 65EE666A 		vnmul.f32	s13, s10, s13
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1465              		.loc 1 129 99 view .LVU572
+ 1466 045e 75EEA65A 		vadd.f32	s11, s11, s13
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1467              		.loc 1 129 117 view .LVU573
+ 1468 0462 6CEEA5CA 		vmul.f32	s25, s25, s11
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1469              		.loc 1 129 80 view .LVU574
+ 1470 0466 72EE2CCA 		vadd.f32	s25, s4, s25
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1471              		.loc 1 129 186 view .LVU575
+ 1472 046a 20EE440A 		vnmul.f32	s0, s0, s8
+ 1473              	.LVL135:
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1474              		.loc 1 129 196 view .LVU576
+ 1475 046e 36EE000A 		vadd.f32	s0, s12, s0
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1476              		.loc 1 129 214 view .LVU577
+ 1477 0472 2BEE00BA 		vmul.f32	s22, s22, s0
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1478              		.loc 1 129 177 view .LVU578
+ 1479 0476 3CEE8BBA 		vadd.f32	s22, s25, s22
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1480              		.loc 1 129 284 view .LVU579
+ 1481 047a 2CEE01CA 		vmul.f32	s24, s24, s2
+ 129:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		recipNorm = invSqrt(s0 * s0 + s1 * s1 + s2 * s2 + s3 * s3); // normalise step magnitude
+ 1482              		.loc 1 129 6 view .LVU580
+ 1483 047e 3BEE0CCA 		vadd.f32	s24, s22, s24
+ 1484              	.LVL136:
+ 130:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 1485              		.loc 1 130 3 is_stmt 1 view .LVU581
+ 130:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 1486              		.loc 1 130 26 is_stmt 0 view .LVU582
+ 1487 0482 6AEE0A7A 		vmul.f32	s15, s20, s20
+ 130:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 1488              		.loc 1 130 36 view .LVU583
+ 1489 0486 2BEEAB0A 		vmul.f32	s0, s23, s23
+ 130:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 1490              		.loc 1 130 31 view .LVU584
+ 1491 048a 77EE807A 		vadd.f32	s15, s15, s0
+ 130:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 1492              		.loc 1 130 46 view .LVU585
+ 1493 048e 29EEA90A 		vmul.f32	s0, s19, s19
+ 130:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 41
+
+
+ 1494              		.loc 1 130 41 view .LVU586
+ 1495 0492 77EE807A 		vadd.f32	s15, s15, s0
+ 130:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 1496              		.loc 1 130 56 view .LVU587
+ 1497 0496 2CEE0C0A 		vmul.f32	s0, s24, s24
+ 130:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s0 *= recipNorm;
+ 1498              		.loc 1 130 15 view .LVU588
+ 1499 049a 37EE800A 		vadd.f32	s0, s15, s0
+ 1500 049e FFF7FEFF 		bl	invSqrt
+ 1501              	.LVL137:
+ 131:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 *= recipNorm;
+ 1502              		.loc 1 131 3 is_stmt 1 view .LVU589
+ 131:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s1 *= recipNorm;
+ 1503              		.loc 1 131 6 is_stmt 0 view .LVU590
+ 1504 04a2 2AEE00AA 		vmul.f32	s20, s20, s0
+ 1505              	.LVL138:
+ 132:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 *= recipNorm;
+ 1506              		.loc 1 132 3 is_stmt 1 view .LVU591
+ 132:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s2 *= recipNorm;
+ 1507              		.loc 1 132 6 is_stmt 0 view .LVU592
+ 1508 04a6 6BEE80BA 		vmul.f32	s23, s23, s0
+ 1509              	.LVL139:
+ 133:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 *= recipNorm;
+ 1510              		.loc 1 133 3 is_stmt 1 view .LVU593
+ 133:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		s3 *= recipNorm;
+ 1511              		.loc 1 133 6 is_stmt 0 view .LVU594
+ 1512 04aa 69EE809A 		vmul.f32	s19, s19, s0
+ 1513              	.LVL140:
+ 134:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1514              		.loc 1 134 3 is_stmt 1 view .LVU595
+ 134:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1515              		.loc 1 134 6 is_stmt 0 view .LVU596
+ 1516 04ae 2CEE00CA 		vmul.f32	s24, s24, s0
+ 1517              	.LVL141:
+ 137:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot2 -= att->beta * s1;
+ 1518              		.loc 1 137 3 is_stmt 1 view .LVU597
+ 137:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot2 -= att->beta * s1;
+ 1519              		.loc 1 137 15 is_stmt 0 view .LVU598
+ 1520 04b2 D4ED007A 		vldr.32	s15, [r4]
+ 137:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot2 -= att->beta * s1;
+ 1521              		.loc 1 137 22 view .LVU599
+ 1522 04b6 27EE8AAA 		vmul.f32	s20, s15, s20
+ 1523              	.LVL142:
+ 137:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot2 -= att->beta * s1;
+ 1524              		.loc 1 137 9 view .LVU600
+ 1525 04ba 39EE4A9A 		vsub.f32	s18, s18, s20
+ 1526              	.LVL143:
+ 138:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot3 -= att->beta * s2;
+ 1527              		.loc 1 138 3 is_stmt 1 view .LVU601
+ 138:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot3 -= att->beta * s2;
+ 1528              		.loc 1 138 22 is_stmt 0 view .LVU602
+ 1529 04be 67EEABBA 		vmul.f32	s23, s15, s23
+ 1530              	.LVL144:
+ 138:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot3 -= att->beta * s2;
+ 1531              		.loc 1 138 9 view .LVU603
+ 1532 04c2 78EEEB8A 		vsub.f32	s17, s17, s23
+ 1533              	.LVL145:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 42
+
+
+ 139:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot4 -= att->beta * s3;
+ 1534              		.loc 1 139 3 is_stmt 1 view .LVU604
+ 139:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot4 -= att->beta * s3;
+ 1535              		.loc 1 139 22 is_stmt 0 view .LVU605
+ 1536 04c6 67EEA99A 		vmul.f32	s19, s15, s19
+ 1537              	.LVL146:
+ 139:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		qDot4 -= att->beta * s3;
+ 1538              		.loc 1 139 9 view .LVU606
+ 1539 04ca 38EE698A 		vsub.f32	s16, s16, s19
+ 1540              	.LVL147:
+ 140:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	}
+ 1541              		.loc 1 140 3 is_stmt 1 view .LVU607
+ 140:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	}
+ 1542              		.loc 1 140 22 is_stmt 0 view .LVU608
+ 1543 04ce 67EE8C7A 		vmul.f32	s15, s15, s24
+ 140:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	}
+ 1544              		.loc 1 140 9 view .LVU609
+ 1545 04d2 9DED007A 		vldr.32	s14, [sp]
+ 1546 04d6 77EE677A 		vsub.f32	s15, s14, s15
+ 1547 04da CDED007A 		vstr.32	s15, [sp]
+ 1548              	.LVL148:
+ 1549              	.L27:
+ 144:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 += qDot2 * (1.0f / sampleFreq);
+ 1550              		.loc 1 144 2 is_stmt 1 view .LVU610
+ 144:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 += qDot2 * (1.0f / sampleFreq);
+ 1551              		.loc 1 144 19 is_stmt 0 view .LVU611
+ 1552 04de DFED279A 		vldr.32	s19, .L33
+ 1553 04e2 29EE299A 		vmul.f32	s18, s18, s19
+ 1554              	.LVL149:
+ 144:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 += qDot2 * (1.0f / sampleFreq);
+ 1555              		.loc 1 144 10 view .LVU612
+ 1556 04e6 D4ED017A 		vldr.32	s15, [r4, #4]
+ 1557 04ea 39EE279A 		vadd.f32	s18, s18, s15
+ 1558 04ee 84ED019A 		vstr.32	s18, [r4, #4]
+ 145:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 += qDot3 * (1.0f / sampleFreq);
+ 1559              		.loc 1 145 2 is_stmt 1 view .LVU613
+ 145:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 += qDot3 * (1.0f / sampleFreq);
+ 1560              		.loc 1 145 19 is_stmt 0 view .LVU614
+ 1561 04f2 68EEA98A 		vmul.f32	s17, s17, s19
+ 1562              	.LVL150:
+ 145:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 += qDot3 * (1.0f / sampleFreq);
+ 1563              		.loc 1 145 10 view .LVU615
+ 1564 04f6 D4ED027A 		vldr.32	s15, [r4, #8]
+ 1565 04fa 78EEA78A 		vadd.f32	s17, s17, s15
+ 1566 04fe C4ED028A 		vstr.32	s17, [r4, #8]
+ 146:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 += qDot4 * (1.0f / sampleFreq);
+ 1567              		.loc 1 146 2 is_stmt 1 view .LVU616
+ 146:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 += qDot4 * (1.0f / sampleFreq);
+ 1568              		.loc 1 146 19 is_stmt 0 view .LVU617
+ 1569 0502 28EE298A 		vmul.f32	s16, s16, s19
+ 1570              	.LVL151:
+ 146:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 += qDot4 * (1.0f / sampleFreq);
+ 1571              		.loc 1 146 10 view .LVU618
+ 1572 0506 D4ED037A 		vldr.32	s15, [r4, #12]
+ 1573 050a 38EE278A 		vadd.f32	s16, s16, s15
+ 1574 050e 84ED038A 		vstr.32	s16, [r4, #12]
+ 147:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 43
+
+
+ 1575              		.loc 1 147 2 is_stmt 1 view .LVU619
+ 147:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1576              		.loc 1 147 19 is_stmt 0 view .LVU620
+ 1577 0512 DDED007A 		vldr.32	s15, [sp]
+ 1578 0516 67EEA99A 		vmul.f32	s19, s15, s19
+ 147:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1579              		.loc 1 147 10 view .LVU621
+ 1580 051a D4ED047A 		vldr.32	s15, [r4, #16]
+ 1581 051e 79EEA79A 		vadd.f32	s19, s19, s15
+ 1582 0522 C4ED049A 		vstr.32	s19, [r4, #16]
+ 150:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 1583              		.loc 1 150 2 is_stmt 1 view .LVU622
+ 150:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 1584              		.loc 1 150 30 is_stmt 0 view .LVU623
+ 1585 0526 69EE097A 		vmul.f32	s15, s18, s18
+ 150:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 1586              		.loc 1 150 50 view .LVU624
+ 1587 052a 28EEA80A 		vmul.f32	s0, s17, s17
+ 150:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 1588              		.loc 1 150 40 view .LVU625
+ 1589 052e 77EE807A 		vadd.f32	s15, s15, s0
+ 150:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 1590              		.loc 1 150 70 view .LVU626
+ 1591 0532 28EE080A 		vmul.f32	s0, s16, s16
+ 150:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 1592              		.loc 1 150 60 view .LVU627
+ 1593 0536 77EE807A 		vadd.f32	s15, s15, s0
+ 150:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 1594              		.loc 1 150 90 view .LVU628
+ 1595 053a 29EEA90A 		vmul.f32	s0, s19, s19
+ 150:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q0 *= recipNorm;
+ 1596              		.loc 1 150 14 view .LVU629
+ 1597 053e 37EE800A 		vadd.f32	s0, s15, s0
+ 1598 0542 FFF7FEFF 		bl	invSqrt
+ 1599              	.LVL152:
+ 151:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 *= recipNorm;
+ 1600              		.loc 1 151 2 is_stmt 1 view .LVU630
+ 151:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q1 *= recipNorm;
+ 1601              		.loc 1 151 10 is_stmt 0 view .LVU631
+ 1602 0546 29EE009A 		vmul.f32	s18, s18, s0
+ 1603 054a 84ED019A 		vstr.32	s18, [r4, #4]
+ 152:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 *= recipNorm;
+ 1604              		.loc 1 152 2 is_stmt 1 view .LVU632
+ 152:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q2 *= recipNorm;
+ 1605              		.loc 1 152 10 is_stmt 0 view .LVU633
+ 1606 054e 68EE808A 		vmul.f32	s17, s17, s0
+ 1607 0552 C4ED028A 		vstr.32	s17, [r4, #8]
+ 153:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 *= recipNorm;
+ 1608              		.loc 1 153 2 is_stmt 1 view .LVU634
+ 153:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	att->q3 *= recipNorm;
+ 1609              		.loc 1 153 10 is_stmt 0 view .LVU635
+ 1610 0556 28EE008A 		vmul.f32	s16, s16, s0
+ 1611 055a 84ED038A 		vstr.32	s16, [r4, #12]
+ 154:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1612              		.loc 1 154 2 is_stmt 1 view .LVU636
+ 154:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1613              		.loc 1 154 10 is_stmt 0 view .LVU637
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 44
+
+
+ 1614 055e 69EE809A 		vmul.f32	s19, s19, s0
+ 1615 0562 C4ED049A 		vstr.32	s19, [r4, #16]
+ 156:Algorithm/Navi_Dep/MadgwickAHRS.c **** }
+ 1616              		.loc 1 156 2 is_stmt 1 view .LVU638
+ 1617 0566 2046     		mov	r0, r4
+ 1618 0568 FFF7FEFF 		bl	MadgwickAHRS_Get_Attitude
+ 1619              	.LVL153:
+ 1620              	.L23:
+ 157:Algorithm/Navi_Dep/MadgwickAHRS.c **** 
+ 1621              		.loc 1 157 1 is_stmt 0 view .LVU639
+ 1622 056c 10B0     		add	sp, sp, #64
+ 1623              	.LCFI11:
+ 1624              		.cfi_remember_state
+ 1625              		.cfi_def_cfa_offset 72
+ 1626              		@ sp needed
+ 1627 056e BDEC108B 		vldm	sp!, {d8-d15}
+ 1628              	.LCFI12:
+ 1629              		.cfi_restore 94
+ 1630              		.cfi_restore 95
+ 1631              		.cfi_restore 92
+ 1632              		.cfi_restore 93
+ 1633              		.cfi_restore 90
+ 1634              		.cfi_restore 91
+ 1635              		.cfi_restore 88
+ 1636              		.cfi_restore 89
+ 1637              		.cfi_restore 86
+ 1638              		.cfi_restore 87
+ 1639              		.cfi_restore 84
+ 1640              		.cfi_restore 85
+ 1641              		.cfi_restore 82
+ 1642              		.cfi_restore 83
+ 1643              		.cfi_restore 80
+ 1644              		.cfi_restore 81
+ 1645              		.cfi_def_cfa_offset 8
+ 1646 0572 10BD     		pop	{r4, pc}
+ 1647              	.LVL154:
+ 1648              	.L32:
+ 1649              	.LCFI13:
+ 1650              		.cfi_restore_state
+  70:Algorithm/Navi_Dep/MadgwickAHRS.c **** 		return;
+ 1651              		.loc 1 70 3 is_stmt 1 view .LVU640
+ 1652 0574 FFF7FEFF 		bl	MadgwickAHRSupdateIMU
+ 1653              	.LVL155:
+  71:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	}
+ 1654              		.loc 1 71 3 view .LVU641
+ 1655 0578 F8E7     		b	.L23
+ 1656              	.LVL156:
+ 1657              	.L29:
+ 1658              	.LCFI14:
+ 1659              		.cfi_def_cfa_offset 0
+ 1660              		.cfi_restore 4
+ 1661              		.cfi_restore 14
+ 1662              		.cfi_restore 80
+ 1663              		.cfi_restore 81
+ 1664              		.cfi_restore 82
+ 1665              		.cfi_restore 83
+ 1666              		.cfi_restore 84
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 45
+
+
+ 1667              		.cfi_restore 85
+ 1668              		.cfi_restore 86
+ 1669              		.cfi_restore 87
+ 1670              		.cfi_restore 88
+ 1671              		.cfi_restore 89
+ 1672              		.cfi_restore 90
+ 1673              		.cfi_restore 91
+ 1674              		.cfi_restore 92
+ 1675              		.cfi_restore 93
+ 1676              		.cfi_restore 94
+ 1677              		.cfi_restore 95
+  71:Algorithm/Navi_Dep/MadgwickAHRS.c **** 	}
+ 1678              		.loc 1 71 3 is_stmt 0 view .LVU642
+ 1679 057a 7047     		bx	lr
+ 1680              	.L34:
+ 1681              		.align	2
+ 1682              	.L33:
+ 1683 057c 0AD7233C 		.word	1008981770
+ 1684              		.cfi_endproc
+ 1685              	.LFE5:
+ 1687              		.text
+ 1688              	.Letext0:
+ 1689              		.file 3 "Algorithm/Navi_Dep/MadgwickAHRS.h"
+ 1690              		.file 4 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\math.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s 			page 46
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 MadgwickAHRS.c
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:19     .text.invSqrt:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:24     .text.invSqrt:00000000 invSqrt
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:71     .text.invSqrt:0000002c $d
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:76     .text.MadgwickAHRS_Get_Attitude:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:81     .text.MadgwickAHRS_Get_Attitude:00000000 MadgwickAHRS_Get_Attitude
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:272    .text.MadgwickAHRS_Get_Attitude:000000e4 $d
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:277    .text.MadgwickAHRSInit:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:283    .text.MadgwickAHRSInit:00000000 MadgwickAHRSInit
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:324    .text.MadgwickAHRSupdateIMU:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:330    .text.MadgwickAHRSupdateIMU:00000000 MadgwickAHRSupdateIMU
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:799    .text.MadgwickAHRSupdateIMU:000002a4 $d
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:804    .text.MadgwickAHRSupdate:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:810    .text.MadgwickAHRSupdate:00000000 MadgwickAHRSupdate
+C:\Users\HUAV\AppData\Local\Temp\ccEcIbif.s:1683   .text.MadgwickAHRSupdate:0000057c $d
+
+UNDEFINED SYMBOLS
+atan2
+asin
+sqrt

@@ -116,6 +116,7 @@ extern "C"
   void usb_printf(const char *format, ...);
   void usb_setrec_callback(rec_callback callback);
   void usb_settxcpl_callback(send_callback callback);
+  void usb_setconnect_callbac(connect_callback callback);
 
   /* USER CODE BEGIN EXPORTED_FUNCTIONS */
 

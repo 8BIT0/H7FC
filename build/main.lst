@@ -1,0 +1,95 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc375xLd.s 			page 1
+
+
+   1              		.cpu cortex-m7
+   2              		.arch armv7e-m
+   3              		.fpu fpv5-d16
+   4              		.eabi_attribute 28, 1
+   5              		.eabi_attribute 20, 1
+   6              		.eabi_attribute 21, 1
+   7              		.eabi_attribute 23, 3
+   8              		.eabi_attribute 24, 1
+   9              		.eabi_attribute 25, 1
+  10              		.eabi_attribute 26, 1
+  11              		.eabi_attribute 30, 1
+  12              		.eabi_attribute 34, 1
+  13              		.eabi_attribute 18, 4
+  14              		.file	"main.c"
+  15              		.text
+  16              	.Ltext0:
+  17              		.cfi_sections	.debug_frame
+  18              		.section	.text.main,"ax",%progbits
+  19              		.align	1
+  20              		.global	main
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	main:
+  26              	.LFB0:
+  27              		.file 1 "main.c"
+   1:main.c        **** #include "kernel.h"
+   2:main.c        **** #include "Task_Manager.h"
+   3:main.c        **** 
+   4:main.c        **** int main(void)
+   5:main.c        **** {
+  28              		.loc 1 5 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32 0000 08B5     		push	{r3, lr}
+  33              	.LCFI0:
+  34              		.cfi_def_cfa_offset 8
+  35              		.cfi_offset 3, -8
+  36              		.cfi_offset 14, -4
+   6:main.c        ****     bool kernel_init_state = false;
+  37              		.loc 1 6 5 view .LVU1
+  38              	.LVL0:
+   7:main.c        ****     
+   8:main.c        ****     kernel_init_state = Kernel_Init();
+  39              		.loc 1 8 5 view .LVU2
+  40              		.loc 1 8 25 is_stmt 0 view .LVU3
+  41 0002 FFF7FEFF 		bl	Kernel_Init
+  42              	.LVL1:
+   9:main.c        **** 
+  10:main.c        ****     /* if kernel init failed do infinity loop */
+  11:main.c        ****     while(!kernel_init_state);
+  43              		.loc 1 11 5 is_stmt 1 view .LVU4
+  44              	.L2:
+  45              		.loc 1 11 30 discriminator 1 view .LVU5
+  46              		.loc 1 11 10 discriminator 1 view .LVU6
+  47 0006 0028     		cmp	r0, #0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc375xLd.s 			page 2
+
+
+  48 0008 FDD0     		beq	.L2
+  12:main.c        **** 
+  13:main.c        ****     /* create task down below */
+  14:main.c        ****     Task_Manager_Init();
+  49              		.loc 1 14 5 view .LVU7
+  50 000a FFF7FEFF 		bl	Task_Manager_Init
+  51              	.LVL2:
+  15:main.c        ****     /* create task up top */
+  16:main.c        **** 
+  17:main.c        ****     return 0;
+  52              		.loc 1 17 5 view .LVU8
+  18:main.c        **** }
+  53              		.loc 1 18 1 is_stmt 0 view .LVU9
+  54 000e 0020     		movs	r0, #0
+  55 0010 08BD     		pop	{r3, pc}
+  56              		.cfi_endproc
+  57              	.LFE0:
+  59              		.text
+  60              	.Letext0:
+  61              		.file 2 "System/kernel/kernel.h"
+  62              		.file 3 "Task/Task_Manager.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc375xLd.s 			page 3
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\HUAV\AppData\Local\Temp\cc375xLd.s:19     .text.main:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc375xLd.s:25     .text.main:00000000 main
+
+UNDEFINED SYMBOLS
+Kernel_Init
+Task_Manager_Init
