@@ -1,0 +1,2487 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Dev_W25Qxx.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.DevW25Qxx_BusTrans,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	DevW25Qxx_BusTrans:
+  26              	.LVL0:
+  27              	.LFB0:
+  28              		.file 1 "Device/Dev_W25Qxx.c"
+   1:Device/Dev_W25Qxx.c **** #include "Dev_W25Qxx.h"
+   2:Device/Dev_W25Qxx.c **** 
+   3:Device/Dev_W25Qxx.c **** /* internal function */
+   4:Device/Dev_W25Qxx.c **** static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev, uint16_t *id);
+   5:Device/Dev_W25Qxx.c **** 
+   6:Device/Dev_W25Qxx.c **** /* external function */
+   7:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev);
+   8:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef *dev);
+   9:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_WriteSector(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, ui
+  10:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_ReadSector(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint
+  11:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_EraseSector(DevW25QxxObj_TypeDef *dev, uint32_t Address);
+  12:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev);
+  13:Device/Dev_W25Qxx.c **** static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev);
+  14:Device/Dev_W25Qxx.c **** static uint32_t DevW25Qxx_Get_Section_StartAddr(DevW25QxxObj_TypeDef *dev, uint32_t addr);
+  15:Device/Dev_W25Qxx.c **** 
+  16:Device/Dev_W25Qxx.c **** DevW25Qxx_TypeDef DevW25Qxx = {
+  17:Device/Dev_W25Qxx.c ****     .init = DevW25Qxx_Init,
+  18:Device/Dev_W25Qxx.c ****     .write_sector = DevW25Qxx_WriteSector,
+  19:Device/Dev_W25Qxx.c ****     .read_sector = DevW25Qxx_ReadSector,
+  20:Device/Dev_W25Qxx.c ****     .erase_sector = DevW25Qxx_EraseSector,
+  21:Device/Dev_W25Qxx.c ****     .erase_chip = DevW25Qxx_EraseChip,
+  22:Device/Dev_W25Qxx.c ****     .info = DevW25Qxx_Get_Info,
+  23:Device/Dev_W25Qxx.c ****     .get_section_start_addr = DevW25Qxx_Get_Section_StartAddr,
+  24:Device/Dev_W25Qxx.c **** };
+  25:Device/Dev_W25Qxx.c **** 
+  26:Device/Dev_W25Qxx.c **** static bool DevW25Qxx_BusTrans(DevW25QxxObj_TypeDef *dev, uint8_t *tx, uint16_t size)
+  27:Device/Dev_W25Qxx.c **** {
+  29              		.loc 1 27 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 2
+
+
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  28:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || \
+  33              		.loc 1 28 5 view .LVU1
+  34              		.loc 1 28 8 is_stmt 0 view .LVU2
+  35 0000 50B1     		cbz	r0, .L3
+  27:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || \
+  36              		.loc 1 27 1 discriminator 1 view .LVU3
+  37 0002 10B5     		push	{r4, lr}
+  38              	.LCFI0:
+  39              		.cfi_def_cfa_offset 8
+  40              		.cfi_offset 4, -8
+  41              		.cfi_offset 14, -4
+  42 0004 0B46     		mov	r3, r1
+  43 0006 1146     		mov	r1, r2
+  44              	.LVL1:
+  29:Device/Dev_W25Qxx.c ****         (dev->bus_tx == NULL))
+  45              		.loc 1 29 13 discriminator 1 view .LVU4
+  46 0008 4468     		ldr	r4, [r0, #4]
+  28:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || \
+  47              		.loc 1 28 23 discriminator 1 view .LVU5
+  48 000a 3CB1     		cbz	r4, .L4
+  30:Device/Dev_W25Qxx.c ****         return false;
+  31:Device/Dev_W25Qxx.c **** 
+  32:Device/Dev_W25Qxx.c ****     if (dev->bus_tx(tx, size, W25Qx_TIMEOUT_VALUE))
+  49              		.loc 1 32 5 is_stmt 1 view .LVU6
+  50              		.loc 1 32 9 is_stmt 0 view .LVU7
+  51 000c 42F21072 		movw	r2, #10000
+  52              	.LVL2:
+  53              		.loc 1 32 9 view .LVU8
+  54 0010 1846     		mov	r0, r3
+  55              	.LVL3:
+  56              		.loc 1 32 9 view .LVU9
+  57 0012 A047     		blx	r4
+  58              	.LVL4:
+  59              		.loc 1 32 8 view .LVU10
+  60 0014 20B9     		cbnz	r0, .L5
+  61              	.L2:
+  33:Device/Dev_W25Qxx.c ****         return true;
+  34:Device/Dev_W25Qxx.c **** 
+  35:Device/Dev_W25Qxx.c ****     return false;
+  36:Device/Dev_W25Qxx.c **** }
+  62              		.loc 1 36 1 view .LVU11
+  63 0016 10BD     		pop	{r4, pc}
+  64              	.LVL5:
+  65              	.L3:
+  66              	.LCFI1:
+  67              		.cfi_def_cfa_offset 0
+  68              		.cfi_restore 4
+  69              		.cfi_restore 14
+  30:Device/Dev_W25Qxx.c ****         return false;
+  70              		.loc 1 30 16 view .LVU12
+  71 0018 0020     		movs	r0, #0
+  72              	.LVL6:
+  73              		.loc 1 36 1 view .LVU13
+  74 001a 7047     		bx	lr
+  75              	.LVL7:
+  76              	.L4:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 3
+
+
+  77              	.LCFI2:
+  78              		.cfi_def_cfa_offset 8
+  79              		.cfi_offset 4, -8
+  80              		.cfi_offset 14, -4
+  30:Device/Dev_W25Qxx.c ****         return false;
+  81              		.loc 1 30 16 view .LVU14
+  82 001c 0020     		movs	r0, #0
+  83              	.LVL8:
+  30:Device/Dev_W25Qxx.c ****         return false;
+  84              		.loc 1 30 16 view .LVU15
+  85 001e FAE7     		b	.L2
+  86              	.LVL9:
+  87              	.L5:
+  33:Device/Dev_W25Qxx.c ****         return true;
+  88              		.loc 1 33 16 view .LVU16
+  89 0020 0120     		movs	r0, #1
+  90 0022 F8E7     		b	.L2
+  91              		.cfi_endproc
+  92              	.LFE0:
+  94              		.section	.text.DevW25Qxx_BusReceive,"ax",%progbits
+  95              		.align	1
+  96              		.syntax unified
+  97              		.thumb
+  98              		.thumb_func
+ 100              	DevW25Qxx_BusReceive:
+ 101              	.LVL10:
+ 102              	.LFB1:
+  37:Device/Dev_W25Qxx.c **** 
+  38:Device/Dev_W25Qxx.c **** static bool DevW25Qxx_BusReceive(DevW25QxxObj_TypeDef *dev, uint8_t *rx, uint16_t size)
+  39:Device/Dev_W25Qxx.c **** {
+ 103              		.loc 1 39 1 is_stmt 1 view -0
+ 104              		.cfi_startproc
+ 105              		@ args = 0, pretend = 0, frame = 0
+ 106              		@ frame_needed = 0, uses_anonymous_args = 0
+  40:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || \
+ 107              		.loc 1 40 5 view .LVU18
+ 108              		.loc 1 40 8 is_stmt 0 view .LVU19
+ 109 0000 50B1     		cbz	r0, .L12
+  39:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || \
+ 110              		.loc 1 39 1 discriminator 1 view .LVU20
+ 111 0002 10B5     		push	{r4, lr}
+ 112              	.LCFI3:
+ 113              		.cfi_def_cfa_offset 8
+ 114              		.cfi_offset 4, -8
+ 115              		.cfi_offset 14, -4
+ 116 0004 0B46     		mov	r3, r1
+ 117 0006 1146     		mov	r1, r2
+ 118              	.LVL11:
+  41:Device/Dev_W25Qxx.c ****         (dev->bus_rx == NULL))
+ 119              		.loc 1 41 13 discriminator 1 view .LVU21
+ 120 0008 8468     		ldr	r4, [r0, #8]
+  40:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || \
+ 121              		.loc 1 40 23 discriminator 1 view .LVU22
+ 122 000a 3CB1     		cbz	r4, .L13
+  42:Device/Dev_W25Qxx.c ****         return false;
+  43:Device/Dev_W25Qxx.c **** 
+  44:Device/Dev_W25Qxx.c ****     if (dev->bus_rx(rx, size, W25Qx_TIMEOUT_VALUE))
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 4
+
+
+ 123              		.loc 1 44 5 is_stmt 1 view .LVU23
+ 124              		.loc 1 44 9 is_stmt 0 view .LVU24
+ 125 000c 42F21072 		movw	r2, #10000
+ 126              	.LVL12:
+ 127              		.loc 1 44 9 view .LVU25
+ 128 0010 1846     		mov	r0, r3
+ 129              	.LVL13:
+ 130              		.loc 1 44 9 view .LVU26
+ 131 0012 A047     		blx	r4
+ 132              	.LVL14:
+ 133              		.loc 1 44 8 view .LVU27
+ 134 0014 20B9     		cbnz	r0, .L14
+ 135              	.L11:
+  45:Device/Dev_W25Qxx.c ****         return true;
+  46:Device/Dev_W25Qxx.c **** 
+  47:Device/Dev_W25Qxx.c ****     return false;
+  48:Device/Dev_W25Qxx.c **** }
+ 136              		.loc 1 48 1 view .LVU28
+ 137 0016 10BD     		pop	{r4, pc}
+ 138              	.LVL15:
+ 139              	.L12:
+ 140              	.LCFI4:
+ 141              		.cfi_def_cfa_offset 0
+ 142              		.cfi_restore 4
+ 143              		.cfi_restore 14
+  42:Device/Dev_W25Qxx.c ****         return false;
+ 144              		.loc 1 42 16 view .LVU29
+ 145 0018 0020     		movs	r0, #0
+ 146              	.LVL16:
+ 147              		.loc 1 48 1 view .LVU30
+ 148 001a 7047     		bx	lr
+ 149              	.LVL17:
+ 150              	.L13:
+ 151              	.LCFI5:
+ 152              		.cfi_def_cfa_offset 8
+ 153              		.cfi_offset 4, -8
+ 154              		.cfi_offset 14, -4
+  42:Device/Dev_W25Qxx.c ****         return false;
+ 155              		.loc 1 42 16 view .LVU31
+ 156 001c 0020     		movs	r0, #0
+ 157              	.LVL18:
+  42:Device/Dev_W25Qxx.c ****         return false;
+ 158              		.loc 1 42 16 view .LVU32
+ 159 001e FAE7     		b	.L11
+ 160              	.LVL19:
+ 161              	.L14:
+  45:Device/Dev_W25Qxx.c ****         return true;
+ 162              		.loc 1 45 16 view .LVU33
+ 163 0020 0120     		movs	r0, #1
+ 164 0022 F8E7     		b	.L11
+ 165              		.cfi_endproc
+ 166              	.LFE1:
+ 168              		.section	.text.DevW25Qxx_Reset,"ax",%progbits
+ 169              		.align	1
+ 170              		.syntax unified
+ 171              		.thumb
+ 172              		.thumb_func
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 5
+
+
+ 174              	DevW25Qxx_Reset:
+ 175              	.LVL20:
+ 176              	.LFB2:
+  49:Device/Dev_W25Qxx.c **** 
+  50:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_Reset(DevW25QxxObj_TypeDef *dev)
+  51:Device/Dev_W25Qxx.c **** {
+ 177              		.loc 1 51 1 is_stmt 1 view -0
+ 178              		.cfi_startproc
+ 179              		@ args = 0, pretend = 0, frame = 8
+ 180              		@ frame_needed = 0, uses_anonymous_args = 0
+ 181              		.loc 1 51 1 is_stmt 0 view .LVU35
+ 182 0000 30B5     		push	{r4, r5, lr}
+ 183              	.LCFI6:
+ 184              		.cfi_def_cfa_offset 12
+ 185              		.cfi_offset 4, -12
+ 186              		.cfi_offset 5, -8
+ 187              		.cfi_offset 14, -4
+ 188 0002 83B0     		sub	sp, sp, #12
+ 189              	.LCFI7:
+ 190              		.cfi_def_cfa_offset 24
+  52:Device/Dev_W25Qxx.c ****     uint8_t cmd[2] = {RESET_ENABLE_CMD, RESET_MEMORY_CMD};
+ 191              		.loc 1 52 5 is_stmt 1 view .LVU36
+ 192              		.loc 1 52 13 is_stmt 0 view .LVU37
+ 193 0004 49F66613 		movw	r3, #39270
+ 194 0008 ADF80430 		strh	r3, [sp, #4]	@ movhi
+  53:Device/Dev_W25Qxx.c ****     bool state = false;
+ 195              		.loc 1 53 5 is_stmt 1 view .LVU38
+ 196              	.LVL21:
+  54:Device/Dev_W25Qxx.c **** 
+  55:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || (dev->cs_ctl == NULL))
+ 197              		.loc 1 55 5 view .LVU39
+ 198              		.loc 1 55 8 is_stmt 0 view .LVU40
+ 199 000c 88B1     		cbz	r0, .L21
+ 200 000e 0446     		mov	r4, r0
+ 201              		.loc 1 55 30 discriminator 1 view .LVU41
+ 202 0010 C368     		ldr	r3, [r0, #12]
+ 203              		.loc 1 55 23 discriminator 1 view .LVU42
+ 204 0012 83B1     		cbz	r3, .L22
+  56:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+  57:Device/Dev_W25Qxx.c **** 
+  58:Device/Dev_W25Qxx.c ****     /* Send the reset command */
+  59:Device/Dev_W25Qxx.c ****     dev->cs_ctl(false);
+ 205              		.loc 1 59 5 is_stmt 1 view .LVU43
+ 206 0014 0020     		movs	r0, #0
+ 207              	.LVL22:
+ 208              		.loc 1 59 5 is_stmt 0 view .LVU44
+ 209 0016 9847     		blx	r3
+ 210              	.LVL23:
+  60:Device/Dev_W25Qxx.c ****     state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+ 211              		.loc 1 60 5 is_stmt 1 view .LVU45
+ 212              		.loc 1 60 13 is_stmt 0 view .LVU46
+ 213 0018 0222     		movs	r2, #2
+ 214 001a 01A9     		add	r1, sp, #4
+ 215 001c 2046     		mov	r0, r4
+ 216 001e FFF7FEFF 		bl	DevW25Qxx_BusTrans
+ 217              	.LVL24:
+ 218 0022 0546     		mov	r5, r0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 6
+
+
+ 219              	.LVL25:
+  61:Device/Dev_W25Qxx.c ****     dev->cs_ctl(true);
+ 220              		.loc 1 61 5 is_stmt 1 view .LVU47
+ 221              		.loc 1 61 8 is_stmt 0 view .LVU48
+ 222 0024 E368     		ldr	r3, [r4, #12]
+ 223              		.loc 1 61 5 view .LVU49
+ 224 0026 0120     		movs	r0, #1
+ 225 0028 9847     		blx	r3
+ 226              	.LVL26:
+  62:Device/Dev_W25Qxx.c **** 
+  63:Device/Dev_W25Qxx.c ****     if (!state)
+ 227              		.loc 1 63 5 is_stmt 1 view .LVU50
+ 228              		.loc 1 63 8 is_stmt 0 view .LVU51
+ 229 002a 35B1     		cbz	r5, .L23
+  64:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+  65:Device/Dev_W25Qxx.c **** 
+  66:Device/Dev_W25Qxx.c ****     return DevW25Qxx_Ok;
+ 230              		.loc 1 66 12 view .LVU52
+ 231 002c 0020     		movs	r0, #0
+ 232              	.LVL27:
+ 233              	.L20:
+  67:Device/Dev_W25Qxx.c **** }
+ 234              		.loc 1 67 1 view .LVU53
+ 235 002e 03B0     		add	sp, sp, #12
+ 236              	.LCFI8:
+ 237              		.cfi_remember_state
+ 238              		.cfi_def_cfa_offset 12
+ 239              		@ sp needed
+ 240 0030 30BD     		pop	{r4, r5, pc}
+ 241              	.LVL28:
+ 242              	.L21:
+ 243              	.LCFI9:
+ 244              		.cfi_restore_state
+  56:Device/Dev_W25Qxx.c **** 
+ 245              		.loc 1 56 16 view .LVU54
+ 246 0032 0120     		movs	r0, #1
+ 247              	.LVL29:
+  56:Device/Dev_W25Qxx.c **** 
+ 248              		.loc 1 56 16 view .LVU55
+ 249 0034 FBE7     		b	.L20
+ 250              	.LVL30:
+ 251              	.L22:
+  56:Device/Dev_W25Qxx.c **** 
+ 252              		.loc 1 56 16 view .LVU56
+ 253 0036 0120     		movs	r0, #1
+ 254              	.LVL31:
+  56:Device/Dev_W25Qxx.c **** 
+ 255              		.loc 1 56 16 view .LVU57
+ 256 0038 F9E7     		b	.L20
+ 257              	.LVL32:
+ 258              	.L23:
+  64:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 259              		.loc 1 64 16 view .LVU58
+ 260 003a 0120     		movs	r0, #1
+ 261 003c F7E7     		b	.L20
+ 262              		.cfi_endproc
+ 263              	.LFE2:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 7
+
+
+ 265              		.section	.text.DevW25Qxx_GetStatue,"ax",%progbits
+ 266              		.align	1
+ 267              		.syntax unified
+ 268              		.thumb
+ 269              		.thumb_func
+ 271              	DevW25Qxx_GetStatue:
+ 272              	.LVL33:
+ 273              	.LFB3:
+  68:Device/Dev_W25Qxx.c **** 
+  69:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_GetStatue(DevW25QxxObj_TypeDef *dev)
+  70:Device/Dev_W25Qxx.c **** {
+ 274              		.loc 1 70 1 is_stmt 1 view -0
+ 275              		.cfi_startproc
+ 276              		@ args = 0, pretend = 0, frame = 8
+ 277              		@ frame_needed = 0, uses_anonymous_args = 0
+ 278              		.loc 1 70 1 is_stmt 0 view .LVU60
+ 279 0000 30B5     		push	{r4, r5, lr}
+ 280              	.LCFI10:
+ 281              		.cfi_def_cfa_offset 12
+ 282              		.cfi_offset 4, -12
+ 283              		.cfi_offset 5, -8
+ 284              		.cfi_offset 14, -4
+ 285 0002 83B0     		sub	sp, sp, #12
+ 286              	.LCFI11:
+ 287              		.cfi_def_cfa_offset 24
+  71:Device/Dev_W25Qxx.c ****     uint8_t cmd = READ_STATUS_REG1_CMD;
+ 288              		.loc 1 71 5 is_stmt 1 view .LVU61
+ 289              		.loc 1 71 13 is_stmt 0 view .LVU62
+ 290 0004 0523     		movs	r3, #5
+ 291 0006 8DF80730 		strb	r3, [sp, #7]
+  72:Device/Dev_W25Qxx.c ****     uint8_t dev_status = 0;
+ 292              		.loc 1 72 5 is_stmt 1 view .LVU63
+ 293              		.loc 1 72 13 is_stmt 0 view .LVU64
+ 294 000a 0023     		movs	r3, #0
+ 295 000c 8DF80630 		strb	r3, [sp, #6]
+  73:Device/Dev_W25Qxx.c ****     bool state = false;
+ 296              		.loc 1 73 5 is_stmt 1 view .LVU65
+ 297              	.LVL34:
+  74:Device/Dev_W25Qxx.c **** 
+  75:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || (dev->cs_ctl == NULL))
+ 298              		.loc 1 75 5 view .LVU66
+ 299              		.loc 1 75 8 is_stmt 0 view .LVU67
+ 300 0010 F0B1     		cbz	r0, .L27
+ 301 0012 0546     		mov	r5, r0
+ 302              		.loc 1 75 30 discriminator 1 view .LVU68
+ 303 0014 C368     		ldr	r3, [r0, #12]
+ 304              		.loc 1 75 23 discriminator 1 view .LVU69
+ 305 0016 EBB1     		cbz	r3, .L28
+  76:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+  77:Device/Dev_W25Qxx.c **** 
+  78:Device/Dev_W25Qxx.c ****     dev->cs_ctl(false);
+ 306              		.loc 1 78 5 is_stmt 1 view .LVU70
+ 307 0018 0020     		movs	r0, #0
+ 308              	.LVL35:
+ 309              		.loc 1 78 5 is_stmt 0 view .LVU71
+ 310 001a 9847     		blx	r3
+ 311              	.LVL36:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 8
+
+
+  79:Device/Dev_W25Qxx.c ****     state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd)) & DevW25Qxx_BusReceive(dev, &dev_status, siz
+ 312              		.loc 1 79 5 is_stmt 1 view .LVU72
+ 313              		.loc 1 79 13 is_stmt 0 view .LVU73
+ 314 001c 0122     		movs	r2, #1
+ 315 001e 0DF10701 		add	r1, sp, #7
+ 316 0022 2846     		mov	r0, r5
+ 317 0024 FFF7FEFF 		bl	DevW25Qxx_BusTrans
+ 318              	.LVL37:
+ 319 0028 0446     		mov	r4, r0
+ 320              		.loc 1 79 58 view .LVU74
+ 321 002a 0122     		movs	r2, #1
+ 322 002c 0DF10601 		add	r1, sp, #6
+ 323 0030 2846     		mov	r0, r5
+ 324 0032 FFF7FEFF 		bl	DevW25Qxx_BusReceive
+ 325              	.LVL38:
+ 326 0036 0440     		ands	r4, r4, r0
+ 327 0038 E4B2     		uxtb	r4, r4
+ 328              	.LVL39:
+  80:Device/Dev_W25Qxx.c ****     dev->cs_ctl(true);
+ 329              		.loc 1 80 5 is_stmt 1 view .LVU75
+ 330              		.loc 1 80 8 is_stmt 0 view .LVU76
+ 331 003a EB68     		ldr	r3, [r5, #12]
+ 332              		.loc 1 80 5 view .LVU77
+ 333 003c 0120     		movs	r0, #1
+ 334 003e 9847     		blx	r3
+ 335              	.LVL40:
+  81:Device/Dev_W25Qxx.c ****     
+  82:Device/Dev_W25Qxx.c ****     if (!state)
+ 336              		.loc 1 82 5 is_stmt 1 view .LVU78
+ 337              		.loc 1 82 8 is_stmt 0 view .LVU79
+ 338 0040 54B1     		cbz	r4, .L29
+  83:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error; 
+  84:Device/Dev_W25Qxx.c **** 
+  85:Device/Dev_W25Qxx.c ****     /* Check the value of the register */
+  86:Device/Dev_W25Qxx.c ****     if ((dev_status & W25Q128FV_FSR_BUSY) != 0)
+ 339              		.loc 1 86 5 is_stmt 1 view .LVU80
+ 340              		.loc 1 86 21 is_stmt 0 view .LVU81
+ 341 0042 9DF80600 		ldrb	r0, [sp, #6]	@ zero_extendqisi2
+ 342              		.loc 1 86 8 view .LVU82
+ 343 0046 10F00100 		ands	r0, r0, #1
+ 344 004a 07D1     		bne	.L32
+ 345              	.LVL41:
+ 346              	.L26:
+  87:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Busy;
+  88:Device/Dev_W25Qxx.c **** 
+  89:Device/Dev_W25Qxx.c ****     return DevW25Qxx_Ok;
+  90:Device/Dev_W25Qxx.c **** }
+ 347              		.loc 1 90 1 view .LVU83
+ 348 004c 03B0     		add	sp, sp, #12
+ 349              	.LCFI12:
+ 350              		.cfi_remember_state
+ 351              		.cfi_def_cfa_offset 12
+ 352              		@ sp needed
+ 353 004e 30BD     		pop	{r4, r5, pc}
+ 354              	.LVL42:
+ 355              	.L27:
+ 356              	.LCFI13:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 9
+
+
+ 357              		.cfi_restore_state
+  76:Device/Dev_W25Qxx.c **** 
+ 358              		.loc 1 76 16 view .LVU84
+ 359 0050 0120     		movs	r0, #1
+ 360              	.LVL43:
+  76:Device/Dev_W25Qxx.c **** 
+ 361              		.loc 1 76 16 view .LVU85
+ 362 0052 FBE7     		b	.L26
+ 363              	.LVL44:
+ 364              	.L28:
+  76:Device/Dev_W25Qxx.c **** 
+ 365              		.loc 1 76 16 view .LVU86
+ 366 0054 0120     		movs	r0, #1
+ 367              	.LVL45:
+  76:Device/Dev_W25Qxx.c **** 
+ 368              		.loc 1 76 16 view .LVU87
+ 369 0056 F9E7     		b	.L26
+ 370              	.LVL46:
+ 371              	.L29:
+  83:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error; 
+ 372              		.loc 1 83 16 view .LVU88
+ 373 0058 0120     		movs	r0, #1
+ 374 005a F7E7     		b	.L26
+ 375              	.L32:
+  87:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Busy;
+ 376              		.loc 1 87 16 view .LVU89
+ 377 005c 0220     		movs	r0, #2
+ 378 005e F5E7     		b	.L26
+ 379              		.cfi_endproc
+ 380              	.LFE3:
+ 382              		.section	.text.DevW25Qxx_WriteEnableCtl,"ax",%progbits
+ 383              		.align	1
+ 384              		.syntax unified
+ 385              		.thumb
+ 386              		.thumb_func
+ 388              	DevW25Qxx_WriteEnableCtl:
+ 389              	.LVL47:
+ 390              	.LFB4:
+  91:Device/Dev_W25Qxx.c **** 
+  92:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_WriteEnableCtl(DevW25QxxObj_TypeDef *dev, bool en)
+  93:Device/Dev_W25Qxx.c **** {
+ 391              		.loc 1 93 1 is_stmt 1 view -0
+ 392              		.cfi_startproc
+ 393              		@ args = 0, pretend = 0, frame = 8
+ 394              		@ frame_needed = 0, uses_anonymous_args = 0
+ 395              		.loc 1 93 1 is_stmt 0 view .LVU91
+ 396 0000 70B5     		push	{r4, r5, r6, lr}
+ 397              	.LCFI14:
+ 398              		.cfi_def_cfa_offset 16
+ 399              		.cfi_offset 4, -16
+ 400              		.cfi_offset 5, -12
+ 401              		.cfi_offset 6, -8
+ 402              		.cfi_offset 14, -4
+ 403 0002 82B0     		sub	sp, sp, #8
+ 404              	.LCFI15:
+ 405              		.cfi_def_cfa_offset 24
+ 406 0004 0446     		mov	r4, r0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 10
+
+
+  94:Device/Dev_W25Qxx.c ****     uint8_t cmd = en ? WRITE_ENABLE_CMD : WRITE_DISABLE_CMD;
+ 407              		.loc 1 94 5 is_stmt 1 view .LVU92
+ 408              		.loc 1 94 13 is_stmt 0 view .LVU93
+ 409 0006 29B3     		cbz	r1, .L38
+ 410 0008 0623     		movs	r3, #6
+ 411              	.L34:
+ 412              		.loc 1 94 13 discriminator 4 view .LVU94
+ 413 000a 8DF80730 		strb	r3, [sp, #7]
+  95:Device/Dev_W25Qxx.c ****     uint32_t tickstart = 0;
+ 414              		.loc 1 95 5 is_stmt 1 discriminator 4 view .LVU95
+ 415              	.LVL48:
+  96:Device/Dev_W25Qxx.c ****     bool trans_state = false;
+ 416              		.loc 1 96 5 discriminator 4 view .LVU96
+  97:Device/Dev_W25Qxx.c **** 
+  98:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
+ 417              		.loc 1 98 5 discriminator 4 view .LVU97
+ 418              		.loc 1 98 8 is_stmt 0 discriminator 4 view .LVU98
+ 419 000e 44B3     		cbz	r4, .L39
+ 420              		.loc 1 98 30 discriminator 1 view .LVU99
+ 421 0010 E368     		ldr	r3, [r4, #12]
+ 422              		.loc 1 98 23 discriminator 1 view .LVU100
+ 423 0012 43B3     		cbz	r3, .L40
+ 424              		.loc 1 98 55 discriminator 2 view .LVU101
+ 425 0014 6269     		ldr	r2, [r4, #20]
+ 426              		.loc 1 98 48 discriminator 2 view .LVU102
+ 427 0016 42B3     		cbz	r2, .L41
+  99:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 100:Device/Dev_W25Qxx.c **** 
+ 101:Device/Dev_W25Qxx.c ****     /* Send the read ID command */
+ 102:Device/Dev_W25Qxx.c ****     dev->cs_ctl(false);
+ 428              		.loc 1 102 5 is_stmt 1 view .LVU103
+ 429 0018 0020     		movs	r0, #0
+ 430              	.LVL49:
+ 431              		.loc 1 102 5 is_stmt 0 view .LVU104
+ 432 001a 9847     		blx	r3
+ 433              	.LVL50:
+ 103:Device/Dev_W25Qxx.c ****     trans_state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd));
+ 434              		.loc 1 103 5 is_stmt 1 view .LVU105
+ 435              		.loc 1 103 19 is_stmt 0 view .LVU106
+ 436 001c 0122     		movs	r2, #1
+ 437 001e 0DF10701 		add	r1, sp, #7
+ 438 0022 2046     		mov	r0, r4
+ 439 0024 FFF7FEFF 		bl	DevW25Qxx_BusTrans
+ 440              	.LVL51:
+ 441 0028 0646     		mov	r6, r0
+ 442              	.LVL52:
+ 104:Device/Dev_W25Qxx.c ****     dev->cs_ctl(true);
+ 443              		.loc 1 104 5 is_stmt 1 view .LVU107
+ 444              		.loc 1 104 8 is_stmt 0 view .LVU108
+ 445 002a E368     		ldr	r3, [r4, #12]
+ 446              		.loc 1 104 5 view .LVU109
+ 447 002c 0120     		movs	r0, #1
+ 448 002e 9847     		blx	r3
+ 449              	.LVL53:
+ 105:Device/Dev_W25Qxx.c **** 
+ 106:Device/Dev_W25Qxx.c ****     tickstart = dev->systick();
+ 450              		.loc 1 106 5 is_stmt 1 view .LVU110
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 11
+
+
+ 451              		.loc 1 106 20 is_stmt 0 view .LVU111
+ 452 0030 6369     		ldr	r3, [r4, #20]
+ 453              		.loc 1 106 17 view .LVU112
+ 454 0032 9847     		blx	r3
+ 455              	.LVL54:
+ 456 0034 0546     		mov	r5, r0
+ 457              	.LVL55:
+ 107:Device/Dev_W25Qxx.c **** 
+ 108:Device/Dev_W25Qxx.c ****     if (!trans_state)
+ 458              		.loc 1 108 5 is_stmt 1 view .LVU113
+ 459              		.loc 1 108 8 is_stmt 0 view .LVU114
+ 460 0036 7EB1     		cbz	r6, .L44
+ 461              	.LVL56:
+ 462              	.L36:
+ 109:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 110:Device/Dev_W25Qxx.c **** 
+ 111:Device/Dev_W25Qxx.c ****     /* Wait the end of Flash writing */
+ 112:Device/Dev_W25Qxx.c ****     while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
+ 463              		.loc 1 112 11 is_stmt 1 view .LVU115
+ 464              		.loc 1 112 12 is_stmt 0 view .LVU116
+ 465 0038 2046     		mov	r0, r4
+ 466 003a FFF7FEFF 		bl	DevW25Qxx_GetStatue
+ 467              	.LVL57:
+ 468              		.loc 1 112 11 view .LVU117
+ 469 003e 0228     		cmp	r0, #2
+ 470 0040 0DD1     		bne	.L45
+ 113:Device/Dev_W25Qxx.c ****     {
+ 114:Device/Dev_W25Qxx.c ****         /* Check for the Timeout */
+ 115:Device/Dev_W25Qxx.c ****         if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
+ 471              		.loc 1 115 9 is_stmt 1 view .LVU118
+ 472              		.loc 1 115 17 is_stmt 0 view .LVU119
+ 473 0042 6369     		ldr	r3, [r4, #20]
+ 474              		.loc 1 115 14 view .LVU120
+ 475 0044 9847     		blx	r3
+ 476              	.LVL58:
+ 477              		.loc 1 115 29 view .LVU121
+ 478 0046 401B     		subs	r0, r0, r5
+ 479              		.loc 1 115 12 view .LVU122
+ 480 0048 42F21073 		movw	r3, #10000
+ 481 004c 9842     		cmp	r0, r3
+ 482 004e F3D9     		bls	.L36
+ 116:Device/Dev_W25Qxx.c ****             return DevW25Qxx_TimeOut;
+ 483              		.loc 1 116 20 view .LVU123
+ 484 0050 0320     		movs	r0, #3
+ 485 0052 02E0     		b	.L35
+ 486              	.LVL59:
+ 487              	.L38:
+  94:Device/Dev_W25Qxx.c ****     uint32_t tickstart = 0;
+ 488              		.loc 1 94 13 view .LVU124
+ 489 0054 0423     		movs	r3, #4
+ 490 0056 D8E7     		b	.L34
+ 491              	.LVL60:
+ 492              	.L44:
+ 109:Device/Dev_W25Qxx.c **** 
+ 493              		.loc 1 109 16 view .LVU125
+ 494 0058 0120     		movs	r0, #1
+ 495              	.LVL61:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 12
+
+
+ 496              	.L35:
+ 117:Device/Dev_W25Qxx.c ****     }
+ 118:Device/Dev_W25Qxx.c **** 
+ 119:Device/Dev_W25Qxx.c ****     return DevW25Qxx_Ok;
+ 120:Device/Dev_W25Qxx.c **** }
+ 497              		.loc 1 120 1 view .LVU126
+ 498 005a 02B0     		add	sp, sp, #8
+ 499              	.LCFI16:
+ 500              		.cfi_remember_state
+ 501              		.cfi_def_cfa_offset 16
+ 502              		@ sp needed
+ 503 005c 70BD     		pop	{r4, r5, r6, pc}
+ 504              	.LVL62:
+ 505              	.L45:
+ 506              	.LCFI17:
+ 507              		.cfi_restore_state
+ 119:Device/Dev_W25Qxx.c **** }
+ 508              		.loc 1 119 12 view .LVU127
+ 509 005e 0020     		movs	r0, #0
+ 510 0060 FBE7     		b	.L35
+ 511              	.LVL63:
+ 512              	.L39:
+  99:Device/Dev_W25Qxx.c **** 
+ 513              		.loc 1 99 16 view .LVU128
+ 514 0062 0120     		movs	r0, #1
+ 515              	.LVL64:
+  99:Device/Dev_W25Qxx.c **** 
+ 516              		.loc 1 99 16 view .LVU129
+ 517 0064 F9E7     		b	.L35
+ 518              	.LVL65:
+ 519              	.L40:
+  99:Device/Dev_W25Qxx.c **** 
+ 520              		.loc 1 99 16 view .LVU130
+ 521 0066 0120     		movs	r0, #1
+ 522              	.LVL66:
+  99:Device/Dev_W25Qxx.c **** 
+ 523              		.loc 1 99 16 view .LVU131
+ 524 0068 F7E7     		b	.L35
+ 525              	.LVL67:
+ 526              	.L41:
+  99:Device/Dev_W25Qxx.c **** 
+ 527              		.loc 1 99 16 view .LVU132
+ 528 006a 0120     		movs	r0, #1
+ 529              	.LVL68:
+  99:Device/Dev_W25Qxx.c **** 
+ 530              		.loc 1 99 16 view .LVU133
+ 531 006c F5E7     		b	.L35
+ 532              		.cfi_endproc
+ 533              	.LFE4:
+ 535              		.section	.text.DevW25Qxx_Get_ProdType,"ax",%progbits
+ 536              		.align	1
+ 537              		.syntax unified
+ 538              		.thumb
+ 539              		.thumb_func
+ 541              	DevW25Qxx_Get_ProdType:
+ 542              	.LVL69:
+ 543              	.LFB6:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 13
+
+
+ 121:Device/Dev_W25Qxx.c **** 
+ 122:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_Init(DevW25QxxObj_TypeDef *dev)
+ 123:Device/Dev_W25Qxx.c **** {
+ 124:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || \
+ 125:Device/Dev_W25Qxx.c ****         (dev->delay_ms == NULL) || \
+ 126:Device/Dev_W25Qxx.c ****         (dev->systick == NULL) || \
+ 127:Device/Dev_W25Qxx.c ****         (dev->cs_ctl == NULL))
+ 128:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 129:Device/Dev_W25Qxx.c **** 
+ 130:Device/Dev_W25Qxx.c ****     dev->init_state = DevW25Qxx_Error;
+ 131:Device/Dev_W25Qxx.c ****     DevW25Qxx_Error_List err = DevW25Qxx_Ok;
+ 132:Device/Dev_W25Qxx.c ****     uint32_t tickstart = 0;
+ 133:Device/Dev_W25Qxx.c **** 
+ 134:Device/Dev_W25Qxx.c ****     dev->prod_type = DevW25Qxx_Get_ProdType(dev, &dev->prod_code);
+ 135:Device/Dev_W25Qxx.c ****     if (dev->prod_type == DevW25Q_None)
+ 136:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 137:Device/Dev_W25Qxx.c **** 
+ 138:Device/Dev_W25Qxx.c ****     /* Reset W25Qxxx */
+ 139:Device/Dev_W25Qxx.c ****     if (DevW25Qxx_Reset(dev) != DevW25Qxx_Ok)
+ 140:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 141:Device/Dev_W25Qxx.c **** 
+ 142:Device/Dev_W25Qxx.c ****     dev->delay_ms(100);
+ 143:Device/Dev_W25Qxx.c ****     err = DevW25Qxx_GetStatue(dev);
+ 144:Device/Dev_W25Qxx.c ****     tickstart = dev->systick();
+ 145:Device/Dev_W25Qxx.c **** 
+ 146:Device/Dev_W25Qxx.c ****     /* Wait the end of Flash writing */
+ 147:Device/Dev_W25Qxx.c ****     while (err == DevW25Qxx_Busy)
+ 148:Device/Dev_W25Qxx.c ****     {
+ 149:Device/Dev_W25Qxx.c ****         /* Check for the Timeout */
+ 150:Device/Dev_W25Qxx.c ****         if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
+ 151:Device/Dev_W25Qxx.c ****             return DevW25Qxx_TimeOut;
+ 152:Device/Dev_W25Qxx.c **** 
+ 153:Device/Dev_W25Qxx.c ****         dev->delay_ms(1);
+ 154:Device/Dev_W25Qxx.c ****         err = DevW25Qxx_GetStatue(dev);
+ 155:Device/Dev_W25Qxx.c **** 
+ 156:Device/Dev_W25Qxx.c ****         if (err == DevW25Qxx_Error)
+ 157:Device/Dev_W25Qxx.c ****             return DevW25Qxx_Error;
+ 158:Device/Dev_W25Qxx.c ****     }
+ 159:Device/Dev_W25Qxx.c **** 
+ 160:Device/Dev_W25Qxx.c ****     dev->init_state = DevW25Qxx_Ok;
+ 161:Device/Dev_W25Qxx.c ****     return DevW25Qxx_Ok;
+ 162:Device/Dev_W25Qxx.c **** }
+ 163:Device/Dev_W25Qxx.c **** 
+ 164:Device/Dev_W25Qxx.c **** static DevW25Qxx_ProdType_List DevW25Qxx_Get_ProdType(DevW25QxxObj_TypeDef *dev, uint16_t *id)
+ 165:Device/Dev_W25Qxx.c **** {
+ 544              		.loc 1 165 1 is_stmt 1 view -0
+ 545              		.cfi_startproc
+ 546              		@ args = 0, pretend = 0, frame = 8
+ 547              		@ frame_needed = 0, uses_anonymous_args = 0
+ 548              		.loc 1 165 1 is_stmt 0 view .LVU135
+ 549 0000 30B5     		push	{r4, r5, lr}
+ 550              	.LCFI18:
+ 551              		.cfi_def_cfa_offset 12
+ 552              		.cfi_offset 4, -12
+ 553              		.cfi_offset 5, -8
+ 554              		.cfi_offset 14, -4
+ 555 0002 83B0     		sub	sp, sp, #12
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 14
+
+
+ 556              	.LCFI19:
+ 557              		.cfi_def_cfa_offset 24
+ 166:Device/Dev_W25Qxx.c ****     uint8_t ID_Req_CMD[] = {READ_ID_CMD, 0, 0, 0};
+ 558              		.loc 1 166 5 is_stmt 1 view .LVU136
+ 559              		.loc 1 166 13 is_stmt 0 view .LVU137
+ 560 0004 9023     		movs	r3, #144
+ 561 0006 0193     		str	r3, [sp, #4]
+ 167:Device/Dev_W25Qxx.c ****     uint8_t ID_Rx_buf[] = {0, 0};
+ 562              		.loc 1 167 5 is_stmt 1 view .LVU138
+ 563              		.loc 1 167 13 is_stmt 0 view .LVU139
+ 564 0008 0023     		movs	r3, #0
+ 565 000a ADF80030 		strh	r3, [sp]	@ movhi
+ 168:Device/Dev_W25Qxx.c ****     uint16_t ID = 0;
+ 566              		.loc 1 168 5 is_stmt 1 view .LVU140
+ 567              	.LVL70:
+ 169:Device/Dev_W25Qxx.c **** 
+ 170:Device/Dev_W25Qxx.c ****     if (dev && dev->cs_ctl)
+ 568              		.loc 1 170 5 view .LVU141
+ 569              		.loc 1 170 8 is_stmt 0 view .LVU142
+ 570 000e 70B3     		cbz	r0, .L54
+ 571 0010 0D46     		mov	r5, r1
+ 572 0012 0446     		mov	r4, r0
+ 573              		.loc 1 170 19 discriminator 1 view .LVU143
+ 574 0014 C368     		ldr	r3, [r0, #12]
+ 575              		.loc 1 170 13 discriminator 1 view .LVU144
+ 576 0016 6BB3     		cbz	r3, .L55
+ 171:Device/Dev_W25Qxx.c ****     {
+ 172:Device/Dev_W25Qxx.c ****         dev->cs_ctl(false);
+ 577              		.loc 1 172 9 is_stmt 1 view .LVU145
+ 578 0018 0020     		movs	r0, #0
+ 579              	.LVL71:
+ 580              		.loc 1 172 9 is_stmt 0 view .LVU146
+ 581 001a 9847     		blx	r3
+ 582              	.LVL72:
+ 173:Device/Dev_W25Qxx.c ****         DevW25Qxx_BusTrans(dev, ID_Req_CMD, sizeof(ID_Req_CMD));
+ 583              		.loc 1 173 9 is_stmt 1 view .LVU147
+ 584 001c 0422     		movs	r2, #4
+ 585 001e 0DEB0201 		add	r1, sp, r2
+ 586 0022 2046     		mov	r0, r4
+ 587 0024 FFF7FEFF 		bl	DevW25Qxx_BusTrans
+ 588              	.LVL73:
+ 174:Device/Dev_W25Qxx.c ****         DevW25Qxx_BusReceive(dev, ID_Rx_buf, sizeof(ID_Rx_buf));
+ 589              		.loc 1 174 9 view .LVU148
+ 590 0028 0222     		movs	r2, #2
+ 591 002a 6946     		mov	r1, sp
+ 592 002c 2046     		mov	r0, r4
+ 593 002e FFF7FEFF 		bl	DevW25Qxx_BusReceive
+ 594              	.LVL74:
+ 175:Device/Dev_W25Qxx.c ****         dev->cs_ctl(true);
+ 595              		.loc 1 175 9 view .LVU149
+ 596              		.loc 1 175 12 is_stmt 0 view .LVU150
+ 597 0032 E368     		ldr	r3, [r4, #12]
+ 598              		.loc 1 175 9 view .LVU151
+ 599 0034 0120     		movs	r0, #1
+ 600 0036 9847     		blx	r3
+ 601              	.LVL75:
+ 176:Device/Dev_W25Qxx.c ****     
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 15
+
+
+ 177:Device/Dev_W25Qxx.c ****         ID |= ID_Rx_buf[0] << 8;
+ 602              		.loc 1 177 9 is_stmt 1 view .LVU152
+ 603              		.loc 1 177 24 is_stmt 0 view .LVU153
+ 604 0038 9DF80020 		ldrb	r2, [sp]	@ zero_extendqisi2
+ 605              	.LVL76:
+ 178:Device/Dev_W25Qxx.c ****         ID |= ID_Rx_buf[1];
+ 606              		.loc 1 178 9 is_stmt 1 view .LVU154
+ 607              		.loc 1 178 24 is_stmt 0 view .LVU155
+ 608 003c 9DF80130 		ldrb	r3, [sp, #1]	@ zero_extendqisi2
+ 609              		.loc 1 178 12 view .LVU156
+ 610 0040 43EA0223 		orr	r3, r3, r2, lsl #8
+ 611              	.LVL77:
+ 179:Device/Dev_W25Qxx.c ****         *id = ID;
+ 612              		.loc 1 179 9 is_stmt 1 view .LVU157
+ 613              		.loc 1 179 13 is_stmt 0 view .LVU158
+ 614 0044 2B80     		strh	r3, [r5]	@ movhi
+ 180:Device/Dev_W25Qxx.c **** 
+ 181:Device/Dev_W25Qxx.c ****         switch(ID)
+ 615              		.loc 1 181 9 is_stmt 1 view .LVU159
+ 616 0046 A3F56F43 		sub	r3, r3, #61184
+ 617              	.LVL78:
+ 618              		.loc 1 181 9 is_stmt 0 view .LVU160
+ 619 004a 133B     		subs	r3, r3, #19
+ 620 004c 042B     		cmp	r3, #4
+ 621 004e 0CD8     		bhi	.L48
+ 622 0050 DFE803F0 		tbb	[pc, r3]
+ 623              	.L50:
+ 624 0054 03       		.byte	(.L53-.L50)/2
+ 625 0055 12       		.byte	(.L56-.L50)/2
+ 626 0056 05       		.byte	(.L52-.L50)/2
+ 627 0057 07       		.byte	(.L51-.L50)/2
+ 628 0058 09       		.byte	(.L49-.L50)/2
+ 629 0059 00       		.p2align 1
+ 630              	.L53:
+ 631 005a 0120     		movs	r0, #1
+ 632 005c 08E0     		b	.L47
+ 633              	.L52:
+ 182:Device/Dev_W25Qxx.c ****         {
+ 183:Device/Dev_W25Qxx.c ****             case W25Q08_DEV_ID: return DevW25Q_08;
+ 184:Device/Dev_W25Qxx.c ****             case W25Q16_DEV_ID: return DevW25Q_16;
+ 185:Device/Dev_W25Qxx.c ****             case W25Q32_DEV_ID: return DevW25Q_32;
+ 634              		.loc 1 185 33 is_stmt 1 view .LVU161
+ 635              		.loc 1 185 40 is_stmt 0 view .LVU162
+ 636 005e 0320     		movs	r0, #3
+ 637 0060 06E0     		b	.L47
+ 638              	.L51:
+ 186:Device/Dev_W25Qxx.c ****             case W25Q64_DEV_ID: return DevW25Q_64;
+ 639              		.loc 1 186 33 is_stmt 1 view .LVU163
+ 640              		.loc 1 186 40 is_stmt 0 view .LVU164
+ 641 0062 0420     		movs	r0, #4
+ 642 0064 04E0     		b	.L47
+ 643              	.L49:
+ 187:Device/Dev_W25Qxx.c ****             case W25Q128_DEV_ID: return DevW25Q_128;
+ 644              		.loc 1 187 34 is_stmt 1 view .LVU165
+ 645              		.loc 1 187 41 is_stmt 0 view .LVU166
+ 646 0066 0520     		movs	r0, #5
+ 647 0068 02E0     		b	.L47
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 16
+
+
+ 648              	.L48:
+ 188:Device/Dev_W25Qxx.c ****             default: return DevW25Q_None;
+ 649              		.loc 1 188 22 is_stmt 1 view .LVU167
+ 650              		.loc 1 188 29 is_stmt 0 view .LVU168
+ 651 006a 0020     		movs	r0, #0
+ 652 006c 00E0     		b	.L47
+ 653              	.LVL79:
+ 654              	.L54:
+ 189:Device/Dev_W25Qxx.c ****         }
+ 190:Device/Dev_W25Qxx.c ****     }
+ 191:Device/Dev_W25Qxx.c **** 
+ 192:Device/Dev_W25Qxx.c ****     return DevW25Q_None;
+ 655              		.loc 1 192 12 view .LVU169
+ 656 006e 0020     		movs	r0, #0
+ 657              	.LVL80:
+ 658              	.L47:
+ 193:Device/Dev_W25Qxx.c **** }
+ 659              		.loc 1 193 1 view .LVU170
+ 660 0070 03B0     		add	sp, sp, #12
+ 661              	.LCFI20:
+ 662              		.cfi_remember_state
+ 663              		.cfi_def_cfa_offset 12
+ 664              		@ sp needed
+ 665 0072 30BD     		pop	{r4, r5, pc}
+ 666              	.LVL81:
+ 667              	.L55:
+ 668              	.LCFI21:
+ 669              		.cfi_restore_state
+ 192:Device/Dev_W25Qxx.c **** }
+ 670              		.loc 1 192 12 view .LVU171
+ 671 0074 0020     		movs	r0, #0
+ 672              	.LVL82:
+ 192:Device/Dev_W25Qxx.c **** }
+ 673              		.loc 1 192 12 view .LVU172
+ 674 0076 FBE7     		b	.L47
+ 675              	.LVL83:
+ 676              	.L56:
+ 184:Device/Dev_W25Qxx.c ****             case W25Q32_DEV_ID: return DevW25Q_32;
+ 677              		.loc 1 184 40 view .LVU173
+ 678 0078 0220     		movs	r0, #2
+ 679 007a F9E7     		b	.L47
+ 680              		.cfi_endproc
+ 681              	.LFE6:
+ 683              		.section	.text.DevW25Qxx_Init,"ax",%progbits
+ 684              		.align	1
+ 685              		.syntax unified
+ 686              		.thumb
+ 687              		.thumb_func
+ 689              	DevW25Qxx_Init:
+ 690              	.LVL84:
+ 691              	.LFB5:
+ 123:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || \
+ 692              		.loc 1 123 1 is_stmt 1 view -0
+ 693              		.cfi_startproc
+ 694              		@ args = 0, pretend = 0, frame = 0
+ 695              		@ frame_needed = 0, uses_anonymous_args = 0
+ 123:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || \
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 17
+
+
+ 696              		.loc 1 123 1 is_stmt 0 view .LVU175
+ 697 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 698              	.LCFI22:
+ 699              		.cfi_def_cfa_offset 24
+ 700              		.cfi_offset 3, -24
+ 701              		.cfi_offset 4, -20
+ 702              		.cfi_offset 5, -16
+ 703              		.cfi_offset 6, -12
+ 704              		.cfi_offset 7, -8
+ 705              		.cfi_offset 14, -4
+ 124:Device/Dev_W25Qxx.c ****         (dev->delay_ms == NULL) || \
+ 706              		.loc 1 124 5 is_stmt 1 view .LVU176
+ 124:Device/Dev_W25Qxx.c ****         (dev->delay_ms == NULL) || \
+ 707              		.loc 1 124 8 is_stmt 0 view .LVU177
+ 708 0002 0028     		cmp	r0, #0
+ 709 0004 36D0     		beq	.L62
+ 710 0006 0446     		mov	r4, r0
+ 125:Device/Dev_W25Qxx.c ****         (dev->systick == NULL) || \
+ 711              		.loc 1 125 13 discriminator 1 view .LVU178
+ 712 0008 0369     		ldr	r3, [r0, #16]
+ 124:Device/Dev_W25Qxx.c ****         (dev->delay_ms == NULL) || \
+ 713              		.loc 1 124 23 discriminator 1 view .LVU179
+ 714 000a ABB3     		cbz	r3, .L63
+ 126:Device/Dev_W25Qxx.c ****         (dev->cs_ctl == NULL))
+ 715              		.loc 1 126 13 view .LVU180
+ 716 000c 4369     		ldr	r3, [r0, #20]
+ 125:Device/Dev_W25Qxx.c ****         (dev->systick == NULL) || \
+ 717              		.loc 1 125 33 view .LVU181
+ 718 000e ABB3     		cbz	r3, .L64
+ 127:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 719              		.loc 1 127 13 view .LVU182
+ 720 0010 C368     		ldr	r3, [r0, #12]
+ 126:Device/Dev_W25Qxx.c ****         (dev->cs_ctl == NULL))
+ 721              		.loc 1 126 32 view .LVU183
+ 722 0012 ABB3     		cbz	r3, .L65
+ 130:Device/Dev_W25Qxx.c ****     DevW25Qxx_Error_List err = DevW25Qxx_Ok;
+ 723              		.loc 1 130 5 is_stmt 1 view .LVU184
+ 130:Device/Dev_W25Qxx.c ****     DevW25Qxx_Error_List err = DevW25Qxx_Ok;
+ 724              		.loc 1 130 21 is_stmt 0 view .LVU185
+ 725 0014 0123     		movs	r3, #1
+ 726 0016 0376     		strb	r3, [r0, #24]
+ 131:Device/Dev_W25Qxx.c ****     uint32_t tickstart = 0;
+ 727              		.loc 1 131 5 is_stmt 1 view .LVU186
+ 728              	.LVL85:
+ 132:Device/Dev_W25Qxx.c **** 
+ 729              		.loc 1 132 5 view .LVU187
+ 134:Device/Dev_W25Qxx.c ****     if (dev->prod_type == DevW25Q_None)
+ 730              		.loc 1 134 5 view .LVU188
+ 134:Device/Dev_W25Qxx.c ****     if (dev->prod_type == DevW25Q_None)
+ 731              		.loc 1 134 22 is_stmt 0 view .LVU189
+ 732 0018 811C     		adds	r1, r0, #2
+ 733 001a FFF7FEFF 		bl	DevW25Qxx_Get_ProdType
+ 734              	.LVL86:
+ 134:Device/Dev_W25Qxx.c ****     if (dev->prod_type == DevW25Q_None)
+ 735              		.loc 1 134 20 view .LVU190
+ 736 001e 2070     		strb	r0, [r4]
+ 135:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 18
+
+
+ 737              		.loc 1 135 5 is_stmt 1 view .LVU191
+ 135:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 738              		.loc 1 135 8 is_stmt 0 view .LVU192
+ 739 0020 10B9     		cbnz	r0, .L70
+ 136:Device/Dev_W25Qxx.c **** 
+ 740              		.loc 1 136 16 view .LVU193
+ 741 0022 0125     		movs	r5, #1
+ 742              	.LVL87:
+ 743              	.L59:
+ 162:Device/Dev_W25Qxx.c **** 
+ 744              		.loc 1 162 1 view .LVU194
+ 745 0024 2846     		mov	r0, r5
+ 746 0026 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 747              	.LVL88:
+ 748              	.L70:
+ 139:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 749              		.loc 1 139 5 is_stmt 1 view .LVU195
+ 139:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 750              		.loc 1 139 9 is_stmt 0 view .LVU196
+ 751 0028 2046     		mov	r0, r4
+ 752 002a FFF7FEFF 		bl	DevW25Qxx_Reset
+ 753              	.LVL89:
+ 139:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 754              		.loc 1 139 8 view .LVU197
+ 755 002e 0646     		mov	r6, r0
+ 756 0030 40BB     		cbnz	r0, .L67
+ 142:Device/Dev_W25Qxx.c ****     err = DevW25Qxx_GetStatue(dev);
+ 757              		.loc 1 142 5 is_stmt 1 view .LVU198
+ 142:Device/Dev_W25Qxx.c ****     err = DevW25Qxx_GetStatue(dev);
+ 758              		.loc 1 142 8 is_stmt 0 view .LVU199
+ 759 0032 2369     		ldr	r3, [r4, #16]
+ 142:Device/Dev_W25Qxx.c ****     err = DevW25Qxx_GetStatue(dev);
+ 760              		.loc 1 142 5 view .LVU200
+ 761 0034 6420     		movs	r0, #100
+ 762 0036 9847     		blx	r3
+ 763              	.LVL90:
+ 143:Device/Dev_W25Qxx.c ****     tickstart = dev->systick();
+ 764              		.loc 1 143 5 is_stmt 1 view .LVU201
+ 143:Device/Dev_W25Qxx.c ****     tickstart = dev->systick();
+ 765              		.loc 1 143 11 is_stmt 0 view .LVU202
+ 766 0038 2046     		mov	r0, r4
+ 767 003a FFF7FEFF 		bl	DevW25Qxx_GetStatue
+ 768              	.LVL91:
+ 769 003e 0546     		mov	r5, r0
+ 770              	.LVL92:
+ 144:Device/Dev_W25Qxx.c **** 
+ 771              		.loc 1 144 5 is_stmt 1 view .LVU203
+ 144:Device/Dev_W25Qxx.c **** 
+ 772              		.loc 1 144 20 is_stmt 0 view .LVU204
+ 773 0040 6369     		ldr	r3, [r4, #20]
+ 144:Device/Dev_W25Qxx.c **** 
+ 774              		.loc 1 144 17 view .LVU205
+ 775 0042 9847     		blx	r3
+ 776              	.LVL93:
+ 777 0044 0746     		mov	r7, r0
+ 778              	.LVL94:
+ 147:Device/Dev_W25Qxx.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 19
+
+
+ 779              		.loc 1 147 5 is_stmt 1 view .LVU206
+ 780              	.L60:
+ 147:Device/Dev_W25Qxx.c ****     {
+ 781              		.loc 1 147 11 view .LVU207
+ 782 0046 022D     		cmp	r5, #2
+ 783 0048 10D1     		bne	.L71
+ 150:Device/Dev_W25Qxx.c ****             return DevW25Qxx_TimeOut;
+ 784              		.loc 1 150 9 view .LVU208
+ 150:Device/Dev_W25Qxx.c ****             return DevW25Qxx_TimeOut;
+ 785              		.loc 1 150 17 is_stmt 0 view .LVU209
+ 786 004a 6369     		ldr	r3, [r4, #20]
+ 150:Device/Dev_W25Qxx.c ****             return DevW25Qxx_TimeOut;
+ 787              		.loc 1 150 14 view .LVU210
+ 788 004c 9847     		blx	r3
+ 789              	.LVL95:
+ 150:Device/Dev_W25Qxx.c ****             return DevW25Qxx_TimeOut;
+ 790              		.loc 1 150 29 view .LVU211
+ 791 004e C01B     		subs	r0, r0, r7
+ 150:Device/Dev_W25Qxx.c ****             return DevW25Qxx_TimeOut;
+ 792              		.loc 1 150 12 view .LVU212
+ 793 0050 42F21073 		movw	r3, #10000
+ 794 0054 9842     		cmp	r0, r3
+ 795 0056 17D8     		bhi	.L68
+ 153:Device/Dev_W25Qxx.c ****         err = DevW25Qxx_GetStatue(dev);
+ 796              		.loc 1 153 9 is_stmt 1 view .LVU213
+ 153:Device/Dev_W25Qxx.c ****         err = DevW25Qxx_GetStatue(dev);
+ 797              		.loc 1 153 12 is_stmt 0 view .LVU214
+ 798 0058 2369     		ldr	r3, [r4, #16]
+ 153:Device/Dev_W25Qxx.c ****         err = DevW25Qxx_GetStatue(dev);
+ 799              		.loc 1 153 9 view .LVU215
+ 800 005a 0120     		movs	r0, #1
+ 801 005c 9847     		blx	r3
+ 802              	.LVL96:
+ 154:Device/Dev_W25Qxx.c **** 
+ 803              		.loc 1 154 9 is_stmt 1 view .LVU216
+ 154:Device/Dev_W25Qxx.c **** 
+ 804              		.loc 1 154 15 is_stmt 0 view .LVU217
+ 805 005e 2046     		mov	r0, r4
+ 806 0060 FFF7FEFF 		bl	DevW25Qxx_GetStatue
+ 807              	.LVL97:
+ 808 0064 0546     		mov	r5, r0
+ 809              	.LVL98:
+ 156:Device/Dev_W25Qxx.c ****             return DevW25Qxx_Error;
+ 810              		.loc 1 156 9 is_stmt 1 view .LVU218
+ 156:Device/Dev_W25Qxx.c ****             return DevW25Qxx_Error;
+ 811              		.loc 1 156 12 is_stmt 0 view .LVU219
+ 812 0066 0128     		cmp	r0, #1
+ 813 0068 EDD1     		bne	.L60
+ 814 006a DBE7     		b	.L59
+ 815              	.LVL99:
+ 816              	.L71:
+ 160:Device/Dev_W25Qxx.c ****     return DevW25Qxx_Ok;
+ 817              		.loc 1 160 5 is_stmt 1 view .LVU220
+ 160:Device/Dev_W25Qxx.c ****     return DevW25Qxx_Ok;
+ 818              		.loc 1 160 21 is_stmt 0 view .LVU221
+ 819 006c 0023     		movs	r3, #0
+ 820 006e 2376     		strb	r3, [r4, #24]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 20
+
+
+ 161:Device/Dev_W25Qxx.c **** }
+ 821              		.loc 1 161 5 is_stmt 1 view .LVU222
+ 161:Device/Dev_W25Qxx.c **** }
+ 822              		.loc 1 161 12 is_stmt 0 view .LVU223
+ 823 0070 3546     		mov	r5, r6
+ 824              	.LVL100:
+ 161:Device/Dev_W25Qxx.c **** }
+ 825              		.loc 1 161 12 view .LVU224
+ 826 0072 D7E7     		b	.L59
+ 827              	.LVL101:
+ 828              	.L62:
+ 128:Device/Dev_W25Qxx.c **** 
+ 829              		.loc 1 128 16 view .LVU225
+ 830 0074 0125     		movs	r5, #1
+ 831 0076 D5E7     		b	.L59
+ 832              	.L63:
+ 128:Device/Dev_W25Qxx.c **** 
+ 833              		.loc 1 128 16 view .LVU226
+ 834 0078 0125     		movs	r5, #1
+ 835 007a D3E7     		b	.L59
+ 836              	.L64:
+ 837 007c 0125     		movs	r5, #1
+ 838 007e D1E7     		b	.L59
+ 839              	.L65:
+ 840 0080 0125     		movs	r5, #1
+ 841 0082 CFE7     		b	.L59
+ 842              	.LVL102:
+ 843              	.L67:
+ 140:Device/Dev_W25Qxx.c **** 
+ 844              		.loc 1 140 16 view .LVU227
+ 845 0084 0125     		movs	r5, #1
+ 846 0086 CDE7     		b	.L59
+ 847              	.LVL103:
+ 848              	.L68:
+ 151:Device/Dev_W25Qxx.c **** 
+ 849              		.loc 1 151 20 view .LVU228
+ 850 0088 0325     		movs	r5, #3
+ 851              	.LVL104:
+ 151:Device/Dev_W25Qxx.c **** 
+ 852              		.loc 1 151 20 view .LVU229
+ 853 008a CBE7     		b	.L59
+ 854              		.cfi_endproc
+ 855              	.LFE5:
+ 857              		.section	.text.DevW25Qxx_ReadSector,"ax",%progbits
+ 858              		.align	1
+ 859              		.syntax unified
+ 860              		.thumb
+ 861              		.thumb_func
+ 863              	DevW25Qxx_ReadSector:
+ 864              	.LVL105:
+ 865              	.LFB7:
+ 194:Device/Dev_W25Qxx.c **** 
+ 195:Device/Dev_W25Qxx.c **** /* read entire data in one sector */
+ 196:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_ReadSector(DevW25QxxObj_TypeDef *dev, uint32_t ReadAddr, uint
+ 197:Device/Dev_W25Qxx.c **** {
+ 866              		.loc 1 197 1 is_stmt 1 view -0
+ 867              		.cfi_startproc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 21
+
+
+ 868              		@ args = 0, pretend = 0, frame = 8
+ 869              		@ frame_needed = 0, uses_anonymous_args = 0
+ 870              		.loc 1 197 1 is_stmt 0 view .LVU231
+ 871 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 872              	.LCFI23:
+ 873              		.cfi_def_cfa_offset 20
+ 874              		.cfi_offset 4, -20
+ 875              		.cfi_offset 5, -16
+ 876              		.cfi_offset 6, -12
+ 877              		.cfi_offset 7, -8
+ 878              		.cfi_offset 14, -4
+ 879 0002 83B0     		sub	sp, sp, #12
+ 880              	.LCFI24:
+ 881              		.cfi_def_cfa_offset 32
+ 198:Device/Dev_W25Qxx.c ****     uint8_t cmd[4] = {READ_CMD, 0, 0, 0};
+ 882              		.loc 1 198 5 is_stmt 1 view .LVU232
+ 883              		.loc 1 198 13 is_stmt 0 view .LVU233
+ 884 0004 0324     		movs	r4, #3
+ 885 0006 0194     		str	r4, [sp, #4]
+ 199:Device/Dev_W25Qxx.c ****     bool read_state = false;
+ 886              		.loc 1 199 5 is_stmt 1 view .LVU234
+ 887              	.LVL106:
+ 200:Device/Dev_W25Qxx.c **** 
+ 201:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || \
+ 888              		.loc 1 201 5 view .LVU235
+ 889              		.loc 1 201 8 is_stmt 0 view .LVU236
+ 890 0008 58B3     		cbz	r0, .L74
+ 891 000a 1646     		mov	r6, r2
+ 892 000c 1D46     		mov	r5, r3
+ 893 000e 0446     		mov	r4, r0
+ 202:Device/Dev_W25Qxx.c ****         (dev->cs_ctl == NULL) || \
+ 894              		.loc 1 202 13 discriminator 1 view .LVU237
+ 895 0010 C368     		ldr	r3, [r0, #12]
+ 896              	.LVL107:
+ 201:Device/Dev_W25Qxx.c ****         (dev->cs_ctl == NULL) || \
+ 897              		.loc 1 201 23 discriminator 1 view .LVU238
+ 898 0012 43B3     		cbz	r3, .L75
+ 899              		.loc 1 202 31 view .LVU239
+ 900 0014 4AB3     		cbz	r2, .L76
+ 203:Device/Dev_W25Qxx.c ****         (pData == NULL) || \
+ 204:Device/Dev_W25Qxx.c ****         (ReadAddr % W25QXX_SECTOR_SIZE) || \
+ 901              		.loc 1 204 19 view .LVU240
+ 902 0016 C1F30B02 		ubfx	r2, r1, #0, #12
+ 903              	.LVL108:
+ 203:Device/Dev_W25Qxx.c ****         (pData == NULL) || \
+ 904              		.loc 1 203 25 view .LVU241
+ 905 001a 42BB     		cbnz	r2, .L77
+ 906              		.loc 1 204 41 view .LVU242
+ 907 001c B5F5805F 		cmp	r5, #4096
+ 908 0020 28D1     		bne	.L78
+ 205:Device/Dev_W25Qxx.c ****         (Size != W25QXX_SECTOR_SIZE))
+ 206:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 207:Device/Dev_W25Qxx.c **** 
+ 208:Device/Dev_W25Qxx.c ****     /* Configure the command */
+ 209:Device/Dev_W25Qxx.c ****     cmd[1] = (uint8_t)(ReadAddr >> 16);
+ 909              		.loc 1 209 5 is_stmt 1 view .LVU243
+ 910              		.loc 1 209 14 is_stmt 0 view .LVU244
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 22
+
+
+ 911 0022 C1F30742 		ubfx	r2, r1, #16, #8
+ 912              		.loc 1 209 12 view .LVU245
+ 913 0026 8DF80520 		strb	r2, [sp, #5]
+ 210:Device/Dev_W25Qxx.c ****     cmd[2] = (uint8_t)(ReadAddr >> 8);
+ 914              		.loc 1 210 5 is_stmt 1 view .LVU246
+ 915              		.loc 1 210 14 is_stmt 0 view .LVU247
+ 916 002a C1F30722 		ubfx	r2, r1, #8, #8
+ 917              		.loc 1 210 12 view .LVU248
+ 918 002e 8DF80620 		strb	r2, [sp, #6]
+ 211:Device/Dev_W25Qxx.c ****     cmd[3] = (uint8_t)(ReadAddr);
+ 919              		.loc 1 211 5 is_stmt 1 view .LVU249
+ 920              		.loc 1 211 12 is_stmt 0 view .LVU250
+ 921 0032 8DF80710 		strb	r1, [sp, #7]
+ 212:Device/Dev_W25Qxx.c **** 
+ 213:Device/Dev_W25Qxx.c ****     dev->cs_ctl(false);
+ 922              		.loc 1 213 5 is_stmt 1 view .LVU251
+ 923 0036 0020     		movs	r0, #0
+ 924              	.LVL109:
+ 925              		.loc 1 213 5 is_stmt 0 view .LVU252
+ 926 0038 9847     		blx	r3
+ 927              	.LVL110:
+ 214:Device/Dev_W25Qxx.c ****     read_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd)) & DevW25Qxx_BusReceive(dev, pData, Size)
+ 928              		.loc 1 214 5 is_stmt 1 view .LVU253
+ 929              		.loc 1 214 18 is_stmt 0 view .LVU254
+ 930 003a 0422     		movs	r2, #4
+ 931 003c 0DEB0201 		add	r1, sp, r2
+ 932 0040 2046     		mov	r0, r4
+ 933 0042 FFF7FEFF 		bl	DevW25Qxx_BusTrans
+ 934              	.LVL111:
+ 935 0046 0746     		mov	r7, r0
+ 936              		.loc 1 214 62 view .LVU255
+ 937 0048 AAB2     		uxth	r2, r5
+ 938 004a 3146     		mov	r1, r6
+ 939 004c 2046     		mov	r0, r4
+ 940 004e FFF7FEFF 		bl	DevW25Qxx_BusReceive
+ 941              	.LVL112:
+ 942 0052 0740     		ands	r7, r7, r0
+ 943 0054 FFB2     		uxtb	r7, r7
+ 944              	.LVL113:
+ 215:Device/Dev_W25Qxx.c ****     dev->cs_ctl(true);
+ 945              		.loc 1 215 5 is_stmt 1 view .LVU256
+ 946              		.loc 1 215 8 is_stmt 0 view .LVU257
+ 947 0056 E368     		ldr	r3, [r4, #12]
+ 948              		.loc 1 215 5 view .LVU258
+ 949 0058 0120     		movs	r0, #1
+ 950 005a 9847     		blx	r3
+ 951              	.LVL114:
+ 216:Device/Dev_W25Qxx.c **** 
+ 217:Device/Dev_W25Qxx.c ****     if (read_state)
+ 952              		.loc 1 217 5 is_stmt 1 view .LVU259
+ 953              		.loc 1 217 8 is_stmt 0 view .LVU260
+ 954 005c 67B9     		cbnz	r7, .L79
+ 218:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Ok;
+ 219:Device/Dev_W25Qxx.c **** 
+ 220:Device/Dev_W25Qxx.c ****     return DevW25Qxx_Error;
+ 955              		.loc 1 220 12 view .LVU261
+ 956 005e 0120     		movs	r0, #1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 23
+
+
+ 957 0060 06E0     		b	.L73
+ 958              	.LVL115:
+ 959              	.L74:
+ 206:Device/Dev_W25Qxx.c **** 
+ 960              		.loc 1 206 16 view .LVU262
+ 961 0062 0120     		movs	r0, #1
+ 962              	.LVL116:
+ 206:Device/Dev_W25Qxx.c **** 
+ 963              		.loc 1 206 16 view .LVU263
+ 964 0064 04E0     		b	.L73
+ 965              	.LVL117:
+ 966              	.L75:
+ 206:Device/Dev_W25Qxx.c **** 
+ 967              		.loc 1 206 16 view .LVU264
+ 968 0066 0120     		movs	r0, #1
+ 969              	.LVL118:
+ 206:Device/Dev_W25Qxx.c **** 
+ 970              		.loc 1 206 16 view .LVU265
+ 971 0068 02E0     		b	.L73
+ 972              	.LVL119:
+ 973              	.L76:
+ 206:Device/Dev_W25Qxx.c **** 
+ 974              		.loc 1 206 16 view .LVU266
+ 975 006a 0120     		movs	r0, #1
+ 976              	.LVL120:
+ 206:Device/Dev_W25Qxx.c **** 
+ 977              		.loc 1 206 16 view .LVU267
+ 978 006c 00E0     		b	.L73
+ 979              	.LVL121:
+ 980              	.L77:
+ 206:Device/Dev_W25Qxx.c **** 
+ 981              		.loc 1 206 16 view .LVU268
+ 982 006e 0120     		movs	r0, #1
+ 983              	.LVL122:
+ 984              	.L73:
+ 221:Device/Dev_W25Qxx.c **** }
+ 985              		.loc 1 221 1 view .LVU269
+ 986 0070 03B0     		add	sp, sp, #12
+ 987              	.LCFI25:
+ 988              		.cfi_remember_state
+ 989              		.cfi_def_cfa_offset 20
+ 990              		@ sp needed
+ 991 0072 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 992              	.LVL123:
+ 993              	.L78:
+ 994              	.LCFI26:
+ 995              		.cfi_restore_state
+ 206:Device/Dev_W25Qxx.c **** 
+ 996              		.loc 1 206 16 view .LVU270
+ 997 0074 0120     		movs	r0, #1
+ 998              	.LVL124:
+ 206:Device/Dev_W25Qxx.c **** 
+ 999              		.loc 1 206 16 view .LVU271
+ 1000 0076 FBE7     		b	.L73
+ 1001              	.LVL125:
+ 1002              	.L79:
+ 218:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Ok;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 24
+
+
+ 1003              		.loc 1 218 16 view .LVU272
+ 1004 0078 0020     		movs	r0, #0
+ 1005 007a F9E7     		b	.L73
+ 1006              		.cfi_endproc
+ 1007              	.LFE7:
+ 1009              		.section	.text.DevW25Qxx_WriteSector,"ax",%progbits
+ 1010              		.align	1
+ 1011              		.syntax unified
+ 1012              		.thumb
+ 1013              		.thumb_func
+ 1015              	DevW25Qxx_WriteSector:
+ 1016              	.LVL126:
+ 1017              	.LFB8:
+ 222:Device/Dev_W25Qxx.c **** 
+ 223:Device/Dev_W25Qxx.c **** /* write entire sector in one sector */
+ 224:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_WriteSector(DevW25QxxObj_TypeDef *dev, uint32_t WriteAddr, ui
+ 225:Device/Dev_W25Qxx.c **** {
+ 1018              		.loc 1 225 1 is_stmt 1 view -0
+ 1019              		.cfi_startproc
+ 1020              		@ args = 0, pretend = 0, frame = 8
+ 1021              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1022              		.loc 1 225 1 is_stmt 0 view .LVU274
+ 1023 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 1024              	.LCFI27:
+ 1025              		.cfi_def_cfa_offset 32
+ 1026              		.cfi_offset 4, -32
+ 1027              		.cfi_offset 5, -28
+ 1028              		.cfi_offset 6, -24
+ 1029              		.cfi_offset 7, -20
+ 1030              		.cfi_offset 8, -16
+ 1031              		.cfi_offset 9, -12
+ 1032              		.cfi_offset 10, -8
+ 1033              		.cfi_offset 14, -4
+ 1034 0004 82B0     		sub	sp, sp, #8
+ 1035              	.LCFI28:
+ 1036              		.cfi_def_cfa_offset 40
+ 226:Device/Dev_W25Qxx.c ****     uint8_t cmd[4];
+ 1037              		.loc 1 226 5 is_stmt 1 view .LVU275
+ 227:Device/Dev_W25Qxx.c ****     uint32_t end_addr, current_size, current_addr;
+ 1038              		.loc 1 227 5 view .LVU276
+ 228:Device/Dev_W25Qxx.c ****     uint32_t tickstart = 0;
+ 1039              		.loc 1 228 5 view .LVU277
+ 1040              	.LVL127:
+ 229:Device/Dev_W25Qxx.c **** 
+ 230:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || \
+ 1041              		.loc 1 230 5 view .LVU278
+ 1042              		.loc 1 230 8 is_stmt 0 view .LVU279
+ 1043 0006 0028     		cmp	r0, #0
+ 1044 0008 60D0     		beq	.L90
+ 1045 000a 0D46     		mov	r5, r1
+ 1046 000c 9046     		mov	r8, r2
+ 1047 000e 0446     		mov	r4, r0
+ 231:Device/Dev_W25Qxx.c ****         (dev->cs_ctl == NULL) || \
+ 1048              		.loc 1 231 13 discriminator 1 view .LVU280
+ 1049 0010 C268     		ldr	r2, [r0, #12]
+ 1050              	.LVL128:
+ 230:Device/Dev_W25Qxx.c ****         (dev->cs_ctl == NULL) || \
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 25
+
+
+ 1051              		.loc 1 230 23 discriminator 1 view .LVU281
+ 1052 0012 002A     		cmp	r2, #0
+ 1053 0014 5DD0     		beq	.L91
+ 232:Device/Dev_W25Qxx.c ****         (dev->systick == NULL) || \
+ 1054              		.loc 1 232 13 view .LVU282
+ 1055 0016 4269     		ldr	r2, [r0, #20]
+ 231:Device/Dev_W25Qxx.c ****         (dev->cs_ctl == NULL) || \
+ 1056              		.loc 1 231 31 view .LVU283
+ 1057 0018 002A     		cmp	r2, #0
+ 1058 001a 5DD0     		beq	.L92
+ 1059              		.loc 1 232 32 view .LVU284
+ 1060 001c B8F1000F 		cmp	r8, #0
+ 1061 0020 5DD0     		beq	.L93
+ 233:Device/Dev_W25Qxx.c ****         (pData == NULL) || \
+ 1062              		.loc 1 233 25 view .LVU285
+ 1063 0022 B3F5805F 		cmp	r3, #4096
+ 1064 0026 5DD1     		bne	.L94
+ 234:Device/Dev_W25Qxx.c ****         (Size != W25QXX_SECTOR_SIZE) || \
+ 235:Device/Dev_W25Qxx.c ****         (WriteAddr % W25QXX_SECTOR_SIZE))
+ 1065              		.loc 1 235 20 view .LVU286
+ 1066 0028 C1F30B06 		ubfx	r6, r1, #0, #12
+ 234:Device/Dev_W25Qxx.c ****         (Size != W25QXX_SECTOR_SIZE) || \
+ 1067              		.loc 1 234 38 view .LVU287
+ 1068 002c 26B1     		cbz	r6, .L83
+ 236:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 1069              		.loc 1 236 16 view .LVU288
+ 1070 002e 4FF0010A 		mov	r10, #1
+ 1071 0032 59E0     		b	.L82
+ 1072              	.LVL129:
+ 1073              	.L84:
+ 237:Device/Dev_W25Qxx.c **** 
+ 238:Device/Dev_W25Qxx.c ****     /* Calculation of the size between the write address and the end of the page */
+ 239:Device/Dev_W25Qxx.c ****     current_addr = 0;
+ 240:Device/Dev_W25Qxx.c **** 
+ 241:Device/Dev_W25Qxx.c ****     while (current_addr <= WriteAddr)
+ 242:Device/Dev_W25Qxx.c ****         current_addr += W25Q128FV_PAGE_SIZE;
+ 1074              		.loc 1 242 9 is_stmt 1 view .LVU289
+ 1075              		.loc 1 242 22 is_stmt 0 view .LVU290
+ 1076 0034 06F58076 		add	r6, r6, #256
+ 1077              	.LVL130:
+ 1078              	.L83:
+ 241:Device/Dev_W25Qxx.c ****         current_addr += W25Q128FV_PAGE_SIZE;
+ 1079              		.loc 1 241 11 is_stmt 1 view .LVU291
+ 1080 0038 AE42     		cmp	r6, r5
+ 1081 003a FBD9     		bls	.L84
+ 243:Device/Dev_W25Qxx.c ****     current_size = current_addr - WriteAddr;
+ 1082              		.loc 1 243 5 view .LVU292
+ 1083              		.loc 1 243 18 is_stmt 0 view .LVU293
+ 1084 003c 761B     		subs	r6, r6, r5
+ 1085              	.LVL131:
+ 244:Device/Dev_W25Qxx.c **** 
+ 245:Device/Dev_W25Qxx.c ****     /* Check if the size of the data is less than the remaining place in the page */
+ 246:Device/Dev_W25Qxx.c ****     if (current_size > Size)
+ 1086              		.loc 1 246 5 is_stmt 1 view .LVU294
+ 1087              		.loc 1 246 8 is_stmt 0 view .LVU295
+ 1088 003e B342     		cmp	r3, r6
+ 1089 0040 00D2     		bcs	.L85
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 26
+
+
+ 247:Device/Dev_W25Qxx.c ****         current_size = Size;
+ 1090              		.loc 1 247 22 view .LVU296
+ 1091 0042 1E46     		mov	r6, r3
+ 1092              	.LVL132:
+ 1093              	.L85:
+ 248:Device/Dev_W25Qxx.c **** 
+ 249:Device/Dev_W25Qxx.c ****     /* Initialize the adress variables */
+ 250:Device/Dev_W25Qxx.c ****     current_addr = WriteAddr;
+ 1094              		.loc 1 250 5 is_stmt 1 view .LVU297
+ 251:Device/Dev_W25Qxx.c ****     end_addr = WriteAddr + Size;
+ 1095              		.loc 1 251 5 view .LVU298
+ 1096              		.loc 1 251 14 is_stmt 0 view .LVU299
+ 1097 0044 5F19     		adds	r7, r3, r5
+ 1098              	.LVL133:
+ 252:Device/Dev_W25Qxx.c **** 
+ 253:Device/Dev_W25Qxx.c ****     tickstart = dev->systick();
+ 1099              		.loc 1 253 5 is_stmt 1 view .LVU300
+ 1100              		.loc 1 253 17 is_stmt 0 view .LVU301
+ 1101 0046 9047     		blx	r2
+ 1102              	.LVL134:
+ 1103              		.loc 1 253 17 view .LVU302
+ 1104 0048 8146     		mov	r9, r0
+ 1105              	.LVL135:
+ 1106              	.L89:
+ 254:Device/Dev_W25Qxx.c **** 
+ 255:Device/Dev_W25Qxx.c ****     /* Perform the write page by page */
+ 256:Device/Dev_W25Qxx.c ****     do
+ 1107              		.loc 1 256 5 is_stmt 1 view .LVU303
+ 257:Device/Dev_W25Qxx.c ****     {
+ 258:Device/Dev_W25Qxx.c ****         /* Configure the command */
+ 259:Device/Dev_W25Qxx.c ****         cmd[0] = PAGE_PROG_CMD;
+ 1108              		.loc 1 259 9 view .LVU304
+ 1109              		.loc 1 259 16 is_stmt 0 view .LVU305
+ 1110 004a 0223     		movs	r3, #2
+ 1111 004c 8DF80430 		strb	r3, [sp, #4]
+ 260:Device/Dev_W25Qxx.c ****         cmd[1] = (uint8_t)(current_addr >> 16);
+ 1112              		.loc 1 260 9 is_stmt 1 view .LVU306
+ 1113              		.loc 1 260 18 is_stmt 0 view .LVU307
+ 1114 0050 C5F30743 		ubfx	r3, r5, #16, #8
+ 1115              		.loc 1 260 16 view .LVU308
+ 1116 0054 8DF80530 		strb	r3, [sp, #5]
+ 261:Device/Dev_W25Qxx.c ****         cmd[2] = (uint8_t)(current_addr >> 8);
+ 1117              		.loc 1 261 9 is_stmt 1 view .LVU309
+ 1118              		.loc 1 261 18 is_stmt 0 view .LVU310
+ 1119 0058 C5F30723 		ubfx	r3, r5, #8, #8
+ 1120              		.loc 1 261 16 view .LVU311
+ 1121 005c 8DF80630 		strb	r3, [sp, #6]
+ 262:Device/Dev_W25Qxx.c ****         cmd[3] = (uint8_t)(current_addr);
+ 1122              		.loc 1 262 9 is_stmt 1 view .LVU312
+ 1123              		.loc 1 262 16 is_stmt 0 view .LVU313
+ 1124 0060 8DF80750 		strb	r5, [sp, #7]
+ 263:Device/Dev_W25Qxx.c **** 
+ 264:Device/Dev_W25Qxx.c ****         /* Enable write operations */
+ 265:Device/Dev_W25Qxx.c ****         if (DevW25Qxx_WriteEnableCtl(dev, true) != DevW25Qxx_Ok)
+ 1125              		.loc 1 265 9 is_stmt 1 view .LVU314
+ 1126              		.loc 1 265 13 is_stmt 0 view .LVU315
+ 1127 0064 0121     		movs	r1, #1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 27
+
+
+ 1128 0066 2046     		mov	r0, r4
+ 1129 0068 FFF7FEFF 		bl	DevW25Qxx_WriteEnableCtl
+ 1130              	.LVL136:
+ 1131              		.loc 1 265 12 view .LVU316
+ 1132 006c 8246     		mov	r10, r0
+ 1133 006e 0028     		cmp	r0, #0
+ 1134 0070 3ED1     		bne	.L97
+ 266:Device/Dev_W25Qxx.c ****             return DevW25Qxx_Error;
+ 267:Device/Dev_W25Qxx.c **** 
+ 268:Device/Dev_W25Qxx.c ****         /* Send the command Transmission of the data */
+ 269:Device/Dev_W25Qxx.c ****         dev->cs_ctl(false);
+ 1135              		.loc 1 269 9 is_stmt 1 view .LVU317
+ 1136              		.loc 1 269 12 is_stmt 0 view .LVU318
+ 1137 0072 E368     		ldr	r3, [r4, #12]
+ 1138              		.loc 1 269 9 view .LVU319
+ 1139 0074 9847     		blx	r3
+ 1140              	.LVL137:
+ 270:Device/Dev_W25Qxx.c ****         DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+ 1141              		.loc 1 270 9 is_stmt 1 view .LVU320
+ 1142 0076 0422     		movs	r2, #4
+ 1143 0078 0DEB0201 		add	r1, sp, r2
+ 1144 007c 2046     		mov	r0, r4
+ 1145 007e FFF7FEFF 		bl	DevW25Qxx_BusTrans
+ 1146              	.LVL138:
+ 271:Device/Dev_W25Qxx.c ****         DevW25Qxx_BusTrans(dev, pData, current_size);
+ 1147              		.loc 1 271 9 view .LVU321
+ 1148 0082 B2B2     		uxth	r2, r6
+ 1149 0084 4146     		mov	r1, r8
+ 1150 0086 2046     		mov	r0, r4
+ 1151 0088 FFF7FEFF 		bl	DevW25Qxx_BusTrans
+ 1152              	.LVL139:
+ 272:Device/Dev_W25Qxx.c ****         dev->cs_ctl(true);
+ 1153              		.loc 1 272 9 view .LVU322
+ 1154              		.loc 1 272 12 is_stmt 0 view .LVU323
+ 1155 008c E368     		ldr	r3, [r4, #12]
+ 1156              		.loc 1 272 9 view .LVU324
+ 1157 008e 0120     		movs	r0, #1
+ 1158 0090 9847     		blx	r3
+ 1159              	.LVL140:
+ 273:Device/Dev_W25Qxx.c **** 
+ 274:Device/Dev_W25Qxx.c ****         /* Wait the end of Flash writing */
+ 275:Device/Dev_W25Qxx.c ****         while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
+ 1160              		.loc 1 275 9 is_stmt 1 view .LVU325
+ 1161              	.L86:
+ 1162              		.loc 1 275 15 view .LVU326
+ 1163              		.loc 1 275 16 is_stmt 0 view .LVU327
+ 1164 0092 2046     		mov	r0, r4
+ 1165 0094 FFF7FEFF 		bl	DevW25Qxx_GetStatue
+ 1166              	.LVL141:
+ 1167              		.loc 1 275 15 view .LVU328
+ 1168 0098 0228     		cmp	r0, #2
+ 1169 009a 0AD1     		bne	.L101
+ 276:Device/Dev_W25Qxx.c ****         {
+ 277:Device/Dev_W25Qxx.c ****             /* Check for the Timeout */
+ 278:Device/Dev_W25Qxx.c ****             if ((dev->systick() - tickstart) > W25Qx_TIMEOUT_VALUE)
+ 1170              		.loc 1 278 13 is_stmt 1 view .LVU329
+ 1171              		.loc 1 278 21 is_stmt 0 view .LVU330
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 28
+
+
+ 1172 009c 6369     		ldr	r3, [r4, #20]
+ 1173              		.loc 1 278 18 view .LVU331
+ 1174 009e 9847     		blx	r3
+ 1175              	.LVL142:
+ 1176              		.loc 1 278 33 view .LVU332
+ 1177 00a0 A0EB0900 		sub	r0, r0, r9
+ 1178              		.loc 1 278 16 view .LVU333
+ 1179 00a4 42F21073 		movw	r3, #10000
+ 1180 00a8 9842     		cmp	r0, r3
+ 1181 00aa F2D9     		bls	.L86
+ 279:Device/Dev_W25Qxx.c ****                 return DevW25Qxx_TimeOut;
+ 1182              		.loc 1 279 24 view .LVU334
+ 1183 00ac 4FF0030A 		mov	r10, #3
+ 1184 00b0 1AE0     		b	.L82
+ 1185              	.L101:
+ 280:Device/Dev_W25Qxx.c ****         }
+ 281:Device/Dev_W25Qxx.c **** 
+ 282:Device/Dev_W25Qxx.c ****         /* Update the address and size variables for next page programming */
+ 283:Device/Dev_W25Qxx.c ****         current_addr += current_size;
+ 1186              		.loc 1 283 9 is_stmt 1 view .LVU335
+ 1187              		.loc 1 283 22 is_stmt 0 view .LVU336
+ 1188 00b2 3544     		add	r5, r5, r6
+ 1189              	.LVL143:
+ 284:Device/Dev_W25Qxx.c ****         pData += current_size;
+ 1190              		.loc 1 284 9 is_stmt 1 view .LVU337
+ 1191              		.loc 1 284 15 is_stmt 0 view .LVU338
+ 1192 00b4 B044     		add	r8, r8, r6
+ 1193              	.LVL144:
+ 285:Device/Dev_W25Qxx.c ****         current_size = ((current_addr + W25Q128FV_PAGE_SIZE) > end_addr) ? (end_addr - current_addr
+ 1194              		.loc 1 285 9 is_stmt 1 view .LVU339
+ 1195              		.loc 1 285 39 is_stmt 0 view .LVU340
+ 1196 00b6 05F58073 		add	r3, r5, #256
+ 1197              		.loc 1 285 102 view .LVU341
+ 1198 00ba BB42     		cmp	r3, r7
+ 1199 00bc 03D9     		bls	.L99
+ 1200              		.loc 1 285 102 discriminator 1 view .LVU342
+ 1201 00be 7E1B     		subs	r6, r7, r5
+ 1202              	.LVL145:
+ 1203              	.L88:
+ 286:Device/Dev_W25Qxx.c ****     } while (current_addr < end_addr);
+ 1204              		.loc 1 286 13 is_stmt 1 discriminator 4 view .LVU343
+ 1205              		.loc 1 286 5 is_stmt 0 discriminator 4 view .LVU344
+ 1206 00c0 AF42     		cmp	r7, r5
+ 1207 00c2 C2D8     		bhi	.L89
+ 1208 00c4 10E0     		b	.L82
+ 1209              	.L99:
+ 285:Device/Dev_W25Qxx.c ****         current_size = ((current_addr + W25Q128FV_PAGE_SIZE) > end_addr) ? (end_addr - current_addr
+ 1210              		.loc 1 285 102 view .LVU345
+ 1211 00c6 4FF48076 		mov	r6, #256
+ 1212              	.LVL146:
+ 285:Device/Dev_W25Qxx.c ****         current_size = ((current_addr + W25Q128FV_PAGE_SIZE) > end_addr) ? (end_addr - current_addr
+ 1213              		.loc 1 285 102 view .LVU346
+ 1214 00ca F9E7     		b	.L88
+ 1215              	.LVL147:
+ 1216              	.L90:
+ 236:Device/Dev_W25Qxx.c **** 
+ 1217              		.loc 1 236 16 view .LVU347
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 29
+
+
+ 1218 00cc 4FF0010A 		mov	r10, #1
+ 1219 00d0 0AE0     		b	.L82
+ 1220              	.LVL148:
+ 1221              	.L91:
+ 236:Device/Dev_W25Qxx.c **** 
+ 1222              		.loc 1 236 16 view .LVU348
+ 1223 00d2 4FF0010A 		mov	r10, #1
+ 1224 00d6 07E0     		b	.L82
+ 1225              	.L92:
+ 1226 00d8 4FF0010A 		mov	r10, #1
+ 1227 00dc 04E0     		b	.L82
+ 1228              	.L93:
+ 1229 00de 4FF0010A 		mov	r10, #1
+ 1230 00e2 01E0     		b	.L82
+ 1231              	.L94:
+ 1232 00e4 4FF0010A 		mov	r10, #1
+ 1233              	.LVL149:
+ 1234              	.L82:
+ 287:Device/Dev_W25Qxx.c **** 
+ 288:Device/Dev_W25Qxx.c ****     return DevW25Qxx_Ok;
+ 289:Device/Dev_W25Qxx.c **** }
+ 1235              		.loc 1 289 1 view .LVU349
+ 1236 00e8 5046     		mov	r0, r10
+ 1237 00ea 02B0     		add	sp, sp, #8
+ 1238              	.LCFI29:
+ 1239              		.cfi_remember_state
+ 1240              		.cfi_def_cfa_offset 32
+ 1241              		@ sp needed
+ 1242 00ec BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 1243              	.LVL150:
+ 1244              	.L97:
+ 1245              	.LCFI30:
+ 1246              		.cfi_restore_state
+ 266:Device/Dev_W25Qxx.c **** 
+ 1247              		.loc 1 266 20 view .LVU350
+ 1248 00f0 4FF0010A 		mov	r10, #1
+ 1249 00f4 F8E7     		b	.L82
+ 1250              		.cfi_endproc
+ 1251              	.LFE8:
+ 1253              		.section	.text.DevW25Qxx_EraseChip,"ax",%progbits
+ 1254              		.align	1
+ 1255              		.syntax unified
+ 1256              		.thumb
+ 1257              		.thumb_func
+ 1259              	DevW25Qxx_EraseChip:
+ 1260              	.LVL151:
+ 1261              	.LFB9:
+ 290:Device/Dev_W25Qxx.c **** 
+ 291:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_EraseChip(DevW25QxxObj_TypeDef *dev)
+ 292:Device/Dev_W25Qxx.c **** {
+ 1262              		.loc 1 292 1 is_stmt 1 view -0
+ 1263              		.cfi_startproc
+ 1264              		@ args = 0, pretend = 0, frame = 8
+ 1265              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1266              		.loc 1 292 1 is_stmt 0 view .LVU352
+ 1267 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 1268              	.LCFI31:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 30
+
+
+ 1269              		.cfi_def_cfa_offset 20
+ 1270              		.cfi_offset 4, -20
+ 1271              		.cfi_offset 5, -16
+ 1272              		.cfi_offset 6, -12
+ 1273              		.cfi_offset 7, -8
+ 1274              		.cfi_offset 14, -4
+ 1275 0002 83B0     		sub	sp, sp, #12
+ 1276              	.LCFI32:
+ 1277              		.cfi_def_cfa_offset 32
+ 293:Device/Dev_W25Qxx.c ****     uint8_t cmd = CHIP_ERASE_CMD;
+ 1278              		.loc 1 293 5 is_stmt 1 view .LVU353
+ 1279              		.loc 1 293 13 is_stmt 0 view .LVU354
+ 1280 0004 C723     		movs	r3, #199
+ 1281 0006 8DF80730 		strb	r3, [sp, #7]
+ 294:Device/Dev_W25Qxx.c ****     uint32_t tickstart = 0;
+ 1282              		.loc 1 294 5 is_stmt 1 view .LVU355
+ 1283              	.LVL152:
+ 295:Device/Dev_W25Qxx.c ****     bool erase_state = false;
+ 1284              		.loc 1 295 5 view .LVU356
+ 296:Device/Dev_W25Qxx.c **** 
+ 297:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL))
+ 1285              		.loc 1 297 5 view .LVU357
+ 1286              		.loc 1 297 8 is_stmt 0 view .LVU358
+ 1287 000a 40B3     		cbz	r0, .L106
+ 1288 000c 0446     		mov	r4, r0
+ 1289              		.loc 1 297 30 discriminator 1 view .LVU359
+ 1290 000e C368     		ldr	r3, [r0, #12]
+ 1291              		.loc 1 297 23 discriminator 1 view .LVU360
+ 1292 0010 3BB3     		cbz	r3, .L107
+ 1293              		.loc 1 297 55 discriminator 2 view .LVU361
+ 1294 0012 4369     		ldr	r3, [r0, #20]
+ 1295              		.loc 1 297 48 discriminator 2 view .LVU362
+ 1296 0014 3BB3     		cbz	r3, .L108
+ 298:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 299:Device/Dev_W25Qxx.c **** 
+ 300:Device/Dev_W25Qxx.c ****     tickstart = dev->systick();
+ 1297              		.loc 1 300 5 is_stmt 1 view .LVU363
+ 1298              		.loc 1 300 17 is_stmt 0 view .LVU364
+ 1299 0016 9847     		blx	r3
+ 1300              	.LVL153:
+ 1301              		.loc 1 300 17 view .LVU365
+ 1302 0018 0546     		mov	r5, r0
+ 1303              	.LVL154:
+ 301:Device/Dev_W25Qxx.c **** 
+ 302:Device/Dev_W25Qxx.c ****     if (DevW25Qxx_WriteEnableCtl(dev, true) != DevW25Qxx_Ok)
+ 1304              		.loc 1 302 5 is_stmt 1 view .LVU366
+ 1305              		.loc 1 302 9 is_stmt 0 view .LVU367
+ 1306 001a 0121     		movs	r1, #1
+ 1307 001c 2046     		mov	r0, r4
+ 1308              	.LVL155:
+ 1309              		.loc 1 302 9 view .LVU368
+ 1310 001e FFF7FEFF 		bl	DevW25Qxx_WriteEnableCtl
+ 1311              	.LVL156:
+ 1312              		.loc 1 302 8 view .LVU369
+ 1313 0022 0646     		mov	r6, r0
+ 1314 0024 08BB     		cbnz	r0, .L109
+ 303:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 31
+
+
+ 304:Device/Dev_W25Qxx.c **** 
+ 305:Device/Dev_W25Qxx.c ****     dev->cs_ctl(false);
+ 1315              		.loc 1 305 5 is_stmt 1 view .LVU370
+ 1316              		.loc 1 305 8 is_stmt 0 view .LVU371
+ 1317 0026 E368     		ldr	r3, [r4, #12]
+ 1318              		.loc 1 305 5 view .LVU372
+ 1319 0028 9847     		blx	r3
+ 1320              	.LVL157:
+ 306:Device/Dev_W25Qxx.c ****     erase_state = DevW25Qxx_BusTrans(dev, &cmd, sizeof(cmd));
+ 1321              		.loc 1 306 5 is_stmt 1 view .LVU373
+ 1322              		.loc 1 306 19 is_stmt 0 view .LVU374
+ 1323 002a 0122     		movs	r2, #1
+ 1324 002c 0DF10701 		add	r1, sp, #7
+ 1325 0030 2046     		mov	r0, r4
+ 1326 0032 FFF7FEFF 		bl	DevW25Qxx_BusTrans
+ 1327              	.LVL158:
+ 1328 0036 0746     		mov	r7, r0
+ 1329              	.LVL159:
+ 307:Device/Dev_W25Qxx.c ****     dev->cs_ctl(true);
+ 1330              		.loc 1 307 5 is_stmt 1 view .LVU375
+ 1331              		.loc 1 307 8 is_stmt 0 view .LVU376
+ 1332 0038 E368     		ldr	r3, [r4, #12]
+ 1333              		.loc 1 307 5 view .LVU377
+ 1334 003a 0120     		movs	r0, #1
+ 1335 003c 9847     		blx	r3
+ 1336              	.LVL160:
+ 308:Device/Dev_W25Qxx.c **** 
+ 309:Device/Dev_W25Qxx.c ****     if (!erase_state)
+ 1337              		.loc 1 309 5 is_stmt 1 view .LVU378
+ 1338              		.loc 1 309 8 is_stmt 0 view .LVU379
+ 1339 003e 67B1     		cbz	r7, .L112
+ 1340              	.L104:
+ 310:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 311:Device/Dev_W25Qxx.c **** 
+ 312:Device/Dev_W25Qxx.c ****     /* Wait the end of Flash writing */
+ 313:Device/Dev_W25Qxx.c ****     while (DevW25Qxx_GetStatue(dev) != DevW25Qxx_Busy)
+ 1341              		.loc 1 313 11 is_stmt 1 view .LVU380
+ 1342              		.loc 1 313 12 is_stmt 0 view .LVU381
+ 1343 0040 2046     		mov	r0, r4
+ 1344 0042 FFF7FEFF 		bl	DevW25Qxx_GetStatue
+ 1345              	.LVL161:
+ 1346              		.loc 1 313 11 view .LVU382
+ 1347 0046 0228     		cmp	r0, #2
+ 1348 0048 10D0     		beq	.L103
+ 314:Device/Dev_W25Qxx.c ****     {
+ 315:Device/Dev_W25Qxx.c ****         /* Check for the Timeout */
+ 316:Device/Dev_W25Qxx.c ****         if ((dev->systick() - tickstart) > W25Q128FV_BULK_ERASE_MAX_TIME)
+ 1349              		.loc 1 316 9 is_stmt 1 view .LVU383
+ 1350              		.loc 1 316 17 is_stmt 0 view .LVU384
+ 1351 004a 6369     		ldr	r3, [r4, #20]
+ 1352              		.loc 1 316 14 view .LVU385
+ 1353 004c 9847     		blx	r3
+ 1354              	.LVL162:
+ 1355              		.loc 1 316 29 view .LVU386
+ 1356 004e 431B     		subs	r3, r0, r5
+ 1357              		.loc 1 316 12 view .LVU387
+ 1358 0050 084A     		ldr	r2, .L113
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 32
+
+
+ 1359 0052 9342     		cmp	r3, r2
+ 1360 0054 F4D9     		bls	.L104
+ 317:Device/Dev_W25Qxx.c ****             return DevW25Qxx_TimeOut;
+ 1361              		.loc 1 317 20 view .LVU388
+ 1362 0056 0326     		movs	r6, #3
+ 1363 0058 08E0     		b	.L103
+ 1364              	.L112:
+ 310:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 1365              		.loc 1 310 16 view .LVU389
+ 1366 005a 0126     		movs	r6, #1
+ 1367 005c 06E0     		b	.L103
+ 1368              	.LVL163:
+ 1369              	.L106:
+ 298:Device/Dev_W25Qxx.c **** 
+ 1370              		.loc 1 298 16 view .LVU390
+ 1371 005e 0126     		movs	r6, #1
+ 1372 0060 04E0     		b	.L103
+ 1373              	.L107:
+ 298:Device/Dev_W25Qxx.c **** 
+ 1374              		.loc 1 298 16 view .LVU391
+ 1375 0062 0126     		movs	r6, #1
+ 1376 0064 02E0     		b	.L103
+ 1377              	.L108:
+ 1378 0066 0126     		movs	r6, #1
+ 1379 0068 00E0     		b	.L103
+ 1380              	.LVL164:
+ 1381              	.L109:
+ 303:Device/Dev_W25Qxx.c **** 
+ 1382              		.loc 1 303 16 view .LVU392
+ 1383 006a 0126     		movs	r6, #1
+ 1384              	.LVL165:
+ 1385              	.L103:
+ 318:Device/Dev_W25Qxx.c ****     }
+ 319:Device/Dev_W25Qxx.c **** 
+ 320:Device/Dev_W25Qxx.c ****     return DevW25Qxx_Ok;
+ 321:Device/Dev_W25Qxx.c **** }
+ 1386              		.loc 1 321 1 view .LVU393
+ 1387 006c 3046     		mov	r0, r6
+ 1388 006e 03B0     		add	sp, sp, #12
+ 1389              	.LCFI33:
+ 1390              		.cfi_def_cfa_offset 20
+ 1391              		@ sp needed
+ 1392 0070 F0BD     		pop	{r4, r5, r6, r7, pc}
+ 1393              	.L114:
+ 1394 0072 00BF     		.align	2
+ 1395              	.L113:
+ 1396 0074 90D00300 		.word	250000
+ 1397              		.cfi_endproc
+ 1398              	.LFE9:
+ 1400              		.section	.text.DevW25Qxx_EraseSector,"ax",%progbits
+ 1401              		.align	1
+ 1402              		.syntax unified
+ 1403              		.thumb
+ 1404              		.thumb_func
+ 1406              	DevW25Qxx_EraseSector:
+ 1407              	.LVL166:
+ 1408              	.LFB10:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 33
+
+
+ 322:Device/Dev_W25Qxx.c **** 
+ 323:Device/Dev_W25Qxx.c **** static DevW25Qxx_Error_List DevW25Qxx_EraseSector(DevW25QxxObj_TypeDef *dev, uint32_t Address)
+ 324:Device/Dev_W25Qxx.c **** {
+ 1409              		.loc 1 324 1 is_stmt 1 view -0
+ 1410              		.cfi_startproc
+ 1411              		@ args = 0, pretend = 0, frame = 8
+ 1412              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1413              		.loc 1 324 1 is_stmt 0 view .LVU395
+ 1414 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 1415              	.LCFI34:
+ 1416              		.cfi_def_cfa_offset 20
+ 1417              		.cfi_offset 4, -20
+ 1418              		.cfi_offset 5, -16
+ 1419              		.cfi_offset 6, -12
+ 1420              		.cfi_offset 7, -8
+ 1421              		.cfi_offset 14, -4
+ 1422 0002 83B0     		sub	sp, sp, #12
+ 1423              	.LCFI35:
+ 1424              		.cfi_def_cfa_offset 32
+ 325:Device/Dev_W25Qxx.c ****     uint8_t cmd[4] = {SECTOR_ERASE_CMD, 0, 0, 0};
+ 1425              		.loc 1 325 5 is_stmt 1 view .LVU396
+ 1426              		.loc 1 325 13 is_stmt 0 view .LVU397
+ 1427 0004 2023     		movs	r3, #32
+ 1428 0006 0193     		str	r3, [sp, #4]
+ 326:Device/Dev_W25Qxx.c ****     uint32_t tickstart = 0;
+ 1429              		.loc 1 326 5 is_stmt 1 view .LVU398
+ 1430              	.LVL167:
+ 327:Device/Dev_W25Qxx.c ****     bool erase_state = false;
+ 1431              		.loc 1 327 5 view .LVU399
+ 328:Device/Dev_W25Qxx.c ****     cmd[1] = (uint8_t)(Address >> 16);
+ 1432              		.loc 1 328 5 view .LVU400
+ 1433              		.loc 1 328 14 is_stmt 0 view .LVU401
+ 1434 0008 C1F30743 		ubfx	r3, r1, #16, #8
+ 1435              		.loc 1 328 12 view .LVU402
+ 1436 000c 8DF80530 		strb	r3, [sp, #5]
+ 329:Device/Dev_W25Qxx.c ****     cmd[2] = (uint8_t)(Address >> 8);
+ 1437              		.loc 1 329 5 is_stmt 1 view .LVU403
+ 1438              		.loc 1 329 14 is_stmt 0 view .LVU404
+ 1439 0010 C1F30723 		ubfx	r3, r1, #8, #8
+ 1440              		.loc 1 329 12 view .LVU405
+ 1441 0014 8DF80630 		strb	r3, [sp, #6]
+ 330:Device/Dev_W25Qxx.c ****     cmd[3] = (uint8_t)(Address);
+ 1442              		.loc 1 330 5 is_stmt 1 view .LVU406
+ 1443              		.loc 1 330 12 is_stmt 0 view .LVU407
+ 1444 0018 8DF80710 		strb	r1, [sp, #7]
+ 331:Device/Dev_W25Qxx.c **** 
+ 332:Device/Dev_W25Qxx.c ****     if ((dev == NULL) || (dev->cs_ctl == NULL) || (dev->systick == NULL) || (Address % W25QXX_SECTO
+ 1445              		.loc 1 332 5 is_stmt 1 view .LVU408
+ 1446              		.loc 1 332 8 is_stmt 0 view .LVU409
+ 1447 001c 60B3     		cbz	r0, .L119
+ 1448 001e 0446     		mov	r4, r0
+ 1449              		.loc 1 332 30 discriminator 1 view .LVU410
+ 1450 0020 C368     		ldr	r3, [r0, #12]
+ 1451              		.loc 1 332 23 discriminator 1 view .LVU411
+ 1452 0022 5BB3     		cbz	r3, .L120
+ 1453              		.loc 1 332 55 discriminator 2 view .LVU412
+ 1454 0024 4369     		ldr	r3, [r0, #20]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 34
+
+
+ 1455              		.loc 1 332 48 discriminator 2 view .LVU413
+ 1456 0026 5BB3     		cbz	r3, .L121
+ 1457              		.loc 1 332 86 discriminator 3 view .LVU414
+ 1458 0028 C1F30B01 		ubfx	r1, r1, #0, #12
+ 1459              	.LVL168:
+ 1460              		.loc 1 332 74 discriminator 3 view .LVU415
+ 1461 002c 51BB     		cbnz	r1, .L122
+ 333:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 334:Device/Dev_W25Qxx.c **** 
+ 335:Device/Dev_W25Qxx.c ****     tickstart = dev->systick();
+ 1462              		.loc 1 335 5 is_stmt 1 view .LVU416
+ 1463              		.loc 1 335 17 is_stmt 0 view .LVU417
+ 1464 002e 9847     		blx	r3
+ 1465              	.LVL169:
+ 1466              		.loc 1 335 17 view .LVU418
+ 1467 0030 0546     		mov	r5, r0
+ 1468              	.LVL170:
+ 336:Device/Dev_W25Qxx.c **** 
+ 337:Device/Dev_W25Qxx.c ****     /* Enable write operations Send the read ID command */
+ 338:Device/Dev_W25Qxx.c ****     if (DevW25Qxx_WriteEnableCtl(dev, true) != DevW25Qxx_Ok)
+ 1469              		.loc 1 338 5 is_stmt 1 view .LVU419
+ 1470              		.loc 1 338 9 is_stmt 0 view .LVU420
+ 1471 0032 0121     		movs	r1, #1
+ 1472 0034 2046     		mov	r0, r4
+ 1473              	.LVL171:
+ 1474              		.loc 1 338 9 view .LVU421
+ 1475 0036 FFF7FEFF 		bl	DevW25Qxx_WriteEnableCtl
+ 1476              	.LVL172:
+ 1477              		.loc 1 338 8 view .LVU422
+ 1478 003a 0646     		mov	r6, r0
+ 1479 003c 30BB     		cbnz	r0, .L123
+ 339:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 340:Device/Dev_W25Qxx.c **** 
+ 341:Device/Dev_W25Qxx.c ****     dev->cs_ctl(false);
+ 1480              		.loc 1 341 5 is_stmt 1 view .LVU423
+ 1481              		.loc 1 341 8 is_stmt 0 view .LVU424
+ 1482 003e E368     		ldr	r3, [r4, #12]
+ 1483              		.loc 1 341 5 view .LVU425
+ 1484 0040 9847     		blx	r3
+ 1485              	.LVL173:
+ 342:Device/Dev_W25Qxx.c ****     erase_state = DevW25Qxx_BusTrans(dev, cmd, sizeof(cmd));
+ 1486              		.loc 1 342 5 is_stmt 1 view .LVU426
+ 1487              		.loc 1 342 19 is_stmt 0 view .LVU427
+ 1488 0042 0422     		movs	r2, #4
+ 1489 0044 0DEB0201 		add	r1, sp, r2
+ 1490 0048 2046     		mov	r0, r4
+ 1491 004a FFF7FEFF 		bl	DevW25Qxx_BusTrans
+ 1492              	.LVL174:
+ 1493 004e 0746     		mov	r7, r0
+ 1494              	.LVL175:
+ 343:Device/Dev_W25Qxx.c ****     dev->cs_ctl(true);
+ 1495              		.loc 1 343 5 is_stmt 1 view .LVU428
+ 1496              		.loc 1 343 8 is_stmt 0 view .LVU429
+ 1497 0050 E368     		ldr	r3, [r4, #12]
+ 1498              		.loc 1 343 5 view .LVU430
+ 1499 0052 0120     		movs	r0, #1
+ 1500 0054 9847     		blx	r3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 35
+
+
+ 1501              	.LVL176:
+ 344:Device/Dev_W25Qxx.c **** 
+ 345:Device/Dev_W25Qxx.c ****     if (!erase_state)
+ 1502              		.loc 1 345 5 is_stmt 1 view .LVU431
+ 1503              		.loc 1 345 8 is_stmt 0 view .LVU432
+ 1504 0056 6FB1     		cbz	r7, .L126
+ 1505              	.L117:
+ 346:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 347:Device/Dev_W25Qxx.c **** 
+ 348:Device/Dev_W25Qxx.c ****     /* Wait the end of Flash writing */
+ 349:Device/Dev_W25Qxx.c ****     while (DevW25Qxx_GetStatue(dev) == DevW25Qxx_Busy)
+ 1506              		.loc 1 349 11 is_stmt 1 view .LVU433
+ 1507              		.loc 1 349 12 is_stmt 0 view .LVU434
+ 1508 0058 2046     		mov	r0, r4
+ 1509 005a FFF7FEFF 		bl	DevW25Qxx_GetStatue
+ 1510              	.LVL177:
+ 1511              		.loc 1 349 11 view .LVU435
+ 1512 005e 0228     		cmp	r0, #2
+ 1513 0060 11D1     		bne	.L116
+ 350:Device/Dev_W25Qxx.c ****     {
+ 351:Device/Dev_W25Qxx.c ****         /* Check for the Timeout */
+ 352:Device/Dev_W25Qxx.c ****         if ((dev->systick() - tickstart) > W25Q128FV_SECTOR_ERASE_MAX_TIME)
+ 1514              		.loc 1 352 9 is_stmt 1 view .LVU436
+ 1515              		.loc 1 352 17 is_stmt 0 view .LVU437
+ 1516 0062 6369     		ldr	r3, [r4, #20]
+ 1517              		.loc 1 352 14 view .LVU438
+ 1518 0064 9847     		blx	r3
+ 1519              	.LVL178:
+ 1520              		.loc 1 352 29 view .LVU439
+ 1521 0066 431B     		subs	r3, r0, r5
+ 1522              		.loc 1 352 12 view .LVU440
+ 1523 0068 40F6B832 		movw	r2, #3000
+ 1524 006c 9342     		cmp	r3, r2
+ 1525 006e F3D9     		bls	.L117
+ 353:Device/Dev_W25Qxx.c ****             return DevW25Qxx_TimeOut;
+ 1526              		.loc 1 353 20 view .LVU441
+ 1527 0070 0326     		movs	r6, #3
+ 1528 0072 08E0     		b	.L116
+ 1529              	.L126:
+ 346:Device/Dev_W25Qxx.c ****         return DevW25Qxx_Error;
+ 1530              		.loc 1 346 16 view .LVU442
+ 1531 0074 0126     		movs	r6, #1
+ 1532 0076 06E0     		b	.L116
+ 1533              	.LVL179:
+ 1534              	.L119:
+ 333:Device/Dev_W25Qxx.c **** 
+ 1535              		.loc 1 333 16 view .LVU443
+ 1536 0078 0126     		movs	r6, #1
+ 1537 007a 04E0     		b	.L116
+ 1538              	.L120:
+ 333:Device/Dev_W25Qxx.c **** 
+ 1539              		.loc 1 333 16 view .LVU444
+ 1540 007c 0126     		movs	r6, #1
+ 1541 007e 02E0     		b	.L116
+ 1542              	.L121:
+ 1543 0080 0126     		movs	r6, #1
+ 1544 0082 00E0     		b	.L116
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 36
+
+
+ 1545              	.LVL180:
+ 1546              	.L122:
+ 333:Device/Dev_W25Qxx.c **** 
+ 1547              		.loc 1 333 16 view .LVU445
+ 1548 0084 0126     		movs	r6, #1
+ 1549              	.LVL181:
+ 1550              	.L116:
+ 354:Device/Dev_W25Qxx.c ****     }
+ 355:Device/Dev_W25Qxx.c **** 
+ 356:Device/Dev_W25Qxx.c ****     return DevW25Qxx_Ok;
+ 357:Device/Dev_W25Qxx.c **** }
+ 1551              		.loc 1 357 1 view .LVU446
+ 1552 0086 3046     		mov	r0, r6
+ 1553 0088 03B0     		add	sp, sp, #12
+ 1554              	.LCFI36:
+ 1555              		.cfi_remember_state
+ 1556              		.cfi_def_cfa_offset 20
+ 1557              		@ sp needed
+ 1558 008a F0BD     		pop	{r4, r5, r6, r7, pc}
+ 1559              	.LVL182:
+ 1560              	.L123:
+ 1561              	.LCFI37:
+ 1562              		.cfi_restore_state
+ 339:Device/Dev_W25Qxx.c **** 
+ 1563              		.loc 1 339 16 view .LVU447
+ 1564 008c 0126     		movs	r6, #1
+ 1565 008e FAE7     		b	.L116
+ 1566              		.cfi_endproc
+ 1567              	.LFE10:
+ 1569              		.section	.text.DevW25Qxx_Get_Section_StartAddr,"ax",%progbits
+ 1570              		.align	1
+ 1571              		.syntax unified
+ 1572              		.thumb
+ 1573              		.thumb_func
+ 1575              	DevW25Qxx_Get_Section_StartAddr:
+ 1576              	.LVL183:
+ 1577              	.LFB12:
+ 358:Device/Dev_W25Qxx.c **** 
+ 359:Device/Dev_W25Qxx.c **** static DevW25Qxx_DeviceInfo_TypeDef DevW25Qxx_Get_Info(DevW25QxxObj_TypeDef *dev)
+ 360:Device/Dev_W25Qxx.c **** {
+ 361:Device/Dev_W25Qxx.c ****     DevW25Qxx_DeviceInfo_TypeDef info;
+ 362:Device/Dev_W25Qxx.c ****     
+ 363:Device/Dev_W25Qxx.c ****     memset(&info, 0, sizeof(DevW25Qxx_DeviceInfo_TypeDef));
+ 364:Device/Dev_W25Qxx.c **** 
+ 365:Device/Dev_W25Qxx.c ****     if (dev && (dev->prod_type != DevW25Q_None))
+ 366:Device/Dev_W25Qxx.c ****     {
+ 367:Device/Dev_W25Qxx.c ****         info.start_addr = W25QXX_BASE_ADDRESS;
+ 368:Device/Dev_W25Qxx.c ****         info.prod_type = dev->prod_type;
+ 369:Device/Dev_W25Qxx.c ****         info.prod_code = dev->prod_code;
+ 370:Device/Dev_W25Qxx.c **** 
+ 371:Device/Dev_W25Qxx.c ****         /* currently we only have such type of flash chip on the evk or fc-board */
+ 372:Device/Dev_W25Qxx.c ****         switch ((uint8_t)(dev->prod_type))
+ 373:Device/Dev_W25Qxx.c ****         {
+ 374:Device/Dev_W25Qxx.c ****             case DevW25Q_64:
+ 375:Device/Dev_W25Qxx.c ****                 info.flash_size  = W25Q64FV_FLASH_SIZE;
+ 376:Device/Dev_W25Qxx.c ****                 info.page_num    = W25Q64FV_PAGE_NUM;
+ 377:Device/Dev_W25Qxx.c ****                 info.page_size   = W25Q64FV_PAGE_SIZE;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 37
+
+
+ 378:Device/Dev_W25Qxx.c ****                 info.block_num   = W25Q64FV_BLOCK_NUM;
+ 379:Device/Dev_W25Qxx.c ****                 info.block_size  = W25Q64FV_BLOCK_SIZE;
+ 380:Device/Dev_W25Qxx.c ****                 info.sector_num  = W25Q64FV_SECTOR_NUM;
+ 381:Device/Dev_W25Qxx.c ****                 info.sector_size = W25Q64FV_SECTOR_SIZE;
+ 382:Device/Dev_W25Qxx.c ****                 break;
+ 383:Device/Dev_W25Qxx.c **** 
+ 384:Device/Dev_W25Qxx.c ****             case DevW25Q_128:
+ 385:Device/Dev_W25Qxx.c ****                 info.flash_size  = W25Q128FV_FLASH_SIZE;
+ 386:Device/Dev_W25Qxx.c ****                 info.page_num    = W25Q128FV_PAGE_NUM;
+ 387:Device/Dev_W25Qxx.c ****                 info.page_size   = W25Q128FV_PAGE_SIZE;
+ 388:Device/Dev_W25Qxx.c ****                 info.block_num   = W25Q128FV_BLOCK_NUM;
+ 389:Device/Dev_W25Qxx.c ****                 info.block_size  = W25Q128FV_BLOCK_SIZE;
+ 390:Device/Dev_W25Qxx.c ****                 info.sector_num  = W25Q128FV_SECTOR_NUM;
+ 391:Device/Dev_W25Qxx.c ****                 info.sector_size = W25Q128FV_SECTOR_SIZE;
+ 392:Device/Dev_W25Qxx.c ****                 break;
+ 393:Device/Dev_W25Qxx.c **** 
+ 394:Device/Dev_W25Qxx.c ****             default:
+ 395:Device/Dev_W25Qxx.c ****                 break;
+ 396:Device/Dev_W25Qxx.c ****         }
+ 397:Device/Dev_W25Qxx.c ****     }
+ 398:Device/Dev_W25Qxx.c **** 
+ 399:Device/Dev_W25Qxx.c ****     return info;
+ 400:Device/Dev_W25Qxx.c **** }
+ 401:Device/Dev_W25Qxx.c **** 
+ 402:Device/Dev_W25Qxx.c **** static uint32_t DevW25Qxx_Get_Section_StartAddr(DevW25QxxObj_TypeDef *dev, uint32_t addr)
+ 403:Device/Dev_W25Qxx.c **** {
+ 1578              		.loc 1 403 1 is_stmt 1 view -0
+ 1579              		.cfi_startproc
+ 1580              		@ args = 0, pretend = 0, frame = 0
+ 1581              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1582              		@ link register save eliminated.
+ 404:Device/Dev_W25Qxx.c ****     if (dev && (dev->init_state == DevW25Qxx_Ok))
+ 1583              		.loc 1 404 5 view .LVU449
+ 1584              		.loc 1 404 8 is_stmt 0 view .LVU450
+ 1585 0000 40B1     		cbz	r0, .L129
+ 1586              		.loc 1 404 20 discriminator 1 view .LVU451
+ 1587 0002 037E     		ldrb	r3, [r0, #24]	@ zero_extendqisi2
+ 1588              		.loc 1 404 13 discriminator 1 view .LVU452
+ 1589 0004 0BB1     		cbz	r3, .L131
+ 405:Device/Dev_W25Qxx.c ****         return (addr / W25Q64FV_SECTOR_SIZE) * W25Q64FV_SECTOR_SIZE;
+ 406:Device/Dev_W25Qxx.c **** 
+ 407:Device/Dev_W25Qxx.c ****     return 0;
+ 1590              		.loc 1 407 12 view .LVU453
+ 1591 0006 0020     		movs	r0, #0
+ 1592              	.LVL184:
+ 408:Device/Dev_W25Qxx.c **** }
+ 1593              		.loc 1 408 1 view .LVU454
+ 1594 0008 7047     		bx	lr
+ 1595              	.LVL185:
+ 1596              	.L131:
+ 405:Device/Dev_W25Qxx.c ****         return (addr / W25Q64FV_SECTOR_SIZE) * W25Q64FV_SECTOR_SIZE;
+ 1597              		.loc 1 405 9 is_stmt 1 view .LVU455
+ 405:Device/Dev_W25Qxx.c ****         return (addr / W25Q64FV_SECTOR_SIZE) * W25Q64FV_SECTOR_SIZE;
+ 1598              		.loc 1 405 46 is_stmt 0 view .LVU456
+ 1599 000a 21F47F60 		bic	r0, r1, #4080
+ 1600              	.LVL186:
+ 405:Device/Dev_W25Qxx.c ****         return (addr / W25Q64FV_SECTOR_SIZE) * W25Q64FV_SECTOR_SIZE;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 38
+
+
+ 1601              		.loc 1 405 46 view .LVU457
+ 1602 000e 20F00F00 		bic	r0, r0, #15
+ 1603 0012 7047     		bx	lr
+ 1604              	.LVL187:
+ 1605              	.L129:
+ 407:Device/Dev_W25Qxx.c **** }
+ 1606              		.loc 1 407 12 view .LVU458
+ 1607 0014 0020     		movs	r0, #0
+ 1608              	.LVL188:
+ 407:Device/Dev_W25Qxx.c **** }
+ 1609              		.loc 1 407 12 view .LVU459
+ 1610 0016 7047     		bx	lr
+ 1611              		.cfi_endproc
+ 1612              	.LFE12:
+ 1614              		.section	.text.DevW25Qxx_Get_Info,"ax",%progbits
+ 1615              		.align	1
+ 1616              		.syntax unified
+ 1617              		.thumb
+ 1618              		.thumb_func
+ 1620              	DevW25Qxx_Get_Info:
+ 1621              	.LVL189:
+ 1622              	.LFB11:
+ 360:Device/Dev_W25Qxx.c ****     DevW25Qxx_DeviceInfo_TypeDef info;
+ 1623              		.loc 1 360 1 is_stmt 1 view -0
+ 1624              		.cfi_startproc
+ 1625              		@ args = 0, pretend = 0, frame = 32
+ 1626              		@ frame_needed = 0, uses_anonymous_args = 0
+ 360:Device/Dev_W25Qxx.c ****     DevW25Qxx_DeviceInfo_TypeDef info;
+ 1627              		.loc 1 360 1 is_stmt 0 view .LVU461
+ 1628 0000 10B5     		push	{r4, lr}
+ 1629              	.LCFI38:
+ 1630              		.cfi_def_cfa_offset 8
+ 1631              		.cfi_offset 4, -8
+ 1632              		.cfi_offset 14, -4
+ 1633 0002 88B0     		sub	sp, sp, #32
+ 1634              	.LCFI39:
+ 1635              		.cfi_def_cfa_offset 40
+ 1636 0004 0446     		mov	r4, r0
+ 361:Device/Dev_W25Qxx.c ****     
+ 1637              		.loc 1 361 5 is_stmt 1 view .LVU462
+ 363:Device/Dev_W25Qxx.c **** 
+ 1638              		.loc 1 363 5 view .LVU463
+ 1639 0006 0023     		movs	r3, #0
+ 1640 0008 0193     		str	r3, [sp, #4]
+ 1641 000a 0293     		str	r3, [sp, #8]
+ 1642 000c 0393     		str	r3, [sp, #12]
+ 1643 000e 0493     		str	r3, [sp, #16]
+ 1644 0010 0593     		str	r3, [sp, #20]
+ 1645 0012 0693     		str	r3, [sp, #24]
+ 1646 0014 0793     		str	r3, [sp, #28]
+ 365:Device/Dev_W25Qxx.c ****     {
+ 1647              		.loc 1 365 5 view .LVU464
+ 365:Device/Dev_W25Qxx.c ****     {
+ 1648              		.loc 1 365 8 is_stmt 0 view .LVU465
+ 1649 0016 51B1     		cbz	r1, .L133
+ 365:Device/Dev_W25Qxx.c ****     {
+ 1650              		.loc 1 365 20 discriminator 1 view .LVU466
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 39
+
+
+ 1651 0018 0A78     		ldrb	r2, [r1]	@ zero_extendqisi2
+ 365:Device/Dev_W25Qxx.c ****     {
+ 1652              		.loc 1 365 13 discriminator 1 view .LVU467
+ 1653 001a 42B1     		cbz	r2, .L133
+ 367:Device/Dev_W25Qxx.c ****         info.prod_type = dev->prod_type;
+ 1654              		.loc 1 367 9 is_stmt 1 view .LVU468
+ 368:Device/Dev_W25Qxx.c ****         info.prod_code = dev->prod_code;
+ 1655              		.loc 1 368 9 view .LVU469
+ 368:Device/Dev_W25Qxx.c ****         info.prod_code = dev->prod_code;
+ 1656              		.loc 1 368 24 is_stmt 0 view .LVU470
+ 1657 001c 8DF80420 		strb	r2, [sp, #4]
+ 369:Device/Dev_W25Qxx.c **** 
+ 1658              		.loc 1 369 9 is_stmt 1 view .LVU471
+ 369:Device/Dev_W25Qxx.c **** 
+ 1659              		.loc 1 369 29 is_stmt 0 view .LVU472
+ 1660 0020 4B88     		ldrh	r3, [r1, #2]
+ 369:Device/Dev_W25Qxx.c **** 
+ 1661              		.loc 1 369 24 view .LVU473
+ 1662 0022 ADF80630 		strh	r3, [sp, #6]	@ movhi
+ 372:Device/Dev_W25Qxx.c ****         {
+ 1663              		.loc 1 372 9 is_stmt 1 view .LVU474
+ 1664 0026 042A     		cmp	r2, #4
+ 1665 0028 0FD0     		beq	.L134
+ 1666 002a 052A     		cmp	r2, #5
+ 1667 002c 26D0     		beq	.L135
+ 1668              	.L133:
+ 399:Device/Dev_W25Qxx.c **** }
+ 1669              		.loc 1 399 5 view .LVU475
+ 399:Device/Dev_W25Qxx.c **** }
+ 1670              		.loc 1 399 12 is_stmt 0 view .LVU476
+ 1671 002e A446     		mov	ip, r4
+ 1672 0030 0DF1040E 		add	lr, sp, #4
+ 1673 0034 BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+ 1674              	.LVL190:
+ 399:Device/Dev_W25Qxx.c **** }
+ 1675              		.loc 1 399 12 view .LVU477
+ 1676 0038 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+ 1677 003c 9EE80700 		ldm	lr, {r0, r1, r2}
+ 1678 0040 8CE80700 		stm	ip, {r0, r1, r2}
+ 400:Device/Dev_W25Qxx.c **** 
+ 1679              		.loc 1 400 1 view .LVU478
+ 1680 0044 2046     		mov	r0, r4
+ 1681 0046 08B0     		add	sp, sp, #32
+ 1682              	.LCFI40:
+ 1683              		.cfi_remember_state
+ 1684              		.cfi_def_cfa_offset 8
+ 1685              		@ sp needed
+ 1686 0048 10BD     		pop	{r4, pc}
+ 1687              	.LVL191:
+ 1688              	.L134:
+ 1689              	.LCFI41:
+ 1690              		.cfi_restore_state
+ 375:Device/Dev_W25Qxx.c ****                 info.page_num    = W25Q64FV_PAGE_NUM;
+ 1691              		.loc 1 375 17 is_stmt 1 view .LVU479
+ 375:Device/Dev_W25Qxx.c ****                 info.page_num    = W25Q64FV_PAGE_NUM;
+ 1692              		.loc 1 375 34 is_stmt 0 view .LVU480
+ 1693 004a 4FF40003 		mov	r3, #8388608
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 40
+
+
+ 1694 004e 0393     		str	r3, [sp, #12]
+ 376:Device/Dev_W25Qxx.c ****                 info.page_size   = W25Q64FV_PAGE_SIZE;
+ 1695              		.loc 1 376 17 is_stmt 1 view .LVU481
+ 376:Device/Dev_W25Qxx.c ****                 info.page_size   = W25Q64FV_PAGE_SIZE;
+ 1696              		.loc 1 376 34 is_stmt 0 view .LVU482
+ 1697 0050 4FF40043 		mov	r3, #32768
+ 1698 0054 ADF81E30 		strh	r3, [sp, #30]	@ movhi
+ 377:Device/Dev_W25Qxx.c ****                 info.block_num   = W25Q64FV_BLOCK_NUM;
+ 1699              		.loc 1 377 17 is_stmt 1 view .LVU483
+ 377:Device/Dev_W25Qxx.c ****                 info.block_num   = W25Q64FV_BLOCK_NUM;
+ 1700              		.loc 1 377 34 is_stmt 0 view .LVU484
+ 1701 0058 4FF48073 		mov	r3, #256
+ 1702 005c ADF81830 		strh	r3, [sp, #24]	@ movhi
+ 378:Device/Dev_W25Qxx.c ****                 info.block_size  = W25Q64FV_BLOCK_SIZE;
+ 1703              		.loc 1 378 17 is_stmt 1 view .LVU485
+ 378:Device/Dev_W25Qxx.c ****                 info.block_size  = W25Q64FV_BLOCK_SIZE;
+ 1704              		.loc 1 378 34 is_stmt 0 view .LVU486
+ 1705 0060 8023     		movs	r3, #128
+ 1706 0062 ADF81A30 		strh	r3, [sp, #26]	@ movhi
+ 379:Device/Dev_W25Qxx.c ****                 info.sector_num  = W25Q64FV_SECTOR_NUM;
+ 1707              		.loc 1 379 17 is_stmt 1 view .LVU487
+ 379:Device/Dev_W25Qxx.c ****                 info.sector_num  = W25Q64FV_SECTOR_NUM;
+ 1708              		.loc 1 379 34 is_stmt 0 view .LVU488
+ 1709 0066 4FF48033 		mov	r3, #65536
+ 1710 006a 0493     		str	r3, [sp, #16]
+ 380:Device/Dev_W25Qxx.c ****                 info.sector_size = W25Q64FV_SECTOR_SIZE;
+ 1711              		.loc 1 380 17 is_stmt 1 view .LVU489
+ 380:Device/Dev_W25Qxx.c ****                 info.sector_size = W25Q64FV_SECTOR_SIZE;
+ 1712              		.loc 1 380 34 is_stmt 0 view .LVU490
+ 1713 006c 4FF40063 		mov	r3, #2048
+ 1714 0070 ADF81C30 		strh	r3, [sp, #28]	@ movhi
+ 381:Device/Dev_W25Qxx.c ****                 break;
+ 1715              		.loc 1 381 17 is_stmt 1 view .LVU491
+ 381:Device/Dev_W25Qxx.c ****                 break;
+ 1716              		.loc 1 381 34 is_stmt 0 view .LVU492
+ 1717 0074 4FF48053 		mov	r3, #4096
+ 1718 0078 0593     		str	r3, [sp, #20]
+ 382:Device/Dev_W25Qxx.c **** 
+ 1719              		.loc 1 382 17 is_stmt 1 view .LVU493
+ 1720 007a D8E7     		b	.L133
+ 1721              	.L135:
+ 385:Device/Dev_W25Qxx.c ****                 info.page_num    = W25Q128FV_PAGE_NUM;
+ 1722              		.loc 1 385 17 view .LVU494
+ 385:Device/Dev_W25Qxx.c ****                 info.page_num    = W25Q128FV_PAGE_NUM;
+ 1723              		.loc 1 385 34 is_stmt 0 view .LVU495
+ 1724 007c 4FF08073 		mov	r3, #16777216
+ 1725 0080 0393     		str	r3, [sp, #12]
+ 386:Device/Dev_W25Qxx.c ****                 info.page_size   = W25Q128FV_PAGE_SIZE;
+ 1726              		.loc 1 386 17 is_stmt 1 view .LVU496
+ 386:Device/Dev_W25Qxx.c ****                 info.page_size   = W25Q128FV_PAGE_SIZE;
+ 1727              		.loc 1 386 34 is_stmt 0 view .LVU497
+ 1728 0082 4FF6FF73 		movw	r3, #65535
+ 1729 0086 ADF81E30 		strh	r3, [sp, #30]	@ movhi
+ 387:Device/Dev_W25Qxx.c ****                 info.block_num   = W25Q128FV_BLOCK_NUM;
+ 1730              		.loc 1 387 17 is_stmt 1 view .LVU498
+ 387:Device/Dev_W25Qxx.c ****                 info.block_num   = W25Q128FV_BLOCK_NUM;
+ 1731              		.loc 1 387 34 is_stmt 0 view .LVU499
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 41
+
+
+ 1732 008a 4FF48073 		mov	r3, #256
+ 1733 008e ADF81830 		strh	r3, [sp, #24]	@ movhi
+ 388:Device/Dev_W25Qxx.c ****                 info.block_size  = W25Q128FV_BLOCK_SIZE;
+ 1734              		.loc 1 388 17 is_stmt 1 view .LVU500
+ 388:Device/Dev_W25Qxx.c ****                 info.block_size  = W25Q128FV_BLOCK_SIZE;
+ 1735              		.loc 1 388 34 is_stmt 0 view .LVU501
+ 1736 0092 ADF81A30 		strh	r3, [sp, #26]	@ movhi
+ 389:Device/Dev_W25Qxx.c ****                 info.sector_num  = W25Q128FV_SECTOR_NUM;
+ 1737              		.loc 1 389 17 is_stmt 1 view .LVU502
+ 389:Device/Dev_W25Qxx.c ****                 info.sector_num  = W25Q128FV_SECTOR_NUM;
+ 1738              		.loc 1 389 34 is_stmt 0 view .LVU503
+ 1739 0096 4FF48033 		mov	r3, #65536
+ 1740 009a 0493     		str	r3, [sp, #16]
+ 390:Device/Dev_W25Qxx.c ****                 info.sector_size = W25Q128FV_SECTOR_SIZE;
+ 1741              		.loc 1 390 17 is_stmt 1 view .LVU504
+ 390:Device/Dev_W25Qxx.c ****                 info.sector_size = W25Q128FV_SECTOR_SIZE;
+ 1742              		.loc 1 390 34 is_stmt 0 view .LVU505
+ 1743 009c 4FF48053 		mov	r3, #4096
+ 1744 00a0 ADF81C30 		strh	r3, [sp, #28]	@ movhi
+ 391:Device/Dev_W25Qxx.c ****                 break;
+ 1745              		.loc 1 391 17 is_stmt 1 view .LVU506
+ 391:Device/Dev_W25Qxx.c ****                 break;
+ 1746              		.loc 1 391 34 is_stmt 0 view .LVU507
+ 1747 00a4 0593     		str	r3, [sp, #20]
+ 392:Device/Dev_W25Qxx.c **** 
+ 1748              		.loc 1 392 17 is_stmt 1 view .LVU508
+ 1749 00a6 C2E7     		b	.L133
+ 1750              		.cfi_endproc
+ 1751              	.LFE11:
+ 1753              		.global	DevW25Qxx
+ 1754              		.section	.data.DevW25Qxx,"aw"
+ 1755              		.align	2
+ 1758              	DevW25Qxx:
+ 1759 0000 00000000 		.word	DevW25Qxx_Init
+ 1760 0004 00000000 		.word	DevW25Qxx_WriteSector
+ 1761 0008 00000000 		.word	DevW25Qxx_ReadSector
+ 1762 000c 00000000 		.word	DevW25Qxx_EraseSector
+ 1763 0010 00000000 		.word	DevW25Qxx_EraseChip
+ 1764 0014 00000000 		.word	DevW25Qxx_Get_Info
+ 1765 0018 00000000 		.word	DevW25Qxx_Get_Section_StartAddr
+ 1766              		.text
+ 1767              	.Letext0:
+ 1768              		.file 2 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\machine\\_defau
+ 1769              		.file 3 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 1770              		.file 4 "Device/Dev_W25Qxx.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s 			page 42
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Dev_W25Qxx.c
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:20     .text.DevW25Qxx_BusTrans:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:25     .text.DevW25Qxx_BusTrans:00000000 DevW25Qxx_BusTrans
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:95     .text.DevW25Qxx_BusReceive:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:100    .text.DevW25Qxx_BusReceive:00000000 DevW25Qxx_BusReceive
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:169    .text.DevW25Qxx_Reset:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:174    .text.DevW25Qxx_Reset:00000000 DevW25Qxx_Reset
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:266    .text.DevW25Qxx_GetStatue:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:271    .text.DevW25Qxx_GetStatue:00000000 DevW25Qxx_GetStatue
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:383    .text.DevW25Qxx_WriteEnableCtl:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:388    .text.DevW25Qxx_WriteEnableCtl:00000000 DevW25Qxx_WriteEnableCtl
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:536    .text.DevW25Qxx_Get_ProdType:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:541    .text.DevW25Qxx_Get_ProdType:00000000 DevW25Qxx_Get_ProdType
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:624    .text.DevW25Qxx_Get_ProdType:00000054 $d
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:684    .text.DevW25Qxx_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:689    .text.DevW25Qxx_Init:00000000 DevW25Qxx_Init
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:858    .text.DevW25Qxx_ReadSector:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:863    .text.DevW25Qxx_ReadSector:00000000 DevW25Qxx_ReadSector
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1010   .text.DevW25Qxx_WriteSector:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1015   .text.DevW25Qxx_WriteSector:00000000 DevW25Qxx_WriteSector
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1254   .text.DevW25Qxx_EraseChip:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1259   .text.DevW25Qxx_EraseChip:00000000 DevW25Qxx_EraseChip
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1396   .text.DevW25Qxx_EraseChip:00000074 $d
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1401   .text.DevW25Qxx_EraseSector:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1406   .text.DevW25Qxx_EraseSector:00000000 DevW25Qxx_EraseSector
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1570   .text.DevW25Qxx_Get_Section_StartAddr:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1575   .text.DevW25Qxx_Get_Section_StartAddr:00000000 DevW25Qxx_Get_Section_StartAddr
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1615   .text.DevW25Qxx_Get_Info:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1620   .text.DevW25Qxx_Get_Info:00000000 DevW25Qxx_Get_Info
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1758   .data.DevW25Qxx:00000000 DevW25Qxx
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:1755   .data.DevW25Qxx:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:629    .text.DevW25Qxx_Get_ProdType:00000059 $d
+C:\Users\HUAV\AppData\Local\Temp\ccSNJEbW.s:629    .text.DevW25Qxx_Get_ProdType:0000005a $t
+
+NO UNDEFINED SYMBOLS

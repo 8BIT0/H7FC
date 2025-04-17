@@ -1,0 +1,2147 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"filter.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.Filter_Item_Update,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	Filter_Item_Update:
+  26              	.LVL0:
+  27              	.LFB9:
+  28              		.file 1 "Algorithm/Filter_Dep/filter.c"
+   1:Algorithm/Filter_Dep/filter.c **** /*
+   2:Algorithm/Filter_Dep/filter.c ****  * we use tcm section to increase the speed on filter algorithm function execution
+   3:Algorithm/Filter_Dep/filter.c ****  */
+   4:Algorithm/Filter_Dep/filter.c **** 
+   5:Algorithm/Filter_Dep/filter.c **** #include "filter.h"
+   6:Algorithm/Filter_Dep/filter.c **** 
+   7:Algorithm/Filter_Dep/filter.c **** #define PI 3.14159265359
+   8:Algorithm/Filter_Dep/filter.c **** 
+   9:Algorithm/Filter_Dep/filter.c **** #define To_RCParam_Ptr(x) ((RC_Filter_Param_TypeDef *)x)
+  10:Algorithm/Filter_Dep/filter.c **** 
+  11:Algorithm/Filter_Dep/filter.c **** /* internal function */
+  12:Algorithm/Filter_Dep/filter.c **** static void Filter_Item_Update(item_obj **header, item_obj **ender, float cur_data);
+  13:Algorithm/Filter_Dep/filter.c **** static bool Filter_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender);
+  14:Algorithm/Filter_Dep/filter.c **** 
+  15:Algorithm/Filter_Dep/filter.c **** /* external function */
+  16:Algorithm/Filter_Dep/filter.c **** /* butterworth filter section */
+  17:Algorithm/Filter_Dep/filter.c **** static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_obj);
+  18:Algorithm/Filter_Dep/filter.c **** static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e);
+  19:Algorithm/Filter_Dep/filter.c **** /* smooth window filter section */
+  20:Algorithm/Filter_Dep/filter.c **** static SW_Object_Handle SmoothWindow_Init(uint8_t window_size);
+  21:Algorithm/Filter_Dep/filter.c **** static float SmoothWindow_Update(SW_Object_Handle hdl, float cur_e);
+  22:Algorithm/Filter_Dep/filter.c **** /* rc filter section */
+  23:Algorithm/Filter_Dep/filter.c **** static RC_Object_Handle RC_Filter_Init(RC_Filter_Param_TypeDef *obj);
+  24:Algorithm/Filter_Dep/filter.c **** static float RC_Filter_Update(RC_Object_Handle hdl, uint32_t sys_ms, float in);
+  25:Algorithm/Filter_Dep/filter.c **** 
+  26:Algorithm/Filter_Dep/filter.c **** Butterworth_Filter_TypeDef Butterworth = {
+  27:Algorithm/Filter_Dep/filter.c ****     .init = Butterworth_Init,
+  28:Algorithm/Filter_Dep/filter.c ****     .update = Butterworth_Filter_Update,
+  29:Algorithm/Filter_Dep/filter.c **** };
+  30:Algorithm/Filter_Dep/filter.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 2
+
+
+  31:Algorithm/Filter_Dep/filter.c **** SmoothWindow_Filter_TypeDef SmoothWindow = {
+  32:Algorithm/Filter_Dep/filter.c ****     .init = SmoothWindow_Init,
+  33:Algorithm/Filter_Dep/filter.c ****     .update = SmoothWindow_Update,
+  34:Algorithm/Filter_Dep/filter.c **** };
+  35:Algorithm/Filter_Dep/filter.c **** 
+  36:Algorithm/Filter_Dep/filter.c **** RC_Filter_TypeDef RCFilter = {
+  37:Algorithm/Filter_Dep/filter.c ****     .init = RC_Filter_Init,
+  38:Algorithm/Filter_Dep/filter.c ****     .update = RC_Filter_Update,
+  39:Algorithm/Filter_Dep/filter.c **** };
+  40:Algorithm/Filter_Dep/filter.c **** 
+  41:Algorithm/Filter_Dep/filter.c **** /********************************************************** general filter section ****************
+  42:Algorithm/Filter_Dep/filter.c **** static bool Filter_List_Create(uint8_t order, item_obj *item, list_obj **header, item_obj **ender)
+  43:Algorithm/Filter_Dep/filter.c **** {
+  44:Algorithm/Filter_Dep/filter.c ****     for (uint8_t i = 0; i < order; i++)
+  45:Algorithm/Filter_Dep/filter.c ****     {
+  46:Algorithm/Filter_Dep/filter.c ****         float *u_temp = (float *)FILTER_MALLOC(sizeof(float));
+  47:Algorithm/Filter_Dep/filter.c **** 
+  48:Algorithm/Filter_Dep/filter.c ****         if (u_temp == NULL)
+  49:Algorithm/Filter_Dep/filter.c ****         {
+  50:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(u_temp);
+  51:Algorithm/Filter_Dep/filter.c ****             return false;
+  52:Algorithm/Filter_Dep/filter.c ****         }
+  53:Algorithm/Filter_Dep/filter.c ****         else
+  54:Algorithm/Filter_Dep/filter.c ****         {
+  55:Algorithm/Filter_Dep/filter.c ****             List_ItemInit(&item[i], u_temp);
+  56:Algorithm/Filter_Dep/filter.c ****             *u_temp = 0.0f;
+  57:Algorithm/Filter_Dep/filter.c ****         }
+  58:Algorithm/Filter_Dep/filter.c **** 
+  59:Algorithm/Filter_Dep/filter.c ****         /* link element */
+  60:Algorithm/Filter_Dep/filter.c ****         if (i > 0)
+  61:Algorithm/Filter_Dep/filter.c ****         {
+  62:Algorithm/Filter_Dep/filter.c ****             item[i - 1].nxt = &item[i];
+  63:Algorithm/Filter_Dep/filter.c ****             item[i].prv = &item[i - 1];
+  64:Algorithm/Filter_Dep/filter.c ****         }
+  65:Algorithm/Filter_Dep/filter.c ****         else
+  66:Algorithm/Filter_Dep/filter.c ****             *header = &item[0];
+  67:Algorithm/Filter_Dep/filter.c ****     }
+  68:Algorithm/Filter_Dep/filter.c **** 
+  69:Algorithm/Filter_Dep/filter.c ****     *ender = &item[order - 1];
+  70:Algorithm/Filter_Dep/filter.c **** 
+  71:Algorithm/Filter_Dep/filter.c ****     return true;
+  72:Algorithm/Filter_Dep/filter.c **** }
+  73:Algorithm/Filter_Dep/filter.c **** 
+  74:Algorithm/Filter_Dep/filter.c **** static void Filter_Item_Update(item_obj **header, item_obj **ender, float cur_data)
+  75:Algorithm/Filter_Dep/filter.c **** {
+  29              		.loc 1 75 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34              		.loc 1 75 1 is_stmt 0 view .LVU1
+  35 0000 10B4     		push	{r4}
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 4
+  38              		.cfi_offset 4, -4
+  76:Algorithm/Filter_Dep/filter.c ****     item_obj *i_tmp = NULL;
+  39              		.loc 1 76 5 is_stmt 1 view .LVU2
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 3
+
+
+  40              	.LVL1:
+  77:Algorithm/Filter_Dep/filter.c **** 
+  78:Algorithm/Filter_Dep/filter.c ****     *((float *)((*ender)->data)) = cur_data;
+  41              		.loc 1 78 5 view .LVU3
+  42              		.loc 1 78 18 is_stmt 0 view .LVU4
+  43 0002 0B68     		ldr	r3, [r1]
+  44              		.loc 1 78 25 view .LVU5
+  45 0004 1B69     		ldr	r3, [r3, #16]
+  46              		.loc 1 78 34 view .LVU6
+  47 0006 83ED000A 		vstr.32	s0, [r3]
+  79:Algorithm/Filter_Dep/filter.c ****     (*ender)->prv->nxt = NULL;
+  48              		.loc 1 79 5 is_stmt 1 view .LVU7
+  49              		.loc 1 79 6 is_stmt 0 view .LVU8
+  50 000a 0B68     		ldr	r3, [r1]
+  51              		.loc 1 79 13 view .LVU9
+  52 000c 9B68     		ldr	r3, [r3, #8]
+  53              		.loc 1 79 24 view .LVU10
+  54 000e 0022     		movs	r2, #0
+  55 0010 DA60     		str	r2, [r3, #12]
+  80:Algorithm/Filter_Dep/filter.c ****     i_tmp = (*ender)->prv;
+  56              		.loc 1 80 5 is_stmt 1 view .LVU11
+  57              		.loc 1 80 14 is_stmt 0 view .LVU12
+  58 0012 0B68     		ldr	r3, [r1]
+  59              		.loc 1 80 11 view .LVU13
+  60 0014 9C68     		ldr	r4, [r3, #8]
+  61              	.LVL2:
+  81:Algorithm/Filter_Dep/filter.c ****     (*ender)->prv = NULL;
+  62              		.loc 1 81 5 is_stmt 1 view .LVU14
+  63              		.loc 1 81 19 is_stmt 0 view .LVU15
+  64 0016 9A60     		str	r2, [r3, #8]
+  82:Algorithm/Filter_Dep/filter.c ****     (*header)->prv = *ender;
+  65              		.loc 1 82 5 is_stmt 1 view .LVU16
+  66              		.loc 1 82 6 is_stmt 0 view .LVU17
+  67 0018 0268     		ldr	r2, [r0]
+  68              		.loc 1 82 22 view .LVU18
+  69 001a 0B68     		ldr	r3, [r1]
+  70              		.loc 1 82 20 view .LVU19
+  71 001c 9360     		str	r3, [r2, #8]
+  83:Algorithm/Filter_Dep/filter.c ****     (*ender)->nxt = *header;
+  72              		.loc 1 83 5 is_stmt 1 view .LVU20
+  73              		.loc 1 83 21 is_stmt 0 view .LVU21
+  74 001e 0268     		ldr	r2, [r0]
+  75              		.loc 1 83 19 view .LVU22
+  76 0020 DA60     		str	r2, [r3, #12]
+  84:Algorithm/Filter_Dep/filter.c ****     *header = *ender;
+  77              		.loc 1 84 5 is_stmt 1 view .LVU23
+  78              		.loc 1 84 15 is_stmt 0 view .LVU24
+  79 0022 0B68     		ldr	r3, [r1]
+  80              		.loc 1 84 13 view .LVU25
+  81 0024 0360     		str	r3, [r0]
+  85:Algorithm/Filter_Dep/filter.c ****     *ender = i_tmp;
+  82              		.loc 1 85 5 is_stmt 1 view .LVU26
+  83              		.loc 1 85 12 is_stmt 0 view .LVU27
+  84 0026 0C60     		str	r4, [r1]
+  86:Algorithm/Filter_Dep/filter.c **** }
+  85              		.loc 1 86 1 view .LVU28
+  86 0028 5DF8044B 		ldr	r4, [sp], #4
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 4
+
+
+  87              	.LCFI1:
+  88              		.cfi_restore 4
+  89              		.cfi_def_cfa_offset 0
+  90              	.LVL3:
+  91              		.loc 1 86 1 view .LVU29
+  92 002c 7047     		bx	lr
+  93              		.cfi_endproc
+  94              	.LFE9:
+  96              		.section	.text.Butterworth_Filter_Update,"ax",%progbits
+  97              		.align	1
+  98              		.syntax unified
+  99              		.thumb
+ 100              		.thumb_func
+ 102              	Butterworth_Filter_Update:
+ 103              	.LVL4:
+ 104              	.LFB11:
+  87:Algorithm/Filter_Dep/filter.c **** 
+  88:Algorithm/Filter_Dep/filter.c **** /********************************************************** butterworth filter section ************
+  89:Algorithm/Filter_Dep/filter.c **** static BWF_Object_Handle Butterworth_Init(const FilterParam_Obj_TypeDef *param_obj)
+  90:Algorithm/Filter_Dep/filter.c **** {
+  91:Algorithm/Filter_Dep/filter.c ****     Filter_ButterworthParam_TypeDef *BWF_Obj = NULL;
+  92:Algorithm/Filter_Dep/filter.c ****     uint8_t e_cnt = 0;
+  93:Algorithm/Filter_Dep/filter.c ****     uint8_t u_cnt = 0;
+  94:Algorithm/Filter_Dep/filter.c **** 
+  95:Algorithm/Filter_Dep/filter.c ****     if(param_obj == NULL)
+  96:Algorithm/Filter_Dep/filter.c ****         return 0;
+  97:Algorithm/Filter_Dep/filter.c **** 
+  98:Algorithm/Filter_Dep/filter.c ****     if (param_obj->order > 1)
+  99:Algorithm/Filter_Dep/filter.c ****     {
+ 100:Algorithm/Filter_Dep/filter.c ****         e_cnt = param_obj->order + 1;
+ 101:Algorithm/Filter_Dep/filter.c ****         u_cnt = param_obj->order;
+ 102:Algorithm/Filter_Dep/filter.c ****         
+ 103:Algorithm/Filter_Dep/filter.c ****         if ((param_obj->ep_list == NULL) || (param_obj->up_list == NULL))
+ 104:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 105:Algorithm/Filter_Dep/filter.c **** 
+ 106:Algorithm/Filter_Dep/filter.c ****         BWF_Obj = FILTER_MALLOC(sizeof(Filter_ButterworthParam_TypeDef));
+ 107:Algorithm/Filter_Dep/filter.c **** 
+ 108:Algorithm/Filter_Dep/filter.c ****         if (BWF_Obj == NULL)
+ 109:Algorithm/Filter_Dep/filter.c ****         {
+ 110:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 111:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 112:Algorithm/Filter_Dep/filter.c ****         }
+ 113:Algorithm/Filter_Dep/filter.c **** 
+ 114:Algorithm/Filter_Dep/filter.c ****         BWF_Obj->p_e_data_cache = FILTER_MALLOC(sizeof(item_obj) * e_cnt);
+ 115:Algorithm/Filter_Dep/filter.c ****         if (BWF_Obj->p_e_data_cache == NULL)
+ 116:Algorithm/Filter_Dep/filter.c ****         {
+ 117:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_e_data_cache);
+ 118:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 119:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 120:Algorithm/Filter_Dep/filter.c ****         }
+ 121:Algorithm/Filter_Dep/filter.c ****         else
+ 122:Algorithm/Filter_Dep/filter.c ****         {
+ 123:Algorithm/Filter_Dep/filter.c ****             if (!Filter_List_Create(e_cnt, BWF_Obj->p_e_data_cache, &(BWF_Obj->p_e_list_header), &(
+ 124:Algorithm/Filter_Dep/filter.c ****             {
+ 125:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj->p_e_data_cache);
+ 126:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj);
+ 127:Algorithm/Filter_Dep/filter.c ****                 return 0;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 5
+
+
+ 128:Algorithm/Filter_Dep/filter.c ****             }
+ 129:Algorithm/Filter_Dep/filter.c ****         }
+ 130:Algorithm/Filter_Dep/filter.c **** 
+ 131:Algorithm/Filter_Dep/filter.c ****         BWF_Obj->p_u_data_cache = FILTER_MALLOC(sizeof(item_obj) * u_cnt);
+ 132:Algorithm/Filter_Dep/filter.c ****         if (BWF_Obj->p_u_data_cache == NULL)
+ 133:Algorithm/Filter_Dep/filter.c ****         {
+ 134:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_e_data_cache);
+ 135:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 136:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 137:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 138:Algorithm/Filter_Dep/filter.c ****         }
+ 139:Algorithm/Filter_Dep/filter.c ****         else
+ 140:Algorithm/Filter_Dep/filter.c ****         {
+ 141:Algorithm/Filter_Dep/filter.c ****             if (!Filter_List_Create(u_cnt, BWF_Obj->p_u_data_cache, &(BWF_Obj->p_u_list_header), &(
+ 142:Algorithm/Filter_Dep/filter.c ****             {
+ 143:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj->p_e_data_cache);
+ 144:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 145:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj);
+ 146:Algorithm/Filter_Dep/filter.c ****                 return 0;
+ 147:Algorithm/Filter_Dep/filter.c ****             }
+ 148:Algorithm/Filter_Dep/filter.c ****         }
+ 149:Algorithm/Filter_Dep/filter.c **** 
+ 150:Algorithm/Filter_Dep/filter.c ****         BWF_Obj->e_para_buf = FILTER_MALLOC(sizeof(float) * e_cnt);
+ 151:Algorithm/Filter_Dep/filter.c ****         if(BWF_Obj->e_para_buf == NULL)
+ 152:Algorithm/Filter_Dep/filter.c ****         {
+ 153:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->e_para_buf);
+ 154:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_e_data_cache);
+ 155:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 156:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 157:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 158:Algorithm/Filter_Dep/filter.c ****         }
+ 159:Algorithm/Filter_Dep/filter.c **** 
+ 160:Algorithm/Filter_Dep/filter.c ****         BWF_Obj->u_para_buf = FILTER_MALLOC(sizeof(float) * u_cnt);
+ 161:Algorithm/Filter_Dep/filter.c ****         if(BWF_Obj->u_para_buf == NULL)
+ 162:Algorithm/Filter_Dep/filter.c ****         {
+ 163:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->e_para_buf);
+ 164:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->u_para_buf);
+ 165:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_e_data_cache);
+ 166:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 167:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 168:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 169:Algorithm/Filter_Dep/filter.c ****         }
+ 170:Algorithm/Filter_Dep/filter.c **** 
+ 171:Algorithm/Filter_Dep/filter.c ****         BWF_Obj->order = param_obj->order;
+ 172:Algorithm/Filter_Dep/filter.c **** 
+ 173:Algorithm/Filter_Dep/filter.c ****         for(uint8_t i = 0; i < e_cnt; i++)
+ 174:Algorithm/Filter_Dep/filter.c ****         {
+ 175:Algorithm/Filter_Dep/filter.c ****             BWF_Obj->e_para_buf[i] = param_obj->ep_list[i].p * param_obj->ep_list[i].scale;
+ 176:Algorithm/Filter_Dep/filter.c ****         
+ 177:Algorithm/Filter_Dep/filter.c ****             if(i < u_cnt)
+ 178:Algorithm/Filter_Dep/filter.c ****             {
+ 179:Algorithm/Filter_Dep/filter.c ****                 BWF_Obj->u_para_buf[i] = param_obj->up_list[i].p * param_obj->up_list[i].scale;
+ 180:Algorithm/Filter_Dep/filter.c ****             }
+ 181:Algorithm/Filter_Dep/filter.c ****         }
+ 182:Algorithm/Filter_Dep/filter.c ****     }
+ 183:Algorithm/Filter_Dep/filter.c **** 
+ 184:Algorithm/Filter_Dep/filter.c ****     return (uint32_t)BWF_Obj;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 6
+
+
+ 185:Algorithm/Filter_Dep/filter.c **** }
+ 186:Algorithm/Filter_Dep/filter.c **** 
+ 187:Algorithm/Filter_Dep/filter.c **** static float Butterworth_Filter_Update(BWF_Object_Handle obj, float cur_e)
+ 188:Algorithm/Filter_Dep/filter.c **** {
+ 105              		.loc 1 188 1 is_stmt 1 view -0
+ 106              		.cfi_startproc
+ 107              		@ args = 0, pretend = 0, frame = 0
+ 108              		@ frame_needed = 0, uses_anonymous_args = 0
+ 109              		.loc 1 188 1 is_stmt 0 view .LVU31
+ 110 0000 38B5     		push	{r3, r4, r5, lr}
+ 111              	.LCFI2:
+ 112              		.cfi_def_cfa_offset 16
+ 113              		.cfi_offset 3, -16
+ 114              		.cfi_offset 4, -12
+ 115              		.cfi_offset 5, -8
+ 116              		.cfi_offset 14, -4
+ 117 0002 2DED028B 		vpush.64	{d8}
+ 118              	.LCFI3:
+ 119              		.cfi_def_cfa_offset 24
+ 120              		.cfi_offset 80, -24
+ 121              		.cfi_offset 81, -20
+ 189:Algorithm/Filter_Dep/filter.c ****     Filter_ButterworthParam_TypeDef *filter_obj = NULL;
+ 122              		.loc 1 189 5 is_stmt 1 view .LVU32
+ 123              	.LVL5:
+ 190:Algorithm/Filter_Dep/filter.c ****     item_obj *u_item = NULL;
+ 124              		.loc 1 190 5 view .LVU33
+ 191:Algorithm/Filter_Dep/filter.c ****     item_obj *e_item = NULL;
+ 125              		.loc 1 191 5 view .LVU34
+ 192:Algorithm/Filter_Dep/filter.c **** 
+ 193:Algorithm/Filter_Dep/filter.c ****     float u_tmp = 0.0f;
+ 126              		.loc 1 193 5 view .LVU35
+ 194:Algorithm/Filter_Dep/filter.c ****     float E_Additive = 0.0f;
+ 127              		.loc 1 194 5 view .LVU36
+ 195:Algorithm/Filter_Dep/filter.c ****     float U_Additive = 0.0f;
+ 128              		.loc 1 195 5 view .LVU37
+ 196:Algorithm/Filter_Dep/filter.c **** 
+ 197:Algorithm/Filter_Dep/filter.c ****     if (obj)
+ 129              		.loc 1 197 5 view .LVU38
+ 130              		.loc 1 197 8 is_stmt 0 view .LVU39
+ 131 0006 30B9     		cbnz	r0, .L11
+ 193:Algorithm/Filter_Dep/filter.c ****     float E_Additive = 0.0f;
+ 132              		.loc 1 193 11 view .LVU40
+ 133 0008 9FED228A 		vldr.32	s16, .L13
+ 198:Algorithm/Filter_Dep/filter.c ****     {
+ 199:Algorithm/Filter_Dep/filter.c ****         filter_obj = (Filter_ButterworthParam_TypeDef *)obj;
+ 200:Algorithm/Filter_Dep/filter.c ****         Filter_Item_Update(&(filter_obj->p_e_list_header), &(filter_obj->p_e_list_ender), cur_e);
+ 201:Algorithm/Filter_Dep/filter.c **** 
+ 202:Algorithm/Filter_Dep/filter.c ****         u_item = filter_obj->p_u_list_header;
+ 203:Algorithm/Filter_Dep/filter.c ****         e_item = filter_obj->p_e_list_header;
+ 204:Algorithm/Filter_Dep/filter.c **** 
+ 205:Algorithm/Filter_Dep/filter.c ****         for (uint8_t i = 0; i <= filter_obj->order; i++)
+ 206:Algorithm/Filter_Dep/filter.c ****         {
+ 207:Algorithm/Filter_Dep/filter.c ****             /* comput E additive */
+ 208:Algorithm/Filter_Dep/filter.c ****             if (e_item)
+ 209:Algorithm/Filter_Dep/filter.c ****             {
+ 210:Algorithm/Filter_Dep/filter.c ****                 E_Additive += filter_obj->e_para_buf[i] * (*(float *)(e_item->data));
+ 211:Algorithm/Filter_Dep/filter.c ****                 e_item = e_item->nxt;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 7
+
+
+ 212:Algorithm/Filter_Dep/filter.c ****             }
+ 213:Algorithm/Filter_Dep/filter.c **** 
+ 214:Algorithm/Filter_Dep/filter.c ****             /* comput U additive */
+ 215:Algorithm/Filter_Dep/filter.c ****             if (i < filter_obj->order && u_item)
+ 216:Algorithm/Filter_Dep/filter.c ****             {
+ 217:Algorithm/Filter_Dep/filter.c ****                 U_Additive += filter_obj->u_para_buf[i] * (*(float *)(u_item->data));
+ 218:Algorithm/Filter_Dep/filter.c ****                 u_item = u_item->nxt;
+ 219:Algorithm/Filter_Dep/filter.c ****             }
+ 220:Algorithm/Filter_Dep/filter.c ****         }
+ 221:Algorithm/Filter_Dep/filter.c **** 
+ 222:Algorithm/Filter_Dep/filter.c ****         u_tmp = E_Additive - U_Additive;
+ 223:Algorithm/Filter_Dep/filter.c ****         /* update last time filted data */
+ 224:Algorithm/Filter_Dep/filter.c ****         Filter_Item_Update(&(filter_obj->p_u_list_header), &(filter_obj->p_u_list_ender), u_tmp);
+ 225:Algorithm/Filter_Dep/filter.c ****     }
+ 226:Algorithm/Filter_Dep/filter.c **** 
+ 227:Algorithm/Filter_Dep/filter.c ****     return u_tmp;
+ 134              		.loc 1 227 5 is_stmt 1 view .LVU41
+ 135              	.LVL6:
+ 136              	.L3:
+ 228:Algorithm/Filter_Dep/filter.c **** }
+ 137              		.loc 1 228 1 is_stmt 0 view .LVU42
+ 138 000c B0EE480A 		vmov.f32	s0, s16
+ 139 0010 BDEC028B 		vldm	sp!, {d8}
+ 140              	.LCFI4:
+ 141              		.cfi_remember_state
+ 142              		.cfi_restore 80
+ 143              		.cfi_restore 81
+ 144              		.cfi_def_cfa_offset 16
+ 145 0014 38BD     		pop	{r3, r4, r5, pc}
+ 146              	.LVL7:
+ 147              	.L11:
+ 148              	.LCFI5:
+ 149              		.cfi_restore_state
+ 150              		.loc 1 228 1 view .LVU43
+ 151 0016 0446     		mov	r4, r0
+ 199:Algorithm/Filter_Dep/filter.c ****         Filter_Item_Update(&(filter_obj->p_e_list_header), &(filter_obj->p_e_list_ender), cur_e);
+ 152              		.loc 1 199 9 is_stmt 1 view .LVU44
+ 153              	.LVL8:
+ 200:Algorithm/Filter_Dep/filter.c **** 
+ 154              		.loc 1 200 9 view .LVU45
+ 155 0018 00F11001 		add	r1, r0, #16
+ 156 001c 0C30     		adds	r0, r0, #12
+ 157              	.LVL9:
+ 200:Algorithm/Filter_Dep/filter.c **** 
+ 158              		.loc 1 200 9 is_stmt 0 view .LVU46
+ 159 001e FFF7FEFF 		bl	Filter_Item_Update
+ 160              	.LVL10:
+ 202:Algorithm/Filter_Dep/filter.c ****         e_item = filter_obj->p_e_list_header;
+ 161              		.loc 1 202 9 is_stmt 1 view .LVU47
+ 202:Algorithm/Filter_Dep/filter.c ****         e_item = filter_obj->p_e_list_header;
+ 162              		.loc 1 202 16 is_stmt 0 view .LVU48
+ 163 0022 6569     		ldr	r5, [r4, #20]
+ 164              	.LVL11:
+ 203:Algorithm/Filter_Dep/filter.c **** 
+ 165              		.loc 1 203 9 is_stmt 1 view .LVU49
+ 203:Algorithm/Filter_Dep/filter.c **** 
+ 166              		.loc 1 203 16 is_stmt 0 view .LVU50
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 8
+
+
+ 167 0024 E168     		ldr	r1, [r4, #12]
+ 168              	.LVL12:
+ 205:Algorithm/Filter_Dep/filter.c ****         {
+ 169              		.loc 1 205 9 is_stmt 1 view .LVU51
+ 170              	.LBB2:
+ 205:Algorithm/Filter_Dep/filter.c ****         {
+ 171              		.loc 1 205 14 view .LVU52
+ 205:Algorithm/Filter_Dep/filter.c ****         {
+ 172              		.loc 1 205 22 is_stmt 0 view .LVU53
+ 173 0026 0023     		movs	r3, #0
+ 174              	.LBE2:
+ 195:Algorithm/Filter_Dep/filter.c **** 
+ 175              		.loc 1 195 11 view .LVU54
+ 176 0028 9FED1A8A 		vldr.32	s16, .L13
+ 194:Algorithm/Filter_Dep/filter.c ****     float U_Additive = 0.0f;
+ 177              		.loc 1 194 11 view .LVU55
+ 178 002c B0EE487A 		vmov.f32	s14, s16
+ 179              	.LBB3:
+ 205:Algorithm/Filter_Dep/filter.c ****         {
+ 180              		.loc 1 205 9 view .LVU56
+ 181 0030 01E0     		b	.L5
+ 182              	.LVL13:
+ 183              	.L7:
+ 205:Algorithm/Filter_Dep/filter.c ****         {
+ 184              		.loc 1 205 53 is_stmt 1 discriminator 2 view .LVU57
+ 205:Algorithm/Filter_Dep/filter.c ****         {
+ 185              		.loc 1 205 54 is_stmt 0 discriminator 2 view .LVU58
+ 186 0032 0133     		adds	r3, r3, #1
+ 187              	.LVL14:
+ 205:Algorithm/Filter_Dep/filter.c ****         {
+ 188              		.loc 1 205 54 discriminator 2 view .LVU59
+ 189 0034 DBB2     		uxtb	r3, r3
+ 190              	.LVL15:
+ 191              	.L5:
+ 205:Algorithm/Filter_Dep/filter.c ****         {
+ 192              		.loc 1 205 29 is_stmt 1 discriminator 1 view .LVU60
+ 205:Algorithm/Filter_Dep/filter.c ****         {
+ 193              		.loc 1 205 44 is_stmt 0 discriminator 1 view .LVU61
+ 194 0036 2278     		ldrb	r2, [r4]	@ zero_extendqisi2
+ 205:Algorithm/Filter_Dep/filter.c ****         {
+ 195              		.loc 1 205 9 discriminator 1 view .LVU62
+ 196 0038 9A42     		cmp	r2, r3
+ 197 003a 1FD3     		bcc	.L12
+ 208:Algorithm/Filter_Dep/filter.c ****             {
+ 198              		.loc 1 208 13 is_stmt 1 view .LVU63
+ 208:Algorithm/Filter_Dep/filter.c ****             {
+ 199              		.loc 1 208 16 is_stmt 0 view .LVU64
+ 200 003c 61B1     		cbz	r1, .L6
+ 210:Algorithm/Filter_Dep/filter.c ****                 e_item = e_item->nxt;
+ 201              		.loc 1 210 17 is_stmt 1 view .LVU65
+ 210:Algorithm/Filter_Dep/filter.c ****                 e_item = e_item->nxt;
+ 202              		.loc 1 210 41 is_stmt 0 view .LVU66
+ 203 003e 6068     		ldr	r0, [r4, #4]
+ 210:Algorithm/Filter_Dep/filter.c ****                 e_item = e_item->nxt;
+ 204              		.loc 1 210 53 view .LVU67
+ 205 0040 00EB8300 		add	r0, r0, r3, lsl #2
+ 206 0044 D0ED007A 		vldr.32	s15, [r0]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 9
+
+
+ 210:Algorithm/Filter_Dep/filter.c ****                 e_item = e_item->nxt;
+ 207              		.loc 1 210 77 view .LVU68
+ 208 0048 0869     		ldr	r0, [r1, #16]
+ 210:Algorithm/Filter_Dep/filter.c ****                 e_item = e_item->nxt;
+ 209              		.loc 1 210 60 view .LVU69
+ 210 004a D0ED006A 		vldr.32	s13, [r0]
+ 210:Algorithm/Filter_Dep/filter.c ****                 e_item = e_item->nxt;
+ 211              		.loc 1 210 57 view .LVU70
+ 212 004e 67EEA67A 		vmul.f32	s15, s15, s13
+ 210:Algorithm/Filter_Dep/filter.c ****                 e_item = e_item->nxt;
+ 213              		.loc 1 210 28 view .LVU71
+ 214 0052 37EE277A 		vadd.f32	s14, s14, s15
+ 215              	.LVL16:
+ 211:Algorithm/Filter_Dep/filter.c ****             }
+ 216              		.loc 1 211 17 is_stmt 1 view .LVU72
+ 211:Algorithm/Filter_Dep/filter.c ****             }
+ 217              		.loc 1 211 24 is_stmt 0 view .LVU73
+ 218 0056 C968     		ldr	r1, [r1, #12]
+ 219              	.LVL17:
+ 220              	.L6:
+ 215:Algorithm/Filter_Dep/filter.c ****             {
+ 221              		.loc 1 215 13 is_stmt 1 view .LVU74
+ 215:Algorithm/Filter_Dep/filter.c ****             {
+ 222              		.loc 1 215 16 is_stmt 0 view .LVU75
+ 223 0058 9A42     		cmp	r2, r3
+ 224 005a EAD9     		bls	.L7
+ 215:Algorithm/Filter_Dep/filter.c ****             {
+ 225              		.loc 1 215 39 discriminator 1 view .LVU76
+ 226 005c 002D     		cmp	r5, #0
+ 227 005e E8D0     		beq	.L7
+ 217:Algorithm/Filter_Dep/filter.c ****                 u_item = u_item->nxt;
+ 228              		.loc 1 217 17 is_stmt 1 view .LVU77
+ 217:Algorithm/Filter_Dep/filter.c ****                 u_item = u_item->nxt;
+ 229              		.loc 1 217 41 is_stmt 0 view .LVU78
+ 230 0060 A268     		ldr	r2, [r4, #8]
+ 217:Algorithm/Filter_Dep/filter.c ****                 u_item = u_item->nxt;
+ 231              		.loc 1 217 53 view .LVU79
+ 232 0062 02EB8302 		add	r2, r2, r3, lsl #2
+ 233 0066 D2ED007A 		vldr.32	s15, [r2]
+ 217:Algorithm/Filter_Dep/filter.c ****                 u_item = u_item->nxt;
+ 234              		.loc 1 217 77 view .LVU80
+ 235 006a 2A69     		ldr	r2, [r5, #16]
+ 217:Algorithm/Filter_Dep/filter.c ****                 u_item = u_item->nxt;
+ 236              		.loc 1 217 60 view .LVU81
+ 237 006c D2ED006A 		vldr.32	s13, [r2]
+ 217:Algorithm/Filter_Dep/filter.c ****                 u_item = u_item->nxt;
+ 238              		.loc 1 217 57 view .LVU82
+ 239 0070 67EEA67A 		vmul.f32	s15, s15, s13
+ 217:Algorithm/Filter_Dep/filter.c ****                 u_item = u_item->nxt;
+ 240              		.loc 1 217 28 view .LVU83
+ 241 0074 38EE278A 		vadd.f32	s16, s16, s15
+ 242              	.LVL18:
+ 218:Algorithm/Filter_Dep/filter.c ****             }
+ 243              		.loc 1 218 17 is_stmt 1 view .LVU84
+ 218:Algorithm/Filter_Dep/filter.c ****             }
+ 244              		.loc 1 218 24 is_stmt 0 view .LVU85
+ 245 0078 ED68     		ldr	r5, [r5, #12]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 10
+
+
+ 246              	.LVL19:
+ 218:Algorithm/Filter_Dep/filter.c ****             }
+ 247              		.loc 1 218 24 view .LVU86
+ 248 007a DAE7     		b	.L7
+ 249              	.L12:
+ 218:Algorithm/Filter_Dep/filter.c ****             }
+ 250              		.loc 1 218 24 view .LVU87
+ 251              	.LBE3:
+ 222:Algorithm/Filter_Dep/filter.c ****         /* update last time filted data */
+ 252              		.loc 1 222 9 is_stmt 1 view .LVU88
+ 222:Algorithm/Filter_Dep/filter.c ****         /* update last time filted data */
+ 253              		.loc 1 222 15 is_stmt 0 view .LVU89
+ 254 007c 37EE488A 		vsub.f32	s16, s14, s16
+ 255              	.LVL20:
+ 224:Algorithm/Filter_Dep/filter.c ****     }
+ 256              		.loc 1 224 9 is_stmt 1 view .LVU90
+ 257 0080 B0EE480A 		vmov.f32	s0, s16
+ 258 0084 04F11801 		add	r1, r4, #24
+ 259              	.LVL21:
+ 224:Algorithm/Filter_Dep/filter.c ****     }
+ 260              		.loc 1 224 9 is_stmt 0 view .LVU91
+ 261 0088 04F11400 		add	r0, r4, #20
+ 262 008c FFF7FEFF 		bl	Filter_Item_Update
+ 263              	.LVL22:
+ 224:Algorithm/Filter_Dep/filter.c ****     }
+ 264              		.loc 1 224 9 view .LVU92
+ 265 0090 BCE7     		b	.L3
+ 266              	.L14:
+ 267 0092 00BF     		.align	2
+ 268              	.L13:
+ 269 0094 00000000 		.word	0
+ 270              		.cfi_endproc
+ 271              	.LFE11:
+ 273              		.section	.text.SmoothWindow_Comput_Sum,"ax",%progbits
+ 274              		.align	1
+ 275              		.syntax unified
+ 276              		.thumb
+ 277              		.thumb_func
+ 279              	SmoothWindow_Comput_Sum:
+ 280              	.LVL23:
+ 281              	.LFB13:
+ 229:Algorithm/Filter_Dep/filter.c **** 
+ 230:Algorithm/Filter_Dep/filter.c **** /********************************************************** smooth window filter section **********
+ 231:Algorithm/Filter_Dep/filter.c **** static SW_Object_Handle SmoothWindow_Init(uint8_t window_size)
+ 232:Algorithm/Filter_Dep/filter.c **** {
+ 233:Algorithm/Filter_Dep/filter.c ****     SW_Object_Handle hdl = 0;
+ 234:Algorithm/Filter_Dep/filter.c ****     SmoothWindow_Param_TypeDef *param = NULL;
+ 235:Algorithm/Filter_Dep/filter.c **** 
+ 236:Algorithm/Filter_Dep/filter.c ****     if(window_size <= MAX_SMOOTH_WINDOW_SIZE)
+ 237:Algorithm/Filter_Dep/filter.c ****     {
+ 238:Algorithm/Filter_Dep/filter.c ****         param = FILTER_MALLOC(sizeof(SmoothWindow_Param_TypeDef));
+ 239:Algorithm/Filter_Dep/filter.c **** 
+ 240:Algorithm/Filter_Dep/filter.c ****         if(param == NULL)
+ 241:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 242:Algorithm/Filter_Dep/filter.c **** 
+ 243:Algorithm/Filter_Dep/filter.c ****         param->smooth_period = 0;
+ 244:Algorithm/Filter_Dep/filter.c ****         param->window_size = window_size;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 11
+
+
+ 245:Algorithm/Filter_Dep/filter.c ****         param->window_cache = FILTER_MALLOC(sizeof(item_obj) * window_size);
+ 246:Algorithm/Filter_Dep/filter.c **** 
+ 247:Algorithm/Filter_Dep/filter.c ****         if(param->window_cache == NULL)
+ 248:Algorithm/Filter_Dep/filter.c ****         {
+ 249:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(param->window_cache);
+ 250:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(param);
+ 251:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 252:Algorithm/Filter_Dep/filter.c ****         }
+ 253:Algorithm/Filter_Dep/filter.c **** 
+ 254:Algorithm/Filter_Dep/filter.c ****         if(!Filter_List_Create(window_size, param->window_cache, &(param->window_header), &(param->
+ 255:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 256:Algorithm/Filter_Dep/filter.c **** 
+ 257:Algorithm/Filter_Dep/filter.c ****         hdl = (uint32_t)param;
+ 258:Algorithm/Filter_Dep/filter.c ****     }
+ 259:Algorithm/Filter_Dep/filter.c **** 
+ 260:Algorithm/Filter_Dep/filter.c ****     return hdl;
+ 261:Algorithm/Filter_Dep/filter.c **** }
+ 262:Algorithm/Filter_Dep/filter.c **** 
+ 263:Algorithm/Filter_Dep/filter.c **** static int SmoothWindow_Comput_Sum(item_obj *item, void *item_data, void *sum)
+ 264:Algorithm/Filter_Dep/filter.c **** {
+ 282              		.loc 1 264 1 is_stmt 1 view -0
+ 283              		.cfi_startproc
+ 284              		@ args = 0, pretend = 0, frame = 0
+ 285              		@ frame_needed = 0, uses_anonymous_args = 0
+ 286              		@ link register save eliminated.
+ 265:Algorithm/Filter_Dep/filter.c ****     if(item && item_data && sum)
+ 287              		.loc 1 265 5 view .LVU94
+ 288              		.loc 1 265 7 is_stmt 0 view .LVU95
+ 289 0000 58B1     		cbz	r0, .L17
+ 290              		.loc 1 265 13 discriminator 1 view .LVU96
+ 291 0002 61B1     		cbz	r1, .L18
+ 292              		.loc 1 265 26 discriminator 2 view .LVU97
+ 293 0004 6AB1     		cbz	r2, .L19
+ 266:Algorithm/Filter_Dep/filter.c ****     {
+ 267:Algorithm/Filter_Dep/filter.c ****         *((float *) sum) += *((float *) item_data);
+ 294              		.loc 1 267 9 is_stmt 1 view .LVU98
+ 295              		.loc 1 267 29 is_stmt 0 view .LVU99
+ 296 0006 91ED007A 		vldr.32	s14, [r1]
+ 297              		.loc 1 267 26 view .LVU100
+ 298 000a D2ED007A 		vldr.32	s15, [r2]
+ 299 000e 77EE877A 		vadd.f32	s15, s15, s14
+ 300 0012 C2ED007A 		vstr.32	s15, [r2]
+ 268:Algorithm/Filter_Dep/filter.c **** 
+ 269:Algorithm/Filter_Dep/filter.c ****         return 1;
+ 301              		.loc 1 269 9 is_stmt 1 view .LVU101
+ 302              		.loc 1 269 16 is_stmt 0 view .LVU102
+ 303 0016 0120     		movs	r0, #1
+ 304              	.LVL24:
+ 305              		.loc 1 269 16 view .LVU103
+ 306 0018 7047     		bx	lr
+ 307              	.LVL25:
+ 308              	.L17:
+ 270:Algorithm/Filter_Dep/filter.c ****     }
+ 271:Algorithm/Filter_Dep/filter.c **** 
+ 272:Algorithm/Filter_Dep/filter.c ****     return 0;
+ 309              		.loc 1 272 12 view .LVU104
+ 310 001a 0020     		movs	r0, #0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 12
+
+
+ 311              	.LVL26:
+ 312              		.loc 1 272 12 view .LVU105
+ 313 001c 7047     		bx	lr
+ 314              	.LVL27:
+ 315              	.L18:
+ 316              		.loc 1 272 12 view .LVU106
+ 317 001e 0020     		movs	r0, #0
+ 318              	.LVL28:
+ 319              		.loc 1 272 12 view .LVU107
+ 320 0020 7047     		bx	lr
+ 321              	.LVL29:
+ 322              	.L19:
+ 323              		.loc 1 272 12 view .LVU108
+ 324 0022 0020     		movs	r0, #0
+ 325              	.LVL30:
+ 273:Algorithm/Filter_Dep/filter.c **** }
+ 326              		.loc 1 273 1 view .LVU109
+ 327 0024 7047     		bx	lr
+ 328              		.cfi_endproc
+ 329              	.LFE13:
+ 331              		.section	.text.RC_Filter_Init,"ax",%progbits
+ 332              		.align	1
+ 333              		.syntax unified
+ 334              		.thumb
+ 335              		.thumb_func
+ 337              	RC_Filter_Init:
+ 338              	.LVL31:
+ 339              	.LFB15:
+ 274:Algorithm/Filter_Dep/filter.c **** 
+ 275:Algorithm/Filter_Dep/filter.c **** static float SmoothWindow_Update(SW_Object_Handle hdl, float cur_e)
+ 276:Algorithm/Filter_Dep/filter.c **** {
+ 277:Algorithm/Filter_Dep/filter.c ****     float sum = 0.0f;
+ 278:Algorithm/Filter_Dep/filter.c ****     SmoothWindow_Param_TypeDef *param = NULL; 
+ 279:Algorithm/Filter_Dep/filter.c **** 
+ 280:Algorithm/Filter_Dep/filter.c ****     if(hdl)
+ 281:Algorithm/Filter_Dep/filter.c ****     {
+ 282:Algorithm/Filter_Dep/filter.c ****         param = (SmoothWindow_Param_TypeDef *)hdl;
+ 283:Algorithm/Filter_Dep/filter.c ****     
+ 284:Algorithm/Filter_Dep/filter.c ****         if(param->smooth_period < param->window_size)
+ 285:Algorithm/Filter_Dep/filter.c ****             param->smooth_period ++;
+ 286:Algorithm/Filter_Dep/filter.c **** 
+ 287:Algorithm/Filter_Dep/filter.c ****         Filter_Item_Update(&(param->window_header), &(param->window_ender), cur_e);
+ 288:Algorithm/Filter_Dep/filter.c ****      
+ 289:Algorithm/Filter_Dep/filter.c ****         List_traverse(param->window_header, SmoothWindow_Comput_Sum, &sum, pre_callback);
+ 290:Algorithm/Filter_Dep/filter.c ****         sum /= param->smooth_period;
+ 291:Algorithm/Filter_Dep/filter.c ****     }
+ 292:Algorithm/Filter_Dep/filter.c **** 
+ 293:Algorithm/Filter_Dep/filter.c ****     return sum;
+ 294:Algorithm/Filter_Dep/filter.c **** }
+ 295:Algorithm/Filter_Dep/filter.c **** 
+ 296:Algorithm/Filter_Dep/filter.c **** /********************************************************** RC Filter section *********************
+ 297:Algorithm/Filter_Dep/filter.c **** /* none tested */
+ 298:Algorithm/Filter_Dep/filter.c **** static RC_Object_Handle RC_Filter_Init(RC_Filter_Param_TypeDef *obj)
+ 299:Algorithm/Filter_Dep/filter.c **** {
+ 340              		.loc 1 299 1 is_stmt 1 view -0
+ 341              		.cfi_startproc
+ 342              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 13
+
+
+ 343              		@ frame_needed = 0, uses_anonymous_args = 0
+ 344              		@ link register save eliminated.
+ 300:Algorithm/Filter_Dep/filter.c ****     if (obj == NULL)
+ 345              		.loc 1 300 5 view .LVU111
+ 346              		.loc 1 300 8 is_stmt 0 view .LVU112
+ 347 0000 30B1     		cbz	r0, .L22
+ 301:Algorithm/Filter_Dep/filter.c ****         return 0;
+ 302:Algorithm/Filter_Dep/filter.c **** 
+ 303:Algorithm/Filter_Dep/filter.c ****     obj->dt = 0.0f;
+ 348              		.loc 1 303 5 is_stmt 1 view .LVU113
+ 349              		.loc 1 303 13 is_stmt 0 view .LVU114
+ 350 0002 0022     		movs	r2, #0
+ 351 0004 4260     		str	r2, [r0, #4]	@ float
+ 304:Algorithm/Filter_Dep/filter.c ****     obj->f_cut = 0.0f;
+ 352              		.loc 1 304 5 is_stmt 1 view .LVU115
+ 353              		.loc 1 304 16 is_stmt 0 view .LVU116
+ 354 0006 0260     		str	r2, [r0]	@ float
+ 305:Algorithm/Filter_Dep/filter.c ****     obj->lst_out = 0.0f;
+ 355              		.loc 1 305 5 is_stmt 1 view .LVU117
+ 356              		.loc 1 305 18 is_stmt 0 view .LVU118
+ 357 0008 8260     		str	r2, [r0, #8]	@ float
+ 306:Algorithm/Filter_Dep/filter.c ****     obj->lst_tick = 0;
+ 358              		.loc 1 306 5 is_stmt 1 view .LVU119
+ 359              		.loc 1 306 19 is_stmt 0 view .LVU120
+ 360 000a 0022     		movs	r2, #0
+ 361 000c C260     		str	r2, [r0, #12]
+ 307:Algorithm/Filter_Dep/filter.c **** 
+ 308:Algorithm/Filter_Dep/filter.c ****     return (RC_Object_Handle)obj;
+ 362              		.loc 1 308 5 is_stmt 1 view .LVU121
+ 363              		.loc 1 308 12 is_stmt 0 view .LVU122
+ 364 000e 7047     		bx	lr
+ 365              	.L22:
+ 301:Algorithm/Filter_Dep/filter.c **** 
+ 366              		.loc 1 301 16 view .LVU123
+ 367 0010 0020     		movs	r0, #0
+ 368              	.LVL32:
+ 309:Algorithm/Filter_Dep/filter.c **** }
+ 369              		.loc 1 309 1 view .LVU124
+ 370 0012 7047     		bx	lr
+ 371              		.cfi_endproc
+ 372              	.LFE15:
+ 374              		.global	__aeabi_f2d
+ 375              		.global	__aeabi_dmul
+ 376              		.global	__aeabi_d2f
+ 377              		.section	.text.RC_Filter_Update,"ax",%progbits
+ 378              		.align	1
+ 379              		.syntax unified
+ 380              		.thumb
+ 381              		.thumb_func
+ 383              	RC_Filter_Update:
+ 384              	.LVL33:
+ 385              	.LFB16:
+ 310:Algorithm/Filter_Dep/filter.c **** 
+ 311:Algorithm/Filter_Dep/filter.c **** static float RC_Filter_Update(RC_Object_Handle hdl, uint32_t sys_ms, float in)
+ 312:Algorithm/Filter_Dep/filter.c **** {
+ 386              		.loc 1 312 1 is_stmt 1 view -0
+ 387              		.cfi_startproc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 14
+
+
+ 388              		@ args = 0, pretend = 0, frame = 0
+ 389              		@ frame_needed = 0, uses_anonymous_args = 0
+ 313:Algorithm/Filter_Dep/filter.c ****     float val = 0.0f;
+ 390              		.loc 1 313 5 view .LVU126
+ 314:Algorithm/Filter_Dep/filter.c ****     float alpha = 0.0f;
+ 391              		.loc 1 314 5 view .LVU127
+ 315:Algorithm/Filter_Dep/filter.c **** 
+ 316:Algorithm/Filter_Dep/filter.c ****     if (hdl == 0)
+ 392              		.loc 1 316 5 view .LVU128
+ 393              		.loc 1 316 8 is_stmt 0 view .LVU129
+ 394 0000 0028     		cmp	r0, #0
+ 395 0002 40D0     		beq	.L26
+ 312:Algorithm/Filter_Dep/filter.c ****     float val = 0.0f;
+ 396              		.loc 1 312 1 view .LVU130
+ 397 0004 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 398              	.LCFI6:
+ 399              		.cfi_def_cfa_offset 24
+ 400              		.cfi_offset 3, -24
+ 401              		.cfi_offset 4, -20
+ 402              		.cfi_offset 5, -16
+ 403              		.cfi_offset 6, -12
+ 404              		.cfi_offset 7, -8
+ 405              		.cfi_offset 14, -4
+ 406 0006 2DED028B 		vpush.64	{d8}
+ 407              	.LCFI7:
+ 408              		.cfi_def_cfa_offset 32
+ 409              		.cfi_offset 80, -32
+ 410              		.cfi_offset 81, -28
+ 411 000a 0D46     		mov	r5, r1
+ 412 000c B0EE408A 		vmov.f32	s16, s0
+ 413 0010 0446     		mov	r4, r0
+ 317:Algorithm/Filter_Dep/filter.c ****         return 0.0f;
+ 318:Algorithm/Filter_Dep/filter.c **** 
+ 319:Algorithm/Filter_Dep/filter.c ****     if (To_RCParam_Ptr(hdl)->lst_tick)
+ 414              		.loc 1 319 5 is_stmt 1 view .LVU131
+ 415              		.loc 1 319 28 is_stmt 0 view .LVU132
+ 416 0012 C368     		ldr	r3, [r0, #12]
+ 417              		.loc 1 319 8 view .LVU133
+ 418 0014 8BB3     		cbz	r3, .L27
+ 320:Algorithm/Filter_Dep/filter.c ****     {
+ 321:Algorithm/Filter_Dep/filter.c ****         To_RCParam_Ptr(hdl)->dt = (sys_ms - To_RCParam_Ptr(hdl)->lst_tick) / 1000.0f;
+ 419              		.loc 1 321 9 is_stmt 1 view .LVU134
+ 420              		.loc 1 321 43 is_stmt 0 view .LVU135
+ 421 0016 CB1A     		subs	r3, r1, r3
+ 422              		.loc 1 321 76 view .LVU136
+ 423 0018 07EE903A 		vmov	s15, r3	@ int
+ 424 001c F8EE677A 		vcvt.f32.u32	s15, s15
+ 425 0020 9FED1D7A 		vldr.32	s14, .L32+8
+ 426 0024 C7EE878A 		vdiv.f32	s17, s15, s14
+ 427              		.loc 1 321 33 view .LVU137
+ 428 0028 C0ED018A 		vstr.32	s17, [r0, #4]
+ 322:Algorithm/Filter_Dep/filter.c ****         
+ 323:Algorithm/Filter_Dep/filter.c ****         /* comput alpha */
+ 324:Algorithm/Filter_Dep/filter.c ****         alpha = 2 * PI * To_RCParam_Ptr(hdl)->f_cut * To_RCParam_Ptr(hdl)->dt;
+ 429              		.loc 1 324 9 is_stmt 1 view .LVU138
+ 430              		.loc 1 324 45 is_stmt 0 view .LVU139
+ 431 002c 0068     		ldr	r0, [r0]	@ float
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 15
+
+
+ 432              	.LVL34:
+ 433              		.loc 1 324 45 view .LVU140
+ 434 002e FFF7FEFF 		bl	__aeabi_f2d
+ 435              	.LVL35:
+ 436              		.loc 1 324 24 view .LVU141
+ 437 0032 17A3     		adr	r3, .L32
+ 438 0034 D3E90023 		ldrd	r2, [r3]
+ 439 0038 FFF7FEFF 		bl	__aeabi_dmul
+ 440              	.LVL36:
+ 441 003c 0646     		mov	r6, r0
+ 442 003e 0F46     		mov	r7, r1
+ 443              		.loc 1 324 74 view .LVU142
+ 444 0040 18EE900A 		vmov	r0, s17
+ 445 0044 FFF7FEFF 		bl	__aeabi_f2d
+ 446              	.LVL37:
+ 447 0048 0246     		mov	r2, r0
+ 448 004a 0B46     		mov	r3, r1
+ 449              		.loc 1 324 53 view .LVU143
+ 450 004c 3046     		mov	r0, r6
+ 451 004e 3946     		mov	r1, r7
+ 452 0050 FFF7FEFF 		bl	__aeabi_dmul
+ 453              	.LVL38:
+ 454              		.loc 1 324 15 view .LVU144
+ 455 0054 FFF7FEFF 		bl	__aeabi_d2f
+ 456              	.LVL39:
+ 457 0058 07EE100A 		vmov	s14, r0
+ 458              	.LVL40:
+ 325:Algorithm/Filter_Dep/filter.c ****         
+ 326:Algorithm/Filter_Dep/filter.c ****         /* filter update */
+ 327:Algorithm/Filter_Dep/filter.c ****         val = alpha * in + (1.0f - alpha) * To_RCParam_Ptr(hdl)->lst_out;
+ 459              		.loc 1 327 9 is_stmt 1 view .LVU145
+ 460              		.loc 1 327 21 is_stmt 0 view .LVU146
+ 461 005c 27EE080A 		vmul.f32	s0, s14, s16
+ 462              		.loc 1 327 34 view .LVU147
+ 463 0060 F7EE007A 		vmov.f32	s15, #1.0e+0
+ 464 0064 77EEC77A 		vsub.f32	s15, s15, s14
+ 465              		.loc 1 327 64 view .LVU148
+ 466 0068 94ED027A 		vldr.32	s14, [r4, #8]
+ 467              		.loc 1 327 43 view .LVU149
+ 468 006c 67EE877A 		vmul.f32	s15, s15, s14
+ 469              		.loc 1 327 13 view .LVU150
+ 470 0070 30EE270A 		vadd.f32	s0, s0, s15
+ 471              	.LVL41:
+ 328:Algorithm/Filter_Dep/filter.c ****         To_RCParam_Ptr(hdl)->lst_out = val;
+ 472              		.loc 1 328 9 is_stmt 1 view .LVU151
+ 473              		.loc 1 328 38 is_stmt 0 view .LVU152
+ 474 0074 84ED020A 		vstr.32	s0, [r4, #8]
+ 475 0078 01E0     		b	.L25
+ 476              	.LVL42:
+ 477              	.L27:
+ 313:Algorithm/Filter_Dep/filter.c ****     float alpha = 0.0f;
+ 478              		.loc 1 313 11 view .LVU153
+ 479 007a 9FED080A 		vldr.32	s0, .L32+12
+ 480              	.LVL43:
+ 481              	.L25:
+ 329:Algorithm/Filter_Dep/filter.c ****     }    
+ 330:Algorithm/Filter_Dep/filter.c ****     To_RCParam_Ptr(hdl)->lst_tick = sys_ms;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 16
+
+
+ 482              		.loc 1 330 5 is_stmt 1 view .LVU154
+ 483              		.loc 1 330 35 is_stmt 0 view .LVU155
+ 484 007e E560     		str	r5, [r4, #12]
+ 331:Algorithm/Filter_Dep/filter.c **** 
+ 332:Algorithm/Filter_Dep/filter.c ****     return val;
+ 485              		.loc 1 332 5 is_stmt 1 view .LVU156
+ 333:Algorithm/Filter_Dep/filter.c **** }
+ 486              		.loc 1 333 1 is_stmt 0 view .LVU157
+ 487 0080 BDEC028B 		vldm	sp!, {d8}
+ 488              	.LCFI8:
+ 489              		.cfi_restore 80
+ 490              		.cfi_restore 81
+ 491              		.cfi_def_cfa_offset 24
+ 492              	.LVL44:
+ 493              		.loc 1 333 1 view .LVU158
+ 494 0084 F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 495              	.LVL45:
+ 496              	.L26:
+ 497              	.LCFI9:
+ 498              		.cfi_def_cfa_offset 0
+ 499              		.cfi_restore 3
+ 500              		.cfi_restore 4
+ 501              		.cfi_restore 5
+ 502              		.cfi_restore 6
+ 503              		.cfi_restore 7
+ 504              		.cfi_restore 14
+ 317:Algorithm/Filter_Dep/filter.c **** 
+ 505              		.loc 1 317 16 view .LVU159
+ 506 0086 9FED050A 		vldr.32	s0, .L32+12
+ 507              	.LVL46:
+ 508              		.loc 1 333 1 view .LVU160
+ 509 008a 7047     		bx	lr
+ 510              	.L33:
+ 511 008c AFF30080 		.align	3
+ 512              	.L32:
+ 513 0090 EA2E4454 		.word	1413754602
+ 514 0094 FB211940 		.word	1075388923
+ 515 0098 00007A44 		.word	1148846080
+ 516 009c 00000000 		.word	0
+ 517              		.cfi_endproc
+ 518              	.LFE16:
+ 520              		.section	.text.Filter_List_Create,"ax",%progbits
+ 521              		.align	1
+ 522              		.syntax unified
+ 523              		.thumb
+ 524              		.thumb_func
+ 526              	Filter_List_Create:
+ 527              	.LVL47:
+ 528              	.LFB8:
+  43:Algorithm/Filter_Dep/filter.c ****     for (uint8_t i = 0; i < order; i++)
+ 529              		.loc 1 43 1 is_stmt 1 view -0
+ 530              		.cfi_startproc
+ 531              		@ args = 0, pretend = 0, frame = 0
+ 532              		@ frame_needed = 0, uses_anonymous_args = 0
+  43:Algorithm/Filter_Dep/filter.c ****     for (uint8_t i = 0; i < order; i++)
+ 533              		.loc 1 43 1 is_stmt 0 view .LVU162
+ 534 0000 2DE9F84F 		push	{r3, r4, r5, r6, r7, r8, r9, r10, fp, lr}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 17
+
+
+ 535              	.LCFI10:
+ 536              		.cfi_def_cfa_offset 40
+ 537              		.cfi_offset 3, -40
+ 538              		.cfi_offset 4, -36
+ 539              		.cfi_offset 5, -32
+ 540              		.cfi_offset 6, -28
+ 541              		.cfi_offset 7, -24
+ 542              		.cfi_offset 8, -20
+ 543              		.cfi_offset 9, -16
+ 544              		.cfi_offset 10, -12
+ 545              		.cfi_offset 11, -8
+ 546              		.cfi_offset 14, -4
+ 547 0004 8046     		mov	r8, r0
+ 548 0006 0F46     		mov	r7, r1
+ 549 0008 9146     		mov	r9, r2
+ 550 000a 9A46     		mov	r10, r3
+  44:Algorithm/Filter_Dep/filter.c ****     {
+ 551              		.loc 1 44 5 is_stmt 1 view .LVU163
+ 552              	.LBB4:
+  44:Algorithm/Filter_Dep/filter.c ****     {
+ 553              		.loc 1 44 10 view .LVU164
+ 554              	.LVL48:
+  44:Algorithm/Filter_Dep/filter.c ****     {
+ 555              		.loc 1 44 18 is_stmt 0 view .LVU165
+ 556 000c 0024     		movs	r4, #0
+  44:Algorithm/Filter_Dep/filter.c ****     {
+ 557              		.loc 1 44 5 view .LVU166
+ 558 000e 08E0     		b	.L35
+ 559              	.LVL49:
+ 560              	.L43:
+ 561              	.LBB5:
+  50:Algorithm/Filter_Dep/filter.c ****             return false;
+ 562              		.loc 1 50 13 is_stmt 1 view .LVU167
+ 563 0010 174B     		ldr	r3, .L44
+ 564 0012 1B6B     		ldr	r3, [r3, #48]
+ 565 0014 9847     		blx	r3
+ 566              	.LVL50:
+  50:Algorithm/Filter_Dep/filter.c ****             return false;
+ 567              		.loc 1 50 32 view .LVU168
+  51:Algorithm/Filter_Dep/filter.c ****         }
+ 568              		.loc 1 51 13 view .LVU169
+  51:Algorithm/Filter_Dep/filter.c ****         }
+ 569              		.loc 1 51 20 is_stmt 0 view .LVU170
+ 570 0016 0020     		movs	r0, #0
+ 571 0018 27E0     		b	.L37
+ 572              	.L38:
+  66:Algorithm/Filter_Dep/filter.c ****     }
+ 573              		.loc 1 66 13 is_stmt 1 view .LVU171
+  66:Algorithm/Filter_Dep/filter.c ****     }
+ 574              		.loc 1 66 21 is_stmt 0 view .LVU172
+ 575 001a C9F80070 		str	r7, [r9]
+ 576              	.L39:
+  66:Algorithm/Filter_Dep/filter.c ****     }
+ 577              		.loc 1 66 21 view .LVU173
+ 578              	.LBE5:
+  44:Algorithm/Filter_Dep/filter.c ****     {
+ 579              		.loc 1 44 36 is_stmt 1 discriminator 2 view .LVU174
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 18
+
+
+  44:Algorithm/Filter_Dep/filter.c ****     {
+ 580              		.loc 1 44 37 is_stmt 0 discriminator 2 view .LVU175
+ 581 001e 0134     		adds	r4, r4, #1
+ 582              	.LVL51:
+  44:Algorithm/Filter_Dep/filter.c ****     {
+ 583              		.loc 1 44 37 discriminator 2 view .LVU176
+ 584 0020 E4B2     		uxtb	r4, r4
+ 585              	.LVL52:
+ 586              	.L35:
+  44:Algorithm/Filter_Dep/filter.c ****     {
+ 587              		.loc 1 44 25 is_stmt 1 discriminator 1 view .LVU177
+  44:Algorithm/Filter_Dep/filter.c ****     {
+ 588              		.loc 1 44 5 is_stmt 0 discriminator 1 view .LVU178
+ 589 0022 4445     		cmp	r4, r8
+ 590 0024 19D2     		bcs	.L42
+ 591              	.LBB6:
+  46:Algorithm/Filter_Dep/filter.c **** 
+ 592              		.loc 1 46 9 is_stmt 1 view .LVU179
+  46:Algorithm/Filter_Dep/filter.c **** 
+ 593              		.loc 1 46 34 is_stmt 0 view .LVU180
+ 594 0026 124B     		ldr	r3, .L44
+ 595 0028 DB6A     		ldr	r3, [r3, #44]
+ 596 002a 0420     		movs	r0, #4
+ 597 002c 9847     		blx	r3
+ 598              	.LVL53:
+  48:Algorithm/Filter_Dep/filter.c ****         {
+ 599              		.loc 1 48 9 is_stmt 1 view .LVU181
+  48:Algorithm/Filter_Dep/filter.c ****         {
+ 600              		.loc 1 48 12 is_stmt 0 view .LVU182
+ 601 002e 8346     		mov	fp, r0
+ 602 0030 0028     		cmp	r0, #0
+ 603 0032 EDD0     		beq	.L43
+  55:Algorithm/Filter_Dep/filter.c ****             *u_temp = 0.0f;
+ 604              		.loc 1 55 13 is_stmt 1 view .LVU183
+  55:Algorithm/Filter_Dep/filter.c ****             *u_temp = 0.0f;
+ 605              		.loc 1 55 32 is_stmt 0 view .LVU184
+ 606 0034 04EB8405 		add	r5, r4, r4, lsl #2
+ 607 0038 AE00     		lsls	r6, r5, #2
+  55:Algorithm/Filter_Dep/filter.c ****             *u_temp = 0.0f;
+ 608              		.loc 1 55 13 view .LVU185
+ 609 003a 07EB8505 		add	r5, r7, r5, lsl #2
+ 610 003e 0146     		mov	r1, r0
+ 611 0040 2846     		mov	r0, r5
+ 612              	.LVL54:
+  55:Algorithm/Filter_Dep/filter.c ****             *u_temp = 0.0f;
+ 613              		.loc 1 55 13 view .LVU186
+ 614 0042 FFF7FEFF 		bl	List_ItemInit
+ 615              	.LVL55:
+  56:Algorithm/Filter_Dep/filter.c ****         }
+ 616              		.loc 1 56 13 is_stmt 1 view .LVU187
+  56:Algorithm/Filter_Dep/filter.c ****         }
+ 617              		.loc 1 56 21 is_stmt 0 view .LVU188
+ 618 0046 0023     		movs	r3, #0
+ 619 0048 CBF80030 		str	r3, [fp]	@ float
+  60:Algorithm/Filter_Dep/filter.c ****         {
+ 620              		.loc 1 60 9 is_stmt 1 view .LVU189
+  60:Algorithm/Filter_Dep/filter.c ****         {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 19
+
+
+ 621              		.loc 1 60 12 is_stmt 0 view .LVU190
+ 622 004c 002C     		cmp	r4, #0
+ 623 004e E4D0     		beq	.L38
+  62:Algorithm/Filter_Dep/filter.c ****             item[i].prv = &item[i - 1];
+ 624              		.loc 1 62 13 is_stmt 1 view .LVU191
+  62:Algorithm/Filter_Dep/filter.c ****             item[i].prv = &item[i - 1];
+ 625              		.loc 1 62 17 is_stmt 0 view .LVU192
+ 626 0050 143E     		subs	r6, r6, #20
+ 627 0052 3E44     		add	r6, r6, r7
+  62:Algorithm/Filter_Dep/filter.c ****             item[i].prv = &item[i - 1];
+ 628              		.loc 1 62 29 view .LVU193
+ 629 0054 F560     		str	r5, [r6, #12]
+  63:Algorithm/Filter_Dep/filter.c ****         }
+ 630              		.loc 1 63 13 is_stmt 1 view .LVU194
+  63:Algorithm/Filter_Dep/filter.c ****         }
+ 631              		.loc 1 63 25 is_stmt 0 view .LVU195
+ 632 0056 AE60     		str	r6, [r5, #8]
+ 633 0058 E1E7     		b	.L39
+ 634              	.LVL56:
+ 635              	.L42:
+  63:Algorithm/Filter_Dep/filter.c ****         }
+ 636              		.loc 1 63 25 view .LVU196
+ 637              	.LBE6:
+ 638              	.LBE4:
+  69:Algorithm/Filter_Dep/filter.c **** 
+ 639              		.loc 1 69 5 is_stmt 1 view .LVU197
+  69:Algorithm/Filter_Dep/filter.c **** 
+ 640              		.loc 1 69 19 is_stmt 0 view .LVU198
+ 641 005a 08EB8803 		add	r3, r8, r8, lsl #2
+ 642 005e 9B00     		lsls	r3, r3, #2
+ 643 0060 143B     		subs	r3, r3, #20
+  69:Algorithm/Filter_Dep/filter.c **** 
+ 644              		.loc 1 69 14 view .LVU199
+ 645 0062 1F44     		add	r7, r7, r3
+ 646              	.LVL57:
+  69:Algorithm/Filter_Dep/filter.c **** 
+ 647              		.loc 1 69 12 view .LVU200
+ 648 0064 CAF80070 		str	r7, [r10]
+  71:Algorithm/Filter_Dep/filter.c **** }
+ 649              		.loc 1 71 5 is_stmt 1 view .LVU201
+  71:Algorithm/Filter_Dep/filter.c **** }
+ 650              		.loc 1 71 12 is_stmt 0 view .LVU202
+ 651 0068 0120     		movs	r0, #1
+ 652              	.L37:
+  72:Algorithm/Filter_Dep/filter.c **** 
+ 653              		.loc 1 72 1 view .LVU203
+ 654 006a BDE8F88F 		pop	{r3, r4, r5, r6, r7, r8, r9, r10, fp, pc}
+ 655              	.LVL58:
+ 656              	.L45:
+  72:Algorithm/Filter_Dep/filter.c **** 
+ 657              		.loc 1 72 1 view .LVU204
+ 658 006e 00BF     		.align	2
+ 659              	.L44:
+ 660 0070 00000000 		.word	SrvOsCommon
+ 661              		.cfi_endproc
+ 662              	.LFE8:
+ 664              		.section	.text.Butterworth_Init,"ax",%progbits
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 20
+
+
+ 665              		.align	1
+ 666              		.syntax unified
+ 667              		.thumb
+ 668              		.thumb_func
+ 670              	Butterworth_Init:
+ 671              	.LVL59:
+ 672              	.LFB10:
+  90:Algorithm/Filter_Dep/filter.c ****     Filter_ButterworthParam_TypeDef *BWF_Obj = NULL;
+ 673              		.loc 1 90 1 is_stmt 1 view -0
+ 674              		.cfi_startproc
+ 675              		@ args = 0, pretend = 0, frame = 0
+ 676              		@ frame_needed = 0, uses_anonymous_args = 0
+  91:Algorithm/Filter_Dep/filter.c ****     uint8_t e_cnt = 0;
+ 677              		.loc 1 91 5 view .LVU206
+  92:Algorithm/Filter_Dep/filter.c ****     uint8_t u_cnt = 0;
+ 678              		.loc 1 92 5 view .LVU207
+  93:Algorithm/Filter_Dep/filter.c **** 
+ 679              		.loc 1 93 5 view .LVU208
+  95:Algorithm/Filter_Dep/filter.c ****         return 0;
+ 680              		.loc 1 95 5 view .LVU209
+  95:Algorithm/Filter_Dep/filter.c ****         return 0;
+ 681              		.loc 1 95 7 is_stmt 0 view .LVU210
+ 682 0000 0028     		cmp	r0, #0
+ 683 0002 00F0C380 		beq	.L59
+  90:Algorithm/Filter_Dep/filter.c ****     Filter_ButterworthParam_TypeDef *BWF_Obj = NULL;
+ 684              		.loc 1 90 1 view .LVU211
+ 685 0006 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 686              	.LCFI11:
+ 687              		.cfi_def_cfa_offset 24
+ 688              		.cfi_offset 3, -24
+ 689              		.cfi_offset 4, -20
+ 690              		.cfi_offset 5, -16
+ 691              		.cfi_offset 6, -12
+ 692              		.cfi_offset 7, -8
+ 693              		.cfi_offset 14, -4
+ 694 0008 0546     		mov	r5, r0
+  98:Algorithm/Filter_Dep/filter.c ****     {
+ 695              		.loc 1 98 5 is_stmt 1 view .LVU212
+  98:Algorithm/Filter_Dep/filter.c ****     {
+ 696              		.loc 1 98 18 is_stmt 0 view .LVU213
+ 697 000a 0678     		ldrb	r6, [r0]	@ zero_extendqisi2
+  98:Algorithm/Filter_Dep/filter.c ****     {
+ 698              		.loc 1 98 8 view .LVU214
+ 699 000c 012E     		cmp	r6, #1
+ 700 000e 40F2BA80 		bls	.L60
+ 100:Algorithm/Filter_Dep/filter.c ****         u_cnt = param_obj->order;
+ 701              		.loc 1 100 9 is_stmt 1 view .LVU215
+ 100:Algorithm/Filter_Dep/filter.c ****         u_cnt = param_obj->order;
+ 702              		.loc 1 100 15 is_stmt 0 view .LVU216
+ 703 0012 771C     		adds	r7, r6, #1
+ 704 0014 FFB2     		uxtb	r7, r7
+ 705              	.LVL60:
+ 101:Algorithm/Filter_Dep/filter.c ****         
+ 706              		.loc 1 101 9 is_stmt 1 view .LVU217
+ 103:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 707              		.loc 1 103 9 view .LVU218
+ 103:Algorithm/Filter_Dep/filter.c ****             return 0;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 21
+
+
+ 708              		.loc 1 103 23 is_stmt 0 view .LVU219
+ 709 0016 4368     		ldr	r3, [r0, #4]
+ 103:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 710              		.loc 1 103 12 view .LVU220
+ 711 0018 002B     		cmp	r3, #0
+ 712 001a 00F0B980 		beq	.L61
+ 103:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 713              		.loc 1 103 55 discriminator 1 view .LVU221
+ 714 001e 8368     		ldr	r3, [r0, #8]
+ 103:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 715              		.loc 1 103 42 discriminator 1 view .LVU222
+ 716 0020 002B     		cmp	r3, #0
+ 717 0022 00F0B780 		beq	.L62
+ 106:Algorithm/Filter_Dep/filter.c **** 
+ 718              		.loc 1 106 9 is_stmt 1 view .LVU223
+ 106:Algorithm/Filter_Dep/filter.c **** 
+ 719              		.loc 1 106 19 is_stmt 0 view .LVU224
+ 720 0026 5C4B     		ldr	r3, .L74
+ 721 0028 DB6A     		ldr	r3, [r3, #44]
+ 722 002a 2420     		movs	r0, #36
+ 723              	.LVL61:
+ 106:Algorithm/Filter_Dep/filter.c **** 
+ 724              		.loc 1 106 19 view .LVU225
+ 725 002c 9847     		blx	r3
+ 726              	.LVL62:
+ 108:Algorithm/Filter_Dep/filter.c ****         {
+ 727              		.loc 1 108 9 is_stmt 1 view .LVU226
+ 108:Algorithm/Filter_Dep/filter.c ****         {
+ 728              		.loc 1 108 12 is_stmt 0 view .LVU227
+ 729 002e 0446     		mov	r4, r0
+ 730 0030 0028     		cmp	r0, #0
+ 731 0032 37D0     		beq	.L67
+ 114:Algorithm/Filter_Dep/filter.c ****         if (BWF_Obj->p_e_data_cache == NULL)
+ 732              		.loc 1 114 9 is_stmt 1 view .LVU228
+ 114:Algorithm/Filter_Dep/filter.c ****         if (BWF_Obj->p_e_data_cache == NULL)
+ 733              		.loc 1 114 35 is_stmt 0 view .LVU229
+ 734 0034 584B     		ldr	r3, .L74
+ 735 0036 DB6A     		ldr	r3, [r3, #44]
+ 736 0038 07EB8700 		add	r0, r7, r7, lsl #2
+ 737              	.LVL63:
+ 114:Algorithm/Filter_Dep/filter.c ****         if (BWF_Obj->p_e_data_cache == NULL)
+ 738              		.loc 1 114 35 view .LVU230
+ 739 003c 8000     		lsls	r0, r0, #2
+ 740 003e 9847     		blx	r3
+ 741              	.LVL64:
+ 114:Algorithm/Filter_Dep/filter.c ****         if (BWF_Obj->p_e_data_cache == NULL)
+ 742              		.loc 1 114 33 view .LVU231
+ 743 0040 E061     		str	r0, [r4, #28]
+ 115:Algorithm/Filter_Dep/filter.c ****         {
+ 744              		.loc 1 115 9 is_stmt 1 view .LVU232
+ 115:Algorithm/Filter_Dep/filter.c ****         {
+ 745              		.loc 1 115 12 is_stmt 0 view .LVU233
+ 746 0042 0028     		cmp	r0, #0
+ 747 0044 33D0     		beq	.L68
+ 123:Algorithm/Filter_Dep/filter.c ****             {
+ 748              		.loc 1 123 13 is_stmt 1 view .LVU234
+ 123:Algorithm/Filter_Dep/filter.c ****             {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 22
+
+
+ 749              		.loc 1 123 18 is_stmt 0 view .LVU235
+ 750 0046 04F11003 		add	r3, r4, #16
+ 751 004a 04F10C02 		add	r2, r4, #12
+ 752 004e 0146     		mov	r1, r0
+ 753 0050 3846     		mov	r0, r7
+ 754 0052 FFF7FEFF 		bl	Filter_List_Create
+ 755              	.LVL65:
+ 123:Algorithm/Filter_Dep/filter.c ****             {
+ 756              		.loc 1 123 16 view .LVU236
+ 757 0056 0028     		cmp	r0, #0
+ 758 0058 31D0     		beq	.L69
+ 131:Algorithm/Filter_Dep/filter.c ****         if (BWF_Obj->p_u_data_cache == NULL)
+ 759              		.loc 1 131 9 is_stmt 1 view .LVU237
+ 131:Algorithm/Filter_Dep/filter.c ****         if (BWF_Obj->p_u_data_cache == NULL)
+ 760              		.loc 1 131 35 is_stmt 0 view .LVU238
+ 761 005a 4F4B     		ldr	r3, .L74
+ 762 005c DB6A     		ldr	r3, [r3, #44]
+ 763 005e 06EB8600 		add	r0, r6, r6, lsl #2
+ 764 0062 8000     		lsls	r0, r0, #2
+ 765 0064 9847     		blx	r3
+ 766              	.LVL66:
+ 767 0066 0146     		mov	r1, r0
+ 131:Algorithm/Filter_Dep/filter.c ****         if (BWF_Obj->p_u_data_cache == NULL)
+ 768              		.loc 1 131 33 view .LVU239
+ 769 0068 2062     		str	r0, [r4, #32]
+ 132:Algorithm/Filter_Dep/filter.c ****         {
+ 770              		.loc 1 132 9 is_stmt 1 view .LVU240
+ 132:Algorithm/Filter_Dep/filter.c ****         {
+ 771              		.loc 1 132 12 is_stmt 0 view .LVU241
+ 772 006a 0028     		cmp	r0, #0
+ 773 006c 30D0     		beq	.L70
+ 141:Algorithm/Filter_Dep/filter.c ****             {
+ 774              		.loc 1 141 13 is_stmt 1 view .LVU242
+ 141:Algorithm/Filter_Dep/filter.c ****             {
+ 775              		.loc 1 141 18 is_stmt 0 view .LVU243
+ 776 006e 04F11803 		add	r3, r4, #24
+ 777 0072 04F11402 		add	r2, r4, #20
+ 778 0076 3046     		mov	r0, r6
+ 779 0078 FFF7FEFF 		bl	Filter_List_Create
+ 780              	.LVL67:
+ 141:Algorithm/Filter_Dep/filter.c ****             {
+ 781              		.loc 1 141 16 view .LVU244
+ 782 007c 0028     		cmp	r0, #0
+ 783 007e 33D0     		beq	.L71
+ 150:Algorithm/Filter_Dep/filter.c ****         if(BWF_Obj->e_para_buf == NULL)
+ 784              		.loc 1 150 9 is_stmt 1 view .LVU245
+ 150:Algorithm/Filter_Dep/filter.c ****         if(BWF_Obj->e_para_buf == NULL)
+ 785              		.loc 1 150 31 is_stmt 0 view .LVU246
+ 786 0080 454B     		ldr	r3, .L74
+ 787 0082 DB6A     		ldr	r3, [r3, #44]
+ 788 0084 B800     		lsls	r0, r7, #2
+ 789 0086 9847     		blx	r3
+ 790              	.LVL68:
+ 150:Algorithm/Filter_Dep/filter.c ****         if(BWF_Obj->e_para_buf == NULL)
+ 791              		.loc 1 150 29 view .LVU247
+ 792 0088 6060     		str	r0, [r4, #4]
+ 151:Algorithm/Filter_Dep/filter.c ****         {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 23
+
+
+ 793              		.loc 1 151 9 is_stmt 1 view .LVU248
+ 151:Algorithm/Filter_Dep/filter.c ****         {
+ 794              		.loc 1 151 11 is_stmt 0 view .LVU249
+ 795 008a 0028     		cmp	r0, #0
+ 796 008c 38D0     		beq	.L72
+ 160:Algorithm/Filter_Dep/filter.c ****         if(BWF_Obj->u_para_buf == NULL)
+ 797              		.loc 1 160 9 is_stmt 1 view .LVU250
+ 160:Algorithm/Filter_Dep/filter.c ****         if(BWF_Obj->u_para_buf == NULL)
+ 798              		.loc 1 160 31 is_stmt 0 view .LVU251
+ 799 008e 424B     		ldr	r3, .L74
+ 800 0090 DB6A     		ldr	r3, [r3, #44]
+ 801 0092 B000     		lsls	r0, r6, #2
+ 802 0094 9847     		blx	r3
+ 803              	.LVL69:
+ 160:Algorithm/Filter_Dep/filter.c ****         if(BWF_Obj->u_para_buf == NULL)
+ 804              		.loc 1 160 29 view .LVU252
+ 805 0096 A060     		str	r0, [r4, #8]
+ 161:Algorithm/Filter_Dep/filter.c ****         {
+ 806              		.loc 1 161 9 is_stmt 1 view .LVU253
+ 161:Algorithm/Filter_Dep/filter.c ****         {
+ 807              		.loc 1 161 11 is_stmt 0 view .LVU254
+ 808 0098 0028     		cmp	r0, #0
+ 809 009a 3FD0     		beq	.L73
+ 171:Algorithm/Filter_Dep/filter.c **** 
+ 810              		.loc 1 171 9 is_stmt 1 view .LVU255
+ 171:Algorithm/Filter_Dep/filter.c **** 
+ 811              		.loc 1 171 35 is_stmt 0 view .LVU256
+ 812 009c 2B78     		ldrb	r3, [r5]	@ zero_extendqisi2
+ 171:Algorithm/Filter_Dep/filter.c **** 
+ 813              		.loc 1 171 24 view .LVU257
+ 814 009e 2370     		strb	r3, [r4]
+ 173:Algorithm/Filter_Dep/filter.c ****         {
+ 815              		.loc 1 173 9 is_stmt 1 view .LVU258
+ 816              	.LBB7:
+ 173:Algorithm/Filter_Dep/filter.c ****         {
+ 817              		.loc 1 173 13 view .LVU259
+ 818              	.LVL70:
+ 173:Algorithm/Filter_Dep/filter.c ****         {
+ 819              		.loc 1 173 21 is_stmt 0 view .LVU260
+ 820 00a0 0023     		movs	r3, #0
+ 173:Algorithm/Filter_Dep/filter.c ****         {
+ 821              		.loc 1 173 9 view .LVU261
+ 822 00a2 4FE0     		b	.L56
+ 823              	.LVL71:
+ 824              	.L67:
+ 173:Algorithm/Filter_Dep/filter.c ****         {
+ 825              		.loc 1 173 9 view .LVU262
+ 826              	.LBE7:
+ 110:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 827              		.loc 1 110 13 is_stmt 1 view .LVU263
+ 828 00a4 3C4B     		ldr	r3, .L74
+ 829 00a6 1B6B     		ldr	r3, [r3, #48]
+ 830 00a8 9847     		blx	r3
+ 831              	.LVL72:
+ 110:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 832              		.loc 1 110 33 view .LVU264
+ 111:Algorithm/Filter_Dep/filter.c ****         }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 24
+
+
+ 833              		.loc 1 111 13 view .LVU265
+ 111:Algorithm/Filter_Dep/filter.c ****         }
+ 834              		.loc 1 111 20 is_stmt 0 view .LVU266
+ 835 00aa 0020     		movs	r0, #0
+ 836 00ac 6DE0     		b	.L46
+ 837              	.L68:
+ 117:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 838              		.loc 1 117 13 is_stmt 1 view .LVU267
+ 839 00ae 3A4D     		ldr	r5, .L74
+ 840              	.LVL73:
+ 117:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 841              		.loc 1 117 13 is_stmt 0 view .LVU268
+ 842 00b0 2B6B     		ldr	r3, [r5, #48]
+ 843 00b2 9847     		blx	r3
+ 844              	.LVL74:
+ 117:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 845              		.loc 1 117 49 is_stmt 1 view .LVU269
+ 118:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 846              		.loc 1 118 13 view .LVU270
+ 847 00b4 2B6B     		ldr	r3, [r5, #48]
+ 848 00b6 2046     		mov	r0, r4
+ 849 00b8 9847     		blx	r3
+ 850              	.LVL75:
+ 118:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 851              		.loc 1 118 33 view .LVU271
+ 119:Algorithm/Filter_Dep/filter.c ****         }
+ 852              		.loc 1 119 13 view .LVU272
+ 119:Algorithm/Filter_Dep/filter.c ****         }
+ 853              		.loc 1 119 20 is_stmt 0 view .LVU273
+ 854 00ba 0020     		movs	r0, #0
+ 855 00bc 65E0     		b	.L46
+ 856              	.LVL76:
+ 857              	.L69:
+ 125:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj);
+ 858              		.loc 1 125 17 is_stmt 1 view .LVU274
+ 859 00be 364D     		ldr	r5, .L74
+ 860              	.LVL77:
+ 125:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj);
+ 861              		.loc 1 125 17 is_stmt 0 view .LVU275
+ 862 00c0 2B6B     		ldr	r3, [r5, #48]
+ 863 00c2 E069     		ldr	r0, [r4, #28]
+ 864 00c4 9847     		blx	r3
+ 865              	.LVL78:
+ 125:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj);
+ 866              		.loc 1 125 53 is_stmt 1 view .LVU276
+ 126:Algorithm/Filter_Dep/filter.c ****                 return 0;
+ 867              		.loc 1 126 17 view .LVU277
+ 868 00c6 2B6B     		ldr	r3, [r5, #48]
+ 869 00c8 2046     		mov	r0, r4
+ 870 00ca 9847     		blx	r3
+ 871              	.LVL79:
+ 126:Algorithm/Filter_Dep/filter.c ****                 return 0;
+ 872              		.loc 1 126 37 view .LVU278
+ 127:Algorithm/Filter_Dep/filter.c ****             }
+ 873              		.loc 1 127 17 view .LVU279
+ 127:Algorithm/Filter_Dep/filter.c ****             }
+ 874              		.loc 1 127 24 is_stmt 0 view .LVU280
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 25
+
+
+ 875 00cc 0020     		movs	r0, #0
+ 876 00ce 5CE0     		b	.L46
+ 877              	.LVL80:
+ 878              	.L70:
+ 134:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 879              		.loc 1 134 13 is_stmt 1 view .LVU281
+ 880 00d0 314D     		ldr	r5, .L74
+ 881              	.LVL81:
+ 134:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 882              		.loc 1 134 13 is_stmt 0 view .LVU282
+ 883 00d2 2B6B     		ldr	r3, [r5, #48]
+ 884 00d4 E069     		ldr	r0, [r4, #28]
+ 885 00d6 9847     		blx	r3
+ 886              	.LVL82:
+ 134:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 887              		.loc 1 134 49 is_stmt 1 view .LVU283
+ 135:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 888              		.loc 1 135 13 view .LVU284
+ 889 00d8 2B6B     		ldr	r3, [r5, #48]
+ 890 00da 206A     		ldr	r0, [r4, #32]
+ 891 00dc 9847     		blx	r3
+ 892              	.LVL83:
+ 135:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 893              		.loc 1 135 49 view .LVU285
+ 136:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 894              		.loc 1 136 13 view .LVU286
+ 895 00de 2B6B     		ldr	r3, [r5, #48]
+ 896 00e0 2046     		mov	r0, r4
+ 897 00e2 9847     		blx	r3
+ 898              	.LVL84:
+ 136:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 899              		.loc 1 136 33 view .LVU287
+ 137:Algorithm/Filter_Dep/filter.c ****         }
+ 900              		.loc 1 137 13 view .LVU288
+ 137:Algorithm/Filter_Dep/filter.c ****         }
+ 901              		.loc 1 137 20 is_stmt 0 view .LVU289
+ 902 00e4 0020     		movs	r0, #0
+ 903 00e6 50E0     		b	.L46
+ 904              	.LVL85:
+ 905              	.L71:
+ 143:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 906              		.loc 1 143 17 is_stmt 1 view .LVU290
+ 907 00e8 2B4D     		ldr	r5, .L74
+ 908              	.LVL86:
+ 143:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 909              		.loc 1 143 17 is_stmt 0 view .LVU291
+ 910 00ea 2B6B     		ldr	r3, [r5, #48]
+ 911 00ec E069     		ldr	r0, [r4, #28]
+ 912 00ee 9847     		blx	r3
+ 913              	.LVL87:
+ 143:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 914              		.loc 1 143 53 is_stmt 1 view .LVU292
+ 144:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj);
+ 915              		.loc 1 144 17 view .LVU293
+ 916 00f0 2B6B     		ldr	r3, [r5, #48]
+ 917 00f2 206A     		ldr	r0, [r4, #32]
+ 918 00f4 9847     		blx	r3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 26
+
+
+ 919              	.LVL88:
+ 144:Algorithm/Filter_Dep/filter.c ****                 FILTER_FREE(BWF_Obj);
+ 920              		.loc 1 144 53 view .LVU294
+ 145:Algorithm/Filter_Dep/filter.c ****                 return 0;
+ 921              		.loc 1 145 17 view .LVU295
+ 922 00f6 2B6B     		ldr	r3, [r5, #48]
+ 923 00f8 2046     		mov	r0, r4
+ 924 00fa 9847     		blx	r3
+ 925              	.LVL89:
+ 145:Algorithm/Filter_Dep/filter.c ****                 return 0;
+ 926              		.loc 1 145 37 view .LVU296
+ 146:Algorithm/Filter_Dep/filter.c ****             }
+ 927              		.loc 1 146 17 view .LVU297
+ 146:Algorithm/Filter_Dep/filter.c ****             }
+ 928              		.loc 1 146 24 is_stmt 0 view .LVU298
+ 929 00fc 0020     		movs	r0, #0
+ 930 00fe 44E0     		b	.L46
+ 931              	.LVL90:
+ 932              	.L72:
+ 153:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_e_data_cache);
+ 933              		.loc 1 153 13 is_stmt 1 view .LVU299
+ 934 0100 254D     		ldr	r5, .L74
+ 935              	.LVL91:
+ 153:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_e_data_cache);
+ 936              		.loc 1 153 13 is_stmt 0 view .LVU300
+ 937 0102 2B6B     		ldr	r3, [r5, #48]
+ 938 0104 9847     		blx	r3
+ 939              	.LVL92:
+ 153:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_e_data_cache);
+ 940              		.loc 1 153 45 is_stmt 1 view .LVU301
+ 154:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 941              		.loc 1 154 13 view .LVU302
+ 942 0106 2B6B     		ldr	r3, [r5, #48]
+ 943 0108 E069     		ldr	r0, [r4, #28]
+ 944 010a 9847     		blx	r3
+ 945              	.LVL93:
+ 154:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 946              		.loc 1 154 49 view .LVU303
+ 155:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 947              		.loc 1 155 13 view .LVU304
+ 948 010c 2B6B     		ldr	r3, [r5, #48]
+ 949 010e 206A     		ldr	r0, [r4, #32]
+ 950 0110 9847     		blx	r3
+ 951              	.LVL94:
+ 155:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 952              		.loc 1 155 49 view .LVU305
+ 156:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 953              		.loc 1 156 13 view .LVU306
+ 954 0112 2B6B     		ldr	r3, [r5, #48]
+ 955 0114 2046     		mov	r0, r4
+ 956 0116 9847     		blx	r3
+ 957              	.LVL95:
+ 156:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 958              		.loc 1 156 33 view .LVU307
+ 157:Algorithm/Filter_Dep/filter.c ****         }
+ 959              		.loc 1 157 13 view .LVU308
+ 157:Algorithm/Filter_Dep/filter.c ****         }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 27
+
+
+ 960              		.loc 1 157 20 is_stmt 0 view .LVU309
+ 961 0118 0020     		movs	r0, #0
+ 962 011a 36E0     		b	.L46
+ 963              	.LVL96:
+ 964              	.L73:
+ 163:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->u_para_buf);
+ 965              		.loc 1 163 13 is_stmt 1 view .LVU310
+ 966 011c 1E4D     		ldr	r5, .L74
+ 967              	.LVL97:
+ 163:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->u_para_buf);
+ 968              		.loc 1 163 13 is_stmt 0 view .LVU311
+ 969 011e 2B6B     		ldr	r3, [r5, #48]
+ 970 0120 6068     		ldr	r0, [r4, #4]
+ 971 0122 9847     		blx	r3
+ 972              	.LVL98:
+ 163:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->u_para_buf);
+ 973              		.loc 1 163 45 is_stmt 1 view .LVU312
+ 164:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_e_data_cache);
+ 974              		.loc 1 164 13 view .LVU313
+ 975 0124 2B6B     		ldr	r3, [r5, #48]
+ 976 0126 A068     		ldr	r0, [r4, #8]
+ 977 0128 9847     		blx	r3
+ 978              	.LVL99:
+ 164:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_e_data_cache);
+ 979              		.loc 1 164 45 view .LVU314
+ 165:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 980              		.loc 1 165 13 view .LVU315
+ 981 012a 2B6B     		ldr	r3, [r5, #48]
+ 982 012c E069     		ldr	r0, [r4, #28]
+ 983 012e 9847     		blx	r3
+ 984              	.LVL100:
+ 165:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj->p_u_data_cache);
+ 985              		.loc 1 165 49 view .LVU316
+ 166:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 986              		.loc 1 166 13 view .LVU317
+ 987 0130 2B6B     		ldr	r3, [r5, #48]
+ 988 0132 206A     		ldr	r0, [r4, #32]
+ 989 0134 9847     		blx	r3
+ 990              	.LVL101:
+ 166:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(BWF_Obj);
+ 991              		.loc 1 166 49 view .LVU318
+ 167:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 992              		.loc 1 167 13 view .LVU319
+ 993 0136 2B6B     		ldr	r3, [r5, #48]
+ 994 0138 2046     		mov	r0, r4
+ 995 013a 9847     		blx	r3
+ 996              	.LVL102:
+ 167:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 997              		.loc 1 167 33 view .LVU320
+ 168:Algorithm/Filter_Dep/filter.c ****         }
+ 998              		.loc 1 168 13 view .LVU321
+ 168:Algorithm/Filter_Dep/filter.c ****         }
+ 999              		.loc 1 168 20 is_stmt 0 view .LVU322
+ 1000 013c 0020     		movs	r0, #0
+ 1001 013e 24E0     		b	.L46
+ 1002              	.LVL103:
+ 1003              	.L57:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 28
+
+
+ 1004              	.LBB8:
+ 173:Algorithm/Filter_Dep/filter.c ****         {
+ 1005              		.loc 1 173 39 is_stmt 1 discriminator 2 view .LVU323
+ 173:Algorithm/Filter_Dep/filter.c ****         {
+ 1006              		.loc 1 173 40 is_stmt 0 discriminator 2 view .LVU324
+ 1007 0140 0133     		adds	r3, r3, #1
+ 1008              	.LVL104:
+ 173:Algorithm/Filter_Dep/filter.c ****         {
+ 1009              		.loc 1 173 40 discriminator 2 view .LVU325
+ 1010 0142 DBB2     		uxtb	r3, r3
+ 1011              	.LVL105:
+ 1012              	.L56:
+ 173:Algorithm/Filter_Dep/filter.c ****         {
+ 1013              		.loc 1 173 28 is_stmt 1 discriminator 1 view .LVU326
+ 173:Algorithm/Filter_Dep/filter.c ****         {
+ 1014              		.loc 1 173 9 is_stmt 0 discriminator 1 view .LVU327
+ 1015 0144 BB42     		cmp	r3, r7
+ 1016 0146 1FD2     		bcs	.L48
+ 175:Algorithm/Filter_Dep/filter.c ****         
+ 1017              		.loc 1 175 13 is_stmt 1 view .LVU328
+ 175:Algorithm/Filter_Dep/filter.c ****         
+ 1018              		.loc 1 175 47 is_stmt 0 view .LVU329
+ 1019 0148 6A68     		ldr	r2, [r5, #4]
+ 175:Algorithm/Filter_Dep/filter.c ****         
+ 1020              		.loc 1 175 56 view .LVU330
+ 1021 014a D800     		lsls	r0, r3, #3
+ 1022 014c 02EBC302 		add	r2, r2, r3, lsl #3
+ 175:Algorithm/Filter_Dep/filter.c ****         
+ 1023              		.loc 1 175 59 view .LVU331
+ 1024 0150 D2ED007A 		vldr.32	s15, [r2]
+ 175:Algorithm/Filter_Dep/filter.c ****         
+ 1025              		.loc 1 175 85 view .LVU332
+ 1026 0154 92ED017A 		vldr.32	s14, [r2, #4]
+ 175:Algorithm/Filter_Dep/filter.c ****         
+ 1027              		.loc 1 175 20 view .LVU333
+ 1028 0158 6268     		ldr	r2, [r4, #4]
+ 175:Algorithm/Filter_Dep/filter.c ****         
+ 1029              		.loc 1 175 32 view .LVU334
+ 1030 015a 9900     		lsls	r1, r3, #2
+ 1031 015c 02EB8302 		add	r2, r2, r3, lsl #2
+ 175:Algorithm/Filter_Dep/filter.c ****         
+ 1032              		.loc 1 175 62 view .LVU335
+ 1033 0160 67EE877A 		vmul.f32	s15, s15, s14
+ 175:Algorithm/Filter_Dep/filter.c ****         
+ 1034              		.loc 1 175 36 view .LVU336
+ 1035 0164 C2ED007A 		vstr.32	s15, [r2]
+ 177:Algorithm/Filter_Dep/filter.c ****             {
+ 1036              		.loc 1 177 13 is_stmt 1 view .LVU337
+ 177:Algorithm/Filter_Dep/filter.c ****             {
+ 1037              		.loc 1 177 15 is_stmt 0 view .LVU338
+ 1038 0168 9E42     		cmp	r6, r3
+ 1039 016a E9D9     		bls	.L57
+ 179:Algorithm/Filter_Dep/filter.c ****             }
+ 1040              		.loc 1 179 17 is_stmt 1 view .LVU339
+ 179:Algorithm/Filter_Dep/filter.c ****             }
+ 1041              		.loc 1 179 51 is_stmt 0 view .LVU340
+ 1042 016c AA68     		ldr	r2, [r5, #8]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 29
+
+
+ 179:Algorithm/Filter_Dep/filter.c ****             }
+ 1043              		.loc 1 179 60 view .LVU341
+ 1044 016e 0244     		add	r2, r2, r0
+ 179:Algorithm/Filter_Dep/filter.c ****             }
+ 1045              		.loc 1 179 63 view .LVU342
+ 1046 0170 D2ED007A 		vldr.32	s15, [r2]
+ 179:Algorithm/Filter_Dep/filter.c ****             }
+ 1047              		.loc 1 179 89 view .LVU343
+ 1048 0174 92ED017A 		vldr.32	s14, [r2, #4]
+ 179:Algorithm/Filter_Dep/filter.c ****             }
+ 1049              		.loc 1 179 24 view .LVU344
+ 1050 0178 A268     		ldr	r2, [r4, #8]
+ 179:Algorithm/Filter_Dep/filter.c ****             }
+ 1051              		.loc 1 179 36 view .LVU345
+ 1052 017a 0A44     		add	r2, r2, r1
+ 179:Algorithm/Filter_Dep/filter.c ****             }
+ 1053              		.loc 1 179 66 view .LVU346
+ 1054 017c 67EE877A 		vmul.f32	s15, s15, s14
+ 179:Algorithm/Filter_Dep/filter.c ****             }
+ 1055              		.loc 1 179 40 view .LVU347
+ 1056 0180 C2ED007A 		vstr.32	s15, [r2]
+ 1057 0184 DCE7     		b	.L57
+ 1058              	.LVL106:
+ 1059              	.L60:
+ 179:Algorithm/Filter_Dep/filter.c ****             }
+ 1060              		.loc 1 179 40 view .LVU348
+ 1061              	.LBE8:
+  91:Algorithm/Filter_Dep/filter.c ****     uint8_t e_cnt = 0;
+ 1062              		.loc 1 91 38 view .LVU349
+ 1063 0186 0024     		movs	r4, #0
+ 1064              	.LVL107:
+ 1065              	.L48:
+ 184:Algorithm/Filter_Dep/filter.c **** }
+ 1066              		.loc 1 184 5 is_stmt 1 view .LVU350
+ 184:Algorithm/Filter_Dep/filter.c **** }
+ 1067              		.loc 1 184 12 is_stmt 0 view .LVU351
+ 1068 0188 2046     		mov	r0, r4
+ 1069              	.LVL108:
+ 1070              	.L46:
+ 185:Algorithm/Filter_Dep/filter.c **** 
+ 1071              		.loc 1 185 1 view .LVU352
+ 1072 018a F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 1073              	.LVL109:
+ 1074              	.L59:
+ 1075              	.LCFI12:
+ 1076              		.cfi_def_cfa_offset 0
+ 1077              		.cfi_restore 3
+ 1078              		.cfi_restore 4
+ 1079              		.cfi_restore 5
+ 1080              		.cfi_restore 6
+ 1081              		.cfi_restore 7
+ 1082              		.cfi_restore 14
+  96:Algorithm/Filter_Dep/filter.c **** 
+ 1083              		.loc 1 96 16 view .LVU353
+ 1084 018c 0020     		movs	r0, #0
+ 1085              	.LVL110:
+ 185:Algorithm/Filter_Dep/filter.c **** 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 30
+
+
+ 1086              		.loc 1 185 1 view .LVU354
+ 1087 018e 7047     		bx	lr
+ 1088              	.LVL111:
+ 1089              	.L61:
+ 1090              	.LCFI13:
+ 1091              		.cfi_def_cfa_offset 24
+ 1092              		.cfi_offset 3, -24
+ 1093              		.cfi_offset 4, -20
+ 1094              		.cfi_offset 5, -16
+ 1095              		.cfi_offset 6, -12
+ 1096              		.cfi_offset 7, -8
+ 1097              		.cfi_offset 14, -4
+ 104:Algorithm/Filter_Dep/filter.c **** 
+ 1098              		.loc 1 104 20 view .LVU355
+ 1099 0190 0020     		movs	r0, #0
+ 1100              	.LVL112:
+ 104:Algorithm/Filter_Dep/filter.c **** 
+ 1101              		.loc 1 104 20 view .LVU356
+ 1102 0192 FAE7     		b	.L46
+ 1103              	.LVL113:
+ 1104              	.L62:
+ 104:Algorithm/Filter_Dep/filter.c **** 
+ 1105              		.loc 1 104 20 view .LVU357
+ 1106 0194 0020     		movs	r0, #0
+ 1107              	.LVL114:
+ 104:Algorithm/Filter_Dep/filter.c **** 
+ 1108              		.loc 1 104 20 view .LVU358
+ 1109 0196 F8E7     		b	.L46
+ 1110              	.L75:
+ 1111              		.align	2
+ 1112              	.L74:
+ 1113 0198 00000000 		.word	SrvOsCommon
+ 1114              		.cfi_endproc
+ 1115              	.LFE10:
+ 1117              		.section	.text.SmoothWindow_Init,"ax",%progbits
+ 1118              		.align	1
+ 1119              		.syntax unified
+ 1120              		.thumb
+ 1121              		.thumb_func
+ 1123              	SmoothWindow_Init:
+ 1124              	.LVL115:
+ 1125              	.LFB12:
+ 232:Algorithm/Filter_Dep/filter.c ****     SW_Object_Handle hdl = 0;
+ 1126              		.loc 1 232 1 is_stmt 1 view -0
+ 1127              		.cfi_startproc
+ 1128              		@ args = 0, pretend = 0, frame = 0
+ 1129              		@ frame_needed = 0, uses_anonymous_args = 0
+ 233:Algorithm/Filter_Dep/filter.c ****     SmoothWindow_Param_TypeDef *param = NULL;
+ 1130              		.loc 1 233 5 view .LVU360
+ 234:Algorithm/Filter_Dep/filter.c **** 
+ 1131              		.loc 1 234 5 view .LVU361
+ 236:Algorithm/Filter_Dep/filter.c ****     {
+ 1132              		.loc 1 236 5 view .LVU362
+ 236:Algorithm/Filter_Dep/filter.c ****     {
+ 1133              		.loc 1 236 7 is_stmt 0 view .LVU363
+ 1134 0000 0A28     		cmp	r0, #10
+ 1135 0002 24D8     		bhi	.L79
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 31
+
+
+ 232:Algorithm/Filter_Dep/filter.c ****     SW_Object_Handle hdl = 0;
+ 1136              		.loc 1 232 1 view .LVU364
+ 1137 0004 38B5     		push	{r3, r4, r5, lr}
+ 1138              	.LCFI14:
+ 1139              		.cfi_def_cfa_offset 16
+ 1140              		.cfi_offset 3, -16
+ 1141              		.cfi_offset 4, -12
+ 1142              		.cfi_offset 5, -8
+ 1143              		.cfi_offset 14, -4
+ 1144 0006 0446     		mov	r4, r0
+ 238:Algorithm/Filter_Dep/filter.c **** 
+ 1145              		.loc 1 238 9 is_stmt 1 view .LVU365
+ 238:Algorithm/Filter_Dep/filter.c **** 
+ 1146              		.loc 1 238 17 is_stmt 0 view .LVU366
+ 1147 0008 144B     		ldr	r3, .L87
+ 1148 000a DB6A     		ldr	r3, [r3, #44]
+ 1149 000c 1020     		movs	r0, #16
+ 1150              	.LVL116:
+ 238:Algorithm/Filter_Dep/filter.c **** 
+ 1151              		.loc 1 238 17 view .LVU367
+ 1152 000e 9847     		blx	r3
+ 1153              	.LVL117:
+ 240:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 1154              		.loc 1 240 9 is_stmt 1 view .LVU368
+ 240:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 1155              		.loc 1 240 11 is_stmt 0 view .LVU369
+ 1156 0010 0546     		mov	r5, r0
+ 1157 0012 F0B1     		cbz	r0, .L80
+ 243:Algorithm/Filter_Dep/filter.c ****         param->window_size = window_size;
+ 1158              		.loc 1 243 9 is_stmt 1 view .LVU370
+ 243:Algorithm/Filter_Dep/filter.c ****         param->window_size = window_size;
+ 1159              		.loc 1 243 30 is_stmt 0 view .LVU371
+ 1160 0014 0023     		movs	r3, #0
+ 1161 0016 4370     		strb	r3, [r0, #1]
+ 244:Algorithm/Filter_Dep/filter.c ****         param->window_cache = FILTER_MALLOC(sizeof(item_obj) * window_size);
+ 1162              		.loc 1 244 9 is_stmt 1 view .LVU372
+ 244:Algorithm/Filter_Dep/filter.c ****         param->window_cache = FILTER_MALLOC(sizeof(item_obj) * window_size);
+ 1163              		.loc 1 244 28 is_stmt 0 view .LVU373
+ 1164 0018 0470     		strb	r4, [r0]
+ 245:Algorithm/Filter_Dep/filter.c **** 
+ 1165              		.loc 1 245 9 is_stmt 1 view .LVU374
+ 245:Algorithm/Filter_Dep/filter.c **** 
+ 1166              		.loc 1 245 31 is_stmt 0 view .LVU375
+ 1167 001a 104B     		ldr	r3, .L87
+ 1168 001c DB6A     		ldr	r3, [r3, #44]
+ 1169 001e 04EB8400 		add	r0, r4, r4, lsl #2
+ 1170              	.LVL118:
+ 245:Algorithm/Filter_Dep/filter.c **** 
+ 1171              		.loc 1 245 31 view .LVU376
+ 1172 0022 8000     		lsls	r0, r0, #2
+ 1173 0024 9847     		blx	r3
+ 1174              	.LVL119:
+ 245:Algorithm/Filter_Dep/filter.c **** 
+ 1175              		.loc 1 245 29 view .LVU377
+ 1176 0026 E860     		str	r0, [r5, #12]
+ 247:Algorithm/Filter_Dep/filter.c ****         {
+ 1177              		.loc 1 247 9 is_stmt 1 view .LVU378
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 32
+
+
+ 247:Algorithm/Filter_Dep/filter.c ****         {
+ 1178              		.loc 1 247 11 is_stmt 0 view .LVU379
+ 1179 0028 48B1     		cbz	r0, .L86
+ 254:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 1180              		.loc 1 254 9 is_stmt 1 view .LVU380
+ 254:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 1181              		.loc 1 254 13 is_stmt 0 view .LVU381
+ 1182 002a 05F10803 		add	r3, r5, #8
+ 1183 002e 2A1D     		adds	r2, r5, #4
+ 1184 0030 0146     		mov	r1, r0
+ 1185 0032 2046     		mov	r0, r4
+ 1186 0034 FFF7FEFF 		bl	Filter_List_Create
+ 1187              	.LVL120:
+ 254:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 1188              		.loc 1 254 11 view .LVU382
+ 1189 0038 68B1     		cbz	r0, .L81
+ 257:Algorithm/Filter_Dep/filter.c ****     }
+ 1190              		.loc 1 257 9 is_stmt 1 view .LVU383
+ 257:Algorithm/Filter_Dep/filter.c ****     }
+ 1191              		.loc 1 257 13 is_stmt 0 view .LVU384
+ 1192 003a 2846     		mov	r0, r5
+ 1193              	.LVL121:
+ 1194              	.L76:
+ 261:Algorithm/Filter_Dep/filter.c **** 
+ 1195              		.loc 1 261 1 view .LVU385
+ 1196 003c 38BD     		pop	{r3, r4, r5, pc}
+ 1197              	.LVL122:
+ 1198              	.L86:
+ 249:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(param);
+ 1199              		.loc 1 249 13 is_stmt 1 view .LVU386
+ 1200 003e 074C     		ldr	r4, .L87
+ 1201 0040 236B     		ldr	r3, [r4, #48]
+ 1202 0042 9847     		blx	r3
+ 1203              	.LVL123:
+ 249:Algorithm/Filter_Dep/filter.c ****             FILTER_FREE(param);
+ 1204              		.loc 1 249 45 view .LVU387
+ 250:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 1205              		.loc 1 250 13 view .LVU388
+ 1206 0044 236B     		ldr	r3, [r4, #48]
+ 1207 0046 2846     		mov	r0, r5
+ 1208 0048 9847     		blx	r3
+ 1209              	.LVL124:
+ 250:Algorithm/Filter_Dep/filter.c ****             return 0;
+ 1210              		.loc 1 250 31 view .LVU389
+ 251:Algorithm/Filter_Dep/filter.c ****         }
+ 1211              		.loc 1 251 13 view .LVU390
+ 251:Algorithm/Filter_Dep/filter.c ****         }
+ 1212              		.loc 1 251 20 is_stmt 0 view .LVU391
+ 1213 004a 0020     		movs	r0, #0
+ 1214 004c F6E7     		b	.L76
+ 1215              	.LVL125:
+ 1216              	.L79:
+ 1217              	.LCFI15:
+ 1218              		.cfi_def_cfa_offset 0
+ 1219              		.cfi_restore 3
+ 1220              		.cfi_restore 4
+ 1221              		.cfi_restore 5
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 33
+
+
+ 1222              		.cfi_restore 14
+ 233:Algorithm/Filter_Dep/filter.c ****     SmoothWindow_Param_TypeDef *param = NULL;
+ 1223              		.loc 1 233 22 view .LVU392
+ 1224 004e 0020     		movs	r0, #0
+ 1225              	.LVL126:
+ 261:Algorithm/Filter_Dep/filter.c **** 
+ 1226              		.loc 1 261 1 view .LVU393
+ 1227 0050 7047     		bx	lr
+ 1228              	.LVL127:
+ 1229              	.L80:
+ 1230              	.LCFI16:
+ 1231              		.cfi_def_cfa_offset 16
+ 1232              		.cfi_offset 3, -16
+ 1233              		.cfi_offset 4, -12
+ 1234              		.cfi_offset 5, -8
+ 1235              		.cfi_offset 14, -4
+ 241:Algorithm/Filter_Dep/filter.c **** 
+ 1236              		.loc 1 241 20 view .LVU394
+ 1237 0052 0020     		movs	r0, #0
+ 1238              	.LVL128:
+ 241:Algorithm/Filter_Dep/filter.c **** 
+ 1239              		.loc 1 241 20 view .LVU395
+ 1240 0054 F2E7     		b	.L76
+ 1241              	.L81:
+ 255:Algorithm/Filter_Dep/filter.c **** 
+ 1242              		.loc 1 255 20 view .LVU396
+ 1243 0056 0020     		movs	r0, #0
+ 1244              	.LVL129:
+ 255:Algorithm/Filter_Dep/filter.c **** 
+ 1245              		.loc 1 255 20 view .LVU397
+ 1246 0058 F0E7     		b	.L76
+ 1247              	.L88:
+ 1248 005a 00BF     		.align	2
+ 1249              	.L87:
+ 1250 005c 00000000 		.word	SrvOsCommon
+ 1251              		.cfi_endproc
+ 1252              	.LFE12:
+ 1254              		.section	.text.SmoothWindow_Update,"ax",%progbits
+ 1255              		.align	1
+ 1256              		.syntax unified
+ 1257              		.thumb
+ 1258              		.thumb_func
+ 1260              	SmoothWindow_Update:
+ 1261              	.LVL130:
+ 1262              	.LFB14:
+ 276:Algorithm/Filter_Dep/filter.c ****     float sum = 0.0f;
+ 1263              		.loc 1 276 1 is_stmt 1 view -0
+ 1264              		.cfi_startproc
+ 1265              		@ args = 0, pretend = 0, frame = 8
+ 1266              		@ frame_needed = 0, uses_anonymous_args = 0
+ 276:Algorithm/Filter_Dep/filter.c ****     float sum = 0.0f;
+ 1267              		.loc 1 276 1 is_stmt 0 view .LVU399
+ 1268 0000 10B5     		push	{r4, lr}
+ 1269              	.LCFI17:
+ 1270              		.cfi_def_cfa_offset 8
+ 1271              		.cfi_offset 4, -8
+ 1272              		.cfi_offset 14, -4
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 34
+
+
+ 1273 0002 82B0     		sub	sp, sp, #8
+ 1274              	.LCFI18:
+ 1275              		.cfi_def_cfa_offset 16
+ 277:Algorithm/Filter_Dep/filter.c ****     SmoothWindow_Param_TypeDef *param = NULL; 
+ 1276              		.loc 1 277 5 is_stmt 1 view .LVU400
+ 277:Algorithm/Filter_Dep/filter.c ****     SmoothWindow_Param_TypeDef *param = NULL; 
+ 1277              		.loc 1 277 11 is_stmt 0 view .LVU401
+ 1278 0004 0023     		movs	r3, #0
+ 1279 0006 0193     		str	r3, [sp, #4]	@ float
+ 278:Algorithm/Filter_Dep/filter.c **** 
+ 1280              		.loc 1 278 5 is_stmt 1 view .LVU402
+ 1281              	.LVL131:
+ 280:Algorithm/Filter_Dep/filter.c ****     {
+ 1282              		.loc 1 280 5 view .LVU403
+ 280:Algorithm/Filter_Dep/filter.c ****     {
+ 1283              		.loc 1 280 7 is_stmt 0 view .LVU404
+ 1284 0008 E0B1     		cbz	r0, .L90
+ 1285 000a 0446     		mov	r4, r0
+ 282:Algorithm/Filter_Dep/filter.c ****     
+ 1286              		.loc 1 282 9 is_stmt 1 view .LVU405
+ 1287              	.LVL132:
+ 284:Algorithm/Filter_Dep/filter.c ****             param->smooth_period ++;
+ 1288              		.loc 1 284 9 view .LVU406
+ 284:Algorithm/Filter_Dep/filter.c ****             param->smooth_period ++;
+ 1289              		.loc 1 284 17 is_stmt 0 view .LVU407
+ 1290 000c 4378     		ldrb	r3, [r0, #1]	@ zero_extendqisi2
+ 284:Algorithm/Filter_Dep/filter.c ****             param->smooth_period ++;
+ 1291              		.loc 1 284 40 view .LVU408
+ 1292 000e 0278     		ldrb	r2, [r0]	@ zero_extendqisi2
+ 284:Algorithm/Filter_Dep/filter.c ****             param->smooth_period ++;
+ 1293              		.loc 1 284 11 view .LVU409
+ 1294 0010 9342     		cmp	r3, r2
+ 1295 0012 01D2     		bcs	.L91
+ 285:Algorithm/Filter_Dep/filter.c **** 
+ 1296              		.loc 1 285 13 is_stmt 1 view .LVU410
+ 285:Algorithm/Filter_Dep/filter.c **** 
+ 1297              		.loc 1 285 34 is_stmt 0 view .LVU411
+ 1298 0014 0133     		adds	r3, r3, #1
+ 1299 0016 4370     		strb	r3, [r0, #1]
+ 1300              	.L91:
+ 287:Algorithm/Filter_Dep/filter.c ****      
+ 1301              		.loc 1 287 9 is_stmt 1 view .LVU412
+ 1302 0018 04F10801 		add	r1, r4, #8
+ 1303 001c 201D     		adds	r0, r4, #4
+ 1304              	.LVL133:
+ 287:Algorithm/Filter_Dep/filter.c ****      
+ 1305              		.loc 1 287 9 is_stmt 0 view .LVU413
+ 1306 001e FFF7FEFF 		bl	Filter_Item_Update
+ 1307              	.LVL134:
+ 289:Algorithm/Filter_Dep/filter.c ****         sum /= param->smooth_period;
+ 1308              		.loc 1 289 9 is_stmt 1 view .LVU414
+ 1309 0022 0023     		movs	r3, #0
+ 1310 0024 01AA     		add	r2, sp, #4
+ 1311 0026 0949     		ldr	r1, .L93
+ 1312 0028 6068     		ldr	r0, [r4, #4]
+ 1313 002a FFF7FEFF 		bl	List_traverse
+ 1314              	.LVL135:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 35
+
+
+ 290:Algorithm/Filter_Dep/filter.c ****     }
+ 1315              		.loc 1 290 9 view .LVU415
+ 290:Algorithm/Filter_Dep/filter.c ****     }
+ 1316              		.loc 1 290 21 is_stmt 0 view .LVU416
+ 1317 002e 6378     		ldrb	r3, [r4, #1]	@ zero_extendqisi2
+ 1318 0030 07EE903A 		vmov	s15, r3	@ int
+ 290:Algorithm/Filter_Dep/filter.c ****     }
+ 1319              		.loc 1 290 13 view .LVU417
+ 1320 0034 F8EEE77A 		vcvt.f32.s32	s15, s15
+ 1321 0038 DDED016A 		vldr.32	s13, [sp, #4]
+ 1322 003c 86EEA77A 		vdiv.f32	s14, s13, s15
+ 1323 0040 8DED017A 		vstr.32	s14, [sp, #4]
+ 1324              	.LVL136:
+ 1325              	.L90:
+ 293:Algorithm/Filter_Dep/filter.c **** }
+ 1326              		.loc 1 293 5 is_stmt 1 view .LVU418
+ 294:Algorithm/Filter_Dep/filter.c **** 
+ 1327              		.loc 1 294 1 is_stmt 0 view .LVU419
+ 1328 0044 9DED010A 		vldr.32	s0, [sp, #4]
+ 1329 0048 02B0     		add	sp, sp, #8
+ 1330              	.LCFI19:
+ 1331              		.cfi_def_cfa_offset 8
+ 1332              		@ sp needed
+ 1333 004a 10BD     		pop	{r4, pc}
+ 1334              	.L94:
+ 1335              		.align	2
+ 1336              	.L93:
+ 1337 004c 00000000 		.word	SmoothWindow_Comput_Sum
+ 1338              		.cfi_endproc
+ 1339              	.LFE14:
+ 1341              		.global	RCFilter
+ 1342              		.global	SmoothWindow
+ 1343              		.global	Butterworth
+ 1344              		.section	.data.Butterworth,"aw"
+ 1345              		.align	2
+ 1348              	Butterworth:
+ 1349 0000 00000000 		.word	Butterworth_Init
+ 1350 0004 00000000 		.word	Butterworth_Filter_Update
+ 1351              		.section	.data.RCFilter,"aw"
+ 1352              		.align	2
+ 1355              	RCFilter:
+ 1356 0000 00000000 		.word	RC_Filter_Init
+ 1357 0004 00000000 		.word	RC_Filter_Update
+ 1358              		.section	.data.SmoothWindow,"aw"
+ 1359              		.align	2
+ 1362              	SmoothWindow:
+ 1363 0000 00000000 		.word	SmoothWindow_Init
+ 1364 0004 00000000 		.word	SmoothWindow_Update
+ 1365              		.text
+ 1366              	.Letext0:
+ 1367              		.file 2 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\machine\\_defau
+ 1368              		.file 3 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\lib\\gcc\\arm-none-eabi\\10.3.1\\includ
+ 1369              		.file 4 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 1370              		.file 5 "DataStructure/linked_list.h"
+ 1371              		.file 6 "System/FreeRTOS/include/portable.h"
+ 1372              		.file 7 "Service/Srv_OsCommon.h"
+ 1373              		.file 8 "Algorithm/Filter_Dep/filter_param.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 36
+
+
+ 1374              		.file 9 "Algorithm/Filter_Dep/filter.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s 			page 37
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 filter.c
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:20     .text.Filter_Item_Update:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:25     .text.Filter_Item_Update:00000000 Filter_Item_Update
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:97     .text.Butterworth_Filter_Update:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:102    .text.Butterworth_Filter_Update:00000000 Butterworth_Filter_Update
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:269    .text.Butterworth_Filter_Update:00000094 $d
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:274    .text.SmoothWindow_Comput_Sum:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:279    .text.SmoothWindow_Comput_Sum:00000000 SmoothWindow_Comput_Sum
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:332    .text.RC_Filter_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:337    .text.RC_Filter_Init:00000000 RC_Filter_Init
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:378    .text.RC_Filter_Update:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:383    .text.RC_Filter_Update:00000000 RC_Filter_Update
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:513    .text.RC_Filter_Update:00000090 $d
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:521    .text.Filter_List_Create:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:526    .text.Filter_List_Create:00000000 Filter_List_Create
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:660    .text.Filter_List_Create:00000070 $d
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:665    .text.Butterworth_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:670    .text.Butterworth_Init:00000000 Butterworth_Init
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1113   .text.Butterworth_Init:00000198 $d
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1118   .text.SmoothWindow_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1123   .text.SmoothWindow_Init:00000000 SmoothWindow_Init
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1250   .text.SmoothWindow_Init:0000005c $d
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1255   .text.SmoothWindow_Update:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1260   .text.SmoothWindow_Update:00000000 SmoothWindow_Update
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1337   .text.SmoothWindow_Update:0000004c $d
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1355   .data.RCFilter:00000000 RCFilter
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1362   .data.SmoothWindow:00000000 SmoothWindow
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1348   .data.Butterworth:00000000 Butterworth
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1345   .data.Butterworth:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1352   .data.RCFilter:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccW1K81m.s:1359   .data.SmoothWindow:00000000 $d
+
+UNDEFINED SYMBOLS
+__aeabi_f2d
+__aeabi_dmul
+__aeabi_d2f
+List_ItemInit
+SrvOsCommon
+List_traverse

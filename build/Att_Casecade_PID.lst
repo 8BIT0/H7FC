@@ -1,0 +1,1616 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"Att_Casecade_PID.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.Att_PID_Param_Set,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	Att_PID_Param_Set:
+  26              	.LFB10:
+  27              		.file 1 "Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c"
+   1:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** #include "Att_Casecade_PID.h"
+   2:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+   3:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** #define DYNAMIC_TUNE_THROTTLE_POINT 0.4f
+   4:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+   5:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** #define PARA_AMPLIFICATE(x)         (uint16_t)(x * 1000) 
+   6:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** #define ATTITUDE_INTEGRAL_RANGE     20
+   7:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+   8:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** #define ATT_DTRIM_RC_F_CUT          20
+   9:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** #define ANG_DTRIM_RC_F_CUT          100
+  10:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  11:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** /* Casecade PID in process paramter */
+  12:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** typedef struct
+  13:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** {
+  14:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     bool init;
+  15:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  16:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* in progress parameter */
+  17:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PIDObj_TypeDef pitch;
+  18:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PIDObj_TypeDef roll;
+  19:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  20:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PIDObj_TypeDef g_x;
+  21:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PIDObj_TypeDef g_y;
+  22:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PIDObj_TypeDef g_z;
+  23:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** } ProcessParam_TypeDef;
+  24:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  25:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** /* internal vriable */
+  26:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static ProcessParam_TypeDef ProcessPara = {
+  27:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     .init = false,
+  28:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** };
+  29:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  30:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** /* internal function */
+  31:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static bool Att_PID_Param_Set(AttCaseCadePID_Param_TypeDef para);
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 2
+
+
+  32:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  33:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** /* external function */
+  34:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para);
+  35:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttCont
+  36:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static void Att_Casecade_PID_Reset(void);
+  37:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void);
+  38:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static AttCaseCadePID_Param_TypeDef Att_CaseCade_PID_InUse_Param(void);
+  39:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  40:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** AttCasecadePID_TypeDef Att_CasecadePID_Controller = {
+  41:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     .set = Att_CheckParam_Validation,
+  42:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     .process = Att_Casecade_PID,
+  43:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     .cur_param = Att_CaseCade_PID_InUse_Param,
+  44:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     .default_param = Att_Casecade_PID_DefaultPara,
+  45:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     .reset = Att_Casecade_PID_Reset,
+  46:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** };
+  47:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  48:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static AttCaseCadePID_Param_TypeDef Att_CaseCade_PID_InUse_Param(void)
+  49:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** {
+  50:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     AttCaseCadePID_Param_TypeDef in_use_para;
+  51:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     memset(&in_use_para, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+  52:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  53:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Pitch_Para.gP = ProcessPara.pitch.gP;
+  54:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Pitch_Para.gI = ProcessPara.pitch.gI;
+  55:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Pitch_Para.gD = ProcessPara.pitch.gD;
+  56:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  57:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Roll_Para.gP  = ProcessPara.roll.gP;
+  58:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Roll_Para.gI  = ProcessPara.roll.gI;
+  59:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Roll_Para.gD  = ProcessPara.roll.gD;
+  60:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****      
+  61:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroX_Para.gP = ProcessPara.g_x.gP;
+  62:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroX_Para.gI = ProcessPara.g_x.gI;
+  63:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroX_Para.gD = ProcessPara.g_x.gD;
+  64:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  65:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroY_Para.gP = ProcessPara.g_y.gP;
+  66:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroY_Para.gI = ProcessPara.g_y.gI;
+  67:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroY_Para.gD = ProcessPara.g_y.gD;
+  68:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     
+  69:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroZ_Para.gP = ProcessPara.g_z.gP;
+  70:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroZ_Para.gI = ProcessPara.g_z.gI;
+  71:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroZ_Para.gD = ProcessPara.g_z.gD;
+  72:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  73:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     return in_use_para;
+  74:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+  75:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  76:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static AttCaseCadePID_Param_TypeDef Att_Casecade_PID_DefaultPara(void)
+  77:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** {
+  78:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     AttCaseCadePID_Param_TypeDef para;
+  79:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  80:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     memset(&para, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+  81:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  82:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gP          = 1.2;
+  83:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gI          = 0.2;
+  84:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gI_Max      = 10;
+  85:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gI_Min      = -10;
+  86:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gD          = 0.5;
+  87:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  88:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gP           = 1.2;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 3
+
+
+  89:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gI           = 0.2;
+  90:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gI_Max       = 10;
+  91:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gI_Min       = -10;
+  92:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gD           = 0.5;
+  93:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+  94:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gP          = 1.4;
+  95:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gI          = 0.006;
+  96:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gI_Max      = 100;
+  97:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gI_Min      = -100;
+  98:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gD          = 1.8;
+  99:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 100:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gP          = 1.4;
+ 101:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gI          = 0.006;
+ 102:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gI_Max      = 100;
+ 103:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gI_Min      = -100;
+ 104:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gD          = 1.8;
+ 105:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 106:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gP          = 1.3;
+ 107:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gI          = 0.008;
+ 108:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gI_Max      = 50;
+ 109:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gI_Min      = -50;
+ 110:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gD          = 1.2;
+ 111:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 112:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     return para;
+ 113:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 114:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 115:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static bool Att_PID_Param_Set(AttCaseCadePID_Param_TypeDef para)
+ 116:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** {
+  28              		.loc 1 116 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 100, pretend = 16, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		@ link register save eliminated.
+  33 0000 84B0     		sub	sp, sp, #16
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 16
+  36 0002 8DE80F00 		stm	sp, {r0, r1, r2, r3}
+ 117:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* attitude pid pitch parameter set */
+ 118:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* invalid Pitch P gain input */
+ 119:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     if (PARA_AMPLIFICATE(para.Pitch_Para.gP) == 0)
+  37              		.loc 1 119 5 view .LVU1
+  38              		.loc 1 119 9 is_stmt 0 view .LVU2
+  39 0006 9DED007A 		vldr.32	s14, [sp]
+  40 000a DFED4C7A 		vldr.32	s15, .L9
+  41 000e 67EE277A 		vmul.f32	s15, s14, s15
+  42 0012 FCEEE77A 		vcvt.u32.f32	s15, s15
+  43 0016 17EE903A 		vmov	r3, s15	@ int
+  44 001a 9BB2     		uxth	r3, r3
+  45              		.loc 1 119 8 view .LVU3
+  46 001c 002B     		cmp	r3, #0
+  47 001e 00F08280 		beq	.L3
+ 120:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 121:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         /* use default parameter */
+ 122:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         return false;
+ 123:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 124:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 125:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.pitch.gP = para.Pitch_Para.gP;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 4
+
+
+  48              		.loc 1 125 5 is_stmt 1 view .LVU4
+  49              		.loc 1 125 26 is_stmt 0 view .LVU5
+  50 0022 474B     		ldr	r3, .L9+4
+  51 0024 83ED047A 		vstr.32	s14, [r3, #16]
+ 126:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.pitch.gI = para.Pitch_Para.gI;
+  52              		.loc 1 126 5 is_stmt 1 view .LVU6
+  53              		.loc 1 126 43 is_stmt 0 view .LVU7
+  54 0028 019A     		ldr	r2, [sp, #4]	@ float
+  55              		.loc 1 126 26 view .LVU8
+  56 002a DA61     		str	r2, [r3, #28]	@ float
+ 127:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.pitch.gD = para.Pitch_Para.gD;
+  57              		.loc 1 127 5 is_stmt 1 view .LVU9
+  58              		.loc 1 127 43 is_stmt 0 view .LVU10
+  59 002c 049A     		ldr	r2, [sp, #16]	@ float
+  60              		.loc 1 127 26 view .LVU11
+  61 002e 5A63     		str	r2, [r3, #52]	@ float
+ 128:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.pitch.gI_Max = ATTITUDE_INTEGRAL_RANGE;
+  62              		.loc 1 128 5 is_stmt 1 view .LVU12
+  63              		.loc 1 128 30 is_stmt 0 view .LVU13
+  64 0030 444A     		ldr	r2, .L9+8
+  65 0032 9A62     		str	r2, [r3, #40]	@ float
+ 129:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.pitch.gI_Min = -ATTITUDE_INTEGRAL_RANGE;
+  66              		.loc 1 129 5 is_stmt 1 view .LVU14
+  67              		.loc 1 129 30 is_stmt 0 view .LVU15
+  68 0034 444A     		ldr	r2, .L9+12
+  69 0036 5A62     		str	r2, [r3, #36]	@ float
+ 130:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 131:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* attitude pid roll parameter set */
+ 132:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* invalid Roll P gain input */
+ 133:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     if (PARA_AMPLIFICATE(para.Roll_Para.gP) == 0)
+  70              		.loc 1 133 5 is_stmt 1 view .LVU16
+  71              		.loc 1 133 9 is_stmt 0 view .LVU17
+  72 0038 9DED057A 		vldr.32	s14, [sp, #20]
+  73 003c DFED3F7A 		vldr.32	s15, .L9
+  74 0040 67EE277A 		vmul.f32	s15, s14, s15
+  75 0044 FCEEE77A 		vcvt.u32.f32	s15, s15
+  76 0048 17EE903A 		vmov	r3, s15	@ int
+  77 004c 9BB2     		uxth	r3, r3
+  78              		.loc 1 133 8 view .LVU18
+  79 004e 002B     		cmp	r3, #0
+  80 0050 6CD0     		beq	.L4
+ 134:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 135:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         /* use default parameter */
+ 136:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         return false;
+ 137:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 138:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 139:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.roll.gP = para.Roll_Para.gP;
+  81              		.loc 1 139 5 is_stmt 1 view .LVU19
+  82              		.loc 1 139 25 is_stmt 0 view .LVU20
+  83 0052 3B4B     		ldr	r3, .L9+4
+  84 0054 83ED187A 		vstr.32	s14, [r3, #96]
+ 140:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.roll.gI = para.Roll_Para.gI;
+  85              		.loc 1 140 5 is_stmt 1 view .LVU21
+  86              		.loc 1 140 41 is_stmt 0 view .LVU22
+  87 0058 069A     		ldr	r2, [sp, #24]	@ float
+  88              		.loc 1 140 25 view .LVU23
+  89 005a DA66     		str	r2, [r3, #108]	@ float
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 5
+
+
+ 141:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.roll.gD = para.Roll_Para.gD;
+  90              		.loc 1 141 5 is_stmt 1 view .LVU24
+  91              		.loc 1 141 41 is_stmt 0 view .LVU25
+  92 005c 099A     		ldr	r2, [sp, #36]	@ float
+  93              		.loc 1 141 25 view .LVU26
+  94 005e C3F88420 		str	r2, [r3, #132]	@ float
+ 142:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.roll.gI_Max = ATTITUDE_INTEGRAL_RANGE;
+  95              		.loc 1 142 5 is_stmt 1 view .LVU27
+  96              		.loc 1 142 29 is_stmt 0 view .LVU28
+  97 0062 384A     		ldr	r2, .L9+8
+  98 0064 9A67     		str	r2, [r3, #120]	@ float
+ 143:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.roll.gI_Min = -ATTITUDE_INTEGRAL_RANGE;
+  99              		.loc 1 143 5 is_stmt 1 view .LVU29
+ 100              		.loc 1 143 29 is_stmt 0 view .LVU30
+ 101 0066 384A     		ldr	r2, .L9+12
+ 102 0068 5A67     		str	r2, [r3, #116]	@ float
+ 144:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 145:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* angular axis X parameter set */
+ 146:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     if (PARA_AMPLIFICATE(para.GyroX_Para.gP) == 0)
+ 103              		.loc 1 146 5 is_stmt 1 view .LVU31
+ 104              		.loc 1 146 9 is_stmt 0 view .LVU32
+ 105 006a 9DED0A7A 		vldr.32	s14, [sp, #40]
+ 106 006e DFED337A 		vldr.32	s15, .L9
+ 107 0072 67EE277A 		vmul.f32	s15, s14, s15
+ 108 0076 FCEEE77A 		vcvt.u32.f32	s15, s15
+ 109 007a 17EE903A 		vmov	r3, s15	@ int
+ 110 007e 9BB2     		uxth	r3, r3
+ 111              		.loc 1 146 8 view .LVU33
+ 112 0080 002B     		cmp	r3, #0
+ 113 0082 55D0     		beq	.L5
+ 147:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 148:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         /* use default parameter */
+ 149:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         return false;
+ 150:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 151:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 152:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_x.gP = para.GyroX_Para.gP;
+ 114              		.loc 1 152 5 is_stmt 1 view .LVU34
+ 115              		.loc 1 152 24 is_stmt 0 view .LVU35
+ 116 0084 2E4B     		ldr	r3, .L9+4
+ 117 0086 83ED2C7A 		vstr.32	s14, [r3, #176]
+ 153:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_x.gI = para.GyroX_Para.gI;
+ 118              		.loc 1 153 5 is_stmt 1 view .LVU36
+ 119              		.loc 1 153 41 is_stmt 0 view .LVU37
+ 120 008a 0B9A     		ldr	r2, [sp, #44]	@ float
+ 121              		.loc 1 153 24 view .LVU38
+ 122 008c C3F8BC20 		str	r2, [r3, #188]	@ float
+ 154:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_x.gD = para.GyroX_Para.gD;
+ 123              		.loc 1 154 5 is_stmt 1 view .LVU39
+ 124              		.loc 1 154 41 is_stmt 0 view .LVU40
+ 125 0090 0E9A     		ldr	r2, [sp, #56]	@ float
+ 126              		.loc 1 154 24 view .LVU41
+ 127 0092 C3F8D420 		str	r2, [r3, #212]	@ float
+ 155:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_x.gI_Limit = false;
+ 128              		.loc 1 155 5 is_stmt 1 view .LVU42
+ 129              		.loc 1 155 30 is_stmt 0 view .LVU43
+ 130 0096 0022     		movs	r2, #0
+ 131 0098 83F8C020 		strb	r2, [r3, #192]
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 6
+
+
+ 156:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_x.gI_Min = 50;
+ 132              		.loc 1 156 5 is_stmt 1 view .LVU44
+ 133              		.loc 1 156 28 is_stmt 0 view .LVU45
+ 134 009c 2B4A     		ldr	r2, .L9+16
+ 135 009e C3F8C420 		str	r2, [r3, #196]	@ float
+ 157:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_x.gI_Max = -50;
+ 136              		.loc 1 157 5 is_stmt 1 view .LVU46
+ 137              		.loc 1 157 28 is_stmt 0 view .LVU47
+ 138 00a2 2B4A     		ldr	r2, .L9+20
+ 139 00a4 C3F8C820 		str	r2, [r3, #200]	@ float
+ 158:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     
+ 159:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* angular axis Y parameter set */
+ 160:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     if (PARA_AMPLIFICATE(para.GyroY_Para.gP) == 0)
+ 140              		.loc 1 160 5 is_stmt 1 view .LVU48
+ 141              		.loc 1 160 9 is_stmt 0 view .LVU49
+ 142 00a8 9DED0F7A 		vldr.32	s14, [sp, #60]
+ 143 00ac DFED237A 		vldr.32	s15, .L9
+ 144 00b0 67EE277A 		vmul.f32	s15, s14, s15
+ 145 00b4 FCEEE77A 		vcvt.u32.f32	s15, s15
+ 146 00b8 17EE903A 		vmov	r3, s15	@ int
+ 147 00bc 9BB2     		uxth	r3, r3
+ 148              		.loc 1 160 8 view .LVU50
+ 149 00be 002B     		cmp	r3, #0
+ 150 00c0 38D0     		beq	.L6
+ 161:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 162:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         /* use default parameter */
+ 163:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         return false;
+ 164:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 165:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 166:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_y.gP = para.GyroY_Para.gP;
+ 151              		.loc 1 166 5 is_stmt 1 view .LVU51
+ 152              		.loc 1 166 24 is_stmt 0 view .LVU52
+ 153 00c2 1F4B     		ldr	r3, .L9+4
+ 154 00c4 83ED407A 		vstr.32	s14, [r3, #256]
+ 167:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_y.gI = para.GyroY_Para.gI;
+ 155              		.loc 1 167 5 is_stmt 1 view .LVU53
+ 156              		.loc 1 167 41 is_stmt 0 view .LVU54
+ 157 00c8 109A     		ldr	r2, [sp, #64]	@ float
+ 158              		.loc 1 167 24 view .LVU55
+ 159 00ca C3F80C21 		str	r2, [r3, #268]	@ float
+ 168:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_y.gI_Limit = false;
+ 160              		.loc 1 168 5 is_stmt 1 view .LVU56
+ 161              		.loc 1 168 30 is_stmt 0 view .LVU57
+ 162 00ce 0022     		movs	r2, #0
+ 163 00d0 83F81021 		strb	r2, [r3, #272]
+ 169:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_y.gI_Min = 50;
+ 164              		.loc 1 169 5 is_stmt 1 view .LVU58
+ 165              		.loc 1 169 28 is_stmt 0 view .LVU59
+ 166 00d4 1D4A     		ldr	r2, .L9+16
+ 167 00d6 C3F81421 		str	r2, [r3, #276]	@ float
+ 170:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_y.gI_Max = -50;
+ 168              		.loc 1 170 5 is_stmt 1 view .LVU60
+ 169              		.loc 1 170 28 is_stmt 0 view .LVU61
+ 170 00da 1D4A     		ldr	r2, .L9+20
+ 171 00dc C3F81821 		str	r2, [r3, #280]	@ float
+ 171:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_y.gD = para.GyroY_Para.gD;
+ 172              		.loc 1 171 5 is_stmt 1 view .LVU62
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 7
+
+
+ 173              		.loc 1 171 41 is_stmt 0 view .LVU63
+ 174 00e0 139A     		ldr	r2, [sp, #76]	@ float
+ 175              		.loc 1 171 24 view .LVU64
+ 176 00e2 C3F82421 		str	r2, [r3, #292]	@ float
+ 172:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****                    
+ 173:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* angular axis Z parameter set */
+ 174:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     if (PARA_AMPLIFICATE(para.GyroZ_Para.gP) == 0)
+ 177              		.loc 1 174 5 is_stmt 1 view .LVU65
+ 178              		.loc 1 174 9 is_stmt 0 view .LVU66
+ 179 00e6 9DED147A 		vldr.32	s14, [sp, #80]
+ 180 00ea DFED147A 		vldr.32	s15, .L9
+ 181 00ee 67EE277A 		vmul.f32	s15, s14, s15
+ 182 00f2 FCEEE77A 		vcvt.u32.f32	s15, s15
+ 183 00f6 17EE903A 		vmov	r3, s15	@ int
+ 184 00fa 9BB2     		uxth	r3, r3
+ 185              		.loc 1 174 8 view .LVU67
+ 186 00fc E3B1     		cbz	r3, .L7
+ 175:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 176:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         /* use default parameter */
+ 177:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         return false;
+ 178:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 179:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 180:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_z.gP = para.GyroZ_Para.gP;
+ 187              		.loc 1 180 5 is_stmt 1 view .LVU68
+ 188              		.loc 1 180 24 is_stmt 0 view .LVU69
+ 189 00fe 104B     		ldr	r3, .L9+4
+ 190 0100 83ED547A 		vstr.32	s14, [r3, #336]
+ 181:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_z.gI = para.GyroZ_Para.gI;
+ 191              		.loc 1 181 5 is_stmt 1 view .LVU70
+ 192              		.loc 1 181 41 is_stmt 0 view .LVU71
+ 193 0104 159A     		ldr	r2, [sp, #84]	@ float
+ 194              		.loc 1 181 24 view .LVU72
+ 195 0106 C3F85C21 		str	r2, [r3, #348]	@ float
+ 182:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_z.gI_Limit = false;
+ 196              		.loc 1 182 5 is_stmt 1 view .LVU73
+ 197              		.loc 1 182 30 is_stmt 0 view .LVU74
+ 198 010a 0022     		movs	r2, #0
+ 199 010c 83F86021 		strb	r2, [r3, #352]
+ 183:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_z.gI_Min = 50;
+ 200              		.loc 1 183 5 is_stmt 1 view .LVU75
+ 201              		.loc 1 183 28 is_stmt 0 view .LVU76
+ 202 0110 0E4A     		ldr	r2, .L9+16
+ 203 0112 C3F86421 		str	r2, [r3, #356]	@ float
+ 184:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_z.gI_Max = -50;
+ 204              		.loc 1 184 5 is_stmt 1 view .LVU77
+ 205              		.loc 1 184 28 is_stmt 0 view .LVU78
+ 206 0116 0E4A     		ldr	r2, .L9+20
+ 207 0118 C3F86821 		str	r2, [r3, #360]	@ float
+ 185:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.g_z.gD = para.GyroZ_Para.gD;
+ 208              		.loc 1 185 5 is_stmt 1 view .LVU79
+ 209              		.loc 1 185 41 is_stmt 0 view .LVU80
+ 210 011c 189A     		ldr	r2, [sp, #96]	@ float
+ 211              		.loc 1 185 24 view .LVU81
+ 212 011e C3F87421 		str	r2, [r3, #372]	@ float
+ 186:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 187:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     return true;
+ 213              		.loc 1 187 5 is_stmt 1 view .LVU82
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 8
+
+
+ 214              		.loc 1 187 12 is_stmt 0 view .LVU83
+ 215 0122 0120     		movs	r0, #1
+ 216 0124 00E0     		b	.L2
+ 217              	.L3:
+ 122:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 218              		.loc 1 122 16 view .LVU84
+ 219 0126 0020     		movs	r0, #0
+ 220              	.L2:
+ 188:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 221              		.loc 1 188 1 view .LVU85
+ 222 0128 04B0     		add	sp, sp, #16
+ 223              	.LCFI1:
+ 224              		.cfi_remember_state
+ 225              		.cfi_def_cfa_offset 0
+ 226 012a 7047     		bx	lr
+ 227              	.L4:
+ 228              	.LCFI2:
+ 229              		.cfi_restore_state
+ 136:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 230              		.loc 1 136 16 view .LVU86
+ 231 012c 0020     		movs	r0, #0
+ 232 012e FBE7     		b	.L2
+ 233              	.L5:
+ 149:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 234              		.loc 1 149 16 view .LVU87
+ 235 0130 0020     		movs	r0, #0
+ 236 0132 F9E7     		b	.L2
+ 237              	.L6:
+ 163:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 238              		.loc 1 163 16 view .LVU88
+ 239 0134 0020     		movs	r0, #0
+ 240 0136 F7E7     		b	.L2
+ 241              	.L7:
+ 177:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 242              		.loc 1 177 16 view .LVU89
+ 243 0138 0020     		movs	r0, #0
+ 244 013a F5E7     		b	.L2
+ 245              	.L10:
+ 246              		.align	2
+ 247              	.L9:
+ 248 013c 00007A44 		.word	1148846080
+ 249 0140 00000000 		.word	.LANCHOR0
+ 250 0144 0000A041 		.word	1101004800
+ 251 0148 0000A0C1 		.word	-1046478848
+ 252 014c 00004842 		.word	1112014848
+ 253 0150 000048C2 		.word	-1035468800
+ 254              		.cfi_endproc
+ 255              	.LFE10:
+ 257              		.section	.text.Att_Casecade_PID_Reset,"ax",%progbits
+ 258              		.align	1
+ 259              		.syntax unified
+ 260              		.thumb
+ 261              		.thumb_func
+ 263              	Att_Casecade_PID_Reset:
+ 264              	.LFB13:
+ 189:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 190:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static bool Att_CheckParam_Validation(AttCaseCadePID_Param_TypeDef para)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 9
+
+
+ 191:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** {
+ 192:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     RC_Filter_Param_TypeDef RCParam_Tmp;
+ 193:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     bool state = true;
+ 194:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 195:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     if (!ProcessPara.init)
+ 196:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         memset(&ProcessPara, 0, sizeof(ProcessParam_TypeDef));
+ 197:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 198:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     if (!Att_PID_Param_Set(para))
+ 199:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 200:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         para = Att_Casecade_PID_DefaultPara(); 
+ 201:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         state = false;
+ 202:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 203:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 204:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     RCParam_Tmp.f_cut = ATT_DTRIM_RC_F_CUT;
+ 205:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.pitch, RCParam_Tmp);
+ 206:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.roll,  RCParam_Tmp);
+ 207:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 208:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     RCParam_Tmp.f_cut = ANG_DTRIM_RC_F_CUT;
+ 209:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.g_x, RCParam_Tmp);
+ 210:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.g_y, RCParam_Tmp);
+ 211:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.g_z, RCParam_Tmp);
+ 212:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     
+ 213:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ProcessPara.init = true;
+ 214:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     return state;
+ 215:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 216:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 217:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static bool Att_Casecade_PID(uint32_t sys_ms, bool angular_only, AttControl_In_TypeDef exp, AttCont
+ 218:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** {
+ 219:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     float dynamic_tune_rate = 1.0f;
+ 220:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     bool dynamic_tune_en = false;
+ 221:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 222:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     if (ctl_out == NULL)
+ 223:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         return false;
+ 224:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 225:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     if (!angular_only)
+ 226:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 227:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         /* attitude loop */
+ 228:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         /* dynamic trim is unavilable in this loop */
+ 229:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         /* Pitch PID update */
+ 230:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         PID_Update(&ProcessPara.pitch, sys_ms, mea.pitch, exp.pitch);
+ 231:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         exp.gyro_y = ProcessPara.pitch.fout;
+ 232:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 233:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         /* Roll PID update */
+ 234:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         PID_Update(&ProcessPara.roll, sys_ms, mea.roll, exp.roll);
+ 235:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         exp.gyro_x = ProcessPara.roll.fout;
+ 236:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 237:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     else
+ 238:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 239:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         ProcessPara.pitch.lst_diff = 0.0f;
+ 240:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         ProcessPara.pitch.Integral = 0.0f;
+ 241:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 242:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         ProcessPara.roll.lst_diff = 0.0f;
+ 243:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         ProcessPara.roll.Integral = 0.0f;
+ 244:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 245:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 246:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     if (exp.throttle_percent >= DYNAMIC_TUNE_THROTTLE_POINT)
+ 247:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 10
+
+
+ 248:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         dynamic_tune_en = true;
+ 249:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 250:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         /* comput dynamic tune rate */
+ 251:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         dynamic_tune_rate -= (exp.throttle_percent - DYNAMIC_TUNE_THROTTLE_POINT);
+ 252:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 253:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 254:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_P_DynamicTrim(&ProcessPara.g_x, dynamic_tune_en, dynamic_tune_rate);
+ 255:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_P_DynamicTrim(&ProcessPara.g_y, dynamic_tune_en, dynamic_tune_rate);
+ 256:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_P_DynamicTrim(&ProcessPara.g_z, dynamic_tune_en, dynamic_tune_rate);
+ 257:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 258:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_D_DynamicTrim(&ProcessPara.g_x, dynamic_tune_en, dynamic_tune_rate);
+ 259:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_D_DynamicTrim(&ProcessPara.g_y, dynamic_tune_en, dynamic_tune_rate);
+ 260:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_D_DynamicTrim(&ProcessPara.g_z, dynamic_tune_en, dynamic_tune_rate);
+ 261:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 262:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* angular speed loop */
+ 263:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* Gyro X PID update */
+ 264:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Update(&ProcessPara.g_x, sys_ms, mea.gyro_x, exp.gyro_x);
+ 265:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 266:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* Gyro Y PID update */
+ 267:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Update(&ProcessPara.g_y, sys_ms, mea.gyro_y, exp.gyro_y);
+ 268:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 269:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     /* Gyro Z PID update */
+ 270:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Update(&ProcessPara.g_z, sys_ms, mea.gyro_z, exp.gyro_z);
+ 271:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 272:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ctl_out->gyro_x = ProcessPara.g_x.fout;
+ 273:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ctl_out->gyro_y = ProcessPara.g_y.fout;
+ 274:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ctl_out->gyro_z = ProcessPara.g_z.fout;
+ 275:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 276:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     return true;
+ 277:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 278:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 279:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** static void Att_Casecade_PID_Reset(void)
+ 280:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** {
+ 265              		.loc 1 280 1 is_stmt 1 view -0
+ 266              		.cfi_startproc
+ 267              		@ args = 0, pretend = 0, frame = 0
+ 268              		@ frame_needed = 0, uses_anonymous_args = 0
+ 269 0000 10B5     		push	{r4, lr}
+ 270              	.LCFI3:
+ 271              		.cfi_def_cfa_offset 8
+ 272              		.cfi_offset 4, -8
+ 273              		.cfi_offset 14, -4
+ 281:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Reset_ProcessVal(&ProcessPara.pitch);
+ 274              		.loc 1 281 5 view .LVU91
+ 275 0002 0A4C     		ldr	r4, .L13
+ 276 0004 201D     		adds	r0, r4, #4
+ 277 0006 FFF7FEFF 		bl	PID_Reset_ProcessVal
+ 278              	.LVL0:
+ 282:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Reset_ProcessVal(&ProcessPara.roll);
+ 279              		.loc 1 282 5 view .LVU92
+ 280 000a 04F15400 		add	r0, r4, #84
+ 281 000e FFF7FEFF 		bl	PID_Reset_ProcessVal
+ 282              	.LVL1:
+ 283:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Reset_ProcessVal(&ProcessPara.g_x);
+ 283              		.loc 1 283 5 view .LVU93
+ 284 0012 04F1A400 		add	r0, r4, #164
+ 285 0016 FFF7FEFF 		bl	PID_Reset_ProcessVal
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 11
+
+
+ 286              	.LVL2:
+ 284:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Reset_ProcessVal(&ProcessPara.g_y);
+ 287              		.loc 1 284 5 view .LVU94
+ 288 001a 04F1F400 		add	r0, r4, #244
+ 289 001e FFF7FEFF 		bl	PID_Reset_ProcessVal
+ 290              	.LVL3:
+ 285:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Reset_ProcessVal(&ProcessPara.g_z);
+ 291              		.loc 1 285 5 view .LVU95
+ 292 0022 04F5A270 		add	r0, r4, #324
+ 293 0026 FFF7FEFF 		bl	PID_Reset_ProcessVal
+ 294              	.LVL4:
+ 286:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 295              		.loc 1 286 1 is_stmt 0 view .LVU96
+ 296 002a 10BD     		pop	{r4, pc}
+ 297              	.L14:
+ 298              		.align	2
+ 299              	.L13:
+ 300 002c 00000000 		.word	.LANCHOR0
+ 301              		.cfi_endproc
+ 302              	.LFE13:
+ 304              		.section	.text.Att_Casecade_PID,"ax",%progbits
+ 305              		.align	1
+ 306              		.syntax unified
+ 307              		.thumb
+ 308              		.thumb_func
+ 310              	Att_Casecade_PID:
+ 311              	.LVL5:
+ 312              	.LFB12:
+ 218:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     float dynamic_tune_rate = 1.0f;
+ 313              		.loc 1 218 1 is_stmt 1 view -0
+ 314              		.cfi_startproc
+ 315              		@ args = 52, pretend = 8, frame = 0
+ 316              		@ frame_needed = 0, uses_anonymous_args = 0
+ 218:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     float dynamic_tune_rate = 1.0f;
+ 317              		.loc 1 218 1 is_stmt 0 view .LVU98
+ 318 0000 82B0     		sub	sp, sp, #8
+ 319              	.LCFI4:
+ 320              		.cfi_def_cfa_offset 8
+ 321 0002 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 322              	.LCFI5:
+ 323              		.cfi_def_cfa_offset 40
+ 324              		.cfi_offset 4, -40
+ 325              		.cfi_offset 5, -36
+ 326              		.cfi_offset 6, -32
+ 327              		.cfi_offset 7, -28
+ 328              		.cfi_offset 8, -24
+ 329              		.cfi_offset 9, -20
+ 330              		.cfi_offset 10, -16
+ 331              		.cfi_offset 14, -12
+ 332 0006 2DED028B 		vpush.64	{d8}
+ 333              	.LCFI6:
+ 334              		.cfi_def_cfa_offset 48
+ 335              		.cfi_offset 80, -48
+ 336              		.cfi_offset 81, -44
+ 337 000a 0446     		mov	r4, r0
+ 338 000c 0AA8     		add	r0, sp, #40
+ 339 000e 80E80C00 		stm	r0, {r2, r3}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 12
+
+
+ 340 0012 169F     		ldr	r7, [sp, #88]
+ 219:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     bool dynamic_tune_en = false;
+ 341              		.loc 1 219 5 is_stmt 1 view .LVU99
+ 342              	.LVL6:
+ 220:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 343              		.loc 1 220 5 view .LVU100
+ 222:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         return false;
+ 344              		.loc 1 222 5 view .LVU101
+ 222:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         return false;
+ 345              		.loc 1 222 8 is_stmt 0 view .LVU102
+ 346 0014 002F     		cmp	r7, #0
+ 347 0016 00F08680 		beq	.L21
+ 225:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 348              		.loc 1 225 5 is_stmt 1 view .LVU103
+ 225:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 349              		.loc 1 225 8 is_stmt 0 view .LVU104
+ 350 001a B9B1     		cbz	r1, .L26
+ 239:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         ProcessPara.pitch.Integral = 0.0f;
+ 351              		.loc 1 239 9 is_stmt 1 view .LVU105
+ 239:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         ProcessPara.pitch.Integral = 0.0f;
+ 352              		.loc 1 239 36 is_stmt 0 view .LVU106
+ 353 001c 434B     		ldr	r3, .L27
+ 354 001e 0022     		movs	r2, #0
+ 355 0020 DA63     		str	r2, [r3, #60]	@ float
+ 240:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 356              		.loc 1 240 9 is_stmt 1 view .LVU107
+ 240:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 357              		.loc 1 240 36 is_stmt 0 view .LVU108
+ 358 0022 DA62     		str	r2, [r3, #44]	@ float
+ 242:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         ProcessPara.roll.Integral = 0.0f;
+ 359              		.loc 1 242 9 is_stmt 1 view .LVU109
+ 242:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         ProcessPara.roll.Integral = 0.0f;
+ 360              		.loc 1 242 35 is_stmt 0 view .LVU110
+ 361 0024 C3F88C20 		str	r2, [r3, #140]	@ float
+ 243:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 362              		.loc 1 243 9 is_stmt 1 view .LVU111
+ 243:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 363              		.loc 1 243 35 is_stmt 0 view .LVU112
+ 364 0028 DA67     		str	r2, [r3, #124]	@ float
+ 365              	.LVL7:
+ 366              	.L18:
+ 246:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 367              		.loc 1 246 5 is_stmt 1 view .LVU113
+ 246:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 368              		.loc 1 246 12 is_stmt 0 view .LVU114
+ 369 002a 9DED0A8A 		vldr.32	s16, [sp, #40]
+ 246:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 370              		.loc 1 246 8 view .LVU115
+ 371 002e DFED407A 		vldr.32	s15, .L27+4
+ 372 0032 B4EEE78A 		vcmpe.f32	s16, s15
+ 373 0036 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 374 003a 1EDB     		blt	.L24
+ 248:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 375              		.loc 1 248 9 is_stmt 1 view .LVU116
+ 376              	.LVL8:
+ 251:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 377              		.loc 1 251 9 view .LVU117
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 13
+
+
+ 251:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 378              		.loc 1 251 52 is_stmt 0 view .LVU118
+ 379 003c 78EE677A 		vsub.f32	s15, s16, s15
+ 251:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 380              		.loc 1 251 27 view .LVU119
+ 381 0040 B7EE008A 		vmov.f32	s16, #1.0e+0
+ 382 0044 38EE678A 		vsub.f32	s16, s16, s15
+ 383              	.LVL9:
+ 248:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 384              		.loc 1 248 25 view .LVU120
+ 385 0048 0126     		movs	r6, #1
+ 386 004a 19E0     		b	.L19
+ 387              	.LVL10:
+ 388              	.L26:
+ 230:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         exp.gyro_y = ProcessPara.pitch.fout;
+ 389              		.loc 1 230 9 is_stmt 1 view .LVU121
+ 390 004c 374D     		ldr	r5, .L27
+ 391 004e DDED0B0A 		vldr.32	s1, [sp, #44]
+ 392 0052 9DED110A 		vldr.32	s0, [sp, #68]
+ 393 0056 2146     		mov	r1, r4
+ 394              	.LVL11:
+ 230:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         exp.gyro_y = ProcessPara.pitch.fout;
+ 395              		.loc 1 230 9 is_stmt 0 view .LVU122
+ 396 0058 281D     		adds	r0, r5, #4
+ 397              	.LVL12:
+ 230:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         exp.gyro_y = ProcessPara.pitch.fout;
+ 398              		.loc 1 230 9 view .LVU123
+ 399 005a FFF7FEFF 		bl	PID_Update
+ 400              	.LVL13:
+ 231:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 401              		.loc 1 231 9 is_stmt 1 view .LVU124
+ 231:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 402              		.loc 1 231 39 is_stmt 0 view .LVU125
+ 403 005e EB68     		ldr	r3, [r5, #12]	@ float
+ 231:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 404              		.loc 1 231 20 view .LVU126
+ 405 0060 0E93     		str	r3, [sp, #56]	@ float
+ 234:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         exp.gyro_x = ProcessPara.roll.fout;
+ 406              		.loc 1 234 9 is_stmt 1 view .LVU127
+ 407 0062 DDED0C0A 		vldr.32	s1, [sp, #48]
+ 408 0066 9DED120A 		vldr.32	s0, [sp, #72]
+ 409 006a 2146     		mov	r1, r4
+ 410 006c 05F15400 		add	r0, r5, #84
+ 411 0070 FFF7FEFF 		bl	PID_Update
+ 412              	.LVL14:
+ 235:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 413              		.loc 1 235 9 view .LVU128
+ 235:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 414              		.loc 1 235 38 is_stmt 0 view .LVU129
+ 415 0074 EB6D     		ldr	r3, [r5, #92]	@ float
+ 235:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 416              		.loc 1 235 20 view .LVU130
+ 417 0076 0D93     		str	r3, [sp, #52]	@ float
+ 418 0078 D7E7     		b	.L18
+ 419              	.L24:
+ 220:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 420              		.loc 1 220 10 view .LVU131
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 14
+
+
+ 421 007a 0026     		movs	r6, #0
+ 219:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     bool dynamic_tune_en = false;
+ 422              		.loc 1 219 11 view .LVU132
+ 423 007c B7EE008A 		vmov.f32	s16, #1.0e+0
+ 424              	.LVL15:
+ 425              	.L19:
+ 254:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_P_DynamicTrim(&ProcessPara.g_y, dynamic_tune_en, dynamic_tune_rate);
+ 426              		.loc 1 254 5 is_stmt 1 view .LVU133
+ 427 0080 2A4D     		ldr	r5, .L27
+ 428 0082 05F1A40A 		add	r10, r5, #164
+ 429 0086 B0EE480A 		vmov.f32	s0, s16
+ 430 008a 3146     		mov	r1, r6
+ 431 008c 5046     		mov	r0, r10
+ 432 008e FFF7FEFF 		bl	PID_P_DynamicTrim
+ 433              	.LVL16:
+ 255:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_P_DynamicTrim(&ProcessPara.g_z, dynamic_tune_en, dynamic_tune_rate);
+ 434              		.loc 1 255 5 view .LVU134
+ 435 0092 05F1F409 		add	r9, r5, #244
+ 436 0096 B0EE480A 		vmov.f32	s0, s16
+ 437 009a 3146     		mov	r1, r6
+ 438 009c 4846     		mov	r0, r9
+ 439 009e FFF7FEFF 		bl	PID_P_DynamicTrim
+ 440              	.LVL17:
+ 256:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 441              		.loc 1 256 5 view .LVU135
+ 442 00a2 05F5A278 		add	r8, r5, #324
+ 443 00a6 B0EE480A 		vmov.f32	s0, s16
+ 444 00aa 3146     		mov	r1, r6
+ 445 00ac 4046     		mov	r0, r8
+ 446 00ae FFF7FEFF 		bl	PID_P_DynamicTrim
+ 447              	.LVL18:
+ 258:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_D_DynamicTrim(&ProcessPara.g_y, dynamic_tune_en, dynamic_tune_rate);
+ 448              		.loc 1 258 5 view .LVU136
+ 449 00b2 B0EE480A 		vmov.f32	s0, s16
+ 450 00b6 3146     		mov	r1, r6
+ 451 00b8 5046     		mov	r0, r10
+ 452 00ba FFF7FEFF 		bl	PID_D_DynamicTrim
+ 453              	.LVL19:
+ 259:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_D_DynamicTrim(&ProcessPara.g_z, dynamic_tune_en, dynamic_tune_rate);
+ 454              		.loc 1 259 5 view .LVU137
+ 455 00be B0EE480A 		vmov.f32	s0, s16
+ 456 00c2 3146     		mov	r1, r6
+ 457 00c4 4846     		mov	r0, r9
+ 458 00c6 FFF7FEFF 		bl	PID_D_DynamicTrim
+ 459              	.LVL20:
+ 260:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 460              		.loc 1 260 5 view .LVU138
+ 461 00ca B0EE480A 		vmov.f32	s0, s16
+ 462 00ce 3146     		mov	r1, r6
+ 463 00d0 4046     		mov	r0, r8
+ 464 00d2 FFF7FEFF 		bl	PID_D_DynamicTrim
+ 465              	.LVL21:
+ 264:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 466              		.loc 1 264 5 view .LVU139
+ 467 00d6 DDED0D0A 		vldr.32	s1, [sp, #52]
+ 468 00da 9DED130A 		vldr.32	s0, [sp, #76]
+ 469 00de 2146     		mov	r1, r4
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 15
+
+
+ 470 00e0 5046     		mov	r0, r10
+ 471 00e2 FFF7FEFF 		bl	PID_Update
+ 472              	.LVL22:
+ 267:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 473              		.loc 1 267 5 view .LVU140
+ 474 00e6 DDED0E0A 		vldr.32	s1, [sp, #56]
+ 475 00ea 9DED140A 		vldr.32	s0, [sp, #80]
+ 476 00ee 2146     		mov	r1, r4
+ 477 00f0 4846     		mov	r0, r9
+ 478 00f2 FFF7FEFF 		bl	PID_Update
+ 479              	.LVL23:
+ 270:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 480              		.loc 1 270 5 view .LVU141
+ 481 00f6 DDED0F0A 		vldr.32	s1, [sp, #60]
+ 482 00fa 9DED150A 		vldr.32	s0, [sp, #84]
+ 483 00fe 2146     		mov	r1, r4
+ 484 0100 4046     		mov	r0, r8
+ 485 0102 FFF7FEFF 		bl	PID_Update
+ 486              	.LVL24:
+ 272:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ctl_out->gyro_y = ProcessPara.g_y.fout;
+ 487              		.loc 1 272 5 view .LVU142
+ 272:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ctl_out->gyro_y = ProcessPara.g_y.fout;
+ 488              		.loc 1 272 38 is_stmt 0 view .LVU143
+ 489 0106 D5F8AC30 		ldr	r3, [r5, #172]	@ float
+ 272:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ctl_out->gyro_y = ProcessPara.g_y.fout;
+ 490              		.loc 1 272 21 view .LVU144
+ 491 010a 3B60     		str	r3, [r7]	@ float
+ 273:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ctl_out->gyro_z = ProcessPara.g_z.fout;
+ 492              		.loc 1 273 5 is_stmt 1 view .LVU145
+ 273:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ctl_out->gyro_z = ProcessPara.g_z.fout;
+ 493              		.loc 1 273 38 is_stmt 0 view .LVU146
+ 494 010c D5F8FC30 		ldr	r3, [r5, #252]	@ float
+ 273:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     ctl_out->gyro_z = ProcessPara.g_z.fout;
+ 495              		.loc 1 273 21 view .LVU147
+ 496 0110 7B60     		str	r3, [r7, #4]	@ float
+ 274:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 497              		.loc 1 274 5 is_stmt 1 view .LVU148
+ 274:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 498              		.loc 1 274 38 is_stmt 0 view .LVU149
+ 499 0112 D5F84C31 		ldr	r3, [r5, #332]	@ float
+ 274:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 500              		.loc 1 274 21 view .LVU150
+ 501 0116 BB60     		str	r3, [r7, #8]	@ float
+ 276:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 502              		.loc 1 276 5 is_stmt 1 view .LVU151
+ 276:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 503              		.loc 1 276 12 is_stmt 0 view .LVU152
+ 504 0118 0120     		movs	r0, #1
+ 505              	.LVL25:
+ 506              	.L16:
+ 277:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 507              		.loc 1 277 1 view .LVU153
+ 508 011a BDEC028B 		vldm	sp!, {d8}
+ 509              	.LCFI7:
+ 510              		.cfi_remember_state
+ 511              		.cfi_restore 80
+ 512              		.cfi_restore 81
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 16
+
+
+ 513              		.cfi_def_cfa_offset 40
+ 514 011e BDE8F047 		pop	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 515              	.LCFI8:
+ 516              		.cfi_restore 14
+ 517              		.cfi_restore 10
+ 518              		.cfi_restore 9
+ 519              		.cfi_restore 8
+ 520              		.cfi_restore 7
+ 521              		.cfi_restore 6
+ 522              		.cfi_restore 5
+ 523              		.cfi_restore 4
+ 524              		.cfi_def_cfa_offset 8
+ 525              	.LVL26:
+ 277:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 526              		.loc 1 277 1 view .LVU154
+ 527 0122 02B0     		add	sp, sp, #8
+ 528              	.LCFI9:
+ 529              		.cfi_def_cfa_offset 0
+ 530 0124 7047     		bx	lr
+ 531              	.LVL27:
+ 532              	.L21:
+ 533              	.LCFI10:
+ 534              		.cfi_restore_state
+ 223:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 535              		.loc 1 223 16 view .LVU155
+ 536 0126 0020     		movs	r0, #0
+ 537              	.LVL28:
+ 223:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 538              		.loc 1 223 16 view .LVU156
+ 539 0128 F7E7     		b	.L16
+ 540              	.L28:
+ 541 012a 00BF     		.align	2
+ 542              	.L27:
+ 543 012c 00000000 		.word	.LANCHOR0
+ 544 0130 CDCCCC3E 		.word	1053609165
+ 545              		.cfi_endproc
+ 546              	.LFE12:
+ 548              		.section	.text.Att_Casecade_PID_DefaultPara,"ax",%progbits
+ 549              		.align	1
+ 550              		.syntax unified
+ 551              		.thumb
+ 552              		.thumb_func
+ 554              	Att_Casecade_PID_DefaultPara:
+ 555              	.LVL29:
+ 556              	.LFB9:
+  77:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     AttCaseCadePID_Param_TypeDef para;
+ 557              		.loc 1 77 1 is_stmt 1 view -0
+ 558              		.cfi_startproc
+ 559              		@ args = 0, pretend = 0, frame = 104
+ 560              		@ frame_needed = 0, uses_anonymous_args = 0
+  77:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     AttCaseCadePID_Param_TypeDef para;
+ 561              		.loc 1 77 1 is_stmt 0 view .LVU158
+ 562 0000 30B5     		push	{r4, r5, lr}
+ 563              	.LCFI11:
+ 564              		.cfi_def_cfa_offset 12
+ 565              		.cfi_offset 4, -12
+ 566              		.cfi_offset 5, -8
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 17
+
+
+ 567              		.cfi_offset 14, -4
+ 568 0002 9BB0     		sub	sp, sp, #108
+ 569              	.LCFI12:
+ 570              		.cfi_def_cfa_offset 120
+ 571 0004 0446     		mov	r4, r0
+  78:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 572              		.loc 1 78 5 is_stmt 1 view .LVU159
+  80:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 573              		.loc 1 80 5 view .LVU160
+ 574 0006 6425     		movs	r5, #100
+ 575 0008 2A46     		mov	r2, r5
+ 576 000a 0021     		movs	r1, #0
+ 577 000c 01A8     		add	r0, sp, #4
+ 578              	.LVL30:
+  80:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 579              		.loc 1 80 5 is_stmt 0 view .LVU161
+ 580 000e FFF7FEFF 		bl	memset
+ 581              	.LVL31:
+  82:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gI          = 0.2;
+ 582              		.loc 1 82 5 is_stmt 1 view .LVU162
+  82:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gI          = 0.2;
+ 583              		.loc 1 82 33 is_stmt 0 view .LVU163
+ 584 0012 1C4B     		ldr	r3, .L31
+ 585 0014 0193     		str	r3, [sp, #4]	@ float
+  83:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gI_Max      = 10;
+ 586              		.loc 1 83 5 is_stmt 1 view .LVU164
+  83:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gI_Max      = 10;
+ 587              		.loc 1 83 33 is_stmt 0 view .LVU165
+ 588 0016 DFF894C0 		ldr	ip, .L31+40
+ 589 001a CDF808C0 		str	ip, [sp, #8]	@ float
+  84:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gI_Min      = -10;
+ 590              		.loc 1 84 5 is_stmt 1 view .LVU166
+  84:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gI_Min      = -10;
+ 591              		.loc 1 84 33 is_stmt 0 view .LVU167
+ 592 001e 1A48     		ldr	r0, .L31+4
+ 593 0020 0390     		str	r0, [sp, #12]	@ float
+  85:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gD          = 0.5;
+ 594              		.loc 1 85 5 is_stmt 1 view .LVU168
+  85:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Pitch_Para.gD          = 0.5;
+ 595              		.loc 1 85 33 is_stmt 0 view .LVU169
+ 596 0022 1A49     		ldr	r1, .L31+8
+ 597 0024 0491     		str	r1, [sp, #16]	@ float
+  86:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 598              		.loc 1 86 5 is_stmt 1 view .LVU170
+  86:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 599              		.loc 1 86 33 is_stmt 0 view .LVU171
+ 600 0026 4FF07C52 		mov	r2, #1056964608
+ 601 002a 0592     		str	r2, [sp, #20]	@ float
+  88:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gI           = 0.2;
+ 602              		.loc 1 88 5 is_stmt 1 view .LVU172
+  88:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gI           = 0.2;
+ 603              		.loc 1 88 33 is_stmt 0 view .LVU173
+ 604 002c 0693     		str	r3, [sp, #24]	@ float
+  89:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gI_Max       = 10;
+ 605              		.loc 1 89 5 is_stmt 1 view .LVU174
+  89:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gI_Max       = 10;
+ 606              		.loc 1 89 33 is_stmt 0 view .LVU175
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 18
+
+
+ 607 002e CDF81CC0 		str	ip, [sp, #28]	@ float
+  90:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gI_Min       = -10;
+ 608              		.loc 1 90 5 is_stmt 1 view .LVU176
+  90:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gI_Min       = -10;
+ 609              		.loc 1 90 33 is_stmt 0 view .LVU177
+ 610 0032 0890     		str	r0, [sp, #32]	@ float
+  91:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gD           = 0.5;
+ 611              		.loc 1 91 5 is_stmt 1 view .LVU178
+  91:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.Roll_Para.gD           = 0.5;
+ 612              		.loc 1 91 33 is_stmt 0 view .LVU179
+ 613 0034 0991     		str	r1, [sp, #36]	@ float
+  92:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 614              		.loc 1 92 5 is_stmt 1 view .LVU180
+  92:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 615              		.loc 1 92 33 is_stmt 0 view .LVU181
+ 616 0036 0A92     		str	r2, [sp, #40]	@ float
+  94:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gI          = 0.006;
+ 617              		.loc 1 94 5 is_stmt 1 view .LVU182
+  94:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gI          = 0.006;
+ 618              		.loc 1 94 33 is_stmt 0 view .LVU183
+ 619 0038 DFF874E0 		ldr	lr, .L31+44
+ 620 003c CDF82CE0 		str	lr, [sp, #44]	@ float
+  95:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gI_Max      = 100;
+ 621              		.loc 1 95 5 is_stmt 1 view .LVU184
+  95:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gI_Max      = 100;
+ 622              		.loc 1 95 33 is_stmt 0 view .LVU185
+ 623 0040 DFF870C0 		ldr	ip, .L31+48
+ 624 0044 CDF830C0 		str	ip, [sp, #48]	@ float
+  96:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gI_Min      = -100;
+ 625              		.loc 1 96 5 is_stmt 1 view .LVU186
+  96:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gI_Min      = -100;
+ 626              		.loc 1 96 33 is_stmt 0 view .LVU187
+ 627 0048 1148     		ldr	r0, .L31+12
+ 628 004a 0D90     		str	r0, [sp, #52]	@ float
+  97:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gD          = 1.8;
+ 629              		.loc 1 97 5 is_stmt 1 view .LVU188
+  97:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroX_Para.gD          = 1.8;
+ 630              		.loc 1 97 33 is_stmt 0 view .LVU189
+ 631 004c 1149     		ldr	r1, .L31+16
+ 632 004e 0E91     		str	r1, [sp, #56]	@ float
+  98:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 633              		.loc 1 98 5 is_stmt 1 view .LVU190
+  98:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 634              		.loc 1 98 33 is_stmt 0 view .LVU191
+ 635 0050 114A     		ldr	r2, .L31+20
+ 636 0052 0F92     		str	r2, [sp, #60]	@ float
+ 100:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gI          = 0.006;
+ 637              		.loc 1 100 5 is_stmt 1 view .LVU192
+ 100:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gI          = 0.006;
+ 638              		.loc 1 100 33 is_stmt 0 view .LVU193
+ 639 0054 CDF840E0 		str	lr, [sp, #64]	@ float
+ 101:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gI_Max      = 100;
+ 640              		.loc 1 101 5 is_stmt 1 view .LVU194
+ 101:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gI_Max      = 100;
+ 641              		.loc 1 101 33 is_stmt 0 view .LVU195
+ 642 0058 CDF844C0 		str	ip, [sp, #68]	@ float
+ 102:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gI_Min      = -100;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 19
+
+
+ 643              		.loc 1 102 5 is_stmt 1 view .LVU196
+ 102:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gI_Min      = -100;
+ 644              		.loc 1 102 33 is_stmt 0 view .LVU197
+ 645 005c 1290     		str	r0, [sp, #72]	@ float
+ 103:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gD          = 1.8;
+ 646              		.loc 1 103 5 is_stmt 1 view .LVU198
+ 103:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroY_Para.gD          = 1.8;
+ 647              		.loc 1 103 33 is_stmt 0 view .LVU199
+ 648 005e 1391     		str	r1, [sp, #76]	@ float
+ 104:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 649              		.loc 1 104 5 is_stmt 1 view .LVU200
+ 104:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 650              		.loc 1 104 33 is_stmt 0 view .LVU201
+ 651 0060 1492     		str	r2, [sp, #80]	@ float
+ 106:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gI          = 0.008;
+ 652              		.loc 1 106 5 is_stmt 1 view .LVU202
+ 106:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gI          = 0.008;
+ 653              		.loc 1 106 33 is_stmt 0 view .LVU203
+ 654 0062 0E4A     		ldr	r2, .L31+24
+ 655 0064 1592     		str	r2, [sp, #84]	@ float
+ 107:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gI_Max      = 50;
+ 656              		.loc 1 107 5 is_stmt 1 view .LVU204
+ 107:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gI_Max      = 50;
+ 657              		.loc 1 107 33 is_stmt 0 view .LVU205
+ 658 0066 0E4A     		ldr	r2, .L31+28
+ 659 0068 1692     		str	r2, [sp, #88]	@ float
+ 108:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gI_Min      = -50;
+ 660              		.loc 1 108 5 is_stmt 1 view .LVU206
+ 108:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gI_Min      = -50;
+ 661              		.loc 1 108 33 is_stmt 0 view .LVU207
+ 662 006a 0E4A     		ldr	r2, .L31+32
+ 663 006c 1792     		str	r2, [sp, #92]	@ float
+ 109:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gD          = 1.2;
+ 664              		.loc 1 109 5 is_stmt 1 view .LVU208
+ 109:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     para.GyroZ_Para.gD          = 1.2;
+ 665              		.loc 1 109 33 is_stmt 0 view .LVU209
+ 666 006e 0E4A     		ldr	r2, .L31+36
+ 667 0070 1892     		str	r2, [sp, #96]	@ float
+ 110:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 668              		.loc 1 110 5 is_stmt 1 view .LVU210
+ 110:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 669              		.loc 1 110 33 is_stmt 0 view .LVU211
+ 670 0072 1993     		str	r3, [sp, #100]	@ float
+ 112:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 671              		.loc 1 112 5 is_stmt 1 view .LVU212
+ 112:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 672              		.loc 1 112 12 is_stmt 0 view .LVU213
+ 673 0074 2A46     		mov	r2, r5
+ 674 0076 01A9     		add	r1, sp, #4
+ 675 0078 2046     		mov	r0, r4
+ 676 007a FFF7FEFF 		bl	memcpy
+ 677              	.LVL32:
+ 113:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 678              		.loc 1 113 1 view .LVU214
+ 679 007e 2046     		mov	r0, r4
+ 680 0080 1BB0     		add	sp, sp, #108
+ 681              	.LCFI13:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 20
+
+
+ 682              		.cfi_def_cfa_offset 12
+ 683              		@ sp needed
+ 684 0082 30BD     		pop	{r4, r5, pc}
+ 685              	.LVL33:
+ 686              	.L32:
+ 113:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 687              		.loc 1 113 1 view .LVU215
+ 688              		.align	2
+ 689              	.L31:
+ 690 0084 9A99993F 		.word	1067030938
+ 691 0088 00002041 		.word	1092616192
+ 692 008c 000020C1 		.word	-1054867456
+ 693 0090 0000C842 		.word	1120403456
+ 694 0094 0000C8C2 		.word	-1027080192
+ 695 0098 6666E63F 		.word	1072064102
+ 696 009c 6666A63F 		.word	1067869798
+ 697 00a0 6F12033C 		.word	1006834287
+ 698 00a4 00004842 		.word	1112014848
+ 699 00a8 000048C2 		.word	-1035468800
+ 700 00ac CDCC4C3E 		.word	1045220557
+ 701 00b0 3333B33F 		.word	1068708659
+ 702 00b4 A69BC43B 		.word	1002740646
+ 703              		.cfi_endproc
+ 704              	.LFE9:
+ 706              		.section	.text.Att_CaseCade_PID_InUse_Param,"ax",%progbits
+ 707              		.align	1
+ 708              		.syntax unified
+ 709              		.thumb
+ 710              		.thumb_func
+ 712              	Att_CaseCade_PID_InUse_Param:
+ 713              	.LVL34:
+ 714              	.LFB8:
+  49:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     AttCaseCadePID_Param_TypeDef in_use_para;
+ 715              		.loc 1 49 1 is_stmt 1 view -0
+ 716              		.cfi_startproc
+ 717              		@ args = 0, pretend = 0, frame = 104
+ 718              		@ frame_needed = 0, uses_anonymous_args = 0
+  49:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     AttCaseCadePID_Param_TypeDef in_use_para;
+ 719              		.loc 1 49 1 is_stmt 0 view .LVU217
+ 720 0000 30B5     		push	{r4, r5, lr}
+ 721              	.LCFI14:
+ 722              		.cfi_def_cfa_offset 12
+ 723              		.cfi_offset 4, -12
+ 724              		.cfi_offset 5, -8
+ 725              		.cfi_offset 14, -4
+ 726 0002 9BB0     		sub	sp, sp, #108
+ 727              	.LCFI15:
+ 728              		.cfi_def_cfa_offset 120
+ 729 0004 0446     		mov	r4, r0
+  50:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     memset(&in_use_para, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+ 730              		.loc 1 50 5 is_stmt 1 view .LVU218
+  51:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 731              		.loc 1 51 5 view .LVU219
+ 732 0006 6425     		movs	r5, #100
+ 733 0008 2A46     		mov	r2, r5
+ 734 000a 0021     		movs	r1, #0
+ 735 000c 01A8     		add	r0, sp, #4
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 21
+
+
+ 736              	.LVL35:
+  51:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 737              		.loc 1 51 5 is_stmt 0 view .LVU220
+ 738 000e FFF7FEFF 		bl	memset
+ 739              	.LVL36:
+  53:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Pitch_Para.gI = ProcessPara.pitch.gI;
+ 740              		.loc 1 53 5 is_stmt 1 view .LVU221
+  53:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Pitch_Para.gI = ProcessPara.pitch.gI;
+ 741              		.loc 1 53 50 is_stmt 0 view .LVU222
+ 742 0012 184B     		ldr	r3, .L35
+ 743 0014 1A69     		ldr	r2, [r3, #16]	@ float
+  53:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Pitch_Para.gI = ProcessPara.pitch.gI;
+ 744              		.loc 1 53 31 view .LVU223
+ 745 0016 0192     		str	r2, [sp, #4]	@ float
+  54:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Pitch_Para.gD = ProcessPara.pitch.gD;
+ 746              		.loc 1 54 5 is_stmt 1 view .LVU224
+  54:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Pitch_Para.gD = ProcessPara.pitch.gD;
+ 747              		.loc 1 54 50 is_stmt 0 view .LVU225
+ 748 0018 DA69     		ldr	r2, [r3, #28]	@ float
+  54:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Pitch_Para.gD = ProcessPara.pitch.gD;
+ 749              		.loc 1 54 31 view .LVU226
+ 750 001a 0292     		str	r2, [sp, #8]	@ float
+  55:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 751              		.loc 1 55 5 is_stmt 1 view .LVU227
+  55:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 752              		.loc 1 55 50 is_stmt 0 view .LVU228
+ 753 001c 5A6B     		ldr	r2, [r3, #52]	@ float
+  55:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 754              		.loc 1 55 31 view .LVU229
+ 755 001e 0592     		str	r2, [sp, #20]	@ float
+  57:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Roll_Para.gI  = ProcessPara.roll.gI;
+ 756              		.loc 1 57 5 is_stmt 1 view .LVU230
+  57:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Roll_Para.gI  = ProcessPara.roll.gI;
+ 757              		.loc 1 57 49 is_stmt 0 view .LVU231
+ 758 0020 1A6E     		ldr	r2, [r3, #96]	@ float
+  57:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Roll_Para.gI  = ProcessPara.roll.gI;
+ 759              		.loc 1 57 31 view .LVU232
+ 760 0022 0692     		str	r2, [sp, #24]	@ float
+  58:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Roll_Para.gD  = ProcessPara.roll.gD;
+ 761              		.loc 1 58 5 is_stmt 1 view .LVU233
+  58:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Roll_Para.gD  = ProcessPara.roll.gD;
+ 762              		.loc 1 58 49 is_stmt 0 view .LVU234
+ 763 0024 DA6E     		ldr	r2, [r3, #108]	@ float
+  58:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.Roll_Para.gD  = ProcessPara.roll.gD;
+ 764              		.loc 1 58 31 view .LVU235
+ 765 0026 0792     		str	r2, [sp, #28]	@ float
+  59:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****      
+ 766              		.loc 1 59 5 is_stmt 1 view .LVU236
+  59:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****      
+ 767              		.loc 1 59 49 is_stmt 0 view .LVU237
+ 768 0028 D3F88420 		ldr	r2, [r3, #132]	@ float
+  59:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****      
+ 769              		.loc 1 59 31 view .LVU238
+ 770 002c 0A92     		str	r2, [sp, #40]	@ float
+  61:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroX_Para.gI = ProcessPara.g_x.gI;
+ 771              		.loc 1 61 5 is_stmt 1 view .LVU239
+  61:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroX_Para.gI = ProcessPara.g_x.gI;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 22
+
+
+ 772              		.loc 1 61 48 is_stmt 0 view .LVU240
+ 773 002e D3F8B020 		ldr	r2, [r3, #176]	@ float
+  61:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroX_Para.gI = ProcessPara.g_x.gI;
+ 774              		.loc 1 61 31 view .LVU241
+ 775 0032 0B92     		str	r2, [sp, #44]	@ float
+  62:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroX_Para.gD = ProcessPara.g_x.gD;
+ 776              		.loc 1 62 5 is_stmt 1 view .LVU242
+  62:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroX_Para.gD = ProcessPara.g_x.gD;
+ 777              		.loc 1 62 48 is_stmt 0 view .LVU243
+ 778 0034 D3F8BC20 		ldr	r2, [r3, #188]	@ float
+  62:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroX_Para.gD = ProcessPara.g_x.gD;
+ 779              		.loc 1 62 31 view .LVU244
+ 780 0038 0C92     		str	r2, [sp, #48]	@ float
+  63:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 781              		.loc 1 63 5 is_stmt 1 view .LVU245
+  63:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 782              		.loc 1 63 48 is_stmt 0 view .LVU246
+ 783 003a D3F8D420 		ldr	r2, [r3, #212]	@ float
+  63:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 784              		.loc 1 63 31 view .LVU247
+ 785 003e 0F92     		str	r2, [sp, #60]	@ float
+  65:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroY_Para.gI = ProcessPara.g_y.gI;
+ 786              		.loc 1 65 5 is_stmt 1 view .LVU248
+  65:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroY_Para.gI = ProcessPara.g_y.gI;
+ 787              		.loc 1 65 48 is_stmt 0 view .LVU249
+ 788 0040 D3F80021 		ldr	r2, [r3, #256]	@ float
+  65:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroY_Para.gI = ProcessPara.g_y.gI;
+ 789              		.loc 1 65 31 view .LVU250
+ 790 0044 1092     		str	r2, [sp, #64]	@ float
+  66:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroY_Para.gD = ProcessPara.g_y.gD;
+ 791              		.loc 1 66 5 is_stmt 1 view .LVU251
+  66:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroY_Para.gD = ProcessPara.g_y.gD;
+ 792              		.loc 1 66 48 is_stmt 0 view .LVU252
+ 793 0046 D3F80C21 		ldr	r2, [r3, #268]	@ float
+  66:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroY_Para.gD = ProcessPara.g_y.gD;
+ 794              		.loc 1 66 31 view .LVU253
+ 795 004a 1192     		str	r2, [sp, #68]	@ float
+  67:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     
+ 796              		.loc 1 67 5 is_stmt 1 view .LVU254
+  67:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     
+ 797              		.loc 1 67 48 is_stmt 0 view .LVU255
+ 798 004c D3F82421 		ldr	r2, [r3, #292]	@ float
+  67:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     
+ 799              		.loc 1 67 31 view .LVU256
+ 800 0050 1492     		str	r2, [sp, #80]	@ float
+  69:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroZ_Para.gI = ProcessPara.g_z.gI;
+ 801              		.loc 1 69 5 is_stmt 1 view .LVU257
+  69:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroZ_Para.gI = ProcessPara.g_z.gI;
+ 802              		.loc 1 69 48 is_stmt 0 view .LVU258
+ 803 0052 D3F85021 		ldr	r2, [r3, #336]	@ float
+  69:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroZ_Para.gI = ProcessPara.g_z.gI;
+ 804              		.loc 1 69 31 view .LVU259
+ 805 0056 1592     		str	r2, [sp, #84]	@ float
+  70:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroZ_Para.gD = ProcessPara.g_z.gD;
+ 806              		.loc 1 70 5 is_stmt 1 view .LVU260
+  70:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroZ_Para.gD = ProcessPara.g_z.gD;
+ 807              		.loc 1 70 48 is_stmt 0 view .LVU261
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 23
+
+
+ 808 0058 D3F85C21 		ldr	r2, [r3, #348]	@ float
+  70:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     in_use_para.GyroZ_Para.gD = ProcessPara.g_z.gD;
+ 809              		.loc 1 70 31 view .LVU262
+ 810 005c 1692     		str	r2, [sp, #88]	@ float
+  71:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 811              		.loc 1 71 5 is_stmt 1 view .LVU263
+  71:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 812              		.loc 1 71 48 is_stmt 0 view .LVU264
+ 813 005e D3F87431 		ldr	r3, [r3, #372]	@ float
+  71:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 814              		.loc 1 71 31 view .LVU265
+ 815 0062 1993     		str	r3, [sp, #100]	@ float
+  73:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 816              		.loc 1 73 5 is_stmt 1 view .LVU266
+  73:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 817              		.loc 1 73 12 is_stmt 0 view .LVU267
+ 818 0064 2A46     		mov	r2, r5
+ 819 0066 01A9     		add	r1, sp, #4
+ 820 0068 2046     		mov	r0, r4
+ 821 006a FFF7FEFF 		bl	memcpy
+ 822              	.LVL37:
+  74:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 823              		.loc 1 74 1 view .LVU268
+ 824 006e 2046     		mov	r0, r4
+ 825 0070 1BB0     		add	sp, sp, #108
+ 826              	.LCFI16:
+ 827              		.cfi_def_cfa_offset 12
+ 828              		@ sp needed
+ 829 0072 30BD     		pop	{r4, r5, pc}
+ 830              	.LVL38:
+ 831              	.L36:
+  74:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 832              		.loc 1 74 1 view .LVU269
+ 833              		.align	2
+ 834              	.L35:
+ 835 0074 00000000 		.word	.LANCHOR0
+ 836              		.cfi_endproc
+ 837              	.LFE8:
+ 839              		.section	.text.Att_CheckParam_Validation,"ax",%progbits
+ 840              		.align	1
+ 841              		.syntax unified
+ 842              		.thumb
+ 843              		.thumb_func
+ 845              	Att_CheckParam_Validation:
+ 846              	.LFB11:
+ 191:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     RC_Filter_Param_TypeDef RCParam_Tmp;
+ 847              		.loc 1 191 1 is_stmt 1 view -0
+ 848              		.cfi_startproc
+ 849              		@ args = 100, pretend = 16, frame = 16
+ 850              		@ frame_needed = 0, uses_anonymous_args = 0
+ 851 0000 84B0     		sub	sp, sp, #16
+ 852              	.LCFI17:
+ 853              		.cfi_def_cfa_offset 16
+ 854 0002 70B5     		push	{r4, r5, r6, lr}
+ 855              	.LCFI18:
+ 856              		.cfi_def_cfa_offset 32
+ 857              		.cfi_offset 4, -32
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 24
+
+
+ 858              		.cfi_offset 5, -28
+ 859              		.cfi_offset 6, -24
+ 860              		.cfi_offset 14, -20
+ 861 0004 9AB0     		sub	sp, sp, #104
+ 862              	.LCFI19:
+ 863              		.cfi_def_cfa_offset 136
+ 864 0006 1EAC     		add	r4, sp, #120
+ 865 0008 84E80F00 		stm	r4, {r0, r1, r2, r3}
+ 192:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     bool state = true;
+ 866              		.loc 1 192 5 view .LVU271
+ 193:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 867              		.loc 1 193 5 view .LVU272
+ 868              	.LVL39:
+ 195:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         memset(&ProcessPara, 0, sizeof(ProcessParam_TypeDef));
+ 869              		.loc 1 195 5 view .LVU273
+ 195:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         memset(&ProcessPara, 0, sizeof(ProcessParam_TypeDef));
+ 870              		.loc 1 195 21 is_stmt 0 view .LVU274
+ 871 000c 274B     		ldr	r3, .L43
+ 872 000e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 195:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         memset(&ProcessPara, 0, sizeof(ProcessParam_TypeDef));
+ 873              		.loc 1 195 8 view .LVU275
+ 874 0010 002B     		cmp	r3, #0
+ 875 0012 40D0     		beq	.L41
+ 876              	.L38:
+ 198:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 877              		.loc 1 198 5 is_stmt 1 view .LVU276
+ 198:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 878              		.loc 1 198 10 is_stmt 0 view .LVU277
+ 879 0014 5422     		movs	r2, #84
+ 880 0016 22A9     		add	r1, sp, #136
+ 881 0018 6846     		mov	r0, sp
+ 882 001a FFF7FEFF 		bl	memcpy
+ 883              	.LVL40:
+ 884 001e 1EAB     		add	r3, sp, #120
+ 885 0020 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 886 0022 FFF7FEFF 		bl	Att_PID_Param_Set
+ 887              	.LVL41:
+ 198:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     {
+ 888              		.loc 1 198 8 view .LVU278
+ 889 0026 0646     		mov	r6, r0
+ 890 0028 0028     		cmp	r0, #0
+ 891 002a 3BD0     		beq	.L42
+ 892              	.LVL42:
+ 893              	.L39:
+ 204:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.pitch, RCParam_Tmp);
+ 894              		.loc 1 204 5 is_stmt 1 view .LVU279
+ 204:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.pitch, RCParam_Tmp);
+ 895              		.loc 1 204 23 is_stmt 0 view .LVU280
+ 896 002c 204B     		ldr	r3, .L43+4
+ 897 002e 1693     		str	r3, [sp, #88]	@ float
+ 205:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.roll,  RCParam_Tmp);
+ 898              		.loc 1 205 5 is_stmt 1 view .LVU281
+ 899 0030 1E4D     		ldr	r5, .L43
+ 900 0032 199B     		ldr	r3, [sp, #100]
+ 901 0034 0093     		str	r3, [sp]
+ 902 0036 16AC     		add	r4, sp, #88
+ 903 0038 94E80E00 		ldm	r4, {r1, r2, r3}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 25
+
+
+ 904 003c 281D     		adds	r0, r5, #4
+ 905 003e FFF7FEFF 		bl	PID_Init
+ 906              	.LVL43:
+ 206:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 907              		.loc 1 206 5 view .LVU282
+ 908 0042 199B     		ldr	r3, [sp, #100]
+ 909 0044 0093     		str	r3, [sp]
+ 910 0046 94E80E00 		ldm	r4, {r1, r2, r3}
+ 911 004a 05F15400 		add	r0, r5, #84
+ 912 004e FFF7FEFF 		bl	PID_Init
+ 913              	.LVL44:
+ 208:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.g_x, RCParam_Tmp);
+ 914              		.loc 1 208 5 view .LVU283
+ 208:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.g_x, RCParam_Tmp);
+ 915              		.loc 1 208 23 is_stmt 0 view .LVU284
+ 916 0052 184B     		ldr	r3, .L43+8
+ 917 0054 1693     		str	r3, [sp, #88]	@ float
+ 209:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.g_y, RCParam_Tmp);
+ 918              		.loc 1 209 5 is_stmt 1 view .LVU285
+ 919 0056 199B     		ldr	r3, [sp, #100]
+ 920 0058 0093     		str	r3, [sp]
+ 921 005a 94E80E00 		ldm	r4, {r1, r2, r3}
+ 922 005e 05F1A400 		add	r0, r5, #164
+ 923 0062 FFF7FEFF 		bl	PID_Init
+ 924              	.LVL45:
+ 210:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     PID_Init(&ProcessPara.g_z, RCParam_Tmp);
+ 925              		.loc 1 210 5 view .LVU286
+ 926 0066 199B     		ldr	r3, [sp, #100]
+ 927 0068 0093     		str	r3, [sp]
+ 928 006a 94E80E00 		ldm	r4, {r1, r2, r3}
+ 929 006e 05F1F400 		add	r0, r5, #244
+ 930 0072 FFF7FEFF 		bl	PID_Init
+ 931              	.LVL46:
+ 211:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     
+ 932              		.loc 1 211 5 view .LVU287
+ 933 0076 199B     		ldr	r3, [sp, #100]
+ 934 0078 0093     		str	r3, [sp]
+ 935 007a 94E80E00 		ldm	r4, {r1, r2, r3}
+ 936 007e 05F5A270 		add	r0, r5, #324
+ 937 0082 FFF7FEFF 		bl	PID_Init
+ 938              	.LVL47:
+ 213:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     return state;
+ 939              		.loc 1 213 5 view .LVU288
+ 213:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     return state;
+ 940              		.loc 1 213 22 is_stmt 0 view .LVU289
+ 941 0086 0123     		movs	r3, #1
+ 942 0088 2B70     		strb	r3, [r5]
+ 214:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** }
+ 943              		.loc 1 214 5 is_stmt 1 view .LVU290
+ 215:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 944              		.loc 1 215 1 is_stmt 0 view .LVU291
+ 945 008a 3046     		mov	r0, r6
+ 946 008c 1AB0     		add	sp, sp, #104
+ 947              	.LCFI20:
+ 948              		.cfi_remember_state
+ 949              		.cfi_def_cfa_offset 32
+ 950              		@ sp needed
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 26
+
+
+ 951 008e BDE87040 		pop	{r4, r5, r6, lr}
+ 952              	.LCFI21:
+ 953              		.cfi_restore 14
+ 954              		.cfi_restore 6
+ 955              		.cfi_restore 5
+ 956              		.cfi_restore 4
+ 957              		.cfi_def_cfa_offset 16
+ 958              	.LVL48:
+ 215:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 959              		.loc 1 215 1 view .LVU292
+ 960 0092 04B0     		add	sp, sp, #16
+ 961              	.LCFI22:
+ 962              		.cfi_def_cfa_offset 0
+ 963 0094 7047     		bx	lr
+ 964              	.LVL49:
+ 965              	.L41:
+ 966              	.LCFI23:
+ 967              		.cfi_restore_state
+ 196:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c **** 
+ 968              		.loc 1 196 9 is_stmt 1 view .LVU293
+ 969 0096 4FF4CA72 		mov	r2, #404
+ 970 009a 0021     		movs	r1, #0
+ 971 009c 0348     		ldr	r0, .L43
+ 972 009e FFF7FEFF 		bl	memset
+ 973              	.LVL50:
+ 974 00a2 B7E7     		b	.L38
+ 975              	.L42:
+ 200:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         state = false;
+ 976              		.loc 1 200 9 view .LVU294
+ 200:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****         state = false;
+ 977              		.loc 1 200 16 is_stmt 0 view .LVU295
+ 978 00a4 1EA8     		add	r0, sp, #120
+ 979 00a6 FFF7FEFF 		bl	Att_Casecade_PID_DefaultPara
+ 980              	.LVL51:
+ 201:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 981              		.loc 1 201 9 is_stmt 1 view .LVU296
+ 201:Algorithm/Control_Dep/Attitude/Att_Casecade_PID.c ****     }
+ 982              		.loc 1 201 9 is_stmt 0 view .LVU297
+ 983 00aa BFE7     		b	.L39
+ 984              	.L44:
+ 985              		.align	2
+ 986              	.L43:
+ 987 00ac 00000000 		.word	.LANCHOR0
+ 988 00b0 0000A041 		.word	1101004800
+ 989 00b4 0000C842 		.word	1120403456
+ 990              		.cfi_endproc
+ 991              	.LFE11:
+ 993              		.global	Att_CasecadePID_Controller
+ 994              		.section	.bss.ProcessPara,"aw",%nobits
+ 995              		.align	2
+ 996              		.set	.LANCHOR0,. + 0
+ 999              	ProcessPara:
+ 1000 0000 00000000 		.space	404
+ 1000      00000000 
+ 1000      00000000 
+ 1000      00000000 
+ 1000      00000000 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 27
+
+
+ 1001              		.section	.data.Att_CasecadePID_Controller,"aw"
+ 1002              		.align	2
+ 1005              	Att_CasecadePID_Controller:
+ 1006 0000 00000000 		.word	Att_CheckParam_Validation
+ 1007 0004 00000000 		.word	Att_CaseCade_PID_InUse_Param
+ 1008 0008 00000000 		.word	Att_Casecade_PID_DefaultPara
+ 1009 000c 00000000 		.word	Att_Casecade_PID
+ 1010 0010 00000000 		.word	Att_Casecade_PID_Reset
+ 1011              		.text
+ 1012              	.Letext0:
+ 1013              		.file 2 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\machine\\_defau
+ 1014              		.file 3 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 1015              		.file 4 "Algorithm/Filter_Dep/filter.h"
+ 1016              		.file 5 "Algorithm/Control_Dep/pid.h"
+ 1017              		.file 6 "Algorithm/Control_Dep/Attitude/Att_Control_Base.h"
+ 1018              		.file 7 "Algorithm/Control_Dep/Attitude/Att_Casecade_PID.h"
+ 1019              		.file 8 "<built-in>"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s 			page 28
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 Att_Casecade_PID.c
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:20     .text.Att_PID_Param_Set:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:25     .text.Att_PID_Param_Set:00000000 Att_PID_Param_Set
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:248    .text.Att_PID_Param_Set:0000013c $d
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:258    .text.Att_Casecade_PID_Reset:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:263    .text.Att_Casecade_PID_Reset:00000000 Att_Casecade_PID_Reset
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:300    .text.Att_Casecade_PID_Reset:0000002c $d
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:305    .text.Att_Casecade_PID:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:310    .text.Att_Casecade_PID:00000000 Att_Casecade_PID
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:543    .text.Att_Casecade_PID:0000012c $d
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:549    .text.Att_Casecade_PID_DefaultPara:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:554    .text.Att_Casecade_PID_DefaultPara:00000000 Att_Casecade_PID_DefaultPara
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:690    .text.Att_Casecade_PID_DefaultPara:00000084 $d
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:707    .text.Att_CaseCade_PID_InUse_Param:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:712    .text.Att_CaseCade_PID_InUse_Param:00000000 Att_CaseCade_PID_InUse_Param
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:835    .text.Att_CaseCade_PID_InUse_Param:00000074 $d
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:840    .text.Att_CheckParam_Validation:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:845    .text.Att_CheckParam_Validation:00000000 Att_CheckParam_Validation
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:987    .text.Att_CheckParam_Validation:000000ac $d
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:1005   .data.Att_CasecadePID_Controller:00000000 Att_CasecadePID_Controller
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:995    .bss.ProcessPara:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:999    .bss.ProcessPara:00000000 ProcessPara
+C:\Users\HUAV\AppData\Local\Temp\ccpSG9g9.s:1002   .data.Att_CasecadePID_Controller:00000000 $d
+
+UNDEFINED SYMBOLS
+PID_Reset_ProcessVal
+PID_Update
+PID_P_DynamicTrim
+PID_D_DynamicTrim
+memset
+memcpy
+PID_Init

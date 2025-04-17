@@ -8,7 +8,7 @@ static DMA_HandleTypeDef *BspDMA_Map[Bsp_DMA_Sum][Bsp_DMA_Stream_Sum] = {NULL};
 static DMA_HandleTypeDef DataPipe_DMA;
 static bool DataPipe_DMA_Init = false;
 
-static const BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
+static const DMA_Stream_TypeDef* BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA1_Stream0,
     DMA1_Stream1,
     DMA1_Stream2,
@@ -18,7 +18,7 @@ static const BspDMA1_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA1_Stream6,
     DMA1_Stream7};
 
-static const BspDMA2_Instance_List[Bsp_DMA_Stream_Sum] = {
+static const DMA_Stream_TypeDef* BspDMA2_Instance_List[Bsp_DMA_Stream_Sum] = {
     DMA2_Stream0,
     DMA2_Stream1,
     DMA2_Stream2,

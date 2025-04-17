@@ -1,0 +1,856 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"pid.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.PID_P_Progress,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	PID_P_Progress:
+  26              	.LVL0:
+  27              	.LFB11:
+  28              		.file 1 "Algorithm/Control_Dep/pid.c"
+   1:Algorithm/Control_Dep/pid.c **** /* Author: 8_B!T0
+   2:Algorithm/Control_Dep/pid.c ****  */
+   3:Algorithm/Control_Dep/pid.c **** #include "pid.h"
+   4:Algorithm/Control_Dep/pid.c **** 
+   5:Algorithm/Control_Dep/pid.c **** #define Default_gP_Max_Rate 1.0f
+   6:Algorithm/Control_Dep/pid.c **** #define Default_gD_Max_Rate 1.0f
+   7:Algorithm/Control_Dep/pid.c **** 
+   8:Algorithm/Control_Dep/pid.c **** #define Default_gP_Min_Rate 0.4f
+   9:Algorithm/Control_Dep/pid.c **** #define Default_gD_Min_Rate 0.4f
+  10:Algorithm/Control_Dep/pid.c **** 
+  11:Algorithm/Control_Dep/pid.c **** /* internal function */
+  12:Algorithm/Control_Dep/pid.c **** static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
+  13:Algorithm/Control_Dep/pid.c **** static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff);
+  14:Algorithm/Control_Dep/pid.c **** static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float diff);
+  15:Algorithm/Control_Dep/pid.c **** 
+  16:Algorithm/Control_Dep/pid.c **** bool PID_Init(PIDObj_TypeDef *p_PIDObj, RC_Filter_Param_TypeDef rc_para)
+  17:Algorithm/Control_Dep/pid.c **** {
+  18:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+  19:Algorithm/Control_Dep/pid.c ****         return false;
+  20:Algorithm/Control_Dep/pid.c **** 
+  21:Algorithm/Control_Dep/pid.c ****     p_PIDObj->in = 0.0f;
+  22:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = 0.0f;
+  23:Algorithm/Control_Dep/pid.c ****     p_PIDObj->fout = 0.0f;
+  24:Algorithm/Control_Dep/pid.c **** 
+  25:Algorithm/Control_Dep/pid.c ****     p_PIDObj->P_out = 0.0f;
+  26:Algorithm/Control_Dep/pid.c ****     p_PIDObj->I_out = 0.0f;
+  27:Algorithm/Control_Dep/pid.c ****     p_PIDObj->D_out = 0.0f;
+  28:Algorithm/Control_Dep/pid.c **** 
+  29:Algorithm/Control_Dep/pid.c ****     p_PIDObj->gP_Rate = Default_gP_Max_Rate;
+  30:Algorithm/Control_Dep/pid.c ****     p_PIDObj->gD_Rate = Default_gD_Max_Rate;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 2
+
+
+  31:Algorithm/Control_Dep/pid.c **** 
+  32:Algorithm/Control_Dep/pid.c ****     PID_Reset_ProcessVal(p_PIDObj);
+  33:Algorithm/Control_Dep/pid.c **** 
+  34:Algorithm/Control_Dep/pid.c ****     if (RCFilter.init(&p_PIDObj->Dtrim_RC) == 0)
+  35:Algorithm/Control_Dep/pid.c ****         return false;
+  36:Algorithm/Control_Dep/pid.c **** 
+  37:Algorithm/Control_Dep/pid.c ****     return true;
+  38:Algorithm/Control_Dep/pid.c **** }
+  39:Algorithm/Control_Dep/pid.c **** 
+  40:Algorithm/Control_Dep/pid.c **** void PID_Reset_ProcessVal(PIDObj_TypeDef *p_PIDObj)
+  41:Algorithm/Control_Dep/pid.c **** {
+  42:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+  43:Algorithm/Control_Dep/pid.c ****         return;
+  44:Algorithm/Control_Dep/pid.c **** 
+  45:Algorithm/Control_Dep/pid.c ****     p_PIDObj->Integral = 0.0f;
+  46:Algorithm/Control_Dep/pid.c ****     p_PIDObj->lst_diff = 0.0f;
+  47:Algorithm/Control_Dep/pid.c **** }
+  48:Algorithm/Control_Dep/pid.c **** 
+  49:Algorithm/Control_Dep/pid.c **** bool PID_Update(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float mea_in, const float exp_in)
+  50:Algorithm/Control_Dep/pid.c **** {
+  51:Algorithm/Control_Dep/pid.c ****     float diff = exp_in - mea_in;
+  52:Algorithm/Control_Dep/pid.c ****     float out_tmp = 0.0f;
+  53:Algorithm/Control_Dep/pid.c **** 
+  54:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+  55:Algorithm/Control_Dep/pid.c ****         return false;
+  56:Algorithm/Control_Dep/pid.c ****     
+  57:Algorithm/Control_Dep/pid.c ****     p_PIDObj->in = mea_in;
+  58:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = exp_in;
+  59:Algorithm/Control_Dep/pid.c **** 
+  60:Algorithm/Control_Dep/pid.c ****     /* feed foward is essential? */
+  61:Algorithm/Control_Dep/pid.c **** 
+  62:Algorithm/Control_Dep/pid.c ****     /* if P stage error then PID can`t be use in other progress */
+  63:Algorithm/Control_Dep/pid.c ****     if (!PID_P_Progress(p_PIDObj, diff))
+  64:Algorithm/Control_Dep/pid.c ****         return false;
+  65:Algorithm/Control_Dep/pid.c **** 
+  66:Algorithm/Control_Dep/pid.c ****     out_tmp += p_PIDObj->P_out;
+  67:Algorithm/Control_Dep/pid.c ****     if(PID_I_Progress(p_PIDObj, diff))
+  68:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->I_out;
+  69:Algorithm/Control_Dep/pid.c **** 
+  70:Algorithm/Control_Dep/pid.c ****     if(PID_D_Progress(p_PIDObj, sys_ms, diff))
+  71:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->D_out;
+  72:Algorithm/Control_Dep/pid.c **** 
+  73:Algorithm/Control_Dep/pid.c ****     p_PIDObj->fout = out_tmp;
+  74:Algorithm/Control_Dep/pid.c ****     return true;
+  75:Algorithm/Control_Dep/pid.c **** }
+  76:Algorithm/Control_Dep/pid.c **** 
+  77:Algorithm/Control_Dep/pid.c **** static bool PID_P_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
+  78:Algorithm/Control_Dep/pid.c **** {
+  29              		.loc 1 78 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  79:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+  34              		.loc 1 79 5 view .LVU1
+  35              		.loc 1 79 8 is_stmt 0 view .LVU2
+  36 0000 58B1     		cbz	r0, .L3
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 3
+
+
+  80:Algorithm/Control_Dep/pid.c ****         return false;
+  81:Algorithm/Control_Dep/pid.c ****     
+  82:Algorithm/Control_Dep/pid.c ****     p_PIDObj->P_out = diff * p_PIDObj->gP * p_PIDObj->gP_Rate;
+  37              		.loc 1 82 5 is_stmt 1 view .LVU3
+  38              		.loc 1 82 38 is_stmt 0 view .LVU4
+  39 0002 D0ED037A 		vldr.32	s15, [r0, #12]
+  40              		.loc 1 82 28 view .LVU5
+  41 0006 27EE800A 		vmul.f32	s0, s15, s0
+  42              	.LVL1:
+  43              		.loc 1 82 53 view .LVU6
+  44 000a D0ED047A 		vldr.32	s15, [r0, #16]
+  45              		.loc 1 82 43 view .LVU7
+  46 000e 20EE270A 		vmul.f32	s0, s0, s15
+  47              		.loc 1 82 21 view .LVU8
+  48 0012 80ED050A 		vstr.32	s0, [r0, #20]
+  83:Algorithm/Control_Dep/pid.c ****     return true;
+  49              		.loc 1 83 5 is_stmt 1 view .LVU9
+  50              		.loc 1 83 12 is_stmt 0 view .LVU10
+  51 0016 0120     		movs	r0, #1
+  52              	.LVL2:
+  53              		.loc 1 83 12 view .LVU11
+  54 0018 7047     		bx	lr
+  55              	.LVL3:
+  56              	.L3:
+  80:Algorithm/Control_Dep/pid.c ****         return false;
+  57              		.loc 1 80 16 view .LVU12
+  58 001a 0020     		movs	r0, #0
+  59              	.LVL4:
+  84:Algorithm/Control_Dep/pid.c **** }
+  60              		.loc 1 84 1 view .LVU13
+  61 001c 7047     		bx	lr
+  62              		.cfi_endproc
+  63              	.LFE11:
+  65              		.section	.text.PID_I_Progress,"ax",%progbits
+  66              		.align	1
+  67              		.syntax unified
+  68              		.thumb
+  69              		.thumb_func
+  71              	PID_I_Progress:
+  72              	.LVL5:
+  73              	.LFB12:
+  85:Algorithm/Control_Dep/pid.c **** 
+  86:Algorithm/Control_Dep/pid.c **** static bool PID_I_Progress(PIDObj_TypeDef *p_PIDObj, const float diff)
+  87:Algorithm/Control_Dep/pid.c **** {
+  74              		.loc 1 87 1 is_stmt 1 view -0
+  75              		.cfi_startproc
+  76              		@ args = 0, pretend = 0, frame = 0
+  77              		@ frame_needed = 0, uses_anonymous_args = 0
+  78              		@ link register save eliminated.
+  88:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+  79              		.loc 1 88 5 view .LVU15
+  80              		.loc 1 88 8 is_stmt 0 view .LVU16
+  81 0000 0246     		mov	r2, r0
+  82 0002 58B3     		cbz	r0, .L8
+  89:Algorithm/Control_Dep/pid.c ****         return false;
+  90:Algorithm/Control_Dep/pid.c ****         
+  91:Algorithm/Control_Dep/pid.c ****     p_PIDObj->Integral += diff * p_PIDObj->gI;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 4
+
+
+  83              		.loc 1 91 5 is_stmt 1 view .LVU17
+  84              		.loc 1 91 42 is_stmt 0 view .LVU18
+  85 0004 D0ED067A 		vldr.32	s15, [r0, #24]
+  86              		.loc 1 91 32 view .LVU19
+  87 0008 27EE800A 		vmul.f32	s0, s15, s0
+  88              	.LVL6:
+  89              		.loc 1 91 24 view .LVU20
+  90 000c D0ED0A7A 		vldr.32	s15, [r0, #40]
+  91 0010 30EE270A 		vadd.f32	s0, s0, s15
+  92 0014 80ED0A0A 		vstr.32	s0, [r0, #40]
+  92:Algorithm/Control_Dep/pid.c **** 
+  93:Algorithm/Control_Dep/pid.c ****     /* limit Integral */
+  94:Algorithm/Control_Dep/pid.c ****     /* check integer first */
+  95:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj->gI_Limit)
+  93              		.loc 1 95 5 is_stmt 1 view .LVU21
+  94              		.loc 1 95 17 is_stmt 0 view .LVU22
+  95 0018 037F     		ldrb	r3, [r0, #28]	@ zero_extendqisi2
+  96              		.loc 1 95 8 view .LVU23
+  97 001a 7BB1     		cbz	r3, .L6
+  96:Algorithm/Control_Dep/pid.c ****     {
+  97:Algorithm/Control_Dep/pid.c ****         if ((int16_t)p_PIDObj->Integral >= (int16_t)p_PIDObj->gI_Max)
+  98              		.loc 1 97 9 is_stmt 1 view .LVU24
+  99              		.loc 1 97 13 is_stmt 0 view .LVU25
+ 100 001c BDEEC00A 		vcvt.s32.f32	s0, s0
+ 101 0020 10EE103A 		vmov	r3, s0	@ int
+ 102 0024 1BB2     		sxth	r3, r3
+ 103              		.loc 1 97 61 view .LVU26
+ 104 0026 90ED097A 		vldr.32	s14, [r0, #36]
+ 105              		.loc 1 97 44 view .LVU27
+ 106 002a FDEEC77A 		vcvt.s32.f32	s15, s14
+ 107 002e 17EE901A 		vmov	r1, s15	@ int
+ 108 0032 09B2     		sxth	r1, r1
+ 109              		.loc 1 97 12 view .LVU28
+ 110 0034 8B42     		cmp	r3, r1
+ 111 0036 05DB     		blt	.L7
+  98:Algorithm/Control_Dep/pid.c ****         {
+  99:Algorithm/Control_Dep/pid.c ****             p_PIDObj->Integral = p_PIDObj->gI_Max;
+ 112              		.loc 1 99 13 is_stmt 1 view .LVU29
+ 113              		.loc 1 99 32 is_stmt 0 view .LVU30
+ 114 0038 80ED0A7A 		vstr.32	s14, [r0, #40]
+ 115              	.L6:
+ 100:Algorithm/Control_Dep/pid.c ****         }
+ 101:Algorithm/Control_Dep/pid.c ****         else if ((int16_t)p_PIDObj->Integral <= (int16_t)p_PIDObj->gI_Min)
+ 102:Algorithm/Control_Dep/pid.c ****         {
+ 103:Algorithm/Control_Dep/pid.c ****             p_PIDObj->Integral = p_PIDObj->gI_Min;
+ 104:Algorithm/Control_Dep/pid.c ****         }
+ 105:Algorithm/Control_Dep/pid.c ****     }
+ 106:Algorithm/Control_Dep/pid.c **** 
+ 107:Algorithm/Control_Dep/pid.c ****     p_PIDObj->I_out = p_PIDObj->Integral;
+ 116              		.loc 1 107 5 is_stmt 1 view .LVU31
+ 117              		.loc 1 107 31 is_stmt 0 view .LVU32
+ 118 003c 936A     		ldr	r3, [r2, #40]	@ float
+ 119              		.loc 1 107 21 view .LVU33
+ 120 003e D362     		str	r3, [r2, #44]	@ float
+ 108:Algorithm/Control_Dep/pid.c ****     return true;
+ 121              		.loc 1 108 5 is_stmt 1 view .LVU34
+ 122              		.loc 1 108 12 is_stmt 0 view .LVU35
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 5
+
+
+ 123 0040 0120     		movs	r0, #1
+ 124              	.LVL7:
+ 125              		.loc 1 108 12 view .LVU36
+ 126 0042 7047     		bx	lr
+ 127              	.LVL8:
+ 128              	.L7:
+ 101:Algorithm/Control_Dep/pid.c ****         {
+ 129              		.loc 1 101 14 is_stmt 1 view .LVU37
+ 101:Algorithm/Control_Dep/pid.c ****         {
+ 130              		.loc 1 101 66 is_stmt 0 view .LVU38
+ 131 0044 90ED087A 		vldr.32	s14, [r0, #32]
+ 101:Algorithm/Control_Dep/pid.c ****         {
+ 132              		.loc 1 101 49 view .LVU39
+ 133 0048 FDEEC77A 		vcvt.s32.f32	s15, s14
+ 134 004c 17EE901A 		vmov	r1, s15	@ int
+ 135 0050 09B2     		sxth	r1, r1
+ 101:Algorithm/Control_Dep/pid.c ****         {
+ 136              		.loc 1 101 17 view .LVU40
+ 137 0052 8B42     		cmp	r3, r1
+ 138 0054 F2DC     		bgt	.L6
+ 103:Algorithm/Control_Dep/pid.c ****         }
+ 139              		.loc 1 103 13 is_stmt 1 view .LVU41
+ 103:Algorithm/Control_Dep/pid.c ****         }
+ 140              		.loc 1 103 32 is_stmt 0 view .LVU42
+ 141 0056 80ED0A7A 		vstr.32	s14, [r0, #40]
+ 142 005a EFE7     		b	.L6
+ 143              	.LVL9:
+ 144              	.L8:
+  89:Algorithm/Control_Dep/pid.c ****         
+ 145              		.loc 1 89 16 view .LVU43
+ 146 005c 0020     		movs	r0, #0
+ 147              	.LVL10:
+ 109:Algorithm/Control_Dep/pid.c **** }
+ 148              		.loc 1 109 1 view .LVU44
+ 149 005e 7047     		bx	lr
+ 150              		.cfi_endproc
+ 151              	.LFE12:
+ 153              		.section	.text.PID_D_Progress,"ax",%progbits
+ 154              		.align	1
+ 155              		.syntax unified
+ 156              		.thumb
+ 157              		.thumb_func
+ 159              	PID_D_Progress:
+ 160              	.LVL11:
+ 161              	.LFB13:
+ 110:Algorithm/Control_Dep/pid.c **** 
+ 111:Algorithm/Control_Dep/pid.c **** static bool PID_D_Progress(PIDObj_TypeDef *p_PIDObj, uint32_t sys_ms, const float diff)
+ 112:Algorithm/Control_Dep/pid.c **** {
+ 162              		.loc 1 112 1 is_stmt 1 view -0
+ 163              		.cfi_startproc
+ 164              		@ args = 0, pretend = 0, frame = 0
+ 165              		@ frame_needed = 0, uses_anonymous_args = 0
+ 166              		@ link register save eliminated.
+ 113:Algorithm/Control_Dep/pid.c ****     /* one stage filter is needed */
+ 114:Algorithm/Control_Dep/pid.c ****     /* because high frequence noise on input error will influence D stage */
+ 115:Algorithm/Control_Dep/pid.c ****     float derivative = diff - p_PIDObj->lst_diff;
+ 167              		.loc 1 115 5 view .LVU46
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 6
+
+
+ 168              		.loc 1 115 39 is_stmt 0 view .LVU47
+ 169 0000 D0ED0E7A 		vldr.32	s15, [r0, #56]
+ 170              		.loc 1 115 11 view .LVU48
+ 171 0004 30EE677A 		vsub.f32	s14, s0, s15
+ 172              	.LVL12:
+ 116:Algorithm/Control_Dep/pid.c ****     // derivative = RCFilter.update((RC_Object_Handle)&(p_PIDObj->Dtrim_RC), derivative);
+ 117:Algorithm/Control_Dep/pid.c **** 
+ 118:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+ 173              		.loc 1 118 5 is_stmt 1 view .LVU49
+ 174              		.loc 1 118 8 is_stmt 0 view .LVU50
+ 175 0008 68B1     		cbz	r0, .L11
+ 119:Algorithm/Control_Dep/pid.c ****         return false;
+ 120:Algorithm/Control_Dep/pid.c ****     
+ 121:Algorithm/Control_Dep/pid.c ****     p_PIDObj->D_out = p_PIDObj->gD * p_PIDObj->gD_Rate * derivative;
+ 176              		.loc 1 121 5 is_stmt 1 view .LVU51
+ 177              		.loc 1 121 31 is_stmt 0 view .LVU52
+ 178 000a D0ED0C7A 		vldr.32	s15, [r0, #48]
+ 179              		.loc 1 121 46 view .LVU53
+ 180 000e D0ED0D6A 		vldr.32	s13, [r0, #52]
+ 181              		.loc 1 121 36 view .LVU54
+ 182 0012 67EEA67A 		vmul.f32	s15, s15, s13
+ 183              		.loc 1 121 56 view .LVU55
+ 184 0016 67EE877A 		vmul.f32	s15, s15, s14
+ 185              		.loc 1 121 21 view .LVU56
+ 186 001a C0ED0F7A 		vstr.32	s15, [r0, #60]
+ 122:Algorithm/Control_Dep/pid.c ****     p_PIDObj->lst_diff = diff;
+ 187              		.loc 1 122 5 is_stmt 1 view .LVU57
+ 188              		.loc 1 122 24 is_stmt 0 view .LVU58
+ 189 001e 80ED0E0A 		vstr.32	s0, [r0, #56]
+ 123:Algorithm/Control_Dep/pid.c ****     return true;
+ 190              		.loc 1 123 5 is_stmt 1 view .LVU59
+ 191              		.loc 1 123 12 is_stmt 0 view .LVU60
+ 192 0022 0120     		movs	r0, #1
+ 193              	.LVL13:
+ 194              		.loc 1 123 12 view .LVU61
+ 195 0024 7047     		bx	lr
+ 196              	.LVL14:
+ 197              	.L11:
+ 119:Algorithm/Control_Dep/pid.c ****         return false;
+ 198              		.loc 1 119 16 view .LVU62
+ 199 0026 0020     		movs	r0, #0
+ 200              	.LVL15:
+ 124:Algorithm/Control_Dep/pid.c **** }
+ 201              		.loc 1 124 1 view .LVU63
+ 202 0028 7047     		bx	lr
+ 203              		.cfi_endproc
+ 204              	.LFE13:
+ 206              		.section	.text.PID_Reset_ProcessVal,"ax",%progbits
+ 207              		.align	1
+ 208              		.global	PID_Reset_ProcessVal
+ 209              		.syntax unified
+ 210              		.thumb
+ 211              		.thumb_func
+ 213              	PID_Reset_ProcessVal:
+ 214              	.LVL16:
+ 215              	.LFB9:
+  41:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 7
+
+
+ 216              		.loc 1 41 1 is_stmt 1 view -0
+ 217              		.cfi_startproc
+ 218              		@ args = 0, pretend = 0, frame = 0
+ 219              		@ frame_needed = 0, uses_anonymous_args = 0
+ 220              		@ link register save eliminated.
+  42:Algorithm/Control_Dep/pid.c ****         return;
+ 221              		.loc 1 42 5 view .LVU65
+  42:Algorithm/Control_Dep/pid.c ****         return;
+ 222              		.loc 1 42 8 is_stmt 0 view .LVU66
+ 223 0000 10B1     		cbz	r0, .L12
+  45:Algorithm/Control_Dep/pid.c ****     p_PIDObj->lst_diff = 0.0f;
+ 224              		.loc 1 45 5 is_stmt 1 view .LVU67
+  45:Algorithm/Control_Dep/pid.c ****     p_PIDObj->lst_diff = 0.0f;
+ 225              		.loc 1 45 24 is_stmt 0 view .LVU68
+ 226 0002 0022     		movs	r2, #0
+ 227 0004 8262     		str	r2, [r0, #40]	@ float
+  46:Algorithm/Control_Dep/pid.c **** }
+ 228              		.loc 1 46 5 is_stmt 1 view .LVU69
+  46:Algorithm/Control_Dep/pid.c **** }
+ 229              		.loc 1 46 24 is_stmt 0 view .LVU70
+ 230 0006 8263     		str	r2, [r0, #56]	@ float
+ 231              	.L12:
+  47:Algorithm/Control_Dep/pid.c **** 
+ 232              		.loc 1 47 1 view .LVU71
+ 233 0008 7047     		bx	lr
+ 234              		.cfi_endproc
+ 235              	.LFE9:
+ 237              		.section	.text.PID_Init,"ax",%progbits
+ 238              		.align	1
+ 239              		.global	PID_Init
+ 240              		.syntax unified
+ 241              		.thumb
+ 242              		.thumb_func
+ 244              	PID_Init:
+ 245              	.LVL17:
+ 246              	.LFB8:
+  17:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+ 247              		.loc 1 17 1 is_stmt 1 view -0
+ 248              		.cfi_startproc
+ 249              		@ args = 20, pretend = 16, frame = 0
+ 250              		@ frame_needed = 0, uses_anonymous_args = 0
+  17:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+ 251              		.loc 1 17 1 is_stmt 0 view .LVU73
+ 252 0000 84B0     		sub	sp, sp, #16
+ 253              	.LCFI0:
+ 254              		.cfi_def_cfa_offset 16
+ 255 0002 10B5     		push	{r4, lr}
+ 256              	.LCFI1:
+ 257              		.cfi_def_cfa_offset 24
+ 258              		.cfi_offset 4, -24
+ 259              		.cfi_offset 14, -20
+ 260 0004 03AC     		add	r4, sp, #12
+ 261 0006 84E80E00 		stm	r4, {r1, r2, r3}
+  18:Algorithm/Control_Dep/pid.c ****         return false;
+ 262              		.loc 1 18 5 is_stmt 1 view .LVU74
+  18:Algorithm/Control_Dep/pid.c ****         return false;
+ 263              		.loc 1 18 8 is_stmt 0 view .LVU75
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 8
+
+
+ 264 000a C0B1     		cbz	r0, .L16
+ 265 000c 0446     		mov	r4, r0
+  21:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = 0.0f;
+ 266              		.loc 1 21 5 is_stmt 1 view .LVU76
+  21:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = 0.0f;
+ 267              		.loc 1 21 18 is_stmt 0 view .LVU77
+ 268 000e 0023     		movs	r3, #0
+ 269 0010 0360     		str	r3, [r0]	@ float
+  22:Algorithm/Control_Dep/pid.c ****     p_PIDObj->fout = 0.0f;
+ 270              		.loc 1 22 5 is_stmt 1 view .LVU78
+  22:Algorithm/Control_Dep/pid.c ****     p_PIDObj->fout = 0.0f;
+ 271              		.loc 1 22 19 is_stmt 0 view .LVU79
+ 272 0012 4360     		str	r3, [r0, #4]	@ float
+  23:Algorithm/Control_Dep/pid.c **** 
+ 273              		.loc 1 23 5 is_stmt 1 view .LVU80
+  23:Algorithm/Control_Dep/pid.c **** 
+ 274              		.loc 1 23 20 is_stmt 0 view .LVU81
+ 275 0014 8360     		str	r3, [r0, #8]	@ float
+  25:Algorithm/Control_Dep/pid.c ****     p_PIDObj->I_out = 0.0f;
+ 276              		.loc 1 25 5 is_stmt 1 view .LVU82
+  25:Algorithm/Control_Dep/pid.c ****     p_PIDObj->I_out = 0.0f;
+ 277              		.loc 1 25 21 is_stmt 0 view .LVU83
+ 278 0016 4361     		str	r3, [r0, #20]	@ float
+  26:Algorithm/Control_Dep/pid.c ****     p_PIDObj->D_out = 0.0f;
+ 279              		.loc 1 26 5 is_stmt 1 view .LVU84
+  26:Algorithm/Control_Dep/pid.c ****     p_PIDObj->D_out = 0.0f;
+ 280              		.loc 1 26 21 is_stmt 0 view .LVU85
+ 281 0018 C362     		str	r3, [r0, #44]	@ float
+  27:Algorithm/Control_Dep/pid.c **** 
+ 282              		.loc 1 27 5 is_stmt 1 view .LVU86
+  27:Algorithm/Control_Dep/pid.c **** 
+ 283              		.loc 1 27 21 is_stmt 0 view .LVU87
+ 284 001a C363     		str	r3, [r0, #60]	@ float
+  29:Algorithm/Control_Dep/pid.c ****     p_PIDObj->gD_Rate = Default_gD_Max_Rate;
+ 285              		.loc 1 29 5 is_stmt 1 view .LVU88
+  29:Algorithm/Control_Dep/pid.c ****     p_PIDObj->gD_Rate = Default_gD_Max_Rate;
+ 286              		.loc 1 29 23 is_stmt 0 view .LVU89
+ 287 001c 4FF07E53 		mov	r3, #1065353216
+ 288 0020 0361     		str	r3, [r0, #16]	@ float
+  30:Algorithm/Control_Dep/pid.c **** 
+ 289              		.loc 1 30 5 is_stmt 1 view .LVU90
+  30:Algorithm/Control_Dep/pid.c **** 
+ 290              		.loc 1 30 23 is_stmt 0 view .LVU91
+ 291 0022 4363     		str	r3, [r0, #52]	@ float
+  32:Algorithm/Control_Dep/pid.c **** 
+ 292              		.loc 1 32 5 is_stmt 1 view .LVU92
+ 293 0024 FFF7FEFF 		bl	PID_Reset_ProcessVal
+ 294              	.LVL18:
+  34:Algorithm/Control_Dep/pid.c ****         return false;
+ 295              		.loc 1 34 5 view .LVU93
+  34:Algorithm/Control_Dep/pid.c ****         return false;
+ 296              		.loc 1 34 17 is_stmt 0 view .LVU94
+ 297 0028 074B     		ldr	r3, .L19
+ 298 002a 1B68     		ldr	r3, [r3]
+  34:Algorithm/Control_Dep/pid.c ****         return false;
+ 299              		.loc 1 34 9 view .LVU95
+ 300 002c 04F14000 		add	r0, r4, #64
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 9
+
+
+ 301 0030 9847     		blx	r3
+ 302              	.LVL19:
+  34:Algorithm/Control_Dep/pid.c ****         return false;
+ 303              		.loc 1 34 8 view .LVU96
+ 304 0032 30B1     		cbz	r0, .L17
+  37:Algorithm/Control_Dep/pid.c **** }
+ 305              		.loc 1 37 12 view .LVU97
+ 306 0034 0120     		movs	r0, #1
+ 307              	.LVL20:
+ 308              	.L15:
+  38:Algorithm/Control_Dep/pid.c **** 
+ 309              		.loc 1 38 1 view .LVU98
+ 310 0036 BDE81040 		pop	{r4, lr}
+ 311              	.LCFI2:
+ 312              		.cfi_remember_state
+ 313              		.cfi_restore 14
+ 314              		.cfi_restore 4
+ 315              		.cfi_def_cfa_offset 16
+ 316 003a 04B0     		add	sp, sp, #16
+ 317              	.LCFI3:
+ 318              		.cfi_def_cfa_offset 0
+ 319 003c 7047     		bx	lr
+ 320              	.LVL21:
+ 321              	.L16:
+ 322              	.LCFI4:
+ 323              		.cfi_restore_state
+  19:Algorithm/Control_Dep/pid.c **** 
+ 324              		.loc 1 19 16 view .LVU99
+ 325 003e 0020     		movs	r0, #0
+ 326              	.LVL22:
+  19:Algorithm/Control_Dep/pid.c **** 
+ 327              		.loc 1 19 16 view .LVU100
+ 328 0040 F9E7     		b	.L15
+ 329              	.LVL23:
+ 330              	.L17:
+  35:Algorithm/Control_Dep/pid.c **** 
+ 331              		.loc 1 35 16 view .LVU101
+ 332 0042 0020     		movs	r0, #0
+ 333 0044 F7E7     		b	.L15
+ 334              	.L20:
+ 335 0046 00BF     		.align	2
+ 336              	.L19:
+ 337 0048 00000000 		.word	RCFilter
+ 338              		.cfi_endproc
+ 339              	.LFE8:
+ 341              		.section	.text.PID_Update,"ax",%progbits
+ 342              		.align	1
+ 343              		.global	PID_Update
+ 344              		.syntax unified
+ 345              		.thumb
+ 346              		.thumb_func
+ 348              	PID_Update:
+ 349              	.LVL24:
+ 350              	.LFB10:
+  50:Algorithm/Control_Dep/pid.c ****     float diff = exp_in - mea_in;
+ 351              		.loc 1 50 1 is_stmt 1 view -0
+ 352              		.cfi_startproc
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 10
+
+
+ 353              		@ args = 0, pretend = 0, frame = 0
+ 354              		@ frame_needed = 0, uses_anonymous_args = 0
+  50:Algorithm/Control_Dep/pid.c ****     float diff = exp_in - mea_in;
+ 355              		.loc 1 50 1 is_stmt 0 view .LVU103
+ 356 0000 70B5     		push	{r4, r5, r6, lr}
+ 357              	.LCFI5:
+ 358              		.cfi_def_cfa_offset 16
+ 359              		.cfi_offset 4, -16
+ 360              		.cfi_offset 5, -12
+ 361              		.cfi_offset 6, -8
+ 362              		.cfi_offset 14, -4
+ 363 0002 2DED028B 		vpush.64	{d8}
+ 364              	.LCFI6:
+ 365              		.cfi_def_cfa_offset 24
+ 366              		.cfi_offset 80, -24
+ 367              		.cfi_offset 81, -20
+  51:Algorithm/Control_Dep/pid.c ****     float out_tmp = 0.0f;
+ 368              		.loc 1 51 5 is_stmt 1 view .LVU104
+  51:Algorithm/Control_Dep/pid.c ****     float out_tmp = 0.0f;
+ 369              		.loc 1 51 11 is_stmt 0 view .LVU105
+ 370 0006 30EEC08A 		vsub.f32	s16, s1, s0
+ 371              	.LVL25:
+  52:Algorithm/Control_Dep/pid.c **** 
+ 372              		.loc 1 52 5 is_stmt 1 view .LVU106
+  54:Algorithm/Control_Dep/pid.c ****         return false;
+ 373              		.loc 1 54 5 view .LVU107
+  54:Algorithm/Control_Dep/pid.c ****         return false;
+ 374              		.loc 1 54 8 is_stmt 0 view .LVU108
+ 375 000a 68B3     		cbz	r0, .L25
+ 376 000c 0D46     		mov	r5, r1
+ 377 000e 0446     		mov	r4, r0
+  57:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = exp_in;
+ 378              		.loc 1 57 5 is_stmt 1 view .LVU109
+  57:Algorithm/Control_Dep/pid.c ****     p_PIDObj->exp = exp_in;
+ 379              		.loc 1 57 18 is_stmt 0 view .LVU110
+ 380 0010 80ED000A 		vstr.32	s0, [r0]
+  58:Algorithm/Control_Dep/pid.c **** 
+ 381              		.loc 1 58 5 is_stmt 1 view .LVU111
+  58:Algorithm/Control_Dep/pid.c **** 
+ 382              		.loc 1 58 19 is_stmt 0 view .LVU112
+ 383 0014 C0ED010A 		vstr.32	s1, [r0, #4]
+  63:Algorithm/Control_Dep/pid.c ****         return false;
+ 384              		.loc 1 63 5 is_stmt 1 view .LVU113
+  63:Algorithm/Control_Dep/pid.c ****         return false;
+ 385              		.loc 1 63 10 is_stmt 0 view .LVU114
+ 386 0018 B0EE480A 		vmov.f32	s0, s16
+ 387              	.LVL26:
+  63:Algorithm/Control_Dep/pid.c ****         return false;
+ 388              		.loc 1 63 10 view .LVU115
+ 389 001c FFF7FEFF 		bl	PID_P_Progress
+ 390              	.LVL27:
+  63:Algorithm/Control_Dep/pid.c ****         return false;
+ 391              		.loc 1 63 8 view .LVU116
+ 392 0020 0646     		mov	r6, r0
+ 393 0022 18B9     		cbnz	r0, .L27
+ 394              	.LVL28:
+ 395              	.L22:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 11
+
+
+  75:Algorithm/Control_Dep/pid.c **** 
+ 396              		.loc 1 75 1 view .LVU117
+ 397 0024 3046     		mov	r0, r6
+ 398 0026 BDEC028B 		vldm	sp!, {d8}
+ 399              	.LCFI7:
+ 400              		.cfi_remember_state
+ 401              		.cfi_restore 80
+ 402              		.cfi_restore 81
+ 403              		.cfi_def_cfa_offset 16
+ 404              	.LVL29:
+  75:Algorithm/Control_Dep/pid.c **** 
+ 405              		.loc 1 75 1 view .LVU118
+ 406 002a 70BD     		pop	{r4, r5, r6, pc}
+ 407              	.LVL30:
+ 408              	.L27:
+ 409              	.LCFI8:
+ 410              		.cfi_restore_state
+  66:Algorithm/Control_Dep/pid.c ****     if(PID_I_Progress(p_PIDObj, diff))
+ 411              		.loc 1 66 5 is_stmt 1 view .LVU119
+  66:Algorithm/Control_Dep/pid.c ****     if(PID_I_Progress(p_PIDObj, diff))
+ 412              		.loc 1 66 24 is_stmt 0 view .LVU120
+ 413 002c D4ED058A 		vldr.32	s17, [r4, #20]
+  66:Algorithm/Control_Dep/pid.c ****     if(PID_I_Progress(p_PIDObj, diff))
+ 414              		.loc 1 66 13 view .LVU121
+ 415 0030 DFED0E7A 		vldr.32	s15, .L28
+ 416 0034 78EEA78A 		vadd.f32	s17, s17, s15
+ 417              	.LVL31:
+  67:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->I_out;
+ 418              		.loc 1 67 5 is_stmt 1 view .LVU122
+  67:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->I_out;
+ 419              		.loc 1 67 8 is_stmt 0 view .LVU123
+ 420 0038 B0EE480A 		vmov.f32	s0, s16
+ 421 003c 2046     		mov	r0, r4
+ 422 003e FFF7FEFF 		bl	PID_I_Progress
+ 423              	.LVL32:
+  67:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->I_out;
+ 424              		.loc 1 67 7 view .LVU124
+ 425 0042 18B1     		cbz	r0, .L23
+  68:Algorithm/Control_Dep/pid.c **** 
+ 426              		.loc 1 68 9 is_stmt 1 view .LVU125
+  68:Algorithm/Control_Dep/pid.c **** 
+ 427              		.loc 1 68 28 is_stmt 0 view .LVU126
+ 428 0044 D4ED0B7A 		vldr.32	s15, [r4, #44]
+  68:Algorithm/Control_Dep/pid.c **** 
+ 429              		.loc 1 68 17 view .LVU127
+ 430 0048 78EEA78A 		vadd.f32	s17, s17, s15
+ 431              	.LVL33:
+ 432              	.L23:
+  70:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->D_out;
+ 433              		.loc 1 70 5 is_stmt 1 view .LVU128
+  70:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->D_out;
+ 434              		.loc 1 70 8 is_stmt 0 view .LVU129
+ 435 004c B0EE480A 		vmov.f32	s0, s16
+ 436 0050 2946     		mov	r1, r5
+ 437 0052 2046     		mov	r0, r4
+ 438 0054 FFF7FEFF 		bl	PID_D_Progress
+ 439              	.LVL34:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 12
+
+
+  70:Algorithm/Control_Dep/pid.c ****         out_tmp += p_PIDObj->D_out;
+ 440              		.loc 1 70 7 view .LVU130
+ 441 0058 18B1     		cbz	r0, .L24
+  71:Algorithm/Control_Dep/pid.c **** 
+ 442              		.loc 1 71 9 is_stmt 1 view .LVU131
+  71:Algorithm/Control_Dep/pid.c **** 
+ 443              		.loc 1 71 28 is_stmt 0 view .LVU132
+ 444 005a D4ED0F7A 		vldr.32	s15, [r4, #60]
+  71:Algorithm/Control_Dep/pid.c **** 
+ 445              		.loc 1 71 17 view .LVU133
+ 446 005e 78EEA78A 		vadd.f32	s17, s17, s15
+ 447              	.LVL35:
+ 448              	.L24:
+  73:Algorithm/Control_Dep/pid.c ****     return true;
+ 449              		.loc 1 73 5 is_stmt 1 view .LVU134
+  73:Algorithm/Control_Dep/pid.c ****     return true;
+ 450              		.loc 1 73 20 is_stmt 0 view .LVU135
+ 451 0062 C4ED028A 		vstr.32	s17, [r4, #8]
+  74:Algorithm/Control_Dep/pid.c **** }
+ 452              		.loc 1 74 5 is_stmt 1 view .LVU136
+  74:Algorithm/Control_Dep/pid.c **** }
+ 453              		.loc 1 74 12 is_stmt 0 view .LVU137
+ 454 0066 DDE7     		b	.L22
+ 455              	.LVL36:
+ 456              	.L25:
+  55:Algorithm/Control_Dep/pid.c ****     
+ 457              		.loc 1 55 16 view .LVU138
+ 458 0068 0026     		movs	r6, #0
+ 459 006a DBE7     		b	.L22
+ 460              	.L29:
+ 461              		.align	2
+ 462              	.L28:
+ 463 006c 00000000 		.word	0
+ 464              		.cfi_endproc
+ 465              	.LFE10:
+ 467              		.section	.text.PID_P_DynamicTrim,"ax",%progbits
+ 468              		.align	1
+ 469              		.global	PID_P_DynamicTrim
+ 470              		.syntax unified
+ 471              		.thumb
+ 472              		.thumb_func
+ 474              	PID_P_DynamicTrim:
+ 475              	.LVL37:
+ 476              	.LFB14:
+ 125:Algorithm/Control_Dep/pid.c **** 
+ 126:Algorithm/Control_Dep/pid.c **** void PID_P_DynamicTrim(PIDObj_TypeDef *p_PIDObj, bool en, float rate)
+ 127:Algorithm/Control_Dep/pid.c **** {
+ 477              		.loc 1 127 1 is_stmt 1 view -0
+ 478              		.cfi_startproc
+ 479              		@ args = 0, pretend = 0, frame = 0
+ 480              		@ frame_needed = 0, uses_anonymous_args = 0
+ 481              		@ link register save eliminated.
+ 128:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+ 482              		.loc 1 128 5 view .LVU140
+ 483              		.loc 1 128 8 is_stmt 0 view .LVU141
+ 484 0000 70B1     		cbz	r0, .L30
+ 129:Algorithm/Control_Dep/pid.c ****         return;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 13
+
+
+ 130:Algorithm/Control_Dep/pid.c **** 
+ 131:Algorithm/Control_Dep/pid.c ****     p_PIDObj->gP_Rate = Default_gP_Max_Rate;
+ 485              		.loc 1 131 5 is_stmt 1 view .LVU142
+ 486              		.loc 1 131 23 is_stmt 0 view .LVU143
+ 487 0002 4FF07E52 		mov	r2, #1065353216
+ 488 0006 0261     		str	r2, [r0, #16]	@ float
+ 132:Algorithm/Control_Dep/pid.c ****     if (en)
+ 489              		.loc 1 132 5 is_stmt 1 view .LVU144
+ 490              		.loc 1 132 8 is_stmt 0 view .LVU145
+ 491 0008 51B1     		cbz	r1, .L30
+ 133:Algorithm/Control_Dep/pid.c ****     {
+ 134:Algorithm/Control_Dep/pid.c ****         p_PIDObj->gP_Rate = Default_gP_Min_Rate;
+ 492              		.loc 1 134 9 is_stmt 1 view .LVU146
+ 493              		.loc 1 134 27 is_stmt 0 view .LVU147
+ 494 000a DFED067A 		vldr.32	s15, .L34
+ 495 000e C0ED047A 		vstr.32	s15, [r0, #16]
+ 135:Algorithm/Control_Dep/pid.c ****         if (rate > Default_gP_Min_Rate)
+ 496              		.loc 1 135 9 is_stmt 1 view .LVU148
+ 497              		.loc 1 135 12 is_stmt 0 view .LVU149
+ 498 0012 B4EEE70A 		vcmpe.f32	s0, s15
+ 499 0016 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 500 001a 01DD     		ble	.L30
+ 136:Algorithm/Control_Dep/pid.c ****             p_PIDObj->gP_Rate = rate;
+ 501              		.loc 1 136 13 is_stmt 1 view .LVU150
+ 502              		.loc 1 136 31 is_stmt 0 view .LVU151
+ 503 001c 80ED040A 		vstr.32	s0, [r0, #16]
+ 504              	.L30:
+ 137:Algorithm/Control_Dep/pid.c ****     }
+ 138:Algorithm/Control_Dep/pid.c **** }
+ 505              		.loc 1 138 1 view .LVU152
+ 506 0020 7047     		bx	lr
+ 507              	.L35:
+ 508 0022 00BF     		.align	2
+ 509              	.L34:
+ 510 0024 CDCCCC3E 		.word	1053609165
+ 511              		.cfi_endproc
+ 512              	.LFE14:
+ 514              		.section	.text.PID_D_DynamicTrim,"ax",%progbits
+ 515              		.align	1
+ 516              		.global	PID_D_DynamicTrim
+ 517              		.syntax unified
+ 518              		.thumb
+ 519              		.thumb_func
+ 521              	PID_D_DynamicTrim:
+ 522              	.LVL38:
+ 523              	.LFB15:
+ 139:Algorithm/Control_Dep/pid.c **** 
+ 140:Algorithm/Control_Dep/pid.c **** void PID_D_DynamicTrim(PIDObj_TypeDef *p_PIDObj, bool en, float rate)
+ 141:Algorithm/Control_Dep/pid.c **** {
+ 524              		.loc 1 141 1 is_stmt 1 view -0
+ 525              		.cfi_startproc
+ 526              		@ args = 0, pretend = 0, frame = 0
+ 527              		@ frame_needed = 0, uses_anonymous_args = 0
+ 528              		@ link register save eliminated.
+ 142:Algorithm/Control_Dep/pid.c ****     if (p_PIDObj == NULL)
+ 529              		.loc 1 142 5 view .LVU154
+ 530              		.loc 1 142 8 is_stmt 0 view .LVU155
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 14
+
+
+ 531 0000 70B1     		cbz	r0, .L36
+ 143:Algorithm/Control_Dep/pid.c ****         return;
+ 144:Algorithm/Control_Dep/pid.c **** 
+ 145:Algorithm/Control_Dep/pid.c ****     p_PIDObj->gD_Rate = Default_gD_Max_Rate;
+ 532              		.loc 1 145 5 is_stmt 1 view .LVU156
+ 533              		.loc 1 145 23 is_stmt 0 view .LVU157
+ 534 0002 4FF07E52 		mov	r2, #1065353216
+ 535 0006 4263     		str	r2, [r0, #52]	@ float
+ 146:Algorithm/Control_Dep/pid.c ****     if (en)
+ 536              		.loc 1 146 5 is_stmt 1 view .LVU158
+ 537              		.loc 1 146 8 is_stmt 0 view .LVU159
+ 538 0008 51B1     		cbz	r1, .L36
+ 147:Algorithm/Control_Dep/pid.c ****     {
+ 148:Algorithm/Control_Dep/pid.c ****         p_PIDObj->gD_Rate = Default_gD_Min_Rate;
+ 539              		.loc 1 148 9 is_stmt 1 view .LVU160
+ 540              		.loc 1 148 27 is_stmt 0 view .LVU161
+ 541 000a DFED067A 		vldr.32	s15, .L40
+ 542 000e C0ED0D7A 		vstr.32	s15, [r0, #52]
+ 149:Algorithm/Control_Dep/pid.c ****         if (rate > Default_gD_Min_Rate)
+ 543              		.loc 1 149 9 is_stmt 1 view .LVU162
+ 544              		.loc 1 149 12 is_stmt 0 view .LVU163
+ 545 0012 B4EEE70A 		vcmpe.f32	s0, s15
+ 546 0016 F1EE10FA 		vmrs	APSR_nzcv, FPSCR
+ 547 001a 01DD     		ble	.L36
+ 150:Algorithm/Control_Dep/pid.c ****             p_PIDObj->gD_Rate = rate;
+ 548              		.loc 1 150 13 is_stmt 1 view .LVU164
+ 549              		.loc 1 150 31 is_stmt 0 view .LVU165
+ 550 001c 80ED0D0A 		vstr.32	s0, [r0, #52]
+ 551              	.L36:
+ 151:Algorithm/Control_Dep/pid.c ****     }
+ 152:Algorithm/Control_Dep/pid.c **** }
+ 552              		.loc 1 152 1 view .LVU166
+ 553 0020 7047     		bx	lr
+ 554              	.L41:
+ 555 0022 00BF     		.align	2
+ 556              	.L40:
+ 557 0024 CDCCCC3E 		.word	1053609165
+ 558              		.cfi_endproc
+ 559              	.LFE15:
+ 561              		.text
+ 562              	.Letext0:
+ 563              		.file 2 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\machine\\_defau
+ 564              		.file 3 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 565              		.file 4 "Algorithm/Filter_Dep/filter.h"
+ 566              		.file 5 "Algorithm/Control_Dep/pid.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s 			page 15
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 pid.c
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:20     .text.PID_P_Progress:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:25     .text.PID_P_Progress:00000000 PID_P_Progress
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:66     .text.PID_I_Progress:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:71     .text.PID_I_Progress:00000000 PID_I_Progress
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:154    .text.PID_D_Progress:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:159    .text.PID_D_Progress:00000000 PID_D_Progress
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:207    .text.PID_Reset_ProcessVal:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:213    .text.PID_Reset_ProcessVal:00000000 PID_Reset_ProcessVal
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:238    .text.PID_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:244    .text.PID_Init:00000000 PID_Init
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:337    .text.PID_Init:00000048 $d
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:342    .text.PID_Update:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:348    .text.PID_Update:00000000 PID_Update
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:463    .text.PID_Update:0000006c $d
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:468    .text.PID_P_DynamicTrim:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:474    .text.PID_P_DynamicTrim:00000000 PID_P_DynamicTrim
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:510    .text.PID_P_DynamicTrim:00000024 $d
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:515    .text.PID_D_DynamicTrim:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:521    .text.PID_D_DynamicTrim:00000000 PID_D_DynamicTrim
+C:\Users\HUAV\AppData\Local\Temp\ccDPS6oz.s:557    .text.PID_D_DynamicTrim:00000024 $d
+
+UNDEFINED SYMBOLS
+RCFilter

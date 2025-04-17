@@ -1,0 +1,2542 @@
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.arch armv7e-m
+   3              		.fpu fpv4-sp-d16
+   4              		.eabi_attribute 27, 1
+   5              		.eabi_attribute 28, 1
+   6              		.eabi_attribute 20, 1
+   7              		.eabi_attribute 21, 1
+   8              		.eabi_attribute 23, 3
+   9              		.eabi_attribute 24, 1
+  10              		.eabi_attribute 25, 1
+  11              		.eabi_attribute 26, 1
+  12              		.eabi_attribute 30, 1
+  13              		.eabi_attribute 34, 1
+  14              		.eabi_attribute 18, 4
+  15              		.file	"controller.c"
+  16              		.text
+  17              	.Ltext0:
+  18              		.cfi_sections	.debug_frame
+  19              		.section	.text.Controller_Att_Control,"ax",%progbits
+  20              		.align	1
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	Controller_Att_Control:
+  26              	.LVL0:
+  27              	.LFB151:
+  28              		.file 1 "Algorithm/Control_Dep/controller.c"
+   1:Algorithm/Control_Dep/controller.c **** #include "controller.h"
+   2:Algorithm/Control_Dep/controller.c **** #include "../../System/storage/Storage.h"
+   3:Algorithm/Control_Dep/controller.c **** #include "Att_Casecade_PID.h"
+   4:Algorithm/Control_Dep/controller.c **** 
+   5:Algorithm/Control_Dep/controller.c **** /* test code */
+   6:Algorithm/Control_Dep/controller.c **** #include "Srv_DataHub.h"
+   7:Algorithm/Control_Dep/controller.c **** #include "shell_port.h"
+   8:Algorithm/Control_Dep/controller.c **** /* test code */
+   9:Algorithm/Control_Dep/controller.c **** 
+  10:Algorithm/Control_Dep/controller.c **** #define ATTITUDE_PID_PARAM_SEC_NAME "pid_att"
+  11:Algorithm/Control_Dep/controller.c **** #define ALTITUDE_PID_PARAM_SEC_NAME "pid_alt"
+  12:Algorithm/Control_Dep/controller.c **** 
+  13:Algorithm/Control_Dep/controller.c **** typedef enum
+  14:Algorithm/Control_Dep/controller.c **** {
+  15:Algorithm/Control_Dep/controller.c ****     TP_Pitch = 0,
+  16:Algorithm/Control_Dep/controller.c ****     TP_Roll,
+  17:Algorithm/Control_Dep/controller.c ****     TP_GyroX,
+  18:Algorithm/Control_Dep/controller.c ****     TP_GyroY,
+  19:Algorithm/Control_Dep/controller.c ****     TP_GyroZ,
+  20:Algorithm/Control_Dep/controller.c **** } ControllerTunningPart_List;
+  21:Algorithm/Control_Dep/controller.c **** 
+  22:Algorithm/Control_Dep/controller.c **** typedef struct
+  23:Algorithm/Control_Dep/controller.c **** {
+  24:Algorithm/Control_Dep/controller.c ****     Storage_ItemSearchOut_TypeDef Att_SSO;  /* attitude control parameter section search out */
+  25:Algorithm/Control_Dep/controller.c ****     Storage_ItemSearchOut_TypeDef Alt_SSO;  /* altitude control parameter section search out */
+  26:Algorithm/Control_Dep/controller.c **** 
+  27:Algorithm/Control_Dep/controller.c ****     ControlMode_List att_ctl_mode;
+  28:Algorithm/Control_Dep/controller.c **** } ControllerMonitor_TypeDef;
+  29:Algorithm/Control_Dep/controller.c **** 
+  30:Algorithm/Control_Dep/controller.c **** /* internanl vriable */
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 2
+
+
+  31:Algorithm/Control_Dep/controller.c **** ControllerMonitor_TypeDef ControllerMonitor;
+  32:Algorithm/Control_Dep/controller.c **** 
+  33:Algorithm/Control_Dep/controller.c **** /* internal function */
+  34:Algorithm/Control_Dep/controller.c **** /* PID controller section */
+  35:Algorithm/Control_Dep/controller.c **** static bool Controller_PID_AttControl_ParamLoad(void);
+  36:Algorithm/Control_Dep/controller.c **** static bool Controller_PID_AttParam_Set(uint8_t *p_param, uint16_t size);
+  37:Algorithm/Control_Dep/controller.c **** 
+  38:Algorithm/Control_Dep/controller.c **** /* external function */
+  39:Algorithm/Control_Dep/controller.c **** /* attitude section */
+  40:Algorithm/Control_Dep/controller.c **** static bool Controller_Att_Init(ControlMode_List mode);
+  41:Algorithm/Control_Dep/controller.c **** static bool Controller_Att_Control(ControlMode_List mode, uint32_t sys_ms, bool angular_only, AttCo
+  42:Algorithm/Control_Dep/controller.c **** static bool Controller_Set_Param(bool ARM, ControlTarget_List target, ControlMode_List mode, uint8_
+  43:Algorithm/Control_Dep/controller.c **** static void Controller_Reset_Att_Processing(ControlMode_List mode);
+  44:Algorithm/Control_Dep/controller.c **** 
+  45:Algorithm/Control_Dep/controller.c **** /* altitude section */
+  46:Algorithm/Control_Dep/controller.c **** static bool Controller_Alt_Init(ControlMode_List mode);
+  47:Algorithm/Control_Dep/controller.c **** 
+  48:Algorithm/Control_Dep/controller.c **** Control_TypeDef Controller = {
+  49:Algorithm/Control_Dep/controller.c ****     .att_ctl_init = Controller_Att_Init,
+  50:Algorithm/Control_Dep/controller.c ****     .alt_ctl_init = Controller_Alt_Init,
+  51:Algorithm/Control_Dep/controller.c ****     
+  52:Algorithm/Control_Dep/controller.c ****     .att_param_set = Controller_Set_Param,
+  53:Algorithm/Control_Dep/controller.c **** 
+  54:Algorithm/Control_Dep/controller.c ****     .att_ctl = Controller_Att_Control,
+  55:Algorithm/Control_Dep/controller.c **** 
+  56:Algorithm/Control_Dep/controller.c ****     .reset_att_processing = Controller_Reset_Att_Processing,
+  57:Algorithm/Control_Dep/controller.c **** };
+  58:Algorithm/Control_Dep/controller.c **** 
+  59:Algorithm/Control_Dep/controller.c **** static bool Controller_Get_AttParam(ControlMode_List *cur_mode, uint8_t *p_data, uint16_t *para_len
+  60:Algorithm/Control_Dep/controller.c **** {
+  61:Algorithm/Control_Dep/controller.c ****     if ((cur_mode == NULL) || \
+  62:Algorithm/Control_Dep/controller.c ****         (p_data == NULL) || \
+  63:Algorithm/Control_Dep/controller.c ****         (para_len == NULL))
+  64:Algorithm/Control_Dep/controller.c ****         return false;
+  65:Algorithm/Control_Dep/controller.c **** 
+  66:Algorithm/Control_Dep/controller.c ****     *cur_mode = ControllerMonitor.att_ctl_mode;
+  67:Algorithm/Control_Dep/controller.c **** 
+  68:Algorithm/Control_Dep/controller.c ****     return false;
+  69:Algorithm/Control_Dep/controller.c **** }
+  70:Algorithm/Control_Dep/controller.c **** 
+  71:Algorithm/Control_Dep/controller.c **** static bool Controller_Set_AttParam(ControlMode_List mode, uint8_t *p_data, uint16_t len)
+  72:Algorithm/Control_Dep/controller.c **** {
+  73:Algorithm/Control_Dep/controller.c ****     if ((p_data == NULL) || \
+  74:Algorithm/Control_Dep/controller.c ****         (len == 0))
+  75:Algorithm/Control_Dep/controller.c ****         return false;
+  76:Algorithm/Control_Dep/controller.c **** 
+  77:Algorithm/Control_Dep/controller.c ****     switch (mode)
+  78:Algorithm/Control_Dep/controller.c ****     {
+  79:Algorithm/Control_Dep/controller.c ****         case CtlM_PID: /* attitude casecade pid tunning */ return true;
+  80:Algorithm/Control_Dep/controller.c ****         default: return false;
+  81:Algorithm/Control_Dep/controller.c ****     }
+  82:Algorithm/Control_Dep/controller.c **** 
+  83:Algorithm/Control_Dep/controller.c ****     return false;
+  84:Algorithm/Control_Dep/controller.c **** }
+  85:Algorithm/Control_Dep/controller.c **** 
+  86:Algorithm/Control_Dep/controller.c **** static bool Controller_Att_Init(ControlMode_List mode)
+  87:Algorithm/Control_Dep/controller.c **** {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 3
+
+
+  88:Algorithm/Control_Dep/controller.c ****     memset(&ControllerMonitor.Att_SSO, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+  89:Algorithm/Control_Dep/controller.c **** 
+  90:Algorithm/Control_Dep/controller.c ****     switch ((uint8_t) mode)
+  91:Algorithm/Control_Dep/controller.c ****     {
+  92:Algorithm/Control_Dep/controller.c ****         case CtlM_PID: return Controller_PID_AttControl_ParamLoad();
+  93:Algorithm/Control_Dep/controller.c ****         default: return false;
+  94:Algorithm/Control_Dep/controller.c ****     }
+  95:Algorithm/Control_Dep/controller.c **** 
+  96:Algorithm/Control_Dep/controller.c ****     return false;
+  97:Algorithm/Control_Dep/controller.c **** }
+  98:Algorithm/Control_Dep/controller.c **** 
+  99:Algorithm/Control_Dep/controller.c **** static bool Controller_Att_Control(ControlMode_List mode, uint32_t sys_ms, bool angular_only, AttCo
+ 100:Algorithm/Control_Dep/controller.c **** {
+  29              		.loc 1 100 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 56, pretend = 8, frame = 0
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 100 1 is_stmt 0 view .LVU1
+  34 0000 82B0     		sub	sp, sp, #8
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 8
+  37 0002 70B5     		push	{r4, r5, r6, lr}
+  38              	.LCFI1:
+  39              		.cfi_def_cfa_offset 24
+  40              		.cfi_offset 4, -24
+  41              		.cfi_offset 5, -20
+  42              		.cfi_offset 6, -16
+  43              		.cfi_offset 14, -12
+  44 0004 8CB0     		sub	sp, sp, #48
+  45              	.LCFI2:
+  46              		.cfi_def_cfa_offset 72
+  47 0006 1193     		str	r3, [sp, #68]
+ 101:Algorithm/Control_Dep/controller.c ****     switch ((uint8_t) mode)
+  48              		.loc 1 101 5 is_stmt 1 view .LVU2
+  49 0008 F8B9     		cbnz	r0, .L3
+  50 000a 0D46     		mov	r5, r1
+  51 000c 1446     		mov	r4, r2
+ 102:Algorithm/Control_Dep/controller.c ****     {
+ 103:Algorithm/Control_Dep/controller.c ****         case CtlM_PID: return Att_CasecadePID_Controller.process(sys_ms, angular_only, exp, mea, ou
+  52              		.loc 1 103 24 view .LVU3
+  53              		.loc 1 103 57 is_stmt 0 view .LVU4
+  54 000e 104B     		ldr	r3, .L5
+  55 0010 DE68     		ldr	r6, [r3, #12]
+  56              		.loc 1 103 31 view .LVU5
+  57 0012 1D9B     		ldr	r3, [sp, #116]
+  58 0014 0A93     		str	r3, [sp, #40]
+  59 0016 0DF1100C 		add	ip, sp, #16
+  60 001a 0DF15C0E 		add	lr, sp, #92
+  61 001e BEE80F00 		ldmia	lr!, {r0, r1, r2, r3}
+  62              	.LVL1:
+  63              		.loc 1 103 31 view .LVU6
+  64 0022 ACE80F00 		stmia	ip!, {r0, r1, r2, r3}
+  65 0026 9EE80300 		ldm	lr, {r0, r1}
+  66 002a 8CE80300 		stm	ip, {r0, r1}
+  67 002e 13AB     		add	r3, sp, #76
+  68 0030 0FCB     		ldm	r3, {r0, r1, r2, r3}
+  69 0032 8DE80F00 		stm	sp, {r0, r1, r2, r3}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 4
+
+
+  70 0036 11AB     		add	r3, sp, #68
+  71 0038 0CCB     		ldm	r3, {r2, r3}
+  72 003a 2146     		mov	r1, r4
+  73 003c 2846     		mov	r0, r5
+  74 003e B047     		blx	r6
+  75              	.LVL2:
+  76              	.L2:
+ 104:Algorithm/Control_Dep/controller.c ****         default: return false;
+ 105:Algorithm/Control_Dep/controller.c ****     }
+ 106:Algorithm/Control_Dep/controller.c ****     ControllerMonitor.att_ctl_mode = mode;
+ 107:Algorithm/Control_Dep/controller.c ****     return false;
+ 108:Algorithm/Control_Dep/controller.c **** }
+  77              		.loc 1 108 1 view .LVU7
+  78 0040 0CB0     		add	sp, sp, #48
+  79              	.LCFI3:
+  80              		.cfi_remember_state
+  81              		.cfi_def_cfa_offset 24
+  82              		@ sp needed
+  83 0042 BDE87040 		pop	{r4, r5, r6, lr}
+  84              	.LCFI4:
+  85              		.cfi_restore 14
+  86              		.cfi_restore 6
+  87              		.cfi_restore 5
+  88              		.cfi_restore 4
+  89              		.cfi_def_cfa_offset 8
+  90 0046 02B0     		add	sp, sp, #8
+  91              	.LCFI5:
+  92              		.cfi_def_cfa_offset 0
+  93 0048 7047     		bx	lr
+  94              	.LVL3:
+  95              	.L3:
+  96              	.LCFI6:
+  97              		.cfi_restore_state
+ 104:Algorithm/Control_Dep/controller.c ****         default: return false;
+  98              		.loc 1 104 25 view .LVU8
+  99 004a 0020     		movs	r0, #0
+ 100              	.LVL4:
+ 104:Algorithm/Control_Dep/controller.c ****         default: return false;
+ 101              		.loc 1 104 25 view .LVU9
+ 102 004c F8E7     		b	.L2
+ 103              	.L6:
+ 104 004e 00BF     		.align	2
+ 105              	.L5:
+ 106 0050 00000000 		.word	Att_CasecadePID_Controller
+ 107              		.cfi_endproc
+ 108              	.LFE151:
+ 110              		.section	.text.Controller_Reset_Att_Processing,"ax",%progbits
+ 111              		.align	1
+ 112              		.syntax unified
+ 113              		.thumb
+ 114              		.thumb_func
+ 116              	Controller_Reset_Att_Processing:
+ 117              	.LVL5:
+ 118              	.LFB152:
+ 109:Algorithm/Control_Dep/controller.c **** 
+ 110:Algorithm/Control_Dep/controller.c **** static void Controller_Reset_Att_Processing(ControlMode_List mode)
+ 111:Algorithm/Control_Dep/controller.c **** {
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 5
+
+
+ 119              		.loc 1 111 1 is_stmt 1 view -0
+ 120              		.cfi_startproc
+ 121              		@ args = 0, pretend = 0, frame = 0
+ 122              		@ frame_needed = 0, uses_anonymous_args = 0
+ 112:Algorithm/Control_Dep/controller.c ****     switch ((uint8_t) mode)
+ 123              		.loc 1 112 5 view .LVU11
+ 124 0000 20B9     		cbnz	r0, .L10
+ 111:Algorithm/Control_Dep/controller.c ****     switch ((uint8_t) mode)
+ 125              		.loc 1 111 1 is_stmt 0 view .LVU12
+ 126 0002 08B5     		push	{r3, lr}
+ 127              	.LCFI7:
+ 128              		.cfi_def_cfa_offset 8
+ 129              		.cfi_offset 3, -8
+ 130              		.cfi_offset 14, -4
+ 113:Algorithm/Control_Dep/controller.c ****     {
+ 114:Algorithm/Control_Dep/controller.c ****         case CtlM_PID: Att_CasecadePID_Controller.reset(); break;
+ 131              		.loc 1 114 24 is_stmt 1 view .LVU13
+ 132              		.loc 1 114 50 is_stmt 0 view .LVU14
+ 133 0004 024B     		ldr	r3, .L13
+ 134 0006 1B69     		ldr	r3, [r3, #16]
+ 135              		.loc 1 114 24 view .LVU15
+ 136 0008 9847     		blx	r3
+ 137              	.LVL6:
+ 138              		.loc 1 114 60 is_stmt 1 view .LVU16
+ 115:Algorithm/Control_Dep/controller.c ****         default: break;
+ 116:Algorithm/Control_Dep/controller.c ****     }
+ 117:Algorithm/Control_Dep/controller.c **** }
+ 139              		.loc 1 117 1 is_stmt 0 view .LVU17
+ 140 000a 08BD     		pop	{r3, pc}
+ 141              	.LVL7:
+ 142              	.L10:
+ 143              	.LCFI8:
+ 144              		.cfi_def_cfa_offset 0
+ 145              		.cfi_restore 3
+ 146              		.cfi_restore 14
+ 147              		.loc 1 117 1 view .LVU18
+ 148 000c 7047     		bx	lr
+ 149              	.L14:
+ 150 000e 00BF     		.align	2
+ 151              	.L13:
+ 152 0010 00000000 		.word	Att_CasecadePID_Controller
+ 153              		.cfi_endproc
+ 154              	.LFE152:
+ 156              		.section	.text.Controller_PID_AttParam_Set,"ax",%progbits
+ 157              		.align	1
+ 158              		.syntax unified
+ 159              		.thumb
+ 160              		.thumb_func
+ 162              	Controller_PID_AttParam_Set:
+ 163              	.LVL8:
+ 164              	.LFB154:
+ 118:Algorithm/Control_Dep/controller.c **** 
+ 119:Algorithm/Control_Dep/controller.c **** static bool Controller_Set_Param(bool ARM, ControlTarget_List target, ControlMode_List mode, uint8_
+ 120:Algorithm/Control_Dep/controller.c **** {
+ 121:Algorithm/Control_Dep/controller.c ****     /* noticed: only when drone is under ARM state, parameter is setable */
+ 122:Algorithm/Control_Dep/controller.c ****     /* check drone state */
+ 123:Algorithm/Control_Dep/controller.c ****     if (!ARM || \
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 6
+
+
+ 124:Algorithm/Control_Dep/controller.c ****         (target > CtlT_Altitude) || \
+ 125:Algorithm/Control_Dep/controller.c ****         (mode >= CtlM_All) || \
+ 126:Algorithm/Control_Dep/controller.c ****         (p_param == NULL) || \
+ 127:Algorithm/Control_Dep/controller.c ****         (size == 0))
+ 128:Algorithm/Control_Dep/controller.c ****         return false;
+ 129:Algorithm/Control_Dep/controller.c **** 
+ 130:Algorithm/Control_Dep/controller.c ****     if (target == CtlT_Attitude)
+ 131:Algorithm/Control_Dep/controller.c ****     {
+ 132:Algorithm/Control_Dep/controller.c ****         switch (mode)
+ 133:Algorithm/Control_Dep/controller.c ****         {
+ 134:Algorithm/Control_Dep/controller.c ****             case CtlM_PID: return Controller_PID_AttParam_Set(p_param, size);
+ 135:Algorithm/Control_Dep/controller.c ****             default: return false;
+ 136:Algorithm/Control_Dep/controller.c ****         }
+ 137:Algorithm/Control_Dep/controller.c ****     }
+ 138:Algorithm/Control_Dep/controller.c ****     else if (target == CtlT_Altitude)
+ 139:Algorithm/Control_Dep/controller.c ****     {
+ 140:Algorithm/Control_Dep/controller.c ****         /* still in developping */
+ 141:Algorithm/Control_Dep/controller.c ****         switch (mode)
+ 142:Algorithm/Control_Dep/controller.c ****         {
+ 143:Algorithm/Control_Dep/controller.c ****             case CtlM_PID: return false;
+ 144:Algorithm/Control_Dep/controller.c ****             default: return false;
+ 145:Algorithm/Control_Dep/controller.c ****         }
+ 146:Algorithm/Control_Dep/controller.c ****     }
+ 147:Algorithm/Control_Dep/controller.c **** 
+ 148:Algorithm/Control_Dep/controller.c ****     return false;
+ 149:Algorithm/Control_Dep/controller.c **** }
+ 150:Algorithm/Control_Dep/controller.c **** 
+ 151:Algorithm/Control_Dep/controller.c **** /****************************************************************** pid controller section ********
+ 152:Algorithm/Control_Dep/controller.c **** static bool Controller_PID_AttParam_Set(uint8_t *p_param, uint16_t size)
+ 153:Algorithm/Control_Dep/controller.c **** {
+ 165              		.loc 1 153 1 is_stmt 1 view -0
+ 166              		.cfi_startproc
+ 167              		@ args = 0, pretend = 0, frame = 0
+ 168              		@ frame_needed = 0, uses_anonymous_args = 0
+ 169              		.loc 1 153 1 is_stmt 0 view .LVU20
+ 170 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 171              	.LCFI9:
+ 172              		.cfi_def_cfa_offset 32
+ 173              		.cfi_offset 4, -32
+ 174              		.cfi_offset 5, -28
+ 175              		.cfi_offset 6, -24
+ 176              		.cfi_offset 7, -20
+ 177              		.cfi_offset 8, -16
+ 178              		.cfi_offset 9, -12
+ 179              		.cfi_offset 10, -8
+ 180              		.cfi_offset 14, -4
+ 181 0004 96B0     		sub	sp, sp, #88
+ 182              	.LCFI10:
+ 183              		.cfi_def_cfa_offset 120
+ 154:Algorithm/Control_Dep/controller.c ****     if (size != ATT_CASECADE_PID_PARAM_SIZE)
+ 184              		.loc 1 154 5 is_stmt 1 view .LVU21
+ 185              		.loc 1 154 8 is_stmt 0 view .LVU22
+ 186 0006 6429     		cmp	r1, #100
+ 187 0008 25D1     		bne	.L18
+ 188 000a 0446     		mov	r4, r0
+ 189 000c 0D46     		mov	r5, r1
+ 155:Algorithm/Control_Dep/controller.c ****         return false;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 7
+
+
+ 156:Algorithm/Control_Dep/controller.c ****     
+ 157:Algorithm/Control_Dep/controller.c ****     if (!Att_CasecadePID_Controller.set(*TO_ATT_CASECADE_PID_PARA_PTR(p_param)))
+ 190              		.loc 1 157 5 is_stmt 1 view .LVU23
+ 191              		.loc 1 157 36 is_stmt 0 view .LVU24
+ 192 000e 144B     		ldr	r3, .L20
+ 193 0010 1E68     		ldr	r6, [r3]
+ 194              		.loc 1 157 10 view .LVU25
+ 195 0012 D0F800A0 		ldr	r10, [r0]	@ unaligned
+ 196 0016 D0F80490 		ldr	r9, [r0, #4]	@ unaligned
+ 197 001a D0F80880 		ldr	r8, [r0, #8]	@ unaligned
+ 198 001e C768     		ldr	r7, [r0, #12]	@ unaligned
+ 199 0020 5422     		movs	r2, #84
+ 200 0022 00F11001 		add	r1, r0, #16
+ 201              	.LVL9:
+ 202              		.loc 1 157 10 view .LVU26
+ 203 0026 6846     		mov	r0, sp
+ 204              	.LVL10:
+ 205              		.loc 1 157 10 view .LVU27
+ 206 0028 FFF7FEFF 		bl	memcpy
+ 207              	.LVL11:
+ 208 002c 5046     		mov	r0, r10
+ 209 002e 4946     		mov	r1, r9
+ 210 0030 4246     		mov	r2, r8
+ 211 0032 3B46     		mov	r3, r7
+ 212 0034 B047     		blx	r6
+ 213              	.LVL12:
+ 214              		.loc 1 157 8 view .LVU28
+ 215 0036 0646     		mov	r6, r0
+ 216 0038 70B1     		cbz	r0, .L16
+ 158:Algorithm/Control_Dep/controller.c ****         return false;
+ 159:Algorithm/Control_Dep/controller.c **** 
+ 160:Algorithm/Control_Dep/controller.c ****     /* storage parameter */
+ 161:Algorithm/Control_Dep/controller.c ****     if ((ControllerMonitor.Att_SSO.item_addr == 0) || \
+ 217              		.loc 1 161 5 is_stmt 1 view .LVU29
+ 218              		.loc 1 161 35 is_stmt 0 view .LVU30
+ 219 003a 0A4B     		ldr	r3, .L20+4
+ 220 003c 1B68     		ldr	r3, [r3]
+ 221              		.loc 1 161 8 view .LVU31
+ 222 003e 43B1     		cbz	r3, .L17
+ 162:Algorithm/Control_Dep/controller.c ****         (Storage.update(Para_User, ControllerMonitor.Att_SSO.item.data_addr, p_param, size) != Stor
+ 223              		.loc 1 162 17 discriminator 1 view .LVU32
+ 224 0040 094B     		ldr	r3, .L20+8
+ 225 0042 DF68     		ldr	r7, [r3, #12]
+ 226              		.loc 1 162 10 discriminator 1 view .LVU33
+ 227 0044 2B46     		mov	r3, r5
+ 228 0046 2246     		mov	r2, r4
+ 229 0048 0649     		ldr	r1, .L20+4
+ 230 004a 096B     		ldr	r1, [r1, #48]
+ 231 004c 0220     		movs	r0, #2
+ 232 004e B847     		blx	r7
+ 233              	.LVL13:
+ 161:Algorithm/Control_Dep/controller.c ****         (Storage.update(Para_User, ControllerMonitor.Att_SSO.item.data_addr, p_param, size) != Stor
+ 234              		.loc 1 161 52 discriminator 1 view .LVU34
+ 235 0050 10B1     		cbz	r0, .L16
+ 236              	.L17:
+ 163:Algorithm/Control_Dep/controller.c ****         return false;
+ 237              		.loc 1 163 9 is_stmt 1 view .LVU35
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 8
+
+
+ 238              		.loc 1 163 16 is_stmt 0 view .LVU36
+ 239 0052 0026     		movs	r6, #0
+ 240 0054 00E0     		b	.L16
+ 241              	.LVL14:
+ 242              	.L18:
+ 155:Algorithm/Control_Dep/controller.c ****     
+ 243              		.loc 1 155 16 view .LVU37
+ 244 0056 0026     		movs	r6, #0
+ 245              	.LVL15:
+ 246              	.L16:
+ 164:Algorithm/Control_Dep/controller.c **** 
+ 165:Algorithm/Control_Dep/controller.c ****     return true;
+ 166:Algorithm/Control_Dep/controller.c **** }
+ 247              		.loc 1 166 1 view .LVU38
+ 248 0058 3046     		mov	r0, r6
+ 249 005a 16B0     		add	sp, sp, #88
+ 250              	.LCFI11:
+ 251              		.cfi_def_cfa_offset 32
+ 252              		@ sp needed
+ 253 005c BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 254              	.L21:
+ 255              		.align	2
+ 256              	.L20:
+ 257 0060 00000000 		.word	Att_CasecadePID_Controller
+ 258 0064 00000000 		.word	.LANCHOR0
+ 259 0068 00000000 		.word	Storage
+ 260              		.cfi_endproc
+ 261              	.LFE154:
+ 263              		.section	.text.Controller_Set_Param,"ax",%progbits
+ 264              		.align	1
+ 265              		.syntax unified
+ 266              		.thumb
+ 267              		.thumb_func
+ 269              	Controller_Set_Param:
+ 270              	.LVL16:
+ 271              	.LFB153:
+ 120:Algorithm/Control_Dep/controller.c ****     /* noticed: only when drone is under ARM state, parameter is setable */
+ 272              		.loc 1 120 1 is_stmt 1 view -0
+ 273              		.cfi_startproc
+ 274              		@ args = 4, pretend = 0, frame = 0
+ 275              		@ frame_needed = 0, uses_anonymous_args = 0
+ 120:Algorithm/Control_Dep/controller.c ****     /* noticed: only when drone is under ARM state, parameter is setable */
+ 276              		.loc 1 120 1 is_stmt 0 view .LVU40
+ 277 0000 10B5     		push	{r4, lr}
+ 278              	.LCFI12:
+ 279              		.cfi_def_cfa_offset 8
+ 280              		.cfi_offset 4, -8
+ 281              		.cfi_offset 14, -4
+ 282 0002 BDF80840 		ldrh	r4, [sp, #8]
+ 123:Algorithm/Control_Dep/controller.c ****         (target > CtlT_Altitude) || \
+ 283              		.loc 1 123 5 is_stmt 1 view .LVU41
+ 123:Algorithm/Control_Dep/controller.c ****         (target > CtlT_Altitude) || \
+ 284              		.loc 1 123 8 is_stmt 0 view .LVU42
+ 285 0006 78B1     		cbz	r0, .L23
+ 123:Algorithm/Control_Dep/controller.c ****         (target > CtlT_Altitude) || \
+ 286              		.loc 1 123 14 discriminator 1 view .LVU43
+ 287 0008 0129     		cmp	r1, #1
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 9
+
+
+ 288 000a 0CD8     		bhi	.L25
+ 124:Algorithm/Control_Dep/controller.c ****         (mode >= CtlM_All) || \
+ 289              		.loc 1 124 34 view .LVU44
+ 290 000c 022A     		cmp	r2, #2
+ 291 000e 0CD8     		bhi	.L26
+ 125:Algorithm/Control_Dep/controller.c ****         (p_param == NULL) || \
+ 292              		.loc 1 125 28 view .LVU45
+ 293 0010 6BB1     		cbz	r3, .L27
+ 126:Algorithm/Control_Dep/controller.c ****         (size == 0))
+ 294              		.loc 1 126 27 view .LVU46
+ 295 0012 74B1     		cbz	r4, .L28
+ 130:Algorithm/Control_Dep/controller.c ****     {
+ 296              		.loc 1 130 5 is_stmt 1 view .LVU47
+ 130:Algorithm/Control_Dep/controller.c ****     {
+ 297              		.loc 1 130 8 is_stmt 0 view .LVU48
+ 298 0014 79B9     		cbnz	r1, .L29
+ 132:Algorithm/Control_Dep/controller.c ****         {
+ 299              		.loc 1 132 9 is_stmt 1 view .LVU49
+ 300 0016 0AB1     		cbz	r2, .L32
+ 135:Algorithm/Control_Dep/controller.c ****         }
+ 301              		.loc 1 135 29 is_stmt 0 view .LVU50
+ 302 0018 0020     		movs	r0, #0
+ 303              	.LVL17:
+ 135:Algorithm/Control_Dep/controller.c ****         }
+ 304              		.loc 1 135 29 view .LVU51
+ 305 001a 05E0     		b	.L23
+ 306              	.LVL18:
+ 307              	.L32:
+ 134:Algorithm/Control_Dep/controller.c ****             default: return false;
+ 308              		.loc 1 134 28 is_stmt 1 view .LVU52
+ 134:Algorithm/Control_Dep/controller.c ****             default: return false;
+ 309              		.loc 1 134 35 is_stmt 0 view .LVU53
+ 310 001c 2146     		mov	r1, r4
+ 311              	.LVL19:
+ 134:Algorithm/Control_Dep/controller.c ****             default: return false;
+ 312              		.loc 1 134 35 view .LVU54
+ 313 001e 1846     		mov	r0, r3
+ 314              	.LVL20:
+ 134:Algorithm/Control_Dep/controller.c ****             default: return false;
+ 315              		.loc 1 134 35 view .LVU55
+ 316 0020 FFF7FEFF 		bl	Controller_PID_AttParam_Set
+ 317              	.LVL21:
+ 134:Algorithm/Control_Dep/controller.c ****             default: return false;
+ 318              		.loc 1 134 35 view .LVU56
+ 319 0024 00E0     		b	.L23
+ 320              	.LVL22:
+ 321              	.L25:
+ 128:Algorithm/Control_Dep/controller.c **** 
+ 322              		.loc 1 128 16 view .LVU57
+ 323 0026 0020     		movs	r0, #0
+ 324              	.LVL23:
+ 325              	.L23:
+ 149:Algorithm/Control_Dep/controller.c **** 
+ 326              		.loc 1 149 1 view .LVU58
+ 327 0028 10BD     		pop	{r4, pc}
+ 328              	.LVL24:
+ 329              	.L26:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 10
+
+
+ 128:Algorithm/Control_Dep/controller.c **** 
+ 330              		.loc 1 128 16 view .LVU59
+ 331 002a 0020     		movs	r0, #0
+ 332              	.LVL25:
+ 128:Algorithm/Control_Dep/controller.c **** 
+ 333              		.loc 1 128 16 view .LVU60
+ 334 002c FCE7     		b	.L23
+ 335              	.LVL26:
+ 336              	.L27:
+ 128:Algorithm/Control_Dep/controller.c **** 
+ 337              		.loc 1 128 16 view .LVU61
+ 338 002e 0020     		movs	r0, #0
+ 339              	.LVL27:
+ 128:Algorithm/Control_Dep/controller.c **** 
+ 340              		.loc 1 128 16 view .LVU62
+ 341 0030 FAE7     		b	.L23
+ 342              	.LVL28:
+ 343              	.L28:
+ 128:Algorithm/Control_Dep/controller.c **** 
+ 344              		.loc 1 128 16 view .LVU63
+ 345 0032 0020     		movs	r0, #0
+ 346              	.LVL29:
+ 128:Algorithm/Control_Dep/controller.c **** 
+ 347              		.loc 1 128 16 view .LVU64
+ 348 0034 F8E7     		b	.L23
+ 349              	.LVL30:
+ 350              	.L29:
+ 148:Algorithm/Control_Dep/controller.c **** }
+ 351              		.loc 1 148 12 view .LVU65
+ 352 0036 0020     		movs	r0, #0
+ 353              	.LVL31:
+ 148:Algorithm/Control_Dep/controller.c **** }
+ 354              		.loc 1 148 12 view .LVU66
+ 355 0038 F6E7     		b	.L23
+ 356              		.cfi_endproc
+ 357              	.LFE153:
+ 359              		.section	.rodata.Controller_PID_AttControl_ParamLoad.str1.4,"aMS",%progbits,1
+ 360              		.align	2
+ 361              	.LC0:
+ 362 0000 7069645F 		.ascii	"pid_att\000"
+ 362      61747400 
+ 363              		.section	.text.Controller_PID_AttControl_ParamLoad,"ax",%progbits
+ 364              		.align	1
+ 365              		.syntax unified
+ 366              		.thumb
+ 367              		.thumb_func
+ 369              	Controller_PID_AttControl_ParamLoad:
+ 370              	.LFB155:
+ 167:Algorithm/Control_Dep/controller.c **** 
+ 168:Algorithm/Control_Dep/controller.c **** static bool Controller_PID_AttControl_ParamLoad(void)
+ 169:Algorithm/Control_Dep/controller.c **** {
+ 371              		.loc 1 169 1 is_stmt 1 view -0
+ 372              		.cfi_startproc
+ 373              		@ args = 0, pretend = 0, frame = 208
+ 374              		@ frame_needed = 0, uses_anonymous_args = 0
+ 170:Algorithm/Control_Dep/controller.c ****     Storage_ErrorCode_List stor_err = Storage_Error_None;
+ 375              		.loc 1 170 5 view .LVU68
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 11
+
+
+ 376              	.LVL32:
+ 171:Algorithm/Control_Dep/controller.c ****     AttCaseCadePID_Param_TypeDef pid_param;
+ 377              		.loc 1 171 5 view .LVU69
+ 172:Algorithm/Control_Dep/controller.c **** 
+ 173:Algorithm/Control_Dep/controller.c ****     if (Att_CasecadePID_Controller.default_param == NULL)
+ 378              		.loc 1 173 5 view .LVU70
+ 379              		.loc 1 173 35 is_stmt 0 view .LVU71
+ 380 0000 364B     		ldr	r3, .L45
+ 381 0002 9B68     		ldr	r3, [r3, #8]
+ 382              		.loc 1 173 8 view .LVU72
+ 383 0004 002B     		cmp	r3, #0
+ 384 0006 64D0     		beq	.L38
+ 169:Algorithm/Control_Dep/controller.c ****     Storage_ErrorCode_List stor_err = Storage_Error_None;
+ 385              		.loc 1 169 1 view .LVU73
+ 386 0008 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 387              	.LCFI13:
+ 388              		.cfi_def_cfa_offset 28
+ 389              		.cfi_offset 4, -28
+ 390              		.cfi_offset 5, -24
+ 391              		.cfi_offset 6, -20
+ 392              		.cfi_offset 7, -16
+ 393              		.cfi_offset 8, -12
+ 394              		.cfi_offset 9, -8
+ 395              		.cfi_offset 14, -4
+ 396 000c CBB0     		sub	sp, sp, #300
+ 397              	.LCFI14:
+ 398              		.cfi_def_cfa_offset 328
+ 174:Algorithm/Control_Dep/controller.c ****         return false;
+ 175:Algorithm/Control_Dep/controller.c **** 
+ 176:Algorithm/Control_Dep/controller.c ****     pid_param = Att_CasecadePID_Controller.default_param();
+ 399              		.loc 1 176 5 is_stmt 1 view .LVU74
+ 400              		.loc 1 176 17 is_stmt 0 view .LVU75
+ 401 000e 16A8     		add	r0, sp, #88
+ 402 0010 9847     		blx	r3
+ 403              	.LVL33:
+ 404 0012 31AC     		add	r4, sp, #196
+ 405 0014 6422     		movs	r2, #100
+ 406 0016 16A9     		add	r1, sp, #88
+ 407 0018 2046     		mov	r0, r4
+ 408 001a FFF7FEFF 		bl	memcpy
+ 409              	.LVL34:
+ 177:Algorithm/Control_Dep/controller.c ****     Att_CasecadePID_Controller.set(pid_param);
+ 410              		.loc 1 177 5 is_stmt 1 view .LVU76
+ 411              		.loc 1 177 31 is_stmt 0 view .LVU77
+ 412 001e 2F4B     		ldr	r3, .L45
+ 413 0020 1D68     		ldr	r5, [r3]
+ 414              		.loc 1 177 5 view .LVU78
+ 415 0022 5422     		movs	r2, #84
+ 416 0024 35A9     		add	r1, sp, #212
+ 417 0026 6846     		mov	r0, sp
+ 418 0028 FFF7FEFF 		bl	memcpy
+ 419              	.LVL35:
+ 420 002c 94E80F00 		ldm	r4, {r0, r1, r2, r3}
+ 421 0030 A847     		blx	r5
+ 422              	.LVL36:
+ 178:Algorithm/Control_Dep/controller.c **** 
+ 179:Algorithm/Control_Dep/controller.c ****     /* load parameter */
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 12
+
+
+ 180:Algorithm/Control_Dep/controller.c ****     ControllerMonitor.Att_SSO = Storage.search(Para_User, ATTITUDE_PID_PARAM_SEC_NAME);
+ 423              		.loc 1 180 5 is_stmt 1 view .LVU79
+ 424              		.loc 1 180 40 is_stmt 0 view .LVU80
+ 425 0032 2B4B     		ldr	r3, .L45+4
+ 426 0034 5B68     		ldr	r3, [r3, #4]
+ 427              		.loc 1 180 33 view .LVU81
+ 428 0036 2B4C     		ldr	r4, .L45+8
+ 429 0038 2B4A     		ldr	r2, .L45+12
+ 430 003a 0221     		movs	r1, #2
+ 431 003c 16A8     		add	r0, sp, #88
+ 432 003e 9847     		blx	r3
+ 433              	.LVL37:
+ 434 0040 4522     		movs	r2, #69
+ 435 0042 16A9     		add	r1, sp, #88
+ 436 0044 2046     		mov	r0, r4
+ 437 0046 FFF7FEFF 		bl	memcpy
+ 438              	.LVL38:
+ 181:Algorithm/Control_Dep/controller.c ****     if (ControllerMonitor.Att_SSO.item_addr == 0)
+ 439              		.loc 1 181 5 is_stmt 1 view .LVU82
+ 440              		.loc 1 181 34 is_stmt 0 view .LVU83
+ 441 004a 2368     		ldr	r3, [r4]
+ 442              		.loc 1 181 8 view .LVU84
+ 443 004c 4BB9     		cbnz	r3, .L35
+ 182:Algorithm/Control_Dep/controller.c ****     {
+ 183:Algorithm/Control_Dep/controller.c ****         /* no section found */
+ 184:Algorithm/Control_Dep/controller.c ****         /* create pid attitude controller parameter section in storage */
+ 185:Algorithm/Control_Dep/controller.c ****         stor_err = Storage.create(Para_User, ATTITUDE_PID_PARAM_SEC_NAME, (uint8_t *)&pid_param, AT
+ 444              		.loc 1 185 9 is_stmt 1 view .LVU85
+ 445              		.loc 1 185 27 is_stmt 0 view .LVU86
+ 446 004e 244B     		ldr	r3, .L45+4
+ 447 0050 9C68     		ldr	r4, [r3, #8]
+ 448              		.loc 1 185 20 view .LVU87
+ 449 0052 6423     		movs	r3, #100
+ 450 0054 31AA     		add	r2, sp, #196
+ 451 0056 2449     		ldr	r1, .L45+12
+ 452 0058 0220     		movs	r0, #2
+ 453 005a A047     		blx	r4
+ 454              	.LVL39:
+ 186:Algorithm/Control_Dep/controller.c ****         if (stor_err != Storage_Error_None)
+ 455              		.loc 1 186 9 is_stmt 1 view .LVU88
+ 456              		.loc 1 186 12 is_stmt 0 view .LVU89
+ 457 005c 60B3     		cbz	r0, .L36
+ 187:Algorithm/Control_Dep/controller.c ****             return false;
+ 458              		.loc 1 187 20 view .LVU90
+ 459 005e 0020     		movs	r0, #0
+ 460              	.LVL40:
+ 461              		.loc 1 187 20 view .LVU91
+ 462 0060 34E0     		b	.L34
+ 463              	.LVL41:
+ 464              	.L35:
+ 188:Algorithm/Control_Dep/controller.c ****     }
+ 189:Algorithm/Control_Dep/controller.c ****     else
+ 190:Algorithm/Control_Dep/controller.c ****     {
+ 191:Algorithm/Control_Dep/controller.c ****         /* section found */
+ 192:Algorithm/Control_Dep/controller.c ****         stor_err = Storage.get(Para_User, ControllerMonitor.Att_SSO.item, (uint8_t *)&pid_param, AT
+ 465              		.loc 1 192 9 is_stmt 1 view .LVU92
+ 466              		.loc 1 192 27 is_stmt 0 view .LVU93
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 13
+
+
+ 467 0062 1F4B     		ldr	r3, .L45+4
+ 468 0064 1E69     		ldr	r6, [r3, #16]
+ 469              		.loc 1 192 20 view .LVU94
+ 470 0066 1F4C     		ldr	r4, .L45+8
+ 471 0068 6422     		movs	r2, #100
+ 472 006a 0E92     		str	r2, [sp, #56]
+ 473 006c 31AA     		add	r2, sp, #196
+ 474 006e 0D92     		str	r2, [sp, #52]
+ 475 0070 D4F80590 		ldr	r9, [r4, #5]	@ unaligned
+ 476 0074 D4F80980 		ldr	r8, [r4, #9]	@ unaligned
+ 477 0078 D4F80D70 		ldr	r7, [r4, #13]	@ unaligned
+ 478 007c 04F1110C 		add	ip, r4, #17
+ 479 0080 6D46     		mov	r5, sp
+ 480 0082 4134     		adds	r4, r4, #65
+ 481              	.L37:
+ 482 0084 AE46     		mov	lr, r5
+ 483 0086 DCF80000 		ldr	r0, [ip]	@ unaligned
+ 484 008a DCF80410 		ldr	r1, [ip, #4]	@ unaligned
+ 485 008e DCF80820 		ldr	r2, [ip, #8]	@ unaligned
+ 486 0092 DCF80C30 		ldr	r3, [ip, #12]	@ unaligned
+ 487 0096 AEE80F00 		stmia	lr!, {r0, r1, r2, r3}
+ 488 009a 0CF1100C 		add	ip, ip, #16
+ 489 009e 7546     		mov	r5, lr
+ 490 00a0 A445     		cmp	ip, r4
+ 491 00a2 EFD1     		bne	.L37
+ 492 00a4 DCF80000 		ldr	r0, [ip]	@ unaligned
+ 493 00a8 CEF80000 		str	r0, [lr]
+ 494 00ac 4946     		mov	r1, r9
+ 495 00ae 4246     		mov	r2, r8
+ 496 00b0 3B46     		mov	r3, r7
+ 497 00b2 0220     		movs	r0, #2
+ 498 00b4 B047     		blx	r6
+ 499              	.LVL42:
+ 193:Algorithm/Control_Dep/controller.c ****         if (stor_err != Storage_Error_None)
+ 500              		.loc 1 193 9 is_stmt 1 view .LVU95
+ 501              		.loc 1 193 12 is_stmt 0 view .LVU96
+ 502 00b6 70B9     		cbnz	r0, .L40
+ 503              	.L36:
+ 194:Algorithm/Control_Dep/controller.c ****             return false;
+ 195:Algorithm/Control_Dep/controller.c ****     }
+ 196:Algorithm/Control_Dep/controller.c **** 
+ 197:Algorithm/Control_Dep/controller.c ****     return Att_CasecadePID_Controller.set(pid_param);
+ 504              		.loc 1 197 5 is_stmt 1 view .LVU97
+ 505              		.loc 1 197 38 is_stmt 0 view .LVU98
+ 506 00b8 084B     		ldr	r3, .L45
+ 507 00ba 1C68     		ldr	r4, [r3]
+ 508              		.loc 1 197 12 view .LVU99
+ 509 00bc 5422     		movs	r2, #84
+ 510 00be 35A9     		add	r1, sp, #212
+ 511 00c0 6846     		mov	r0, sp
+ 512              	.LVL43:
+ 513              		.loc 1 197 12 view .LVU100
+ 514 00c2 FFF7FEFF 		bl	memcpy
+ 515              	.LVL44:
+ 516 00c6 31AB     		add	r3, sp, #196
+ 517 00c8 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 518 00ca A047     		blx	r4
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 14
+
+
+ 519              	.LVL45:
+ 520              	.L34:
+ 198:Algorithm/Control_Dep/controller.c **** }
+ 521              		.loc 1 198 1 view .LVU101
+ 522 00cc 4BB0     		add	sp, sp, #300
+ 523              	.LCFI15:
+ 524              		.cfi_def_cfa_offset 28
+ 525              		@ sp needed
+ 526 00ce BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 527              	.LVL46:
+ 528              	.L38:
+ 529              	.LCFI16:
+ 530              		.cfi_def_cfa_offset 0
+ 531              		.cfi_restore 4
+ 532              		.cfi_restore 5
+ 533              		.cfi_restore 6
+ 534              		.cfi_restore 7
+ 535              		.cfi_restore 8
+ 536              		.cfi_restore 9
+ 537              		.cfi_restore 14
+ 174:Algorithm/Control_Dep/controller.c **** 
+ 538              		.loc 1 174 16 view .LVU102
+ 539 00d2 0020     		movs	r0, #0
+ 540              		.loc 1 198 1 view .LVU103
+ 541 00d4 7047     		bx	lr
+ 542              	.LVL47:
+ 543              	.L40:
+ 544              	.LCFI17:
+ 545              		.cfi_def_cfa_offset 328
+ 546              		.cfi_offset 4, -28
+ 547              		.cfi_offset 5, -24
+ 548              		.cfi_offset 6, -20
+ 549              		.cfi_offset 7, -16
+ 550              		.cfi_offset 8, -12
+ 551              		.cfi_offset 9, -8
+ 552              		.cfi_offset 14, -4
+ 194:Algorithm/Control_Dep/controller.c ****             return false;
+ 553              		.loc 1 194 20 view .LVU104
+ 554 00d6 0020     		movs	r0, #0
+ 555              	.LVL48:
+ 194:Algorithm/Control_Dep/controller.c ****             return false;
+ 556              		.loc 1 194 20 view .LVU105
+ 557 00d8 F8E7     		b	.L34
+ 558              	.L46:
+ 559 00da 00BF     		.align	2
+ 560              	.L45:
+ 561 00dc 00000000 		.word	Att_CasecadePID_Controller
+ 562 00e0 00000000 		.word	Storage
+ 563 00e4 00000000 		.word	.LANCHOR0
+ 564 00e8 00000000 		.word	.LC0
+ 565              		.cfi_endproc
+ 566              	.LFE155:
+ 568              		.section	.text.Controller_Alt_Init,"ax",%progbits
+ 569              		.align	1
+ 570              		.syntax unified
+ 571              		.thumb
+ 572              		.thumb_func
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 15
+
+
+ 574              	Controller_Alt_Init:
+ 575              	.LVL49:
+ 576              	.LFB156:
+ 199:Algorithm/Control_Dep/controller.c **** 
+ 200:Algorithm/Control_Dep/controller.c **** static bool Controller_Alt_Init(ControlMode_List mode)
+ 201:Algorithm/Control_Dep/controller.c **** {
+ 577              		.loc 1 201 1 is_stmt 1 view -0
+ 578              		.cfi_startproc
+ 579              		@ args = 0, pretend = 0, frame = 0
+ 580              		@ frame_needed = 0, uses_anonymous_args = 0
+ 581              		@ link register save eliminated.
+ 202:Algorithm/Control_Dep/controller.c ****     return false;
+ 582              		.loc 1 202 5 view .LVU107
+ 203:Algorithm/Control_Dep/controller.c **** }
+ 583              		.loc 1 203 1 is_stmt 0 view .LVU108
+ 584 0000 0020     		movs	r0, #0
+ 585              	.LVL50:
+ 586              		.loc 1 203 1 view .LVU109
+ 587 0002 7047     		bx	lr
+ 588              		.cfi_endproc
+ 589              	.LFE156:
+ 591              		.section	.text.Controller_Att_Init,"ax",%progbits
+ 592              		.align	1
+ 593              		.syntax unified
+ 594              		.thumb
+ 595              		.thumb_func
+ 597              	Controller_Att_Init:
+ 598              	.LVL51:
+ 599              	.LFB150:
+  87:Algorithm/Control_Dep/controller.c ****     memset(&ControllerMonitor.Att_SSO, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+ 600              		.loc 1 87 1 is_stmt 1 view -0
+ 601              		.cfi_startproc
+ 602              		@ args = 0, pretend = 0, frame = 0
+ 603              		@ frame_needed = 0, uses_anonymous_args = 0
+  87:Algorithm/Control_Dep/controller.c ****     memset(&ControllerMonitor.Att_SSO, 0, sizeof(Storage_ItemSearchOut_TypeDef));
+ 604              		.loc 1 87 1 is_stmt 0 view .LVU111
+ 605 0000 10B5     		push	{r4, lr}
+ 606              	.LCFI18:
+ 607              		.cfi_def_cfa_offset 8
+ 608              		.cfi_offset 4, -8
+ 609              		.cfi_offset 14, -4
+ 610 0002 0446     		mov	r4, r0
+  88:Algorithm/Control_Dep/controller.c **** 
+ 611              		.loc 1 88 5 is_stmt 1 view .LVU112
+ 612 0004 4522     		movs	r2, #69
+ 613 0006 0021     		movs	r1, #0
+ 614 0008 0448     		ldr	r0, .L53
+ 615              	.LVL52:
+  88:Algorithm/Control_Dep/controller.c **** 
+ 616              		.loc 1 88 5 is_stmt 0 view .LVU113
+ 617 000a FFF7FEFF 		bl	memset
+ 618              	.LVL53:
+  90:Algorithm/Control_Dep/controller.c ****     {
+ 619              		.loc 1 90 5 is_stmt 1 view .LVU114
+ 620 000e 0CB1     		cbz	r4, .L52
+  93:Algorithm/Control_Dep/controller.c ****     }
+ 621              		.loc 1 93 25 is_stmt 0 view .LVU115
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 16
+
+
+ 622 0010 0020     		movs	r0, #0
+ 623              	.L49:
+  97:Algorithm/Control_Dep/controller.c **** 
+ 624              		.loc 1 97 1 view .LVU116
+ 625 0012 10BD     		pop	{r4, pc}
+ 626              	.L52:
+  92:Algorithm/Control_Dep/controller.c ****         default: return false;
+ 627              		.loc 1 92 24 is_stmt 1 view .LVU117
+  92:Algorithm/Control_Dep/controller.c ****         default: return false;
+ 628              		.loc 1 92 31 is_stmt 0 view .LVU118
+ 629 0014 FFF7FEFF 		bl	Controller_PID_AttControl_ParamLoad
+ 630              	.LVL54:
+ 631 0018 FBE7     		b	.L49
+ 632              	.L54:
+ 633 001a 00BF     		.align	2
+ 634              	.L53:
+ 635 001c 00000000 		.word	.LANCHOR0
+ 636              		.cfi_endproc
+ 637              	.LFE150:
+ 639              		.global	__aeabi_f2d
+ 640              		.section	.rodata.Controller_Show_PID_Param.str1.4,"aMS",%progbits,1
+ 641              		.align	2
+ 642              	.LC1:
+ 643 0000 09503A20 		.ascii	"\011P: %f\015\012\000"
+ 643      25660D0A 
+ 643      00
+ 644 0009 000000   		.align	2
+ 645              	.LC2:
+ 646 000c 09493A20 		.ascii	"\011I: %f\015\012\000"
+ 646      25660D0A 
+ 646      00
+ 647 0015 000000   		.align	2
+ 648              	.LC3:
+ 649 0018 09443A20 		.ascii	"\011D: %f\015\012\000"
+ 649      25660D0A 
+ 649      00
+ 650              		.section	.text.Controller_Show_PID_Param,"ax",%progbits
+ 651              		.align	1
+ 652              		.syntax unified
+ 653              		.thumb
+ 654              		.thumb_func
+ 656              	Controller_Show_PID_Param:
+ 657              	.LVL55:
+ 658              	.LFB157:
+ 204:Algorithm/Control_Dep/controller.c **** 
+ 205:Algorithm/Control_Dep/controller.c **** /****************************************************************** CLI section *******************
+ 206:Algorithm/Control_Dep/controller.c **** static void Controller_Show_PID_Param(Shell *obj, PID_Param_TypeDef param)
+ 207:Algorithm/Control_Dep/controller.c **** {
+ 659              		.loc 1 207 1 is_stmt 1 view -0
+ 660              		.cfi_startproc
+ 661              		@ args = 24, pretend = 16, frame = 0
+ 662              		@ frame_needed = 0, uses_anonymous_args = 0
+ 663              		.loc 1 207 1 is_stmt 0 view .LVU120
+ 664 0000 84B0     		sub	sp, sp, #16
+ 665              	.LCFI19:
+ 666              		.cfi_def_cfa_offset 16
+ 667 0002 10B5     		push	{r4, lr}
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 17
+
+
+ 668              	.LCFI20:
+ 669              		.cfi_def_cfa_offset 24
+ 670              		.cfi_offset 4, -24
+ 671              		.cfi_offset 14, -20
+ 672 0004 0DF10C0C 		add	ip, sp, #12
+ 673 0008 8CE80E00 		stm	ip, {r1, r2, r3}
+ 208:Algorithm/Control_Dep/controller.c ****     if (obj == NULL)
+ 674              		.loc 1 208 5 is_stmt 1 view .LVU121
+ 675              		.loc 1 208 8 is_stmt 0 view .LVU122
+ 676 000c D8B1     		cbz	r0, .L55
+ 677 000e 0446     		mov	r4, r0
+ 209:Algorithm/Control_Dep/controller.c ****         return;
+ 210:Algorithm/Control_Dep/controller.c **** 
+ 211:Algorithm/Control_Dep/controller.c ****     shellPrint(obj, "\tP: %f\r\n", param.gP);
+ 678              		.loc 1 211 5 is_stmt 1 view .LVU123
+ 679 0010 0398     		ldr	r0, [sp, #12]	@ float
+ 680              	.LVL56:
+ 681              		.loc 1 211 5 is_stmt 0 view .LVU124
+ 682 0012 FFF7FEFF 		bl	__aeabi_f2d
+ 683              	.LVL57:
+ 684 0016 0246     		mov	r2, r0
+ 685 0018 0B46     		mov	r3, r1
+ 686 001a 0D49     		ldr	r1, .L58
+ 687 001c 2046     		mov	r0, r4
+ 688 001e FFF7FEFF 		bl	shellPrint
+ 689              	.LVL58:
+ 212:Algorithm/Control_Dep/controller.c ****     shellPrint(obj, "\tI: %f\r\n", param.gI);
+ 690              		.loc 1 212 5 is_stmt 1 view .LVU125
+ 691 0022 0498     		ldr	r0, [sp, #16]	@ float
+ 692 0024 FFF7FEFF 		bl	__aeabi_f2d
+ 693              	.LVL59:
+ 694 0028 0246     		mov	r2, r0
+ 695 002a 0B46     		mov	r3, r1
+ 696 002c 0949     		ldr	r1, .L58+4
+ 697 002e 2046     		mov	r0, r4
+ 698 0030 FFF7FEFF 		bl	shellPrint
+ 699              	.LVL60:
+ 213:Algorithm/Control_Dep/controller.c ****     shellPrint(obj, "\tD: %f\r\n", param.gD);
+ 700              		.loc 1 213 5 view .LVU126
+ 701 0034 0798     		ldr	r0, [sp, #28]	@ float
+ 702 0036 FFF7FEFF 		bl	__aeabi_f2d
+ 703              	.LVL61:
+ 704 003a 0246     		mov	r2, r0
+ 705 003c 0B46     		mov	r3, r1
+ 706 003e 0649     		ldr	r1, .L58+8
+ 707 0040 2046     		mov	r0, r4
+ 708 0042 FFF7FEFF 		bl	shellPrint
+ 709              	.LVL62:
+ 710              	.L55:
+ 214:Algorithm/Control_Dep/controller.c **** }
+ 711              		.loc 1 214 1 is_stmt 0 view .LVU127
+ 712 0046 BDE81040 		pop	{r4, lr}
+ 713              	.LCFI21:
+ 714              		.cfi_restore 14
+ 715              		.cfi_restore 4
+ 716              		.cfi_def_cfa_offset 16
+ 717 004a 04B0     		add	sp, sp, #16
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 18
+
+
+ 718              	.LCFI22:
+ 719              		.cfi_def_cfa_offset 0
+ 720 004c 7047     		bx	lr
+ 721              	.L59:
+ 722 004e 00BF     		.align	2
+ 723              	.L58:
+ 724 0050 00000000 		.word	.LC1
+ 725 0054 0C000000 		.word	.LC2
+ 726 0058 18000000 		.word	.LC3
+ 727              		.cfi_endproc
+ 728              	.LFE157:
+ 730              		.section	.rodata.Controller_Show_AttPID_Param.str1.4,"aMS",%progbits,1
+ 731              		.align	2
+ 732              	.LC4:
+ 733 0000 5B202D2D 		.ascii	"[ ---- Pitch Parameter ---- ]\015\012\000"
+ 733      2D2D2050 
+ 733      69746368 
+ 733      20506172 
+ 733      616D6574 
+ 734              		.align	2
+ 735              	.LC5:
+ 736 0020 5B202D2D 		.ascii	"[ ---- Roll Parameter ---- ]\015\012\000"
+ 736      2D2D2052 
+ 736      6F6C6C20 
+ 736      50617261 
+ 736      6D657465 
+ 737 003f 00       		.align	2
+ 738              	.LC6:
+ 739 0040 5B202D2D 		.ascii	"[ ---- GyroX Parameter ---- ]\015\012\000"
+ 739      2D2D2047 
+ 739      79726F58 
+ 739      20506172 
+ 739      616D6574 
+ 740              		.align	2
+ 741              	.LC7:
+ 742 0060 5B202D2D 		.ascii	"[ ---- GyroY Parameter ---- ]\015\012\000"
+ 742      2D2D2047 
+ 742      79726F59 
+ 742      20506172 
+ 742      616D6574 
+ 743              		.align	2
+ 744              	.LC8:
+ 745 0080 5B202D2D 		.ascii	"[ ---- GyroZ Parameter ---- ]\015\012\000"
+ 745      2D2D2047 
+ 745      79726F5A 
+ 745      20506172 
+ 745      616D6574 
+ 746              		.section	.text.Controller_Show_AttPID_Param,"ax",%progbits
+ 747              		.align	1
+ 748              		.syntax unified
+ 749              		.thumb
+ 750              		.thumb_func
+ 752              	Controller_Show_AttPID_Param:
+ 753              	.LVL63:
+ 754              	.LFB158:
+ 215:Algorithm/Control_Dep/controller.c **** 
+ 216:Algorithm/Control_Dep/controller.c **** static void Controller_Show_AttPID_Param(Shell *obj, AttCaseCadePID_Param_TypeDef param)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 19
+
+
+ 217:Algorithm/Control_Dep/controller.c **** {
+ 755              		.loc 1 217 1 is_stmt 1 view -0
+ 756              		.cfi_startproc
+ 757              		@ args = 104, pretend = 16, frame = 0
+ 758              		@ frame_needed = 0, uses_anonymous_args = 0
+ 759              		.loc 1 217 1 is_stmt 0 view .LVU129
+ 760 0000 84B0     		sub	sp, sp, #16
+ 761              	.LCFI23:
+ 762              		.cfi_def_cfa_offset 16
+ 763 0002 10B5     		push	{r4, lr}
+ 764              	.LCFI24:
+ 765              		.cfi_def_cfa_offset 24
+ 766              		.cfi_offset 4, -24
+ 767              		.cfi_offset 14, -20
+ 768 0004 82B0     		sub	sp, sp, #8
+ 769              	.LCFI25:
+ 770              		.cfi_def_cfa_offset 32
+ 771 0006 05AC     		add	r4, sp, #20
+ 772 0008 84E80E00 		stm	r4, {r1, r2, r3}
+ 218:Algorithm/Control_Dep/controller.c ****     if (obj == NULL)
+ 773              		.loc 1 218 5 is_stmt 1 view .LVU130
+ 774              		.loc 1 218 8 is_stmt 0 view .LVU131
+ 775 000c 0028     		cmp	r0, #0
+ 776 000e 45D0     		beq	.L60
+ 777 0010 0446     		mov	r4, r0
+ 219:Algorithm/Control_Dep/controller.c ****         return;
+ 220:Algorithm/Control_Dep/controller.c **** 
+ 221:Algorithm/Control_Dep/controller.c ****     shellPrint(obj, "[ ---- Pitch Parameter ---- ]\r\n");
+ 778              		.loc 1 221 5 is_stmt 1 view .LVU132
+ 779 0012 2549     		ldr	r1, .L63
+ 780 0014 FFF7FEFF 		bl	shellPrint
+ 781              	.LVL64:
+ 222:Algorithm/Control_Dep/controller.c ****     Controller_Show_PID_Param(obj, param.Pitch_Para);
+ 782              		.loc 1 222 5 view .LVU133
+ 783 0018 08AB     		add	r3, sp, #32
+ 784 001a 93E80300 		ldm	r3, {r0, r1}
+ 785 001e 8DE80300 		stm	sp, {r0, r1}
+ 786 0022 05AB     		add	r3, sp, #20
+ 787 0024 0ECB     		ldm	r3, {r1, r2, r3}
+ 788 0026 2046     		mov	r0, r4
+ 789 0028 FFF7FEFF 		bl	Controller_Show_PID_Param
+ 790              	.LVL65:
+ 223:Algorithm/Control_Dep/controller.c **** 
+ 224:Algorithm/Control_Dep/controller.c ****     shellPrint(obj, "[ ---- Roll Parameter ---- ]\r\n");
+ 791              		.loc 1 224 5 view .LVU134
+ 792 002c 1F49     		ldr	r1, .L63+4
+ 793 002e 2046     		mov	r0, r4
+ 794 0030 FFF7FEFF 		bl	shellPrint
+ 795              	.LVL66:
+ 225:Algorithm/Control_Dep/controller.c ****     Controller_Show_PID_Param(obj, param.Roll_Para);
+ 796              		.loc 1 225 5 view .LVU135
+ 797 0034 0DAB     		add	r3, sp, #52
+ 798 0036 93E80300 		ldm	r3, {r0, r1}
+ 799 003a 8DE80300 		stm	sp, {r0, r1}
+ 800 003e 0AAB     		add	r3, sp, #40
+ 801 0040 0ECB     		ldm	r3, {r1, r2, r3}
+ 802 0042 2046     		mov	r0, r4
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 20
+
+
+ 803 0044 FFF7FEFF 		bl	Controller_Show_PID_Param
+ 804              	.LVL67:
+ 226:Algorithm/Control_Dep/controller.c **** 
+ 227:Algorithm/Control_Dep/controller.c ****     shellPrint(obj, "[ ---- GyroX Parameter ---- ]\r\n");
+ 805              		.loc 1 227 5 view .LVU136
+ 806 0048 1949     		ldr	r1, .L63+8
+ 807 004a 2046     		mov	r0, r4
+ 808 004c FFF7FEFF 		bl	shellPrint
+ 809              	.LVL68:
+ 228:Algorithm/Control_Dep/controller.c ****     Controller_Show_PID_Param(obj, param.GyroX_Para);
+ 810              		.loc 1 228 5 view .LVU137
+ 811 0050 12AB     		add	r3, sp, #72
+ 812 0052 93E80300 		ldm	r3, {r0, r1}
+ 813 0056 8DE80300 		stm	sp, {r0, r1}
+ 814 005a 0FAB     		add	r3, sp, #60
+ 815 005c 0ECB     		ldm	r3, {r1, r2, r3}
+ 816 005e 2046     		mov	r0, r4
+ 817 0060 FFF7FEFF 		bl	Controller_Show_PID_Param
+ 818              	.LVL69:
+ 229:Algorithm/Control_Dep/controller.c **** 
+ 230:Algorithm/Control_Dep/controller.c ****     shellPrint(obj, "[ ---- GyroY Parameter ---- ]\r\n");
+ 819              		.loc 1 230 5 view .LVU138
+ 820 0064 1349     		ldr	r1, .L63+12
+ 821 0066 2046     		mov	r0, r4
+ 822 0068 FFF7FEFF 		bl	shellPrint
+ 823              	.LVL70:
+ 231:Algorithm/Control_Dep/controller.c ****     Controller_Show_PID_Param(obj, param.GyroY_Para);
+ 824              		.loc 1 231 5 view .LVU139
+ 825 006c 17AB     		add	r3, sp, #92
+ 826 006e 93E80300 		ldm	r3, {r0, r1}
+ 827 0072 8DE80300 		stm	sp, {r0, r1}
+ 828 0076 14AB     		add	r3, sp, #80
+ 829 0078 0ECB     		ldm	r3, {r1, r2, r3}
+ 830 007a 2046     		mov	r0, r4
+ 831 007c FFF7FEFF 		bl	Controller_Show_PID_Param
+ 832              	.LVL71:
+ 232:Algorithm/Control_Dep/controller.c **** 
+ 233:Algorithm/Control_Dep/controller.c ****     shellPrint(obj, "[ ---- GyroZ Parameter ---- ]\r\n");
+ 833              		.loc 1 233 5 view .LVU140
+ 834 0080 0D49     		ldr	r1, .L63+16
+ 835 0082 2046     		mov	r0, r4
+ 836 0084 FFF7FEFF 		bl	shellPrint
+ 837              	.LVL72:
+ 234:Algorithm/Control_Dep/controller.c ****     Controller_Show_PID_Param(obj, param.GyroZ_Para);
+ 838              		.loc 1 234 5 view .LVU141
+ 839 0088 1CAB     		add	r3, sp, #112
+ 840 008a 93E80300 		ldm	r3, {r0, r1}
+ 841 008e 8DE80300 		stm	sp, {r0, r1}
+ 842 0092 19AB     		add	r3, sp, #100
+ 843 0094 0ECB     		ldm	r3, {r1, r2, r3}
+ 844 0096 2046     		mov	r0, r4
+ 845 0098 FFF7FEFF 		bl	Controller_Show_PID_Param
+ 846              	.LVL73:
+ 847              	.L60:
+ 235:Algorithm/Control_Dep/controller.c **** }
+ 848              		.loc 1 235 1 is_stmt 0 view .LVU142
+ 849 009c 02B0     		add	sp, sp, #8
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 21
+
+
+ 850              	.LCFI26:
+ 851              		.cfi_def_cfa_offset 24
+ 852              		@ sp needed
+ 853 009e BDE81040 		pop	{r4, lr}
+ 854              	.LCFI27:
+ 855              		.cfi_restore 14
+ 856              		.cfi_restore 4
+ 857              		.cfi_def_cfa_offset 16
+ 858 00a2 04B0     		add	sp, sp, #16
+ 859              	.LCFI28:
+ 860              		.cfi_def_cfa_offset 0
+ 861 00a4 7047     		bx	lr
+ 862              	.L64:
+ 863 00a6 00BF     		.align	2
+ 864              	.L63:
+ 865 00a8 00000000 		.word	.LC4
+ 866 00ac 20000000 		.word	.LC5
+ 867 00b0 40000000 		.word	.LC6
+ 868 00b4 60000000 		.word	.LC7
+ 869 00b8 80000000 		.word	.LC8
+ 870              		.cfi_endproc
+ 871              	.LFE158:
+ 873              		.section	.rodata.Controller_Show_InusePID.str1.4,"aMS",%progbits,1
+ 874              		.align	2
+ 875              	.LC9:
+ 876 0000 5B202D2D 		.ascii	"[ ---- inuse parameter ---- ]\015\012\000"
+ 876      2D2D2069 
+ 876      6E757365 
+ 876      20706172 
+ 876      616D6574 
+ 877              		.section	.text.Controller_Show_InusePID,"ax",%progbits
+ 878              		.align	1
+ 879              		.syntax unified
+ 880              		.thumb
+ 881              		.thumb_func
+ 883              	Controller_Show_InusePID:
+ 884              	.LFB159:
+ 236:Algorithm/Control_Dep/controller.c **** 
+ 237:Algorithm/Control_Dep/controller.c **** static void Controller_Show_InusePID(void)
+ 238:Algorithm/Control_Dep/controller.c **** {
+ 885              		.loc 1 238 1 is_stmt 1 view -0
+ 886              		.cfi_startproc
+ 887              		@ args = 0, pretend = 0, frame = 208
+ 888              		@ frame_needed = 0, uses_anonymous_args = 0
+ 889 0000 70B5     		push	{r4, r5, r6, lr}
+ 890              	.LCFI29:
+ 891              		.cfi_def_cfa_offset 16
+ 892              		.cfi_offset 4, -16
+ 893              		.cfi_offset 5, -12
+ 894              		.cfi_offset 6, -8
+ 895              		.cfi_offset 14, -4
+ 896 0002 CAB0     		sub	sp, sp, #296
+ 897              	.LCFI30:
+ 898              		.cfi_def_cfa_offset 312
+ 239:Algorithm/Control_Dep/controller.c ****     AttCaseCadePID_Param_TypeDef inuse;
+ 899              		.loc 1 239 5 view .LVU144
+ 240:Algorithm/Control_Dep/controller.c ****     Shell *shell_obj = Shell_GetInstence();
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 22
+
+
+ 900              		.loc 1 240 5 view .LVU145
+ 901              		.loc 1 240 24 is_stmt 0 view .LVU146
+ 902 0004 FFF7FEFF 		bl	Shell_GetInstence
+ 903              	.LVL74:
+ 241:Algorithm/Control_Dep/controller.c **** 
+ 242:Algorithm/Control_Dep/controller.c ****     if (shell_obj == NULL)
+ 904              		.loc 1 242 5 is_stmt 1 view .LVU147
+ 905              		.loc 1 242 8 is_stmt 0 view .LVU148
+ 906 0008 F0B1     		cbz	r0, .L65
+ 907 000a 0546     		mov	r5, r0
+ 243:Algorithm/Control_Dep/controller.c ****         return;
+ 244:Algorithm/Control_Dep/controller.c **** 
+ 245:Algorithm/Control_Dep/controller.c ****     /* display inuse parameter */
+ 246:Algorithm/Control_Dep/controller.c ****     memset(&inuse, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+ 908              		.loc 1 246 5 is_stmt 1 view .LVU149
+ 909 000c 31AC     		add	r4, sp, #196
+ 910 000e 6426     		movs	r6, #100
+ 911 0010 3246     		mov	r2, r6
+ 912 0012 0021     		movs	r1, #0
+ 913 0014 2046     		mov	r0, r4
+ 914              	.LVL75:
+ 915              		.loc 1 246 5 is_stmt 0 view .LVU150
+ 916 0016 FFF7FEFF 		bl	memset
+ 917              	.LVL76:
+ 247:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, "[ ---- inuse parameter ---- ]\r\n");
+ 918              		.loc 1 247 5 is_stmt 1 view .LVU151
+ 919 001a 0C49     		ldr	r1, .L69
+ 920 001c 2846     		mov	r0, r5
+ 921 001e FFF7FEFF 		bl	shellPrint
+ 922              	.LVL77:
+ 248:Algorithm/Control_Dep/controller.c ****     inuse = Att_CasecadePID_Controller.cur_param();
+ 923              		.loc 1 248 5 view .LVU152
+ 924              		.loc 1 248 39 is_stmt 0 view .LVU153
+ 925 0022 0B4B     		ldr	r3, .L69+4
+ 926 0024 5B68     		ldr	r3, [r3, #4]
+ 927              		.loc 1 248 13 view .LVU154
+ 928 0026 16A8     		add	r0, sp, #88
+ 929 0028 9847     		blx	r3
+ 930              	.LVL78:
+ 931 002a 3246     		mov	r2, r6
+ 932 002c 16A9     		add	r1, sp, #88
+ 933 002e 2046     		mov	r0, r4
+ 934 0030 FFF7FEFF 		bl	memcpy
+ 935              	.LVL79:
+ 249:Algorithm/Control_Dep/controller.c ****     Controller_Show_AttPID_Param(shell_obj, inuse);
+ 936              		.loc 1 249 5 is_stmt 1 view .LVU155
+ 937 0034 5822     		movs	r2, #88
+ 938 0036 34A9     		add	r1, sp, #208
+ 939 0038 6846     		mov	r0, sp
+ 940 003a FFF7FEFF 		bl	memcpy
+ 941              	.LVL80:
+ 942 003e 94E80E00 		ldm	r4, {r1, r2, r3}
+ 943 0042 2846     		mov	r0, r5
+ 944 0044 FFF7FEFF 		bl	Controller_Show_AttPID_Param
+ 945              	.LVL81:
+ 946              	.L65:
+ 250:Algorithm/Control_Dep/controller.c **** }
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 23
+
+
+ 947              		.loc 1 250 1 is_stmt 0 view .LVU156
+ 948 0048 4AB0     		add	sp, sp, #296
+ 949              	.LCFI31:
+ 950              		.cfi_def_cfa_offset 16
+ 951              		@ sp needed
+ 952 004a 70BD     		pop	{r4, r5, r6, pc}
+ 953              	.L70:
+ 954              		.align	2
+ 955              	.L69:
+ 956 004c 00000000 		.word	.LC9
+ 957 0050 00000000 		.word	Att_CasecadePID_Controller
+ 958              		.cfi_endproc
+ 959              	.LFE159:
+ 961              		.global	__aeabi_d2f
+ 962              		.section	.rodata.Controller_ConvertToFloat.str1.4,"aMS",%progbits,1
+ 963              		.align	2
+ 964              	.LC10:
+ 965 0000 30313233 		.ascii	"0123456789.\000"
+ 965      34353637 
+ 965      38392E00 
+ 966              		.section	.text.Controller_ConvertToFloat,"ax",%progbits
+ 967              		.align	1
+ 968              		.syntax unified
+ 969              		.thumb
+ 970              		.thumb_func
+ 972              	Controller_ConvertToFloat:
+ 973              	.LVL82:
+ 974              	.LFB161:
+ 251:Algorithm/Control_Dep/controller.c **** SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_
+ 252:Algorithm/Control_Dep/controller.c **** 
+ 253:Algorithm/Control_Dep/controller.c **** static void Controller_Show_StoredPID(void)
+ 254:Algorithm/Control_Dep/controller.c **** {
+ 255:Algorithm/Control_Dep/controller.c ****     AttCaseCadePID_Param_TypeDef stored;
+ 256:Algorithm/Control_Dep/controller.c ****     Shell *shell_obj = Shell_GetInstence();
+ 257:Algorithm/Control_Dep/controller.c **** 
+ 258:Algorithm/Control_Dep/controller.c ****     if (shell_obj == NULL)
+ 259:Algorithm/Control_Dep/controller.c ****         return;
+ 260:Algorithm/Control_Dep/controller.c **** 
+ 261:Algorithm/Control_Dep/controller.c ****     memset(&stored, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+ 262:Algorithm/Control_Dep/controller.c **** 
+ 263:Algorithm/Control_Dep/controller.c ****     /* display storaged paramter */
+ 264:Algorithm/Control_Dep/controller.c ****     memset(&stored, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+ 265:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, "[ ---- storaged parameter ---- ]\r\n");
+ 266:Algorithm/Control_Dep/controller.c ****     if (Storage.get(Para_User, ControllerMonitor.Att_SSO.item, (uint8_t *)&stored, sizeof(AttCaseCa
+ 267:Algorithm/Control_Dep/controller.c ****     {
+ 268:Algorithm/Control_Dep/controller.c ****         shellPrint(shell_obj, "[ ---- read storage error ---- ]\r\n");
+ 269:Algorithm/Control_Dep/controller.c ****         return;
+ 270:Algorithm/Control_Dep/controller.c ****     }
+ 271:Algorithm/Control_Dep/controller.c ****     Controller_Show_AttPID_Param(shell_obj, stored);
+ 272:Algorithm/Control_Dep/controller.c **** }
+ 273:Algorithm/Control_Dep/controller.c **** SHELL_EXPORT_CMD(SHELL_CMD_PERMISSION(0) | SHELL_CMD_TYPE(SHELL_TYPE_CMD_FUNC) | SHELL_CMD_DISABLE_
+ 274:Algorithm/Control_Dep/controller.c **** 
+ 275:Algorithm/Control_Dep/controller.c **** static float Controller_ConvertToFloat(const char* in)
+ 276:Algorithm/Control_Dep/controller.c **** {
+ 975              		.loc 1 276 1 is_stmt 1 view -0
+ 976              		.cfi_startproc
+ 977              		@ args = 0, pretend = 0, frame = 16
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 24
+
+
+ 978              		@ frame_needed = 0, uses_anonymous_args = 0
+ 979              		.loc 1 276 1 is_stmt 0 view .LVU158
+ 980 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 981              	.LCFI32:
+ 982              		.cfi_def_cfa_offset 28
+ 983              		.cfi_offset 4, -28
+ 984              		.cfi_offset 5, -24
+ 985              		.cfi_offset 6, -20
+ 986              		.cfi_offset 7, -16
+ 987              		.cfi_offset 8, -12
+ 988              		.cfi_offset 9, -8
+ 989              		.cfi_offset 14, -4
+ 990 0004 85B0     		sub	sp, sp, #20
+ 991              	.LCFI33:
+ 992              		.cfi_def_cfa_offset 48
+ 993 0006 0446     		mov	r4, r0
+ 277:Algorithm/Control_Dep/controller.c ****     uint8_t point_num = 0;
+ 994              		.loc 1 277 5 is_stmt 1 view .LVU159
+ 995              	.LVL83:
+ 278:Algorithm/Control_Dep/controller.c ****     bool match = false;
+ 996              		.loc 1 278 5 view .LVU160
+ 279:Algorithm/Control_Dep/controller.c ****     const char character[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '\0'};
+ 997              		.loc 1 279 5 view .LVU161
+ 998              		.loc 1 279 16 is_stmt 0 view .LVU162
+ 999 0008 404B     		ldr	r3, .L97
+ 1000 000a 93E80700 		ldm	r3, {r0, r1, r2}
+ 1001              	.LVL84:
+ 1002              		.loc 1 279 16 view .LVU163
+ 1003 000e 04AB     		add	r3, sp, #16
+ 1004 0010 03E90700 		stmdb	r3, {r0, r1, r2}
+ 280:Algorithm/Control_Dep/controller.c **** 
+ 281:Algorithm/Control_Dep/controller.c ****     if ((in == NULL) || (strlen(in) >= 7))
+ 1005              		.loc 1 281 5 is_stmt 1 view .LVU164
+ 1006              		.loc 1 281 8 is_stmt 0 view .LVU165
+ 1007 0014 002C     		cmp	r4, #0
+ 1008 0016 65D0     		beq	.L80
+ 1009 0018 2746     		mov	r7, r4
+ 1010              		.loc 1 281 26 discriminator 1 view .LVU166
+ 1011 001a 2046     		mov	r0, r4
+ 1012 001c FFF7FEFF 		bl	strlen
+ 1013              	.LVL85:
+ 1014 0020 8046     		mov	r8, r0
+ 1015              		.loc 1 281 22 discriminator 1 view .LVU167
+ 1016 0022 0628     		cmp	r0, #6
+ 1017 0024 61D8     		bhi	.L81
+ 282:Algorithm/Control_Dep/controller.c ****         return 0.0f;
+ 283:Algorithm/Control_Dep/controller.c **** 
+ 284:Algorithm/Control_Dep/controller.c ****     if ((in[0] != 'P') && (in[0] != 'p') && (in[0] != 'I') && (in[0] != 'i') && (in[0] != 'D') && (
+ 1018              		.loc 1 284 5 is_stmt 1 view .LVU168
+ 1019              		.loc 1 284 12 is_stmt 0 view .LVU169
+ 1020 0026 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 1021              		.loc 1 284 8 view .LVU170
+ 1022 0028 502B     		cmp	r3, #80
+ 1023 002a 3DD0     		beq	.L82
+ 1024              		.loc 1 284 24 discriminator 1 view .LVU171
+ 1025 002c 702B     		cmp	r3, #112
+ 1026 002e 3FD0     		beq	.L83
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 25
+
+
+ 1027              		.loc 1 284 42 discriminator 2 view .LVU172
+ 1028 0030 492B     		cmp	r3, #73
+ 1029 0032 41D0     		beq	.L84
+ 1030              		.loc 1 284 60 discriminator 3 view .LVU173
+ 1031 0034 692B     		cmp	r3, #105
+ 1032 0036 43D0     		beq	.L85
+ 1033              		.loc 1 284 78 discriminator 4 view .LVU174
+ 1034 0038 442B     		cmp	r3, #68
+ 1035 003a 45D0     		beq	.L86
+ 1036              		.loc 1 284 96 discriminator 5 view .LVU175
+ 1037 003c 642B     		cmp	r3, #100
+ 1038 003e 59D1     		bne	.L87
+ 1039 0040 0126     		movs	r6, #1
+ 1040 0042 4FF00009 		mov	r9, #0
+ 1041 0046 0EE0     		b	.L78
+ 1042              	.LVL86:
+ 1043              	.L95:
+ 1044              	.LBB2:
+ 285:Algorithm/Control_Dep/controller.c ****         return 0.0f;
+ 286:Algorithm/Control_Dep/controller.c **** 
+ 287:Algorithm/Control_Dep/controller.c ****     for (uint8_t i = 1; i < strlen(in); i ++)
+ 288:Algorithm/Control_Dep/controller.c ****     {
+ 289:Algorithm/Control_Dep/controller.c ****         /* check start and end */
+ 290:Algorithm/Control_Dep/controller.c ****         if ((in[1] == '.') || (in[strlen(in) - 1] == '.'))
+ 291:Algorithm/Control_Dep/controller.c ****             return 0.0f;
+ 292:Algorithm/Control_Dep/controller.c ****     
+ 293:Algorithm/Control_Dep/controller.c ****         /* check '.' num */
+ 294:Algorithm/Control_Dep/controller.c ****         if (in[i] == '.')
+ 295:Algorithm/Control_Dep/controller.c ****         {
+ 296:Algorithm/Control_Dep/controller.c ****             point_num ++;
+ 1045              		.loc 1 296 13 is_stmt 1 view .LVU176
+ 1046              		.loc 1 296 23 is_stmt 0 view .LVU177
+ 1047 0048 09F10109 		add	r9, r9, #1
+ 1048              	.LVL87:
+ 1049              		.loc 1 296 23 view .LVU178
+ 1050 004c 5FFA89F9 		uxtb	r9, r9
+ 1051              	.LVL88:
+ 297:Algorithm/Control_Dep/controller.c ****             if (point_num > 1)
+ 1052              		.loc 1 297 13 is_stmt 1 view .LVU179
+ 1053              		.loc 1 297 16 is_stmt 0 view .LVU180
+ 1054 0050 B9F1010F 		cmp	r9, #1
+ 1055 0054 16D9     		bls	.L74
+ 298:Algorithm/Control_Dep/controller.c ****                 return 0.0f;
+ 1056              		.loc 1 298 24 view .LVU181
+ 1057 0056 9FED2E0A 		vldr.32	s0, .L97+4
+ 1058 005a 48E0     		b	.L71
+ 1059              	.LVL89:
+ 1060              	.L96:
+ 299:Algorithm/Control_Dep/controller.c ****         }
+ 300:Algorithm/Control_Dep/controller.c **** 
+ 301:Algorithm/Control_Dep/controller.c ****         /* check other character */
+ 302:Algorithm/Control_Dep/controller.c ****         match = false;
+ 1061              		.loc 1 302 15 view .LVU182
+ 1062 005c 0023     		movs	r3, #0
+ 1063              	.L76:
+ 1064              	.LVL90:
+ 303:Algorithm/Control_Dep/controller.c ****         for (uint8_t j = 0; j < strlen(character); j ++)
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 26
+
+
+ 304:Algorithm/Control_Dep/controller.c ****         {
+ 305:Algorithm/Control_Dep/controller.c ****             if (in[i] == character[j])
+ 306:Algorithm/Control_Dep/controller.c ****             {
+ 307:Algorithm/Control_Dep/controller.c ****                 match = true;
+ 308:Algorithm/Control_Dep/controller.c ****                 break;
+ 309:Algorithm/Control_Dep/controller.c ****             }
+ 310:Algorithm/Control_Dep/controller.c ****         }
+ 311:Algorithm/Control_Dep/controller.c **** 
+ 312:Algorithm/Control_Dep/controller.c ****         if (!match)
+ 1065              		.loc 1 312 9 is_stmt 1 view .LVU183
+ 1066              		.loc 1 312 12 is_stmt 0 view .LVU184
+ 1067 005e 002B     		cmp	r3, #0
+ 1068 0060 51D0     		beq	.L92
+ 287:Algorithm/Control_Dep/controller.c ****     {
+ 1069              		.loc 1 287 41 is_stmt 1 discriminator 2 view .LVU185
+ 287:Algorithm/Control_Dep/controller.c ****     {
+ 1070              		.loc 1 287 43 is_stmt 0 discriminator 2 view .LVU186
+ 1071 0062 0136     		adds	r6, r6, #1
+ 1072              	.LVL91:
+ 287:Algorithm/Control_Dep/controller.c ****     {
+ 1073              		.loc 1 287 43 discriminator 2 view .LVU187
+ 1074 0064 F6B2     		uxtb	r6, r6
+ 1075              	.LVL92:
+ 1076              	.L78:
+ 287:Algorithm/Control_Dep/controller.c ****     {
+ 1077              		.loc 1 287 25 is_stmt 1 discriminator 1 view .LVU188
+ 287:Algorithm/Control_Dep/controller.c ****     {
+ 1078              		.loc 1 287 27 is_stmt 0 discriminator 1 view .LVU189
+ 1079 0066 3246     		mov	r2, r6
+ 287:Algorithm/Control_Dep/controller.c ****     {
+ 1080              		.loc 1 287 5 discriminator 1 view .LVU190
+ 1081 0068 B045     		cmp	r8, r6
+ 1082 006a 31D9     		bls	.L94
+ 290:Algorithm/Control_Dep/controller.c ****             return 0.0f;
+ 1083              		.loc 1 290 9 is_stmt 1 view .LVU191
+ 290:Algorithm/Control_Dep/controller.c ****             return 0.0f;
+ 1084              		.loc 1 290 16 is_stmt 0 view .LVU192
+ 1085 006c 7B78     		ldrb	r3, [r7, #1]	@ zero_extendqisi2
+ 290:Algorithm/Control_Dep/controller.c ****             return 0.0f;
+ 1086              		.loc 1 290 12 view .LVU193
+ 1087 006e 2E2B     		cmp	r3, #46
+ 1088 0070 43D0     		beq	.L88
+ 290:Algorithm/Control_Dep/controller.c ****             return 0.0f;
+ 1089              		.loc 1 290 34 discriminator 1 view .LVU194
+ 1090 0072 07EB0803 		add	r3, r7, r8
+ 1091 0076 13F8013C 		ldrb	r3, [r3, #-1]	@ zero_extendqisi2
+ 290:Algorithm/Control_Dep/controller.c ****             return 0.0f;
+ 1092              		.loc 1 290 28 discriminator 1 view .LVU195
+ 1093 007a 2E2B     		cmp	r3, #46
+ 1094 007c 40D0     		beq	.L89
+ 294:Algorithm/Control_Dep/controller.c ****         {
+ 1095              		.loc 1 294 9 is_stmt 1 view .LVU196
+ 294:Algorithm/Control_Dep/controller.c ****         {
+ 1096              		.loc 1 294 15 is_stmt 0 view .LVU197
+ 1097 007e BD5C     		ldrb	r5, [r7, r2]	@ zero_extendqisi2
+ 294:Algorithm/Control_Dep/controller.c ****         {
+ 1098              		.loc 1 294 12 view .LVU198
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 27
+
+
+ 1099 0080 2E2D     		cmp	r5, #46
+ 1100 0082 E1D0     		beq	.L95
+ 1101              	.L74:
+ 302:Algorithm/Control_Dep/controller.c ****         for (uint8_t j = 0; j < strlen(character); j ++)
+ 1102              		.loc 1 302 9 is_stmt 1 view .LVU199
+ 1103              	.LVL93:
+ 303:Algorithm/Control_Dep/controller.c ****         {
+ 1104              		.loc 1 303 9 view .LVU200
+ 1105              	.LBB3:
+ 303:Algorithm/Control_Dep/controller.c ****         {
+ 1106              		.loc 1 303 14 view .LVU201
+ 303:Algorithm/Control_Dep/controller.c ****         {
+ 1107              		.loc 1 303 22 is_stmt 0 view .LVU202
+ 1108 0084 0024     		movs	r4, #0
+ 1109              	.LVL94:
+ 1110              	.L75:
+ 303:Algorithm/Control_Dep/controller.c ****         {
+ 1111              		.loc 1 303 29 is_stmt 1 discriminator 1 view .LVU203
+ 303:Algorithm/Control_Dep/controller.c ****         {
+ 1112              		.loc 1 303 33 is_stmt 0 discriminator 1 view .LVU204
+ 1113 0086 01A8     		add	r0, sp, #4
+ 1114 0088 FFF7FEFF 		bl	strlen
+ 1115              	.LVL95:
+ 303:Algorithm/Control_Dep/controller.c ****         {
+ 1116              		.loc 1 303 9 discriminator 1 view .LVU205
+ 1117 008c 8442     		cmp	r4, r0
+ 1118 008e E5D2     		bcs	.L96
+ 305:Algorithm/Control_Dep/controller.c ****             {
+ 1119              		.loc 1 305 13 is_stmt 1 view .LVU206
+ 305:Algorithm/Control_Dep/controller.c ****             {
+ 1120              		.loc 1 305 35 is_stmt 0 view .LVU207
+ 1121 0090 04F11003 		add	r3, r4, #16
+ 1122 0094 6B44     		add	r3, sp, r3
+ 1123 0096 13F80C3C 		ldrb	r3, [r3, #-12]	@ zero_extendqisi2
+ 305:Algorithm/Control_Dep/controller.c ****             {
+ 1124              		.loc 1 305 16 view .LVU208
+ 1125 009a 9D42     		cmp	r5, r3
+ 1126 009c 02D0     		beq	.L91
+ 303:Algorithm/Control_Dep/controller.c ****         {
+ 1127              		.loc 1 303 52 is_stmt 1 discriminator 2 view .LVU209
+ 303:Algorithm/Control_Dep/controller.c ****         {
+ 1128              		.loc 1 303 54 is_stmt 0 discriminator 2 view .LVU210
+ 1129 009e 0134     		adds	r4, r4, #1
+ 1130              	.LVL96:
+ 303:Algorithm/Control_Dep/controller.c ****         {
+ 1131              		.loc 1 303 54 discriminator 2 view .LVU211
+ 1132 00a0 E4B2     		uxtb	r4, r4
+ 1133              	.LVL97:
+ 303:Algorithm/Control_Dep/controller.c ****         {
+ 1134              		.loc 1 303 54 discriminator 2 view .LVU212
+ 1135 00a2 F0E7     		b	.L75
+ 1136              	.L91:
+ 307:Algorithm/Control_Dep/controller.c ****                 break;
+ 1137              		.loc 1 307 23 view .LVU213
+ 1138 00a4 0123     		movs	r3, #1
+ 1139 00a6 DAE7     		b	.L76
+ 1140              	.LVL98:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 28
+
+
+ 1141              	.L82:
+ 307:Algorithm/Control_Dep/controller.c ****                 break;
+ 1142              		.loc 1 307 23 view .LVU214
+ 1143              	.LBE3:
+ 1144              	.LBE2:
+ 1145 00a8 0126     		movs	r6, #1
+ 1146 00aa 4FF00009 		mov	r9, #0
+ 1147 00ae DAE7     		b	.L78
+ 1148              	.L83:
+ 1149 00b0 0126     		movs	r6, #1
+ 1150 00b2 4FF00009 		mov	r9, #0
+ 1151 00b6 D6E7     		b	.L78
+ 1152              	.L84:
+ 1153 00b8 0126     		movs	r6, #1
+ 1154 00ba 4FF00009 		mov	r9, #0
+ 1155 00be D2E7     		b	.L78
+ 1156              	.L85:
+ 1157 00c0 0126     		movs	r6, #1
+ 1158 00c2 4FF00009 		mov	r9, #0
+ 1159 00c6 CEE7     		b	.L78
+ 1160              	.L86:
+ 1161 00c8 0126     		movs	r6, #1
+ 1162 00ca 4FF00009 		mov	r9, #0
+ 1163 00ce CAE7     		b	.L78
+ 1164              	.LVL99:
+ 1165              	.L94:
+ 313:Algorithm/Control_Dep/controller.c ****             return 0.0f;
+ 314:Algorithm/Control_Dep/controller.c ****     }
+ 315:Algorithm/Control_Dep/controller.c **** 
+ 316:Algorithm/Control_Dep/controller.c ****     return atof(&in[1]);
+ 1166              		.loc 1 316 5 is_stmt 1 view .LVU215
+ 1167              		.loc 1 316 12 is_stmt 0 view .LVU216
+ 1168 00d0 781C     		adds	r0, r7, #1
+ 1169 00d2 FFF7FEFF 		bl	atof
+ 1170              	.LVL100:
+ 1171 00d6 51EC100B 		vmov	r0, r1, d0
+ 1172 00da FFF7FEFF 		bl	__aeabi_d2f
+ 1173              	.LVL101:
+ 1174 00de 00EE100A 		vmov	s0, r0
+ 1175 00e2 04E0     		b	.L71
+ 1176              	.LVL102:
+ 1177              	.L80:
+ 282:Algorithm/Control_Dep/controller.c **** 
+ 1178              		.loc 1 282 16 view .LVU217
+ 1179 00e4 9FED0A0A 		vldr.32	s0, .L97+4
+ 1180 00e8 01E0     		b	.L71
+ 1181              	.L81:
+ 282:Algorithm/Control_Dep/controller.c **** 
+ 1182              		.loc 1 282 16 view .LVU218
+ 1183 00ea 9FED090A 		vldr.32	s0, .L97+4
+ 1184              	.LVL103:
+ 1185              	.L71:
+ 317:Algorithm/Control_Dep/controller.c **** }
+ 1186              		.loc 1 317 1 view .LVU219
+ 1187 00ee 05B0     		add	sp, sp, #20
+ 1188              	.LCFI34:
+ 1189              		.cfi_remember_state
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 29
+
+
+ 1190              		.cfi_def_cfa_offset 28
+ 1191              		@ sp needed
+ 1192 00f0 BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 1193              	.LVL104:
+ 1194              	.L87:
+ 1195              	.LCFI35:
+ 1196              		.cfi_restore_state
+ 285:Algorithm/Control_Dep/controller.c **** 
+ 1197              		.loc 1 285 16 view .LVU220
+ 1198 00f4 9FED060A 		vldr.32	s0, .L97+4
+ 1199 00f8 F9E7     		b	.L71
+ 1200              	.LVL105:
+ 1201              	.L88:
+ 1202              	.LBB4:
+ 291:Algorithm/Control_Dep/controller.c ****     
+ 1203              		.loc 1 291 20 view .LVU221
+ 1204 00fa 9FED050A 		vldr.32	s0, .L97+4
+ 1205 00fe F6E7     		b	.L71
+ 1206              	.L89:
+ 1207 0100 9FED030A 		vldr.32	s0, .L97+4
+ 1208 0104 F3E7     		b	.L71
+ 1209              	.LVL106:
+ 1210              	.L92:
+ 313:Algorithm/Control_Dep/controller.c ****     }
+ 1211              		.loc 1 313 20 view .LVU222
+ 1212 0106 9FED020A 		vldr.32	s0, .L97+4
+ 1213 010a F0E7     		b	.L71
+ 1214              	.L98:
+ 1215              		.align	2
+ 1216              	.L97:
+ 1217 010c 00000000 		.word	.LC10
+ 1218 0110 00000000 		.word	0
+ 1219              	.LBE4:
+ 1220              		.cfi_endproc
+ 1221              	.LFE161:
+ 1223              		.section	.rodata.Controller_AttPID_Tune_CLI.str1.4,"aMS",%progbits,1
+ 1224              		.align	2
+ 1225              	.LC11:
+ 1226 0000 5B202D2D 		.ascii	"[ ---- Attitude Casecade PID Tunning ---- ]\015\012"
+ 1226      2D2D2041 
+ 1226      74746974 
+ 1226      75646520 
+ 1226      43617365 
+ 1227 002d 00       		.ascii	"\000"
+ 1228 002e 0000     		.align	2
+ 1229              	.LC12:
+ 1230 0030 5B203173 		.ascii	"[ 1st parameter 1ndicate to selecetd part ]\015\012"
+ 1230      74207061 
+ 1230      72616D65 
+ 1230      74657220 
+ 1230      316E6469 
+ 1231 005d 00       		.ascii	"\000"
+ 1232 005e 0000     		.align	2
+ 1233              	.LC13:
+ 1234 0060 20202D2D 		.ascii	"  ---- Part 0 ----- Pitch Param\015\012\000"
+ 1234      2D2D2050 
+ 1234      61727420 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 30
+
+
+ 1234      30202D2D 
+ 1234      2D2D2D20 
+ 1235 0082 0000     		.align	2
+ 1236              	.LC14:
+ 1237 0084 20202D2D 		.ascii	"  ---- Part 1 ----- Roll  Param\015\012\000"
+ 1237      2D2D2050 
+ 1237      61727420 
+ 1237      31202D2D 
+ 1237      2D2D2D20 
+ 1238 00a6 0000     		.align	2
+ 1239              	.LC15:
+ 1240 00a8 20202D2D 		.ascii	"  ---- Part 2 ----- GyroX Param\015\012\000"
+ 1240      2D2D2050 
+ 1240      61727420 
+ 1240      32202D2D 
+ 1240      2D2D2D20 
+ 1241 00ca 0000     		.align	2
+ 1242              	.LC16:
+ 1243 00cc 20202D2D 		.ascii	"  ---- Part 3 ----- GyroY Param\015\012\000"
+ 1243      2D2D2050 
+ 1243      61727420 
+ 1243      33202D2D 
+ 1243      2D2D2D20 
+ 1244 00ee 0000     		.align	2
+ 1245              	.LC17:
+ 1246 00f0 20202D2D 		.ascii	"  ---- Part 4 ----- GyroZ Param\015\012\000"
+ 1246      2D2D2050 
+ 1246      61727420 
+ 1246      34202D2D 
+ 1246      2D2D2D20 
+ 1247 0112 0000     		.align	2
+ 1248              	.LC18:
+ 1249 0114 202D2D2D 		.ascii	" ---- Pitch is selected\015\012\000"
+ 1249      2D205069 
+ 1249      74636820 
+ 1249      69732073 
+ 1249      656C6563 
+ 1250 012e 0000     		.align	2
+ 1251              	.LC19:
+ 1252 0130 202D2D2D 		.ascii	" ---- Roll is selected\015\012\000"
+ 1252      2D20526F 
+ 1252      6C6C2069 
+ 1252      73207365 
+ 1252      6C656374 
+ 1253 0149 000000   		.align	2
+ 1254              	.LC20:
+ 1255 014c 202D2D2D 		.ascii	" ---- GyroX is selected\015\012\000"
+ 1255      2D204779 
+ 1255      726F5820 
+ 1255      69732073 
+ 1255      656C6563 
+ 1256 0166 0000     		.align	2
+ 1257              	.LC21:
+ 1258 0168 202D2D2D 		.ascii	" ---- GyroY is selected\015\012\000"
+ 1258      2D204779 
+ 1258      726F5920 
+ 1258      69732073 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 31
+
+
+ 1258      656C6563 
+ 1259 0182 0000     		.align	2
+ 1260              	.LC22:
+ 1261 0184 202D2D2D 		.ascii	" ----- GyroZ is selected\015\012\000"
+ 1261      2D2D2047 
+ 1261      79726F5A 
+ 1261      20697320 
+ 1261      73656C65 
+ 1262 019f 00       		.align	2
+ 1263              	.LC23:
+ 1264 01a0 5B202D2D 		.ascii	"[ ---- Invalid Part ---- ]\015\012\000"
+ 1264      2D2D2049 
+ 1264      6E76616C 
+ 1264      69642050 
+ 1264      61727420 
+ 1265 01bd 000000   		.align	2
+ 1266              	.LC24:
+ 1267 01c0 202D2D2D 		.ascii	" ---- Input P: %f\015\012\000"
+ 1267      2D20496E 
+ 1267      70757420 
+ 1267      503A2025 
+ 1267      660D0A00 
+ 1268              		.align	2
+ 1269              	.LC25:
+ 1270 01d4 202D2D2D 		.ascii	" ---- Input I: %f\015\012\000"
+ 1270      2D20496E 
+ 1270      70757420 
+ 1270      493A2025 
+ 1270      660D0A00 
+ 1271              		.align	2
+ 1272              	.LC26:
+ 1273 01e8 202D2D2D 		.ascii	" ---- Input D: %f\015\012\000"
+ 1273      2D20496E 
+ 1273      70757420 
+ 1273      443A2025 
+ 1273      660D0A00 
+ 1274              		.align	2
+ 1275              	.LC27:
+ 1276 01fc 5B202D2D 		.ascii	"[ ---- parameter set failed ---- ]\015\012\000"
+ 1276      2D2D2070 
+ 1276      6172616D 
+ 1276      65746572 
+ 1276      20736574 
+ 1277 0221 000000   		.align	2
+ 1278              	.LC28:
+ 1279 0224 5B202D2D 		.ascii	"[ ---- parameter save failed ---- ]\015\012\000"
+ 1279      2D2D2070 
+ 1279      6172616D 
+ 1279      65746572 
+ 1279      20736176 
+ 1280 024a 0000     		.align	2
+ 1281              	.LC29:
+ 1282 024c 5B202D2D 		.ascii	"[ ---- parameter saved ---- ]\015\012\000"
+ 1282      2D2D2070 
+ 1282      6172616D 
+ 1282      65746572 
+ 1282      20736176 
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 32
+
+
+ 1283              		.section	.text.Controller_AttPID_Tune_CLI,"ax",%progbits
+ 1284              		.align	1
+ 1285              		.syntax unified
+ 1286              		.thumb
+ 1287              		.thumb_func
+ 1289              	Controller_AttPID_Tune_CLI:
+ 1290              	.LVL107:
+ 1291              	.LFB162:
+ 318:Algorithm/Control_Dep/controller.c **** 
+ 319:Algorithm/Control_Dep/controller.c **** static void Controller_AttPID_Tune_CLI(uint8_t part, const char* P_i, const char* I_i, const char* 
+ 320:Algorithm/Control_Dep/controller.c **** {
+ 1292              		.loc 1 320 1 is_stmt 1 view -0
+ 1293              		.cfi_startproc
+ 1294              		@ args = 0, pretend = 0, frame = 304
+ 1295              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1296              		.loc 1 320 1 is_stmt 0 view .LVU224
+ 1297 0000 2DE9F043 		push	{r4, r5, r6, r7, r8, r9, lr}
+ 1298              	.LCFI36:
+ 1299              		.cfi_def_cfa_offset 28
+ 1300              		.cfi_offset 4, -28
+ 1301              		.cfi_offset 5, -24
+ 1302              		.cfi_offset 6, -20
+ 1303              		.cfi_offset 7, -16
+ 1304              		.cfi_offset 8, -12
+ 1305              		.cfi_offset 9, -8
+ 1306              		.cfi_offset 14, -4
+ 1307 0004 E3B0     		sub	sp, sp, #396
+ 1308              	.LCFI37:
+ 1309              		.cfi_def_cfa_offset 424
+ 1310 0006 0546     		mov	r5, r0
+ 1311 0008 8846     		mov	r8, r1
+ 1312 000a 1746     		mov	r7, r2
+ 1313 000c 9946     		mov	r9, r3
+ 321:Algorithm/Control_Dep/controller.c ****     Shell *shell_obj = Shell_GetInstence();
+ 1314              		.loc 1 321 5 is_stmt 1 view .LVU225
+ 1315              		.loc 1 321 24 is_stmt 0 view .LVU226
+ 1316 000e FFF7FEFF 		bl	Shell_GetInstence
+ 1317              	.LVL108:
+ 322:Algorithm/Control_Dep/controller.c ****     AttCaseCadePID_Param_TypeDef inuse;
+ 1318              		.loc 1 322 5 is_stmt 1 view .LVU227
+ 323:Algorithm/Control_Dep/controller.c ****     AttCaseCadePID_Param_TypeDef inuse_lst;
+ 1319              		.loc 1 323 5 view .LVU228
+ 324:Algorithm/Control_Dep/controller.c ****     PID_Param_TypeDef *selected = NULL;
+ 1320              		.loc 1 324 5 view .LVU229
+ 325:Algorithm/Control_Dep/controller.c **** 
+ 326:Algorithm/Control_Dep/controller.c ****     if (shell_obj == NULL)
+ 1321              		.loc 1 326 5 view .LVU230
+ 1322              		.loc 1 326 8 is_stmt 0 view .LVU231
+ 1323 0012 0028     		cmp	r0, #0
+ 1324 0014 00F08180 		beq	.L99
+ 1325 0018 0446     		mov	r4, r0
+ 327:Algorithm/Control_Dep/controller.c ****         return;
+ 328:Algorithm/Control_Dep/controller.c **** 
+ 329:Algorithm/Control_Dep/controller.c ****     memset(&inuse, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+ 1326              		.loc 1 329 5 is_stmt 1 view .LVU232
+ 1327 001a 6426     		movs	r6, #100
+ 1328 001c 3246     		mov	r2, r6
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 33
+
+
+ 1329 001e 0021     		movs	r1, #0
+ 1330 0020 49A8     		add	r0, sp, #292
+ 1331              	.LVL109:
+ 1332              		.loc 1 329 5 is_stmt 0 view .LVU233
+ 1333 0022 FFF7FEFF 		bl	memset
+ 1334              	.LVL110:
+ 330:Algorithm/Control_Dep/controller.c ****     memset(&inuse_lst, 0, sizeof(AttCaseCadePID_Param_TypeDef));
+ 1335              		.loc 1 330 5 is_stmt 1 view .LVU234
+ 1336 0026 3246     		mov	r2, r6
+ 1337 0028 0021     		movs	r1, #0
+ 1338 002a 30A8     		add	r0, sp, #192
+ 1339 002c FFF7FEFF 		bl	memset
+ 1340              	.LVL111:
+ 331:Algorithm/Control_Dep/controller.c ****  
+ 332:Algorithm/Control_Dep/controller.c ****     inuse = Att_CasecadePID_Controller.cur_param();
+ 1341              		.loc 1 332 5 view .LVU235
+ 1342              		.loc 1 332 39 is_stmt 0 view .LVU236
+ 1343 0030 544B     		ldr	r3, .L115
+ 1344 0032 5B68     		ldr	r3, [r3, #4]
+ 1345              		.loc 1 332 13 view .LVU237
+ 1346 0034 16A8     		add	r0, sp, #88
+ 1347 0036 9847     		blx	r3
+ 1348              	.LVL112:
+ 1349 0038 3246     		mov	r2, r6
+ 1350 003a 16A9     		add	r1, sp, #88
+ 1351 003c 49A8     		add	r0, sp, #292
+ 1352 003e FFF7FEFF 		bl	memcpy
+ 1353              	.LVL113:
+ 333:Algorithm/Control_Dep/controller.c ****     inuse_lst = inuse;
+ 1354              		.loc 1 333 5 is_stmt 1 view .LVU238
+ 1355              		.loc 1 333 15 is_stmt 0 view .LVU239
+ 1356 0042 3246     		mov	r2, r6
+ 1357 0044 49A9     		add	r1, sp, #292
+ 1358 0046 30A8     		add	r0, sp, #192
+ 1359 0048 FFF7FEFF 		bl	memcpy
+ 1360              	.LVL114:
+ 334:Algorithm/Control_Dep/controller.c **** 
+ 335:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, "[ ---- Attitude Casecade PID Tunning ---- ]\r\n");
+ 1361              		.loc 1 335 5 is_stmt 1 view .LVU240
+ 1362 004c 4E49     		ldr	r1, .L115+4
+ 1363 004e 2046     		mov	r0, r4
+ 1364 0050 FFF7FEFF 		bl	shellPrint
+ 1365              	.LVL115:
+ 336:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, "[ 1st parameter 1ndicate to selecetd part ]\r\n");
+ 1366              		.loc 1 336 5 view .LVU241
+ 1367 0054 4D49     		ldr	r1, .L115+8
+ 1368 0056 2046     		mov	r0, r4
+ 1369 0058 FFF7FEFF 		bl	shellPrint
+ 1370              	.LVL116:
+ 337:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, "  ---- Part 0 ----- Pitch Param\r\n");
+ 1371              		.loc 1 337 5 view .LVU242
+ 1372 005c 4C49     		ldr	r1, .L115+12
+ 1373 005e 2046     		mov	r0, r4
+ 1374 0060 FFF7FEFF 		bl	shellPrint
+ 1375              	.LVL117:
+ 338:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, "  ---- Part 1 ----- Roll  Param\r\n");
+ 1376              		.loc 1 338 5 view .LVU243
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 34
+
+
+ 1377 0064 4B49     		ldr	r1, .L115+16
+ 1378 0066 2046     		mov	r0, r4
+ 1379 0068 FFF7FEFF 		bl	shellPrint
+ 1380              	.LVL118:
+ 339:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, "  ---- Part 2 ----- GyroX Param\r\n");
+ 1381              		.loc 1 339 5 view .LVU244
+ 1382 006c 4A49     		ldr	r1, .L115+20
+ 1383 006e 2046     		mov	r0, r4
+ 1384 0070 FFF7FEFF 		bl	shellPrint
+ 1385              	.LVL119:
+ 340:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, "  ---- Part 3 ----- GyroY Param\r\n");
+ 1386              		.loc 1 340 5 view .LVU245
+ 1387 0074 4949     		ldr	r1, .L115+24
+ 1388 0076 2046     		mov	r0, r4
+ 1389 0078 FFF7FEFF 		bl	shellPrint
+ 1390              	.LVL120:
+ 341:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, "  ---- Part 4 ----- GyroZ Param\r\n");
+ 1391              		.loc 1 341 5 view .LVU246
+ 1392 007c 4849     		ldr	r1, .L115+28
+ 1393 007e 2046     		mov	r0, r4
+ 1394 0080 FFF7FEFF 		bl	shellPrint
+ 1395              	.LVL121:
+ 342:Algorithm/Control_Dep/controller.c **** 
+ 343:Algorithm/Control_Dep/controller.c ****     switch (part)
+ 1396              		.loc 1 343 5 view .LVU247
+ 1397 0084 042D     		cmp	r5, #4
+ 1398 0086 63D8     		bhi	.L101
+ 1399 0088 DFE805F0 		tbb	[pc, r5]
+ 1400              	.L103:
+ 1401 008c 03       		.byte	(.L107-.L103)/2
+ 1402 008d 4A       		.byte	(.L106-.L103)/2
+ 1403 008e 50       		.byte	(.L105-.L103)/2
+ 1404 008f 56       		.byte	(.L104-.L103)/2
+ 1405 0090 5C       		.byte	(.L102-.L103)/2
+ 1406 0091 00       		.p2align 1
+ 1407              	.L107:
+ 344:Algorithm/Control_Dep/controller.c ****     {
+ 345:Algorithm/Control_Dep/controller.c ****         case TP_Pitch:
+ 346:Algorithm/Control_Dep/controller.c ****             shellPrint(shell_obj, " ---- Pitch is selected\r\n");
+ 1408              		.loc 1 346 13 view .LVU248
+ 1409 0092 4449     		ldr	r1, .L115+32
+ 1410 0094 2046     		mov	r0, r4
+ 1411 0096 FFF7FEFF 		bl	shellPrint
+ 1412              	.LVL122:
+ 347:Algorithm/Control_Dep/controller.c ****             selected = &inuse.Pitch_Para;
+ 1413              		.loc 1 347 13 view .LVU249
+ 348:Algorithm/Control_Dep/controller.c ****             break;
+ 1414              		.loc 1 348 13 view .LVU250
+ 347:Algorithm/Control_Dep/controller.c ****             selected = &inuse.Pitch_Para;
+ 1415              		.loc 1 347 22 is_stmt 0 view .LVU251
+ 1416 009a 49AD     		add	r5, sp, #292
+ 1417              	.LVL123:
+ 1418              	.L108:
+ 349:Algorithm/Control_Dep/controller.c **** 
+ 350:Algorithm/Control_Dep/controller.c ****         case TP_Roll:
+ 351:Algorithm/Control_Dep/controller.c ****             shellPrint(shell_obj, " ---- Roll is selected\r\n");
+ 352:Algorithm/Control_Dep/controller.c ****             selected = &inuse.Roll_Para;
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 35
+
+
+ 353:Algorithm/Control_Dep/controller.c ****             break;
+ 354:Algorithm/Control_Dep/controller.c **** 
+ 355:Algorithm/Control_Dep/controller.c ****         case TP_GyroX:
+ 356:Algorithm/Control_Dep/controller.c ****             shellPrint(shell_obj, " ---- GyroX is selected\r\n");
+ 357:Algorithm/Control_Dep/controller.c ****             selected = &inuse.GyroX_Para;
+ 358:Algorithm/Control_Dep/controller.c ****             break;
+ 359:Algorithm/Control_Dep/controller.c **** 
+ 360:Algorithm/Control_Dep/controller.c ****         case TP_GyroY:
+ 361:Algorithm/Control_Dep/controller.c ****             shellPrint(shell_obj, " ---- GyroY is selected\r\n");
+ 362:Algorithm/Control_Dep/controller.c ****             selected = &inuse.GyroY_Para;
+ 363:Algorithm/Control_Dep/controller.c ****             break;
+ 364:Algorithm/Control_Dep/controller.c **** 
+ 365:Algorithm/Control_Dep/controller.c ****         case TP_GyroZ:
+ 366:Algorithm/Control_Dep/controller.c ****             shellPrint(shell_obj, " ----- GyroZ is selected\r\n");
+ 367:Algorithm/Control_Dep/controller.c ****             selected = &inuse.GyroZ_Para;
+ 368:Algorithm/Control_Dep/controller.c ****             break;
+ 369:Algorithm/Control_Dep/controller.c **** 
+ 370:Algorithm/Control_Dep/controller.c ****         default: shellPrint(shell_obj, "[ ---- Invalid Part ---- ]\r\n"); return;
+ 371:Algorithm/Control_Dep/controller.c ****     }
+ 372:Algorithm/Control_Dep/controller.c **** 
+ 373:Algorithm/Control_Dep/controller.c ****     selected->gP = Controller_ConvertToFloat(P_i);
+ 1419              		.loc 1 373 5 is_stmt 1 view .LVU252
+ 1420              		.loc 1 373 20 is_stmt 0 view .LVU253
+ 1421 009c 4046     		mov	r0, r8
+ 1422 009e FFF7FEFF 		bl	Controller_ConvertToFloat
+ 1423              	.LVL124:
+ 1424              		.loc 1 373 18 view .LVU254
+ 1425 00a2 85ED000A 		vstr.32	s0, [r5]
+ 374:Algorithm/Control_Dep/controller.c ****     selected->gI = Controller_ConvertToFloat(I_i);
+ 1426              		.loc 1 374 5 is_stmt 1 view .LVU255
+ 1427              		.loc 1 374 20 is_stmt 0 view .LVU256
+ 1428 00a6 3846     		mov	r0, r7
+ 1429 00a8 FFF7FEFF 		bl	Controller_ConvertToFloat
+ 1430              	.LVL125:
+ 1431              		.loc 1 374 18 view .LVU257
+ 1432 00ac 85ED010A 		vstr.32	s0, [r5, #4]
+ 375:Algorithm/Control_Dep/controller.c ****     selected->gD = Controller_ConvertToFloat(D_i);
+ 1433              		.loc 1 375 5 is_stmt 1 view .LVU258
+ 1434              		.loc 1 375 20 is_stmt 0 view .LVU259
+ 1435 00b0 4846     		mov	r0, r9
+ 1436 00b2 FFF7FEFF 		bl	Controller_ConvertToFloat
+ 1437              	.LVL126:
+ 1438              		.loc 1 375 18 view .LVU260
+ 1439 00b6 85ED040A 		vstr.32	s0, [r5, #16]
+ 376:Algorithm/Control_Dep/controller.c **** 
+ 377:Algorithm/Control_Dep/controller.c ****     /* show input parameter */
+ 378:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, " ---- Input P: %f\r\n", selected->gP);
+ 1440              		.loc 1 378 5 is_stmt 1 view .LVU261
+ 1441 00ba 2868     		ldr	r0, [r5]	@ float
+ 1442 00bc FFF7FEFF 		bl	__aeabi_f2d
+ 1443              	.LVL127:
+ 1444 00c0 0246     		mov	r2, r0
+ 1445 00c2 0B46     		mov	r3, r1
+ 1446 00c4 3849     		ldr	r1, .L115+36
+ 1447 00c6 2046     		mov	r0, r4
+ 1448 00c8 FFF7FEFF 		bl	shellPrint
+ 1449              	.LVL128:
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 36
+
+
+ 379:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, " ---- Input I: %f\r\n", selected->gI);
+ 1450              		.loc 1 379 5 view .LVU262
+ 1451 00cc 6868     		ldr	r0, [r5, #4]	@ float
+ 1452 00ce FFF7FEFF 		bl	__aeabi_f2d
+ 1453              	.LVL129:
+ 1454 00d2 0246     		mov	r2, r0
+ 1455 00d4 0B46     		mov	r3, r1
+ 1456 00d6 3549     		ldr	r1, .L115+40
+ 1457 00d8 2046     		mov	r0, r4
+ 1458 00da FFF7FEFF 		bl	shellPrint
+ 1459              	.LVL130:
+ 380:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, " ---- Input D: %f\r\n", selected->gD);
+ 1460              		.loc 1 380 5 view .LVU263
+ 1461 00de 2869     		ldr	r0, [r5, #16]	@ float
+ 1462 00e0 FFF7FEFF 		bl	__aeabi_f2d
+ 1463              	.LVL131:
+ 1464 00e4 0246     		mov	r2, r0
+ 1465 00e6 0B46     		mov	r3, r1
+ 1466 00e8 3149     		ldr	r1, .L115+44
+ 1467 00ea 2046     		mov	r0, r4
+ 1468 00ec FFF7FEFF 		bl	shellPrint
+ 1469              	.LVL132:
+ 381:Algorithm/Control_Dep/controller.c **** 
+ 382:Algorithm/Control_Dep/controller.c ****     if (!Att_CasecadePID_Controller.set(inuse))
+ 1470              		.loc 1 382 5 view .LVU264
+ 1471              		.loc 1 382 36 is_stmt 0 view .LVU265
+ 1472 00f0 244B     		ldr	r3, .L115
+ 1473 00f2 1D68     		ldr	r5, [r3]
+ 1474              	.LVL133:
+ 1475              		.loc 1 382 10 view .LVU266
+ 1476 00f4 5422     		movs	r2, #84
+ 1477 00f6 4DA9     		add	r1, sp, #308
+ 1478 00f8 6846     		mov	r0, sp
+ 1479 00fa FFF7FEFF 		bl	memcpy
+ 1480              	.LVL134:
+ 1481 00fe 49AB     		add	r3, sp, #292
+ 1482 0100 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 1483 0102 A847     		blx	r5
+ 1484              	.LVL135:
+ 1485              		.loc 1 382 8 view .LVU267
+ 1486 0104 48B3     		cbz	r0, .L113
+ 383:Algorithm/Control_Dep/controller.c ****     {
+ 384:Algorithm/Control_Dep/controller.c ****         shellPrint(shell_obj, "[ ---- parameter set failed ---- ]\r\n");
+ 385:Algorithm/Control_Dep/controller.c ****         Att_CasecadePID_Controller.set(inuse_lst);
+ 386:Algorithm/Control_Dep/controller.c ****         return;
+ 387:Algorithm/Control_Dep/controller.c ****     }
+ 388:Algorithm/Control_Dep/controller.c **** 
+ 389:Algorithm/Control_Dep/controller.c ****     /* storage parameter */
+ 390:Algorithm/Control_Dep/controller.c ****     if (!Controller_PID_AttParam_Set((uint8_t *)&inuse, sizeof(AttCaseCadePID_Param_TypeDef)))
+ 1487              		.loc 1 390 5 is_stmt 1 view .LVU268
+ 1488              		.loc 1 390 10 is_stmt 0 view .LVU269
+ 1489 0106 6421     		movs	r1, #100
+ 1490 0108 49A8     		add	r0, sp, #292
+ 1491 010a FFF7FEFF 		bl	Controller_PID_AttParam_Set
+ 1492              	.LVL136:
+ 1493              		.loc 1 390 8 view .LVU270
+ 1494 010e 0028     		cmp	r0, #0
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 37
+
+
+ 1495 0110 32D0     		beq	.L114
+ 391:Algorithm/Control_Dep/controller.c ****     {
+ 392:Algorithm/Control_Dep/controller.c ****         shellPrint(shell_obj, "[ ---- parameter save failed ---- ]\r\n");
+ 393:Algorithm/Control_Dep/controller.c ****         return;
+ 394:Algorithm/Control_Dep/controller.c ****     }
+ 395:Algorithm/Control_Dep/controller.c **** 
+ 396:Algorithm/Control_Dep/controller.c ****     shellPrint(shell_obj, "[ ---- parameter saved ---- ]\r\n");
+ 1496              		.loc 1 396 5 is_stmt 1 view .LVU271
+ 1497 0112 2849     		ldr	r1, .L115+48
+ 1498 0114 2046     		mov	r0, r4
+ 1499 0116 FFF7FEFF 		bl	shellPrint
+ 1500              	.LVL137:
+ 1501              	.L99:
+ 397:Algorithm/Control_Dep/controller.c **** }
+ 1502              		.loc 1 397 1 is_stmt 0 view .LVU272
+ 1503 011a 63B0     		add	sp, sp, #396
+ 1504              	.LCFI38:
+ 1505              		.cfi_remember_state
+ 1506              		.cfi_def_cfa_offset 28
+ 1507              		@ sp needed
+ 1508 011c BDE8F083 		pop	{r4, r5, r6, r7, r8, r9, pc}
+ 1509              	.LVL138:
+ 1510              	.L106:
+ 1511              	.LCFI39:
+ 1512              		.cfi_restore_state
+ 351:Algorithm/Control_Dep/controller.c ****             selected = &inuse.Roll_Para;
+ 1513              		.loc 1 351 13 is_stmt 1 view .LVU273
+ 1514 0120 2549     		ldr	r1, .L115+52
+ 1515 0122 2046     		mov	r0, r4
+ 1516 0124 FFF7FEFF 		bl	shellPrint
+ 1517              	.LVL139:
+ 352:Algorithm/Control_Dep/controller.c ****             break;
+ 1518              		.loc 1 352 13 view .LVU274
+ 353:Algorithm/Control_Dep/controller.c **** 
+ 1519              		.loc 1 353 13 view .LVU275
+ 352:Algorithm/Control_Dep/controller.c ****             break;
+ 1520              		.loc 1 352 22 is_stmt 0 view .LVU276
+ 1521 0128 4EAD     		add	r5, sp, #312
+ 1522              	.LVL140:
+ 353:Algorithm/Control_Dep/controller.c **** 
+ 1523              		.loc 1 353 13 view .LVU277
+ 1524 012a B7E7     		b	.L108
+ 1525              	.LVL141:
+ 1526              	.L105:
+ 356:Algorithm/Control_Dep/controller.c ****             selected = &inuse.GyroX_Para;
+ 1527              		.loc 1 356 13 is_stmt 1 view .LVU278
+ 1528 012c 2349     		ldr	r1, .L115+56
+ 1529 012e 2046     		mov	r0, r4
+ 1530 0130 FFF7FEFF 		bl	shellPrint
+ 1531              	.LVL142:
+ 357:Algorithm/Control_Dep/controller.c ****             break;
+ 1532              		.loc 1 357 13 view .LVU279
+ 358:Algorithm/Control_Dep/controller.c **** 
+ 1533              		.loc 1 358 13 view .LVU280
+ 357:Algorithm/Control_Dep/controller.c ****             break;
+ 1534              		.loc 1 357 22 is_stmt 0 view .LVU281
+ 1535 0134 53AD     		add	r5, sp, #332
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 38
+
+
+ 1536              	.LVL143:
+ 358:Algorithm/Control_Dep/controller.c **** 
+ 1537              		.loc 1 358 13 view .LVU282
+ 1538 0136 B1E7     		b	.L108
+ 1539              	.LVL144:
+ 1540              	.L104:
+ 361:Algorithm/Control_Dep/controller.c ****             selected = &inuse.GyroY_Para;
+ 1541              		.loc 1 361 13 is_stmt 1 view .LVU283
+ 1542 0138 2149     		ldr	r1, .L115+60
+ 1543 013a 2046     		mov	r0, r4
+ 1544 013c FFF7FEFF 		bl	shellPrint
+ 1545              	.LVL145:
+ 362:Algorithm/Control_Dep/controller.c ****             break;
+ 1546              		.loc 1 362 13 view .LVU284
+ 363:Algorithm/Control_Dep/controller.c **** 
+ 1547              		.loc 1 363 13 view .LVU285
+ 362:Algorithm/Control_Dep/controller.c ****             break;
+ 1548              		.loc 1 362 22 is_stmt 0 view .LVU286
+ 1549 0140 58AD     		add	r5, sp, #352
+ 1550              	.LVL146:
+ 363:Algorithm/Control_Dep/controller.c **** 
+ 1551              		.loc 1 363 13 view .LVU287
+ 1552 0142 ABE7     		b	.L108
+ 1553              	.LVL147:
+ 1554              	.L102:
+ 366:Algorithm/Control_Dep/controller.c ****             selected = &inuse.GyroZ_Para;
+ 1555              		.loc 1 366 13 is_stmt 1 view .LVU288
+ 1556 0144 1F49     		ldr	r1, .L115+64
+ 1557 0146 2046     		mov	r0, r4
+ 1558 0148 FFF7FEFF 		bl	shellPrint
+ 1559              	.LVL148:
+ 367:Algorithm/Control_Dep/controller.c ****             break;
+ 1560              		.loc 1 367 13 view .LVU289
+ 368:Algorithm/Control_Dep/controller.c **** 
+ 1561              		.loc 1 368 13 view .LVU290
+ 367:Algorithm/Control_Dep/controller.c ****             break;
+ 1562              		.loc 1 367 22 is_stmt 0 view .LVU291
+ 1563 014c 5DAD     		add	r5, sp, #372
+ 1564              	.LVL149:
+ 368:Algorithm/Control_Dep/controller.c **** 
+ 1565              		.loc 1 368 13 view .LVU292
+ 1566 014e A5E7     		b	.L108
+ 1567              	.LVL150:
+ 1568              	.L101:
+ 370:Algorithm/Control_Dep/controller.c ****     }
+ 1569              		.loc 1 370 18 is_stmt 1 view .LVU293
+ 1570 0150 1D49     		ldr	r1, .L115+68
+ 1571 0152 2046     		mov	r0, r4
+ 1572 0154 FFF7FEFF 		bl	shellPrint
+ 1573              	.LVL151:
+ 370:Algorithm/Control_Dep/controller.c ****     }
+ 1574              		.loc 1 370 75 view .LVU294
+ 1575 0158 DFE7     		b	.L99
+ 1576              	.LVL152:
+ 1577              	.L113:
+ 384:Algorithm/Control_Dep/controller.c ****         Att_CasecadePID_Controller.set(inuse_lst);
+ 1578              		.loc 1 384 9 view .LVU295
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 39
+
+
+ 1579 015a 1C49     		ldr	r1, .L115+72
+ 1580 015c 2046     		mov	r0, r4
+ 1581 015e FFF7FEFF 		bl	shellPrint
+ 1582              	.LVL153:
+ 385:Algorithm/Control_Dep/controller.c ****         return;
+ 1583              		.loc 1 385 9 view .LVU296
+ 385:Algorithm/Control_Dep/controller.c ****         return;
+ 1584              		.loc 1 385 35 is_stmt 0 view .LVU297
+ 1585 0162 084B     		ldr	r3, .L115
+ 1586 0164 1C68     		ldr	r4, [r3]
+ 1587              	.LVL154:
+ 385:Algorithm/Control_Dep/controller.c ****         return;
+ 1588              		.loc 1 385 9 view .LVU298
+ 1589 0166 5422     		movs	r2, #84
+ 1590 0168 34A9     		add	r1, sp, #208
+ 1591 016a 6846     		mov	r0, sp
+ 1592 016c FFF7FEFF 		bl	memcpy
+ 1593              	.LVL155:
+ 1594 0170 30AB     		add	r3, sp, #192
+ 1595 0172 0FCB     		ldm	r3, {r0, r1, r2, r3}
+ 1596 0174 A047     		blx	r4
+ 1597              	.LVL156:
+ 386:Algorithm/Control_Dep/controller.c ****     }
+ 1598              		.loc 1 386 9 is_stmt 1 view .LVU299
+ 1599 0176 D0E7     		b	.L99
+ 1600              	.LVL157:
+ 1601              	.L114:
+ 392:Algorithm/Control_Dep/controller.c ****         return;
+ 1602              		.loc 1 392 9 view .LVU300
+ 1603 0178 1549     		ldr	r1, .L115+76
+ 1604 017a 2046     		mov	r0, r4
+ 1605 017c FFF7FEFF 		bl	shellPrint
+ 1606              	.LVL158:
+ 393:Algorithm/Control_Dep/controller.c ****     }
+ 1607              		.loc 1 393 9 view .LVU301
+ 1608 0180 CBE7     		b	.L99
+ 1609              	.L116:
+ 1610 0182 00BF     		.align	2
+ 1611              	.L115:
+ 1612 0184 00000000 		.word	Att_CasecadePID_Controller
+ 1613 0188 00000000 		.word	.LC11
+ 1614 018c 30000000 		.word	.LC12
+ 1615 0190 60000000 		.word	.LC13
+ 1616 0194 84000000 		.word	.LC14
+ 1617 0198 A8000000 		.word	.LC15
+ 1618 019c CC000000 		.word	.LC16
+ 1619 01a0 F0000000 		.word	.LC17
+ 1620 01a4 14010000 		.word	.LC18
+ 1621 01a8 C0010000 		.word	.LC24
+ 1622 01ac D4010000 		.word	.LC25
+ 1623 01b0 E8010000 		.word	.LC26
+ 1624 01b4 4C020000 		.word	.LC29
+ 1625 01b8 30010000 		.word	.LC19
+ 1626 01bc 4C010000 		.word	.LC20
+ 1627 01c0 68010000 		.word	.LC21
+ 1628 01c4 84010000 		.word	.LC22
+ 1629 01c8 A0010000 		.word	.LC23
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 40
+
+
+ 1630 01cc FC010000 		.word	.LC27
+ 1631 01d0 24020000 		.word	.LC28
+ 1632              		.cfi_endproc
+ 1633              	.LFE162:
+ 1635              		.global	shellCommandtune_att_pid
+ 1636              		.global	shellDesctune_att_pid
+ 1637              		.global	shellCmdtune_att_pid
+ 1638              		.global	shellCommandshow_stored_pid
+ 1639              		.global	shellDescshow_stored_pid
+ 1640              		.global	shellCmdshow_stored_pid
+ 1641              		.global	shellCommandshow_inuse_pid
+ 1642              		.global	shellDescshow_inuse_pid
+ 1643              		.global	shellCmdshow_inuse_pid
+ 1644              		.global	Controller
+ 1645              		.global	ControllerMonitor
+ 1646              		.section	.bss.ControllerMonitor,"aw",%nobits
+ 1647              		.align	2
+ 1648              		.set	.LANCHOR0,. + 0
+ 1651              	ControllerMonitor:
+ 1652 0000 00000000 		.space	139
+ 1652      00000000 
+ 1652      00000000 
+ 1652      00000000 
+ 1652      00000000 
+ 1653              		.section	.data.Controller,"aw"
+ 1654              		.align	2
+ 1657              	Controller:
+ 1658 0000 00000000 		.word	Controller_Att_Init
+ 1659 0004 00000000 		.word	Controller_Alt_Init
+ 1660 0008 00000000 		.word	Controller_Set_Param
+ 1661 000c 00000000 		.word	Controller_Att_Control
+ 1662 0010 00000000 		.word	Controller_Reset_Att_Processing
+ 1663              		.section	.rodata.shellCmdshow_inuse_pid,"a"
+ 1664              		.align	2
+ 1667              	shellCmdshow_inuse_pid:
+ 1668 0000 73686F77 		.ascii	"show_inuse_pid\000"
+ 1668      5F696E75 
+ 1668      73655F70 
+ 1668      696400
+ 1669              		.section	.rodata.shellCmdshow_stored_pid,"a"
+ 1670              		.align	2
+ 1673              	shellCmdshow_stored_pid:
+ 1674 0000 73686F77 		.ascii	"show_stored_pid\000"
+ 1674      5F73746F 
+ 1674      7265645F 
+ 1674      70696400 
+ 1675              		.section	.rodata.shellCmdtune_att_pid,"a"
+ 1676              		.align	2
+ 1679              	shellCmdtune_att_pid:
+ 1680 0000 74756E65 		.ascii	"tune_att_pid\000"
+ 1680      5F617474 
+ 1680      5F706964 
+ 1680      00
+ 1681              		.section	.rodata.shellDescshow_inuse_pid,"a"
+ 1682              		.align	2
+ 1685              	shellDescshow_inuse_pid:
+ 1686 0000 73686F77 		.ascii	"show inuse control parameter\000"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 41
+
+
+ 1686      20696E75 
+ 1686      73652063 
+ 1686      6F6E7472 
+ 1686      6F6C2070 
+ 1687              		.section	.rodata.shellDescshow_stored_pid,"a"
+ 1688              		.align	2
+ 1691              	shellDescshow_stored_pid:
+ 1692 0000 73686F77 		.ascii	"show stored control parameter\000"
+ 1692      2073746F 
+ 1692      72656420 
+ 1692      636F6E74 
+ 1692      726F6C20 
+ 1693              		.section	.rodata.shellDesctune_att_pid,"a"
+ 1694              		.align	2
+ 1697              	shellDesctune_att_pid:
+ 1698 0000 74756E65 		.ascii	"tune attitude control parameter\000"
+ 1698      20617474 
+ 1698      69747564 
+ 1698      6520636F 
+ 1698      6E74726F 
+ 1699              		.section	shellCommand,"a"
+ 1700              		.align	2
+ 1703              	shellCommandtune_att_pid:
+ 1704 0000 00210000 		.word	8448
+ 1705 0004 00000000 		.word	shellCmdtune_att_pid
+ 1706 0008 00000000 		.word	Controller_AttPID_Tune_CLI
+ 1707 000c 00000000 		.word	shellDesctune_att_pid
+ 1710              	shellCommandshow_stored_pid:
+ 1711 0010 00210000 		.word	8448
+ 1712 0014 00000000 		.word	shellCmdshow_stored_pid
+ 1713 0018 00000000 		.word	Controller_Show_InusePID
+ 1714 001c 00000000 		.word	shellDescshow_stored_pid
+ 1717              	shellCommandshow_inuse_pid:
+ 1718 0020 00210000 		.word	8448
+ 1719 0024 00000000 		.word	shellCmdshow_inuse_pid
+ 1720 0028 00000000 		.word	Controller_Show_InusePID
+ 1721 002c 00000000 		.word	shellDescshow_inuse_pid
+ 1722              		.text
+ 1723              	.Letext0:
+ 1724              		.file 2 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\machine\\_defau
+ 1725              		.file 3 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\sys\\_stdint.h"
+ 1726              		.file 4 "Algorithm/Control_Dep/pid.h"
+ 1727              		.file 5 "Algorithm/Control_Dep/Attitude/Att_Control_Base.h"
+ 1728              		.file 6 "Algorithm/Control_Dep/Attitude/Att_Casecade_PID.h"
+ 1729              		.file 7 "Algorithm/Control_Dep/controller.h"
+ 1730              		.file 8 "HW_Lib/AT32F435/drivers/inc/at32f435_437_tmr.h"
+ 1731              		.file 9 "Device/Dev_Dshot.h"
+ 1732              		.file 10 "common/Error_Log/../../common/gen_physic_def/imu_data.h"
+ 1733              		.file 11 "Service/control_data.h"
+ 1734              		.file 12 "Algorithm/Control_Dep/../../System/storage/Storage_Dev_Port.h"
+ 1735              		.file 13 "Algorithm/Control_Dep/../../System/storage/Storage.h"
+ 1736              		.file 14 "System/shell/shell.h"
+ 1737              		.file 15 "<built-in>"
+ 1738              		.file 16 "System/shell/shell_port.h"
+ 1739              		.file 17 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\string.h"
+ 1740              		.file 18 "d:\\hpm-compile-tool\\gcc-arm-none-eabi-10.3-win\\arm-none-eabi\\include\\stdlib.h"
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 42
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 controller.c
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:20     .text.Controller_Att_Control:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:25     .text.Controller_Att_Control:00000000 Controller_Att_Control
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:106    .text.Controller_Att_Control:00000050 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:111    .text.Controller_Reset_Att_Processing:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:116    .text.Controller_Reset_Att_Processing:00000000 Controller_Reset_Att_Processing
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:152    .text.Controller_Reset_Att_Processing:00000010 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:157    .text.Controller_PID_AttParam_Set:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:162    .text.Controller_PID_AttParam_Set:00000000 Controller_PID_AttParam_Set
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:257    .text.Controller_PID_AttParam_Set:00000060 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:264    .text.Controller_Set_Param:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:269    .text.Controller_Set_Param:00000000 Controller_Set_Param
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:360    .rodata.Controller_PID_AttControl_ParamLoad.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:364    .text.Controller_PID_AttControl_ParamLoad:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:369    .text.Controller_PID_AttControl_ParamLoad:00000000 Controller_PID_AttControl_ParamLoad
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:561    .text.Controller_PID_AttControl_ParamLoad:000000dc $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:569    .text.Controller_Alt_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:574    .text.Controller_Alt_Init:00000000 Controller_Alt_Init
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:592    .text.Controller_Att_Init:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:597    .text.Controller_Att_Init:00000000 Controller_Att_Init
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:635    .text.Controller_Att_Init:0000001c $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:641    .rodata.Controller_Show_PID_Param.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:651    .text.Controller_Show_PID_Param:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:656    .text.Controller_Show_PID_Param:00000000 Controller_Show_PID_Param
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:724    .text.Controller_Show_PID_Param:00000050 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:731    .rodata.Controller_Show_AttPID_Param.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:747    .text.Controller_Show_AttPID_Param:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:752    .text.Controller_Show_AttPID_Param:00000000 Controller_Show_AttPID_Param
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:865    .text.Controller_Show_AttPID_Param:000000a8 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:874    .rodata.Controller_Show_InusePID.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:878    .text.Controller_Show_InusePID:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:883    .text.Controller_Show_InusePID:00000000 Controller_Show_InusePID
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:956    .text.Controller_Show_InusePID:0000004c $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:963    .rodata.Controller_ConvertToFloat.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:967    .text.Controller_ConvertToFloat:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:972    .text.Controller_ConvertToFloat:00000000 Controller_ConvertToFloat
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1217   .text.Controller_ConvertToFloat:0000010c $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1224   .rodata.Controller_AttPID_Tune_CLI.str1.4:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1284   .text.Controller_AttPID_Tune_CLI:00000000 $t
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1289   .text.Controller_AttPID_Tune_CLI:00000000 Controller_AttPID_Tune_CLI
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1401   .text.Controller_AttPID_Tune_CLI:0000008c $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1612   .text.Controller_AttPID_Tune_CLI:00000184 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1703   shellCommand:00000000 shellCommandtune_att_pid
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1697   .rodata.shellDesctune_att_pid:00000000 shellDesctune_att_pid
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1679   .rodata.shellCmdtune_att_pid:00000000 shellCmdtune_att_pid
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1710   shellCommand:00000010 shellCommandshow_stored_pid
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1691   .rodata.shellDescshow_stored_pid:00000000 shellDescshow_stored_pid
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1673   .rodata.shellCmdshow_stored_pid:00000000 shellCmdshow_stored_pid
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1717   shellCommand:00000020 shellCommandshow_inuse_pid
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1685   .rodata.shellDescshow_inuse_pid:00000000 shellDescshow_inuse_pid
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1667   .rodata.shellCmdshow_inuse_pid:00000000 shellCmdshow_inuse_pid
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1657   .data.Controller:00000000 Controller
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1651   .bss.ControllerMonitor:00000000 ControllerMonitor
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1647   .bss.ControllerMonitor:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1654   .data.Controller:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1664   .rodata.shellCmdshow_inuse_pid:00000000 $d
+ARM GAS  C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s 			page 43
+
+
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1670   .rodata.shellCmdshow_stored_pid:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1676   .rodata.shellCmdtune_att_pid:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1682   .rodata.shellDescshow_inuse_pid:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1688   .rodata.shellDescshow_stored_pid:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1694   .rodata.shellDesctune_att_pid:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1700   shellCommand:00000000 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1406   .text.Controller_AttPID_Tune_CLI:00000091 $d
+C:\Users\HUAV\AppData\Local\Temp\cc6Bj47F.s:1406   .text.Controller_AttPID_Tune_CLI:00000092 $t
+
+UNDEFINED SYMBOLS
+Att_CasecadePID_Controller
+memcpy
+Storage
+memset
+__aeabi_f2d
+shellPrint
+Shell_GetInstence
+__aeabi_d2f
+strlen
+atof
